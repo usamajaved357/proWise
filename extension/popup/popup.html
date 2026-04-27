@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>PropWise</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{width:360px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:13px;color:#1f2937;background:#fff}
+.header{background:linear-gradient(135deg,#1a1a2e,#2d2b55);padding:14px 16px;display:flex;align-items:center;gap:10px}
+.logo{width:28px;height:28px;background:linear-gradient(135deg,#6c63ff,#a78bfa);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:700}
+.header h1{font-size:15px;font-weight:700;color:#fff}
+.header p{font-size:11px;color:rgba(255,255,255,.6);margin-top:1px}
+
+/* Status bar */
+.status-bar{padding:12px 16px;border-bottom:1px solid #f0f0f0;background:#f9fafb}
+.status-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.plan-pill{font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px}
+.plan-free{background:#fef3c7;color:#92400e}
+.plan-starter{background:#dbeafe;color:#1e40af}
+.plan-pro{background:#ede9fe;color:#5b21b6}
+.plan-agency{background:#dcfce7;color:#14532d}
+.usage-label{font-size:12px;color:#6b7280}
+.usage-bar-wrap{height:6px;background:#e5e7eb;border-radius:3px;overflow:hidden}
+.usage-bar{height:100%;border-radius:3px;transition:width .3s;background:#6c63ff}
+.usage-bar.warn{background:#f59e0b}
+.usage-bar.danger{background:#ef4444}
+.upgrade-btn{width:100%;padding:9px;background:#6c63ff;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;margin-top:10px;font-family:inherit;transition:background .15s}
+.upgrade-btn:hover{background:#5b4fff}
+
+/* License */
+.license-section{padding:12px 16px;border-bottom:1px solid #f0f0f0;background:#f9fafb}
+.lic-row{display:flex;align-items:center;gap:8px}
+.lic-dot{width:8px;height:8px;border-radius:50%;background:#e5e7eb}
+.lic-dot.active{background:#4ade80}
+.lic-label{font-size:12px;font-weight:600;flex:1}
+.lic-change{font-size:11px;color:#6c63ff;cursor:pointer;text-decoration:underline}
+.lic-input-row{margin-top:8px;display:none;gap:6px}
+.lic-input-row.show{display:flex}
+.lic-input{flex:1;padding:7px 10px;border:1.5px solid #d1d5db;border-radius:6px;font-size:12px;font-family:monospace;outline:none}
+.lic-input:focus{border-color:#6c63ff}
+.lic-save{padding:7px 14px;background:#6c63ff;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:inherit}
+
+/* Tabs */
+.tabs{display:flex;border-bottom:1px solid #e5e7eb}
+.tab{flex:1;padding:10px;text-align:center;font-size:12px;font-weight:600;color:#6b7280;cursor:pointer;border-bottom:2px solid transparent;transition:all .15s}
+.tab.active{color:#6c63ff;border-bottom-color:#6c63ff}
+.tab-content{display:none;padding:14px 16px}
+.tab-content.active{display:block}
+
+.field{margin-bottom:12px}
+label{display:block;font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+input,textarea,select{width:100%;padding:8px 10px;border:1.5px solid #e5e7eb;border-radius:6px;font-size:13px;font-family:inherit;outline:none;transition:border-color .15s;color:#1f2937;background:#fff;resize:vertical}
+input:focus,textarea:focus,select:focus{border-color:#6c63ff}
+textarea{min-height:68px}
+.portfolio-item{display:flex;gap:6px;margin-bottom:6px}
+.portfolio-item input{flex:1}
+.rm-btn{padding:0 10px;background:#fee2e2;color:#dc2626;border:none;border-radius:6px;cursor:pointer;font-size:16px}
+.add-link{width:100%;padding:7px;border:1.5px dashed #d1d5db;border-radius:6px;background:transparent;color:#6b7280;font-size:12px;cursor:pointer;transition:all .15s;margin-top:4px;font-family:inherit}
+.add-link:hover{border-color:#6c63ff;color:#6c63ff}
+.save-btn{width:100%;padding:10px;background:#6c63ff;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;margin-top:4px;transition:background .15s;font-family:inherit}
+.save-btn:hover{background:#5b4fff}
+.saved{text-align:center;color:#059669;font-size:12px;font-weight:600;margin-top:8px;height:16px}
+.how-item{display:flex;gap:12px;margin-bottom:12px}
+.how-n{width:22px;height:22px;background:#6c63ff;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;margin-top:1px}
+.how-t{font-size:12px;font-weight:600;display:block;margin-bottom:2px}
+.how-d{font-size:11px;color:#6b7280;line-height:1.5}
+.footer{padding:10px 16px;background:#f9fafb;border-top:1px solid #f0f0f0;text-align:center;font-size:11px;color:#9ca3af}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">P</div>
+  <div><h1>PropWise</h1><p>Upwork proposal writer</p></div>
+</div>
+
+<!-- Usage / Status bar -->
+<div class="status-bar" id="status-bar">
+  <div class="status-row">
+    <span class="plan-pill plan-free" id="plan-pill">Free</span>
+    <span class="usage-label" id="usage-label">0 / 2 used</span>
+  </div>
+  <div class="usage-bar-wrap"><div class="usage-bar" id="usage-bar" style="width:0%"></div></div>
+  <button class="upgrade-btn" id="upgrade-btn" style="display:none" onclick="openPricing()">Upgrade plan →</button>
+</div>
+
+<!-- License -->
+<div class="license-section">
+  <div class="lic-row">
+    <div class="lic-dot" id="lic-dot"></div>
+    <span class="lic-label" id="lic-label">Not activated</span>
+    <span class="lic-change" id="lic-toggle">Enter key</span>
+  </div>
+  <div class="lic-input-row" id="lic-row">
+    <input type="text" id="lic-key" placeholder="PW-XXXX-XXXX-XXXX" maxlength="19">
+    <button class="lic-save" id="lic-save">Activate</button>
+  </div>
+</div>
+
+<!-- Tabs -->
+<div class="tabs">
+  <div class="tab active" data-tab="profile">Profile</div>
+  <div class="tab" data-tab="settings">Settings</div>
+  <div class="tab" data-tab="how">How to use</div>
+</div>
+
+<div class="tab-content active" id="tab-profile">
+  <div class="field"><label>Your name</label><input id="name" placeholder="e.g. Ahmed Hassan"></div>
+  <div class="field"><label>Your title / role</label><input id="title" placeholder="e.g. iOS Developer · 5 years"></div>
+  <div class="field"><label>Top skills</label><input id="skills" placeholder="e.g. Swift, SwiftUI, Flutter, Firebase"></div>
+  <div class="field"><label>Hourly rate (for hourly jobs)</label><input id="hourly-rate" placeholder="e.g. $45/hr"></div>
+  <div class="field"><label>One-line value pitch</label><input id="pitch" placeholder="e.g. I build App Store-ready iOS apps on time"></div>
+  <div class="field">
+    <label>Portfolio links</label>
+    <div id="port-list"></div>
+    <button class="add-link" id="add-link">+ Add link</button>
+  </div>
+  <div class="field"><label>Extra context (optional)</label><textarea id="extra" placeholder="Timezone, availability, testimonials…"></textarea></div>
+  <button class="save-btn" id="save-profile">Save profile</button>
+  <div class="saved" id="saved-msg"></div>
+</div>
+
+<div class="tab-content" id="tab-settings">
+  <div class="field"><label>Proposal tone</label>
+    <select id="tone"><option value="professional">Professional & confident</option><option value="friendly">Friendly & approachable</option><option value="direct">Direct & results-focused</option><option value="enthusiastic">Enthusiastic & energetic</option></select>
+  </div>
+  <div class="field"><label>Proposal length</label>
+    <select id="length"><option value="short">Short (100–130 words)</option><option value="medium" selected>Medium (130–160 words)</option><option value="long">Detailed (160–200 words)</option></select>
+  </div>
+  <div class="field"><label>Always include</label><textarea id="always-include" placeholder="e.g. 'Available to start immediately' or your timezone"></textarea></div>
+  <button class="save-btn" id="save-settings">Save settings</button>
+  <div class="saved" id="saved-settings-msg"></div>
+</div>
+
+<div class="tab-content" id="tab-how">
+  <div class="how-item"><div class="how-n">1</div><div><span class="how-t">Fill in your profile</span><span class="how-d">Add your name, skills, and portfolio links once. PropWise uses this in every proposal.</span></div></div>
+  <div class="how-item"><div class="how-n">2</div><div><span class="how-t">Open any Upwork job</span><span class="how-d">Browse normally. PropWise button appears in the bottom-right corner.</span></div></div>
+  <div class="how-item"><div class="how-n">3</div><div><span class="how-t">Click once — done in 10s</span><span class="how-d">PropWise reads the job, picks the best hook, generates your proposal.</span></div></div>
+  <div class="how-item"><div class="how-n">4</div><div><span class="how-t">Edit, copy, submit</span><span class="how-d">Each section is editable. Click Copy and paste into Upwork.</span></div></div>
+  <div style="margin-top:12px;background:#f0f0ff;border-radius:8px;padding:12px;font-size:12px;color:#4338ca">
+    <strong>Free tier:</strong> 2 proposals to try. Then subscribe for 150, 400, or 900/month.
+  </div>
+</div>
+
+<div class="footer">PropWise v5.0 · Win more jobs, faster</div>
+
+<script>
+const SERVER = 'https://prowise-4e5t.onrender.com';
+
+function openPricing() {
+  chrome.tabs.create({ url: 'https://propwise.app/#pricing' });
+}
+
+async function loadStatus() {
+  try {
+    const { licenseKey } = await chrome.storage.sync.get(['licenseKey']);
+    const res = await fetch(SERVER + '/status', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...(licenseKey ? { 'x-license-key': licenseKey } : {}) },
+      body: JSON.stringify({})
+    });
+    const data = await res.json();
+    updateStatusUI(data);
+  } catch(e) { console.log('Status error:', e); }
+}
+
+function updateStatusUI(data) {
+  const { plan='free', used=0, limit=2, remaining=2 } = data;
+  const pct = Math.min(100, Math.round((used/limit)*100));
+  const pill = document.getElementById('plan-pill');
+  const bar  = document.getElementById('usage-bar');
+  const lbl  = document.getElementById('usage-label');
+  const upgBtn = document.getElementById('upgrade-btn');
+
+  pill.className = `plan-pill plan-${plan}`;
+  pill.textContent = { free:'Free', starter:'Starter', pro:'Pro', agency:'Agency' }[plan] || plan;
+  lbl.textContent = `${used} / ${limit} used this month`;
+  bar.style.width = pct + '%';
+  bar.className = 'usage-bar' + (pct >= 90 ? ' danger' : pct >= 70 ? ' warn' : '');
+
+  if (plan === 'free' || pct >= 80) upgBtn.style.display = 'block';
+  else upgBtn.style.display = 'none';
+}
+
+// License UI
+document.getElementById('lic-toggle').addEventListener('click', () => {
+  document.getElementById('lic-row').classList.toggle('show');
+});
+
+document.getElementById('lic-save').addEventListener('click', async () => {
+  const key = document.getElementById('lic-key').value.trim().toUpperCase();
+  if (!key) return;
+  const btn = document.getElementById('lic-save');
+  btn.textContent = 'Checking…'; btn.disabled = true;
+  try {
+    const res = await fetch(SERVER + '/validate', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ licenseKey: key })
+    });
+    const data = await res.json();
+    btn.textContent = 'Activate'; btn.disabled = false;
+    if (data.valid) {
+      await chrome.storage.sync.set({ licenseKey: key });
+      document.getElementById('lic-dot').className = 'lic-dot active';
+      document.getElementById('lic-label').textContent = 'Activated · ' + key.slice(0,7) + '…';
+      document.getElementById('lic-toggle').textContent = 'Change';
+      document.getElementById('lic-row').classList.remove('show');
+      updateStatusUI(data);
+    } else {
+      document.getElementById('lic-key').style.borderColor = '#dc2626';
+      setTimeout(() => { document.getElementById('lic-key').style.borderColor = ''; }, 2000);
+    }
+  } catch(e) { btn.textContent = 'Activate'; btn.disabled = false; }
+});
+
+// Tabs
+document.querySelectorAll('.tab').forEach(t => {
+  t.addEventListener('click', () => {
+    document.querySelectorAll('.tab,.tab-content').forEach(el => el.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById('tab-' + t.dataset.tab).classList.add('active');
+  });
+});
+
+// Load profile
+(async () => {
+  const { profile={}, settings={}, licenseKey='' } = await chrome.storage.sync.get(['profile','settings','licenseKey']);
+
+  document.getElementById('name').value         = profile.name||'';
+  document.getElementById('title').value        = profile.title||'';
+  document.getElementById('skills').value       = profile.skills||'';
+  document.getElementById('hourly-rate').value  = profile.hourlyRate||'';
+  document.getElementById('pitch').value        = profile.pitch||'';
+  document.getElementById('extra').value        = profile.extra||'';
+  document.getElementById('tone').value         = settings.tone||'professional';
+  document.getElementById('length').value       = settings.length||'medium';
+  document.getElementById('always-include').value = settings.alwaysInclude||'';
+
+  const links = profile.portfolioLinks||[''];
+  const list  = document.getElementById('port-list');
+  links.forEach(l => addPortLink(l));
+
+  if (licenseKey) {
+    document.getElementById('lic-dot').className = 'lic-dot active';
+    document.getElementById('lic-label').textContent = 'Activated · ' + licenseKey.slice(0,7) + '…';
+    document.getElementById('lic-toggle').textContent = 'Change';
+  }
+
+  loadStatus();
+})();
+
+function addPortLink(val='') {
+  const list = document.getElementById('port-list');
+  const row = document.createElement('div');
+  row.className = 'portfolio-item';
+  row.innerHTML = `<input type="url" placeholder="https://apps.apple.com/..." value="${val}"><button class="rm-btn">×</button>`;
+  row.querySelector('.rm-btn').addEventListener('click', () => row.remove());
+  list.appendChild(row);
+}
+document.getElementById('add-link').addEventListener('click', () => addPortLink());
+
+document.getElementById('save-profile').addEventListener('click', async () => {
+  const links = Array.from(document.querySelectorAll('#port-list input')).map(i => i.value.trim()).filter(Boolean);
+  await chrome.storage.sync.set({ profile: {
+    name:           document.getElementById('name').value.trim(),
+    title:          document.getElementById('title').value.trim(),
+    skills:         document.getElementById('skills').value.trim(),
+    hourlyRate:     document.getElementById('hourly-rate').value.trim(),
+    pitch:          document.getElementById('pitch').value.trim(),
+    extra:          document.getElementById('extra').value.trim(),
+    portfolioLinks: links,
+  }});
+  const m = document.getElementById('saved-msg');
+  m.textContent = '✓ Saved!';
+  setTimeout(() => m.textContent = '', 2000);
+});
+
+document.getElementById('save-settings').addEventListener('click', async () => {
+  await chrome.storage.sync.set({ settings: {
+    tone:          document.getElementById('tone').value,
+    length:        document.getElementById('length').value,
+    alwaysInclude: document.getElementById('always-include').value.trim(),
+  }});
+  const m = document.getElementById('saved-settings-msg');
+  m.textContent = '✓ Saved!';
+  setTimeout(() => m.textContent = '', 2000);
+});
+</script>
+</body>
+</html>
