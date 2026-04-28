@@ -4,472 +4,328 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PropWise — Win More Upwork Jobs in 10 Seconds</title>
-<meta name="description" content="AI-powered Upwork proposal writer. One click while reading the job — PropWise reads the description and writes a personalised, human-sounding proposal instantly.">
+<meta name="description" content="AI-powered Upwork proposal writer. One click reads the job, picks the right hook, writes a winning proposal.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
+:root{--bg:#080b14;--bg2:#0d1120;--bg3:#131829;--surface:#1a2035;--border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.12);--gold:#c9a84c;--gold2:#e8c878;--gold-dim:rgba(201,168,76,.15);--white:#f0eeea;--white2:rgba(240,238,234,.65);--white3:rgba(240,238,234,.35);--green:#22c55e;--r:12px;--ff-d:'Cormorant Garamond',serif;--ff-b:'Outfit',sans-serif}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --ink:#0a0a0f;--ink2:#3d3d52;--ink3:#8b8ba7;
-  --paper:#f5f4f0;--paper2:#eeede8;--paper3:#e2e1db;
-  --accent:#5b4fff;--accent2:#7c6fff;
-  --green:#00c281;--white:#fff;
-  --fh:'Syne',sans-serif;--fb:'DM Sans',sans-serif;
-  --r:12px;
-}
 html{scroll-behavior:smooth}
-body{font-family:var(--fb);background:var(--paper);color:var(--ink);line-height:1.6;overflow-x:hidden}
-
-/* NAV */
-nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:16px 48px;display:flex;align-items:center;justify-content:space-between;background:rgba(245,244,240,.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--paper3)}
-.logo{display:flex;align-items:center;gap:10px;text-decoration:none}
-.logo-mark{width:32px;height:32px;background:var(--accent);border-radius:9px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:16px}
-.logo-name{font-family:var(--fh);font-size:18px;font-weight:700;color:var(--ink)}
-.nav-links{display:flex;align-items:center;gap:32px;list-style:none}
-.nav-links a{font-size:14px;color:var(--ink2);text-decoration:none;transition:color .2s}
-.nav-links a:hover{color:var(--accent)}
-.nav-cta{background:var(--accent)!important;color:#fff!important;padding:9px 20px;border-radius:50px;font-weight:500}
-.nav-cta:hover{background:var(--accent2)!important}
-
-/* HERO */
-.hero{padding:140px 48px 80px;max-width:1140px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}
-.eyebrow{display:inline-flex;align-items:center;gap:8px;background:var(--paper2);border:1px solid var(--paper3);border-radius:50px;padding:6px 14px;font-size:12px;font-weight:500;color:var(--accent);margin-bottom:24px;letter-spacing:.04em}
-.eyebrow::before{content:'';width:6px;height:6px;background:var(--green);border-radius:50%}
-h1{font-family:var(--fh);font-size:clamp(36px,5vw,58px);font-weight:800;line-height:1.08;letter-spacing:-.03em;margin-bottom:20px}
-h1 em{font-style:normal;color:var(--accent)}
-.hero-sub{font-size:17px;color:var(--ink2);line-height:1.75;margin-bottom:36px;font-weight:300}
-.hero-actions{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
-.btn-primary{background:var(--accent);color:#fff;padding:14px 28px;border-radius:50px;font-size:15px;font-weight:500;text-decoration:none;display:inline-flex;align-items:center;gap:8px;transition:all .2s;box-shadow:0 4px 20px rgba(91,79,255,.3)}
-.btn-primary:hover{background:var(--accent2);transform:translateY(-2px);box-shadow:0 8px 30px rgba(91,79,255,.4)}
-.btn-ghost{color:var(--ink2);font-size:14px;text-decoration:none;display:inline-flex;align-items:center;gap:6px;transition:color .2s}
-.btn-ghost:hover{color:var(--accent)}
-.proof-row{display:flex;align-items:center;gap:10px;margin-top:28px;font-size:13px;color:var(--ink3)}
-.avatars{display:flex}
-.av{width:28px;height:28px;border-radius:50%;border:2px solid var(--paper);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:#fff;margin-left:-8px}
+body{font-family:var(--ff-b);background:var(--bg);color:var(--white);line-height:1.6;overflow-x:hidden}
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:18px 56px;display:flex;align-items:center;justify-content:space-between;background:rgba(8,11,20,.88);backdrop-filter:blur(24px);border-bottom:1px solid var(--border)}
+.nl{display:flex;align-items:center;gap:10px;text-decoration:none}
+.nm{width:32px;height:32px;background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--ff-d);font-size:18px;font-weight:700;color:var(--bg)}
+.nn{font-family:var(--ff-d);font-size:20px;font-weight:600;color:var(--white)}
+.nlinks{display:flex;align-items:center;gap:36px;list-style:none}
+.nlinks a{font-size:14px;color:var(--white2);text-decoration:none;transition:color .2s}
+.nlinks a:hover{color:var(--white)}
+.ncta{background:var(--gold)!important;color:var(--bg)!important;padding:9px 22px;border-radius:50px;font-weight:600!important;font-size:13px!important}
+.ncta:hover{background:var(--gold2)!important}
+.hero{padding:140px 56px 80px;max-width:1180px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center}
+.htag{display:inline-flex;align-items:center;gap:8px;background:var(--gold-dim);border:1px solid rgba(201,168,76,.3);border-radius:50px;padding:6px 16px;font-size:12px;font-weight:500;color:var(--gold);letter-spacing:.08em;text-transform:uppercase;margin-bottom:28px}
+.htag::before{content:'';width:6px;height:6px;background:var(--green);border-radius:50%}
+h1{font-family:var(--ff-d);font-size:clamp(48px,6vw,80px);font-weight:300;line-height:1.04;letter-spacing:-.02em;margin-bottom:24px}
+h1 em{font-style:italic;color:var(--gold)}
+h1 strong{font-weight:700}
+.hsub{font-size:17px;font-weight:300;color:var(--white2);line-height:1.75;margin-bottom:44px;max-width:460px}
+.hbtns{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:44px}
+.bp{background:var(--gold);color:var(--bg);padding:15px 30px;border-radius:50px;font-size:15px;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:8px;transition:all .2s;box-shadow:0 0 40px rgba(201,168,76,.2)}
+.bp:hover{background:var(--gold2);transform:translateY(-2px);box-shadow:0 8px 40px rgba(201,168,76,.3)}
+.bg{color:var(--white2);font-size:14px;text-decoration:none;display:inline-flex;align-items:center;gap:6px;transition:color .2s}
+.bg:hover{color:var(--white)}
+.hpf{display:flex;align-items:center;gap:12px;font-size:13px;color:var(--white3)}
+.avs{display:flex}
+.av{width:28px;height:28px;border-radius:50%;border:2px solid var(--bg);margin-left:-8px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--bg)}
 .av:first-child{margin-left:0}
-
-/* BROWSER MOCK */
-.hero-visual{position:relative}
-.browser{background:#fff;border-radius:14px;box-shadow:0 32px 80px rgba(10,10,15,.14),0 2px 8px rgba(10,10,15,.07);overflow:hidden;border:1px solid var(--paper3)}
-.brow{background:var(--paper2);padding:10px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--paper3)}
-.dots{display:flex;gap:5px}
-.dot{width:10px;height:10px;border-radius:50%}
-.dot:nth-child(1){background:#ff5f56}.dot:nth-child(2){background:#febc2e}.dot:nth-child(3){background:#28c840}
-.burl{background:var(--paper);border-radius:6px;padding:4px 12px;font-size:11px;color:var(--ink3);flex:1}
-.bcontent{padding:20px;background:#1a1a2e}
-.pmock{background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.2)}
-.pmock-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #f0f0f0}
-.pmock-brand{display:flex;align-items:center;gap:8px}
-.pmock-logo{width:26px;height:26px;background:var(--accent);border-radius:7px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700}
-.pmock-title{font-size:14px;font-weight:600;color:#1a1a2e}
-.pmock-sub{font-size:11px;color:#9ca3af}
-.hook-strip{background:linear-gradient(135deg,#1a1a2e,#2d2b55);padding:10px 14px}
-.hook-strip-label{font-size:10px;font-weight:700;color:#a78bfa;text-transform:uppercase;letter-spacing:.08em}
-.hook-strip-desc{font-size:11px;color:rgba(255,255,255,.6)}
-.letter-prev{padding:14px 16px}
-.ll{height:10px;background:#f3f4f6;border-radius:4px;margin-bottom:7px}
-.ll.a{background:linear-gradient(90deg,#f3f4f6,#e8e7ff,#f3f4f6);background-size:200% 100%;animation:sh 2s ease-in-out infinite}
+.mbr{background:var(--bg2);border:1px solid var(--border2);border-radius:14px;overflow:hidden;box-shadow:0 40px 100px rgba(0,0,0,.6)}
+.mbar{background:var(--bg3);padding:10px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border)}
+.mdots{display:flex;gap:6px}
+.mdot{width:10px;height:10px;border-radius:50%}
+.mdot:nth-child(1){background:#ff5f56}.mdot:nth-child(2){background:#febc2e}.mdot:nth-child(3){background:#28c840}
+.murl{background:rgba(255,255,255,.06);border-radius:6px;padding:4px 12px;font-size:11px;color:var(--white3);flex:1}
+.mbody{padding:20px}
+.pc{background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,.3)}
+.pch{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #f0f0f0}
+.pcb{display:flex;align-items:center;gap:8px}
+.pcl{width:26px;height:26px;background:linear-gradient(135deg,#6366f1,#a78bfa);border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:var(--ff-d);font-size:14px;font-weight:700;color:#fff}
+.pct{font-size:13px;font-weight:700;color:#1a1a2e;font-family:var(--ff-b)}
+.pcs{font-size:11px;color:#9ca3af;font-family:var(--ff-b)}
+.pchk{background:linear-gradient(135deg,#1a1a2e,#2d2b55);padding:10px 16px}
+.pckl{font-size:10px;font-weight:700;color:#c9a84c;text-transform:uppercase;letter-spacing:.08em;font-family:var(--ff-b)}
+.pckd{font-size:11px;color:rgba(255,255,255,.55);font-family:var(--ff-b)}
+.pclt{padding:14px 16px}
+.ln{height:9px;background:#f3f4f6;border-radius:4px;margin-bottom:7px}
+.ln.a{background:linear-gradient(90deg,#f3f4f6,#ede9ff,#f3f4f6);background-size:200% 100%;animation:sh 2s ease-in-out infinite}
 @keyframes sh{0%,100%{background-position:0%}50%{background-position:100%}}
-.pmock-footer{display:flex;gap:8px;padding:12px 16px;border-top:1px solid #f0f0f0}
-.mc{flex:1;background:#1a1a2e;color:#fff;border:none;border-radius:8px;padding:9px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--fb)}
-.mr{padding:9px 14px;border:1.5px solid #e5e7eb;border-radius:8px;background:transparent;color:#6b7280;font-size:12px;cursor:pointer}
-.float-btn{position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);background:var(--accent);color:#fff;border:none;border-radius:50px;padding:12px 24px;font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 8px 24px rgba(91,79,255,.4);white-space:nowrap;font-family:var(--fb)}
-
-/* STATS */
-.stats{background:var(--ink);padding:28px 48px;display:flex;justify-content:center;gap:60px;flex-wrap:wrap;margin-top:60px}
-.stat{text-align:center}
-.stat-n{font-family:var(--fh);font-size:30px;font-weight:700;color:#fff;display:block}
-.stat-l{font-size:12px;color:rgba(255,255,255,.4)}
-
-/* SECTIONS */
-section{max-width:1140px;margin:0 auto;padding:100px 48px}
-.slabel{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);margin-bottom:14px}
-.stitle{font-family:var(--fh);font-size:clamp(28px,4vw,44px);font-weight:800;line-height:1.1;letter-spacing:-.025em;color:var(--ink);margin-bottom:14px}
-.ssub{font-size:17px;color:var(--ink2);font-weight:300;max-width:520px;line-height:1.7;margin-bottom:56px}
-
-/* BEFORE/AFTER */
-.ba-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
-.ba-card{background:#fff;border-radius:var(--r);overflow:hidden;border:1px solid var(--paper3)}
-.ba-head{padding:10px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--paper3)}
-.ba-badge{font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px}
-.bad{background:#fee2e2;color:#991b1b}.good{background:#dcfce7;color:#14532d}
-.ba-desc{font-size:12px;color:var(--ink3)}
-.ba-body{padding:20px;font-size:13px;line-height:1.85;color:var(--ink2);background:#fafafa}
-.ba-body.gb{background:#f7fffe;color:var(--ink);border-left:3px solid var(--green)}
-.hl{background:#fef3c7;padding:1px 3px;border-radius:3px}
-
-/* HOW IT WORKS */
-.hiw{background:var(--paper2);border-radius:20px;margin:0 48px;max-width:none;padding:80px 64px}
-.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
-.step{background:#fff;border:1px solid var(--paper3);border-radius:var(--r);padding:28px;transition:box-shadow .2s,transform .2s}
-.step:hover{box-shadow:0 12px 40px rgba(91,79,255,.1);transform:translateY(-3px)}
-.step-n{width:36px;height:36px;background:var(--accent);color:#fff;border-radius:10px;display:flex;align-items:center;justify-content:center;font-family:var(--fh);font-size:16px;font-weight:700;margin-bottom:16px}
-.step-t{font-family:var(--fh);font-size:18px;font-weight:700;color:var(--ink);margin-bottom:8px}
-.step-d{font-size:14px;color:var(--ink2);line-height:1.7;font-weight:300}
-
-/* HOOKS */
-.hooks-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
-.hk{background:#fff;border:1px solid var(--paper3);border-radius:var(--r);padding:20px;transition:border-color .2s}
-.hk:hover{border-color:var(--accent)}
-.hk-label{font-size:11px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px}
-.hk-title{font-family:var(--fh);font-size:16px;font-weight:700;color:var(--ink);margin-bottom:8px}
-.hk-quote{font-size:13px;color:var(--ink2);font-style:italic;line-height:1.6;border-left:2px solid var(--paper3);padding-left:12px}
-
-/* PRICING */
-#pricing{background:var(--ink);border-radius:20px;margin:0 48px;max-width:none;padding:80px 64px}
-#pricing .stitle{color:#fff}
-#pricing .ssub{color:rgba(255,255,255,.55)}
-#pricing .slabel{color:#a78bfa}
-.pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-.pcard{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:var(--r);padding:28px;position:relative;transition:border-color .2s}
-.pcard:hover{border-color:rgba(255,255,255,.25)}
-.pcard.feat{background:var(--accent);border-color:var(--accent)}
-.pop-tag{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--green);color:var(--ink);font-size:11px;font-weight:700;padding:3px 14px;border-radius:20px;white-space:nowrap}
-.ptier{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.5);margin-bottom:10px}
-.pamount{font-family:var(--fh);font-size:44px;font-weight:800;color:#fff;line-height:1;margin-bottom:4px}
-.pperiod{font-size:14px;color:rgba(255,255,255,.45);margin-bottom:6px}
-.pannual{font-size:11px;color:var(--green);font-weight:500;margin-bottom:20px}
-.pfeatures{list-style:none;display:flex;flex-direction:column;gap:9px;margin-bottom:24px}
-.pfeatures li{font-size:13px;color:rgba(255,255,255,.8);display:flex;align-items:flex-start;gap:8px}
-.pfeatures li::before{content:'✓';color:var(--green);font-weight:700;flex-shrink:0;margin-top:1px}
-.pfeatures li.no{color:rgba(255,255,255,.25)}
-.pfeatures li.no::before{content:'✗';color:rgba(255,255,255,.15)}
-.pbtn{display:block;width:100%;padding:12px;border-radius:8px;font-size:14px;font-weight:600;text-align:center;text-decoration:none;border:none;cursor:pointer;transition:all .2s;font-family:var(--fb)}
-.pbtn-o{background:transparent;border:1.5px solid rgba(255,255,255,.25);color:#fff}
-.pbtn-o:hover{border-color:rgba(255,255,255,.6);background:rgba(255,255,255,.08)}
-.pbtn-s{background:#fff;color:var(--accent)}
-.pbtn-s:hover{background:#f0efff;transform:translateY(-1px)}
-.pguarantee{text-align:center;margin-top:32px;font-size:13px;color:rgba(255,255,255,.35)}
-.pguarantee strong{color:rgba(255,255,255,.65)}
-
-/* FAQ */
-.faq-list{display:flex;flex-direction:column;gap:2px}
-.fi{background:#fff;border:1px solid var(--paper3);border-radius:var(--r);overflow:hidden}
-.fq{width:100%;text-align:left;padding:20px 24px;font-size:15px;font-weight:500;color:var(--ink);background:none;border:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;font-family:var(--fb);gap:16px}
-.fq:hover{background:var(--paper2)}
-.fi-icon{width:22px;height:22px;background:var(--paper2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;transition:transform .2s,background .2s}
-.fi.open .fi-icon{transform:rotate(45deg);background:var(--accent);color:#fff}
-.fa{max-height:0;overflow:hidden;transition:max-height .3s ease,padding .3s;font-size:14px;color:var(--ink2);line-height:1.75;padding:0 24px;font-weight:300}
-.fi.open .fa{max-height:250px;padding:0 24px 20px}
-
-/* CTA BANNER */
-.cta-banner{background:linear-gradient(135deg,var(--accent),#8b5cf6);border-radius:20px;margin:0 48px;padding:80px 48px;text-align:center}
-.cta-banner h2{font-family:var(--fh);font-size:clamp(26px,4vw,42px);font-weight:800;color:#fff;margin-bottom:12px;letter-spacing:-.02em}
-.cta-banner p{font-size:17px;color:rgba(255,255,255,.85);margin-bottom:32px;font-weight:300}
-.btn-white{background:#fff;color:var(--accent);padding:14px 32px;border-radius:50px;font-size:15px;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:8px;transition:all .2s;box-shadow:0 4px 20px rgba(0,0,0,.15)}
-.btn-white:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,.2)}
-.cta-note{font-size:12px;color:rgba(255,255,255,.5);margin-top:14px}
-
-/* FOOTER */
-footer{background:var(--ink);color:rgba(255,255,255,.4);padding:40px 48px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-top:80px;font-size:13px}
-.footer-logo{display:flex;align-items:center;gap:8px;color:#fff;font-family:var(--fh);font-size:16px;font-weight:700;text-decoration:none}
-.footer-links{display:flex;gap:24px;list-style:none}
-.footer-links a{color:rgba(255,255,255,.35);text-decoration:none;font-size:13px;transition:color .2s}
-.footer-links a:hover{color:rgba(255,255,255,.8)}
-
-/* ANIMATIONS */
-.fu{opacity:0;transform:translateY(24px);transition:opacity .6s ease,transform .6s ease}
-.fu.vis{opacity:1;transform:translateY(0)}
-
-/* RESPONSIVE */
-@media(max-width:768px){
-  nav{padding:14px 20px}
-  .nav-links{display:none}
-  .hero{grid-template-columns:1fr;padding:100px 20px 60px;gap:40px}
-  .hero-visual{display:none}
-  section{padding:60px 20px}
-  .ba-grid,.steps,.pgrid{grid-template-columns:1fr}
-  .hiw,#pricing,.cta-banner{margin:0 20px;padding:60px 28px}
-  .stats{gap:32px;padding:24px 20px}
-  footer{padding:32px 20px;flex-direction:column;align-items:flex-start}
-}
+.pcf{display:flex;gap:8px;padding:12px 16px;border-top:1px solid #f0f0f0}
+.pcc{flex:1;background:#1a1a2e;color:#fff;border:none;border-radius:7px;padding:9px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--ff-b)}
+.pcr{padding:9px 14px;border:1.5px solid #e5e7eb;border-radius:7px;background:transparent;color:#6b7280;font-size:12px;cursor:pointer}
+.fw{position:absolute;bottom:-18px;right:32px;background:linear-gradient(135deg,#1a1a2e,#2d2b55);color:#fff;border:none;border-radius:50px;padding:13px 24px;font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 8px 30px rgba(0,0,0,.4),0 0 0 1px rgba(255,255,255,.08);white-space:nowrap;font-family:var(--ff-b)}
+.fwd{width:7px;height:7px;background:var(--green);border-radius:50%}
+.stbar{background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:28px 56px;display:flex;justify-content:center;gap:80px;flex-wrap:wrap}
+.st{text-align:center}
+.stn{font-family:var(--ff-d);font-size:36px;font-weight:600;color:var(--gold);display:block;letter-spacing:-.02em}
+.stl{font-size:13px;color:var(--white3);font-weight:300;letter-spacing:.04em;text-transform:uppercase}
+.sec{max-width:1180px;margin:0 auto;padding:110px 56px}
+.ey{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:var(--gold);margin-bottom:16px;display:block}
+.st2{font-family:var(--ff-d);font-size:clamp(32px,4vw,54px);font-weight:300;line-height:1.1;letter-spacing:-.02em;color:var(--white);margin-bottom:16px}
+.st2 em{font-style:italic;color:var(--gold)}
+.ss{font-size:17px;font-weight:300;color:var(--white2);line-height:1.75;max-width:540px;margin-bottom:64px}
+.bag{display:grid;grid-template-columns:1fr 1fr;gap:2px}
+.bc{background:var(--bg2);border:1px solid var(--border);overflow:hidden}
+.bc:first-child{border-radius:var(--r) 0 0 var(--r)}
+.bc:last-child{border-radius:0 var(--r) var(--r) 0}
+.bch{padding:14px 20px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)}
+.bb{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px}
+.bb1{background:rgba(239,68,68,.15);color:#fca5a5;border:1px solid rgba(239,68,68,.2)}
+.bb2{background:rgba(34,197,94,.15);color:#86efac;border:1px solid rgba(34,197,94,.2)}
+.bd2{font-size:12px;color:var(--white3)}
+.bbo{padding:20px;font-size:14px;line-height:1.85;color:var(--white2);font-weight:300}
+.bbo.g{color:var(--white);background:rgba(34,197,94,.03);border-left:2px solid rgba(34,197,94,.3)}
+.hl{background:rgba(239,68,68,.15);padding:1px 4px;border-radius:3px;color:#fca5a5}
+.hiw{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:80px;margin:0 56px}
+.sps{display:grid;grid-template-columns:repeat(3,1fr);gap:48px}
+.spn{width:44px;height:44px;border:1px solid var(--gold);border-radius:12px;display:flex;align-items:center;justify-content:center;font-family:var(--ff-d);font-size:20px;font-weight:600;color:var(--gold);margin-bottom:20px}
+.spt{font-family:var(--ff-d);font-size:22px;font-weight:400;color:var(--white);margin-bottom:10px;letter-spacing:-.01em}
+.spd{font-size:14px;font-weight:300;color:var(--white2);line-height:1.7}
+.hkg{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1px;background:var(--border);border-radius:var(--r);overflow:hidden;border:1px solid var(--border)}
+.hk{background:var(--bg);padding:28px;transition:background .2s}
+.hk:hover{background:var(--bg2)}
+.hkn{font-family:var(--ff-d);font-size:13px;color:var(--gold);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px}
+.hkt{font-family:var(--ff-d);font-size:20px;font-weight:400;color:var(--white);margin-bottom:10px;letter-spacing:-.01em}
+.hkq{font-size:13px;font-weight:300;font-style:italic;color:var(--white2);line-height:1.65;border-left:2px solid var(--gold-dim);padding-left:12px}
+.pw{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:80px;margin:0 56px}
+.pg{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.pca{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:32px;position:relative;transition:border-color .2s}
+.pca:hover{border-color:var(--border2)}
+.pca.ft{background:linear-gradient(135deg,rgba(201,168,76,.08),rgba(201,168,76,.03));border-color:rgba(201,168,76,.35)}
+.pop{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--gold);color:var(--bg);font-size:10px;font-weight:700;padding:3px 14px;border-radius:20px;white-space:nowrap;letter-spacing:.06em;text-transform:uppercase}
+.ptr{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--white3);margin-bottom:12px}
+.ppr{font-family:var(--ff-d);font-size:52px;font-weight:300;color:var(--white);line-height:1;margin-bottom:4px;letter-spacing:-.03em}
+.ppr span{font-size:18px;color:var(--white3)}
+.pper{font-size:13px;color:var(--white3);margin-bottom:6px}
+.psv{font-size:12px;color:var(--green);font-weight:500;margin-bottom:24px}
+.pfl{list-style:none;margin-bottom:28px;display:flex;flex-direction:column;gap:10px}
+.pfl li{font-size:13px;font-weight:300;color:var(--white2);display:flex;gap:10px;align-items:flex-start}
+.pfl li::before{content:'—';color:var(--gold);flex-shrink:0}
+.pbtn{display:block;width:100%;padding:13px;border-radius:8px;font-size:14px;font-weight:600;text-align:center;text-decoration:none;transition:all .2s;font-family:var(--ff-b);cursor:pointer;border:none}
+.pbo{background:transparent;border:1px solid var(--border2);color:var(--white)}
+.pbo:hover{background:rgba(255,255,255,.06);border-color:var(--white3)}
+.pbg{background:var(--gold);color:var(--bg)}
+.pbg:hover{background:var(--gold2);transform:translateY(-1px);box-shadow:0 4px 20px rgba(201,168,76,.3)}
+.pgn{text-align:center;margin-top:32px;font-size:13px;font-weight:300;color:var(--white3)}
+.pgn strong{color:var(--white2)}
+.fql{display:flex;flex-direction:column;gap:1px;background:var(--border);border-radius:var(--r);overflow:hidden;border:1px solid var(--border)}
+.fi{background:var(--bg)}
+.fq{width:100%;text-align:left;padding:22px 28px;font-size:16px;font-weight:400;font-family:var(--ff-d);color:var(--white);background:none;border:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:16px;letter-spacing:-.01em;transition:background .15s}
+.fq:hover{background:var(--bg2)}
+.fic{width:24px;height:24px;border:1px solid var(--border2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--gold);flex-shrink:0;transition:transform .2s,background .2s}
+.fi.op .fic{transform:rotate(45deg);background:var(--gold-dim)}
+.fa{max-height:0;overflow:hidden;font-size:14px;font-weight:300;color:var(--white2);line-height:1.8;padding:0 28px;transition:max-height .3s ease,padding .3s}
+.fi.op .fa{max-height:200px;padding:0 28px 22px}
+.ctaw{max-width:1180px;margin:0 auto;padding:0 56px 100px}
+.ctai{background:linear-gradient(135deg,rgba(201,168,76,.12),rgba(201,168,76,.04));border:1px solid rgba(201,168,76,.25);border-radius:20px;padding:80px 60px;text-align:center;position:relative;overflow:hidden}
+.ctai::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:60%;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.ctai h2{font-family:var(--ff-d);font-size:clamp(32px,4vw,52px);font-weight:300;letter-spacing:-.02em;margin-bottom:14px}
+.ctai p{font-size:17px;font-weight:300;color:var(--white2);margin-bottom:36px}
+.bg2{display:inline-flex;align-items:center;gap:8px;background:var(--gold);color:var(--bg);padding:16px 36px;border-radius:50px;font-size:15px;font-weight:600;text-decoration:none;transition:all .2s;box-shadow:0 4px 30px rgba(201,168,76,.25)}
+.bg2:hover{background:var(--gold2);transform:translateY(-2px)}
+.ctan{font-size:12px;color:var(--white3);margin-top:16px}
+footer{background:var(--bg2);border-top:1px solid var(--border);padding:36px 56px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
+.fl{display:flex;align-items:center;gap:8px;text-decoration:none}
+.flm{width:26px;height:26px;background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:var(--ff-d);font-size:14px;font-weight:700;color:var(--bg)}
+.fln{font-family:var(--ff-d);font-size:16px;color:var(--white)}
+.flinks{display:flex;gap:28px;list-style:none}
+.flinks a{font-size:13px;color:var(--white3);text-decoration:none;transition:color .2s}
+.flinks a:hover{color:var(--white2)}
+.fc{font-size:12px;color:var(--white3)}
+.rv{opacity:0;transform:translateY(28px);transition:opacity .65s ease,transform .65s ease}
+.rv.vs{opacity:1;transform:translateY(0)}
+.hv{position:relative}
+@media(max-width:900px){
+nav{padding:14px 24px}.nlinks{display:none}
+.hero{grid-template-columns:1fr;padding:100px 24px 60px;gap:40px}
+.hv{display:none}.sec{padding:70px 24px}.stbar{gap:32px;padding:24px 20px}
+.hiw,.pw{margin:0 24px;padding:48px 28px}.sps,.pg{grid-template-columns:1fr}
+.bag{grid-template-columns:1fr}.bc:first-child{border-radius:var(--r) var(--r) 0 0}
+.bc:last-child{border-radius:0 0 var(--r) var(--r)}
+footer{padding:28px 24px;flex-direction:column;align-items:flex-start}
+.ctaw{padding:0 24px 60px}.ctai{padding:48px 28px}}
 </style>
 </head>
 <body>
-
 <nav>
-  <a href="#" class="logo">
-    <div class="logo-mark">P</div>
-    <span class="logo-name">PropWise</span>
-  </a>
-  <ul class="nav-links">
+  <a href="#" class="nl"><div class="nm">P</div><span class="nn">PropWise</span></a>
+  <ul class="nlinks">
     <li><a href="#how">How it works</a></li>
     <li><a href="#hooks">Hooks</a></li>
     <li><a href="#pricing">Pricing</a></li>
     <li><a href="#faq">FAQ</a></li>
-    <li><a href="#pricing" class="nav-cta">Start free trial →</a></li>
+    <li><a href="#pricing" class="ncta">Start free →</a></li>
   </ul>
 </nav>
 
-<!-- HERO -->
-<div style="max-width:1140px;margin:0 auto">
+<div style="max-width:1180px;margin:0 auto">
   <div class="hero">
     <div>
-      <div class="eyebrow">Chrome Extension · Works on Upwork</div>
-      <h1>Win Upwork jobs in <em>10 seconds</em></h1>
-      <p class="hero-sub">PropWise reads the job description, picks the right hook, and writes a personalised proposal while you're still reading. One click. No copy-pasting. No switching tabs.</p>
-      <div class="hero-actions">
-        <a href="#pricing" class="btn-primary">Start 3-day free trial →</a>
-        <a href="#how" class="btn-ghost">See how it works ↓</a>
+      <div class="htag">Chrome Extension · Works on Upwork</div>
+      <h1>Win more jobs.<br><em>Write better</em><br><strong>proposals.</strong></h1>
+      <p class="hsub">PropWise reads the job, picks the perfect hook, and writes a personalised proposal while you're still reading. One click. Ten seconds.</p>
+      <div class="hbtns">
+        <a href="#pricing" class="bp">Try 2 proposals free →</a>
+        <a href="#how" class="bg">See how it works ↓</a>
       </div>
-      <div class="proof-row">
-        <div class="avatars">
-          <div class="av" style="background:#6c63ff">A</div>
-          <div class="av" style="background:#00c281">M</div>
-          <div class="av" style="background:#ff6b6b">S</div>
-          <div class="av" style="background:#ffd93d;color:#1a1a2e">K</div>
+      <div class="hpf">
+        <div class="avs">
+          <div class="av" style="background:#6366f1">A</div>
+          <div class="av" style="background:#c9a84c">M</div>
+          <div class="av" style="background:#22c55e">S</div>
+          <div class="av" style="background:#ef4444">K</div>
         </div>
         <span>Freelancers winning more jobs with PropWise</span>
       </div>
     </div>
-
-    <div class="hero-visual">
-      <div class="browser">
-        <div class="brow">
-          <div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
-          <div class="burl">upwork.com/jobs/Flutter-Developer_~022048527...</div>
-        </div>
-        <div class="bcontent">
-          <div class="pmock">
-            <div class="pmock-head">
-              <div class="pmock-brand">
-                <div class="pmock-logo">P</div>
-                <div><div class="pmock-title">PropWise</div><div class="pmock-sub">AI proposal writer</div></div>
-              </div>
-              <span style="font-size:12px;color:#9ca3af">✕</span>
+    <div class="hv">
+      <div class="mbr">
+        <div class="mbar"><div class="mdots"><div class="mdot"></div><div class="mdot"></div><div class="mdot"></div></div><div class="murl">upwork.com/jobs/Flutter-Developer_~022...</div></div>
+        <div class="mbody">
+          <div class="pc">
+            <div class="pch"><div class="pcb"><div class="pcl">P</div><div><div class="pct">PropWise</div><div class="pcs">AI proposal writer</div></div></div><span style="font-size:12px;color:#9ca3af">✕</span></div>
+            <div class="pchk"><div class="pckl">Proof + Call Hook</div><div class="pckd">Led with a shipped result, urgency close</div></div>
+            <div class="pclt">
+              <div class="ln a" style="width:100%"></div><div class="ln" style="width:88%"></div><div class="ln" style="width:95%"></div>
+              <div class="ln" style="width:75%;margin-top:10px"></div><div class="ln" style="width:100%"></div><div class="ln" style="width:82%"></div>
+              <div class="ln" style="width:60%;margin-top:10px"></div><div class="ln" style="width:90%"></div>
             </div>
-            <div class="hook-strip">
-              <div class="hook-strip-label">Proof + Call hook</div>
-              <div class="hook-strip-desc">Led with shipped result, urgency close</div>
-            </div>
-            <div class="letter-prev">
-              <div class="ll a" style="width:100%"></div>
-              <div class="ll" style="width:88%"></div>
-              <div class="ll" style="width:95%"></div>
-              <div class="ll" style="width:75%;margin-top:10px"></div>
-              <div class="ll" style="width:100%"></div>
-              <div class="ll" style="width:82%"></div>
-              <div class="ll" style="width:60%;margin-top:10px"></div>
-              <div class="ll" style="width:90%"></div>
-              <div class="ll" style="width:48%"></div>
-            </div>
-            <div class="pmock-footer">
-              <button class="mc">Copy proposal</button>
-              <button class="mr">↺ Rewrite</button>
-            </div>
+            <div class="pcf"><button class="pcc">Copy proposal</button><button class="pcr">↺ Rewrite</button></div>
           </div>
         </div>
       </div>
-      <button class="float-btn">✦ Write Proposal ●</button>
+      <button class="fw">✦ Write Proposal <span class="fwd"></span></button>
     </div>
   </div>
 </div>
 
-<!-- STATS -->
-<div class="stats">
-  <div class="stat"><span class="stat-n">10s</span><span class="stat-l">Generation time</span></div>
-  <div class="stat"><span class="stat-n">7</span><span class="stat-l">Proven hook types</span></div>
-  <div class="stat"><span class="stat-n">0</span><span class="stat-l">Copy-pastes needed</span></div>
-  <div class="stat"><span class="stat-n">100%</span><span class="stat-l">Personalised to each job</span></div>
+<div class="stbar">
+  <div class="st"><span class="stn">10s</span><span class="stl">Generation time</span></div>
+  <div class="st"><span class="stn">7</span><span class="stl">Proven hook types</span></div>
+  <div class="st"><span class="stn">0</span><span class="stl">Copy-pastes needed</span></div>
+  <div class="st"><span class="stn">100%</span><span class="stl">Personalised to each job</span></div>
 </div>
 
-<!-- BEFORE / AFTER -->
-<section id="compare">
-  <p class="slabel fu">Before vs After</p>
-  <h2 class="stitle fu">The difference is obvious</h2>
-  <p class="ssub fu">Clients see 50 proposals per job. They read 2 lines and decide. One gets deleted. One gets a reply.</p>
-  <div class="ba-grid fu">
-    <div class="ba-card">
-      <div class="ba-head">
-        <span class="ba-badge bad">Typical proposal</span>
-        <span class="ba-desc">What 90% of freelancers send</span>
-      </div>
-      <div class="ba-body">
-        <span class="hl">Dear Sir/Madam,</span> I am writing to express my interest in this position. I am a <span class="hl">passionate and dedicated</span> Flutter developer with <span class="hl">extensive experience</span>. I have worked on many similar projects and <span class="hl">I am confident I would be a great fit.</span> I have strong skills in Flutter, Dart, Firebase, and REST APIs. Please review my profile and let me know if you'd like to discuss. <span class="hl">I look forward to hearing from you.</span>
-      </div>
-    </div>
-    <div class="ba-card">
-      <div class="ba-head">
-        <span class="ba-badge good">PropWise proposal</span>
-        <span class="ba-desc">Written in 10 seconds. One click.</span>
-      </div>
-      <div class="ba-body gb">
-        I've spent the last three months doing exactly this — taking over a Flutter app mid-build and shipping it to production on iOS, Android, and web. The codebase was messy. Fixed it. Supabase queries were slow. Optimized them. Stripe webhooks were failing silently. Debugged and deployed.<br><br>
-        I just launched Tollbugata (live on App Store). So I know where the pain points hide.<br><br>
-        I can start today. First thing — audit what's blocking launch, then prioritize the critical path. No fluff, just shipping.<br><br>
-        Want to jump on a quick call this week?
-      </div>
-    </div>
+<div class="sec" id="compare">
+  <span class="ey rv">Before vs After</span>
+  <h2 class="st2 rv">The difference is <em>obvious</em></h2>
+  <p class="ss rv">Clients skim 50 proposals in minutes. Two lines decide everything.</p>
+  <div class="bag rv">
+    <div class="bc"><div class="bch"><span class="bb bb1">Typical proposal</span><span class="bd2">What 90% of freelancers send</span></div><div class="bbo"><span class="hl">Dear Sir/Madam,</span> I am writing to express my interest. I am a <span class="hl">passionate and dedicated</span> Flutter developer with <span class="hl">extensive experience</span>. I have worked on many similar projects and <span class="hl">I am confident I would be a great fit.</span> Please review my profile and <span class="hl">I look forward to hearing from you.</span></div></div>
+    <div class="bc"><div class="bch"><span class="bb bb2">PropWise proposal</span><span class="bd2">Written in 10 seconds. One click.</span></div><div class="bbo g">I've spent the last three months doing exactly this — taking over a Flutter app mid-build and shipping it to production on iOS, Android, and web. The codebase was messy. Fixed it. Supabase queries were slow. Optimized them.<br><br>I can start today. First thing — audit what's blocking launch, then prioritize the critical path. No fluff, just shipping.<br><br>Want to jump on a quick call this week?</div></div>
   </div>
-</section>
+</div>
 
-<!-- HOW IT WORKS -->
 <div class="hiw" id="how">
-  <p class="slabel fu">How it works</p>
-  <h2 class="stitle fu">Three steps. Ten seconds.</h2>
-  <p class="ssub fu">No copy-pasting. No switching tabs. PropWise lives inside Upwork.</p>
-  <div class="steps">
-    <div class="step fu">
-      <div class="step-n">1</div>
-      <div class="step-t">Set up once</div>
-      <p class="step-d">Add your name, skills, portfolio links, and rate. Takes 2 minutes. PropWise remembers everything forever.</p>
-    </div>
-    <div class="step fu">
-      <div class="step-n">2</div>
-      <div class="step-t">Open any Upwork job</div>
-      <p class="step-d">Browse normally. When you find a job you want, the PropWise button appears automatically — bottom right corner of the page.</p>
-    </div>
-    <div class="step fu">
-      <div class="step-n">3</div>
-      <div class="step-t">Click once, win jobs</div>
-      <p class="step-d">PropWise reads the job, picks the best hook, matches your relevant skills, and writes the proposal. Edit if needed, copy, submit. Done.</p>
+  <div style="max-width:1180px;margin:0 auto">
+    <span class="ey rv">How it works</span>
+    <h2 class="st2 rv">Three steps. <em>Ten seconds.</em></h2>
+    <p class="ss rv">PropWise lives inside Upwork. No tab switching. No copy-pasting.</p>
+    <div class="sps">
+      <div class="rv"><div class="spn">1</div><div class="spt">Set up once</div><p class="spd">Add your name, skills, and portfolio links in 2 minutes. PropWise remembers everything and uses it in every proposal.</p></div>
+      <div class="rv"><div class="spn">2</div><div class="spt">Open any job</div><p class="spd">Browse Upwork normally. The PropWise button appears automatically in the bottom-right corner of every job page.</p></div>
+      <div class="rv"><div class="spn">3</div><div class="spt">Click once, win jobs</div><p class="spd">PropWise reads the job, picks the best hook, matches your skills, writes the proposal. Edit if needed. Copy. Submit.</p></div>
     </div>
   </div>
 </div>
 
-<!-- HOOKS -->
-<section id="hooks">
-  <p class="slabel fu">The hook system</p>
-  <h2 class="stitle fu">7 proven opening hooks</h2>
-  <p class="ssub fu">PropWise picks the right hook automatically. The first two lines decide everything — clients skim 50 proposals in minutes.</p>
-  <div class="hooks-grid">
-    <div class="hk fu"><div class="hk-label">Hook 1</div><div class="hk-title">Proof of Success</div><div class="hk-quote">"I saved my past client [X amount]. I'd like to do the same for you."</div></div>
-    <div class="hk fu"><div class="hk-label">Hook 2</div><div class="hk-title">Relatability</div><div class="hk-quote">"I've had the same issue. This is how I fixed it."</div></div>
-    <div class="hk fu"><div class="hk-label">Hook 3</div><div class="hk-title">Guarantee</div><div class="hk-quote">"I can complete X outcome in Y timeframe — and I'll back that with a guarantee."</div></div>
-    <div class="hk fu"><div class="hk-label">Hook 4</div><div class="hk-title">Extra Value</div><div class="hk-quote">"I'll not only solve the issue — I'll include one free follow-up to make sure you're happy."</div></div>
-    <div class="hk fu"><div class="hk-label">Hook 5</div><div class="hk-title">Growth-Oriented</div><div class="hk-quote">"Let's jump on a call today. I can walk you through this in 15 minutes. No strings."</div></div>
-    <div class="hk fu"><div class="hk-label">Hook 6</div><div class="hk-title">Quick Proof</div><div class="hk-quote">"Here are my numbers: 50+ completed projects, 98% satisfaction, 5 years shipping apps."</div></div>
-    <div class="hk fu"><div class="hk-label">Hook 7</div><div class="hk-title">Client-Centered</div><div class="hk-quote">"My understanding is that you need: [precise read of their actual problem]."</div></div>
+<div class="sec" id="hooks">
+  <span class="ey rv">The hook system</span>
+  <h2 class="st2 rv">7 proven <em>opening hooks</em></h2>
+  <p class="ss rv">PropWise picks the right hook automatically. The first two lines decide whether a client reads the rest.</p>
+  <div class="hkg rv">
+    <div class="hk"><div class="hkn">Hook 01</div><div class="hkt">Proof of Success</div><div class="hkq">"I saved my past client [X amount]. I'd like to do the same for you."</div></div>
+    <div class="hk"><div class="hkn">Hook 02</div><div class="hkt">Relatability</div><div class="hkq">"I've had the same issue. This is how I fixed it."</div></div>
+    <div class="hk"><div class="hkn">Hook 03</div><div class="hkt">Guarantee</div><div class="hkq">"I can complete X in Y timeframe — backed by a guarantee."</div></div>
+    <div class="hk"><div class="hkn">Hook 04</div><div class="hkt">Extra Value</div><div class="hkq">"I'll not only solve the issue — I'll include one free follow-up."</div></div>
+    <div class="hk"><div class="hkn">Hook 05</div><div class="hkt">Growth-Oriented</div><div class="hkq">"Let's jump on a call today. I can walk you through this in 15 minutes."</div></div>
+    <div class="hk"><div class="hkn">Hook 06</div><div class="hkt">Quick Proof</div><div class="hkq">"Here are my numbers: 50+ projects, 98% satisfaction, 5 years shipping."</div></div>
+    <div class="hk"><div class="hkn">Hook 07</div><div class="hkt">Client-Centered</div><div class="hkq">"My understanding is that you need [precise read of their problem]."</div></div>
   </div>
-</section>
-
-<!-- PRICING -->
-<div id="pricing" style="background:var(--ink);border-radius:20px;margin:0 48px;padding:80px 64px">
-  <p class="slabel fu" style="color:#a78bfa">Pricing</p>
-  <h2 class="stitle fu" style="color:#fff">Start free. Pay when it works.</h2>
-  <p class="ssub fu" style="color:rgba(255,255,255,.5)">3-day free trial on all plans. No credit card required. Cancel anytime.</p>
-  <div class="pgrid">
-    <div class="pcard fu">
-      <div class="ptier">Starter</div>
-      <div class="pamount">$19</div>
-      <div class="pperiod">per month</div>
-      <div class="pannual">2 free proposals to try · no card needed</div>
-      <ul class="pfeatures">
-        <li>150 proposals/month</li>
-        <li>All 7 hook types</li>
-        <li>Smart skill matching</li>
-        <li>Fixed + hourly pricing</li>
-        <li>1 portfolio link</li>
-        <li class="no">Proposal history</li>
-        <li class="no">Priority support</li>
-      </ul>
-      <a href="YOUR_PADDLE_STARTER_LINK" class="pbtn pbtn-o" id="btn-starter">Start free trial →</a>
-    </div>
-    <div class="pcard feat fu">
-      <div class="pop-tag">SAVE 45% / PROPOSAL</div>
-      <div class="ptier">Pro</div>
-      <div class="pamount">$39</div>
-      <div class="pperiod">per month</div>
-      <div class="pannual"><span style="color:#4ade80;font-weight:600">Save 45% per proposal vs Starter</span></div>
-      <ul class="pfeatures">
-        <li><strong>400</strong> proposals/month</li>
-        <li>All 7 hook types</li>
-        <li>Smart skill matching</li>
-        <li>Fixed + hourly pricing</li>
-        <li>3 portfolio links</li>
-        <li>Proposal history (last 20)</li>
-        <li>Priority support</li>
-      </ul>
-      <a href="YOUR_PADDLE_PRO_LINK" class="pbtn pbtn-s" id="btn-pro">Start free trial →</a>
-    </div>
-    <div class="pcard fu">
-      <div class="ptier">Agency</div>
-      <div class="pamount">$69</div>
-      <div class="pperiod">per month</div>
-      <div class="pannual"><span style="color:#4ade80;font-weight:600">Save 57% per proposal vs Starter</span></div>
-      <ul class="pfeatures">
-        <li><strong>900</strong> proposals/month</li>
-        <li>Unlimited proposals all seats</li>
-        <li>Everything in Pro</li>
-        <li>Team profile management</li>
-        <li>Analytics dashboard</li>
-        <li>Dedicated support</li>
-        <li>Early feature access</li>
-      </ul>
-      <a href="YOUR_PADDLE_AGENCY_LINK" class="pbtn pbtn-o" id="btn-agency">Start free trial →</a>
-    </div>
-  </div>
-  <p class="pguarantee"><strong>2 free proposals</strong> to try · No card required · Subscribe to unlock your full monthly limit · Cancel anytime</p>
 </div>
 
-<!-- FAQ -->
-<section id="faq">
-  <p class="slabel fu">FAQ</p>
-  <h2 class="stitle fu">Honest answers</h2>
-  <p class="ssub fu">Questions freelancers actually ask before subscribing.</p>
-  <div class="faq-list fu">
-    <div class="fi">
-      <button class="fq" onclick="tfaq(this)">Will it sound like AI? Clients are getting better at detecting it.<span class="fi-icon">+</span></button>
-      <div class="fa">PropWise uses 7 specific hook patterns modelled on real winning proposals — not generic AI phrasing. It varies sentence length, uses contractions, avoids every clichéd phrase. In live tests on real Upwork jobs, the output rated 8.5–9.5/10 for human quality. You can also edit every word in the panel before copying.</div>
+<div class="pw" id="pricing">
+  <div style="max-width:1180px;margin:0 auto">
+    <span class="ey rv">Pricing</span>
+    <h2 class="st2 rv">Start free. <em>Pay when it works.</em></h2>
+    <p class="ss rv">2 free proposals — no card needed. Subscribe when you're ready. Cancel anytime.</p>
+    <div class="pg">
+      <div class="pca rv">
+        <div class="ptr">Starter</div>
+        <div class="ppr">$19<span>/mo</span></div>
+        <div class="pper">billed monthly</div>
+        <div class="psv">Base rate · $0.127 per proposal</div>
+        <ul class="pfl"><li>150 proposals per month</li><li>All 7 hook types</li><li>Smart skill matching</li><li>Fixed + hourly pricing</li><li>Portfolio links</li></ul>
+        <a href="PADDLE_STARTER_URL" class="pbtn pbo" id="btn-starter">Start free trial →</a>
+      </div>
+      <div class="pca ft rv">
+        <div class="pop">SAVE 45% / PROPOSAL</div>
+        <div class="ptr">Pro</div>
+        <div class="ppr">$39<span>/mo</span></div>
+        <div class="pper">billed monthly</div>
+        <div class="psv">45% cheaper per proposal vs Starter</div>
+        <ul class="pfl"><li>400 proposals per month</li><li>All 7 hook types</li><li>Smart skill matching</li><li>Fixed + hourly pricing</li><li>Priority support</li></ul>
+        <a href="PADDLE_PRO_URL" class="pbtn pbg" id="btn-pro">Start free trial →</a>
+      </div>
+      <div class="pca rv">
+        <div class="ptr">Agency</div>
+        <div class="ppr">$69<span>/mo</span></div>
+        <div class="pper">billed monthly</div>
+        <div class="psv">57% cheaper per proposal vs Starter</div>
+        <ul class="pfl"><li>900 proposals per month</li><li>All 7 hook types</li><li>Smart skill matching</li><li>Fixed + hourly pricing</li><li>Priority support + analytics</li></ul>
+        <a href="PADDLE_AGENCY_URL" class="pbtn pbo" id="btn-agency">Start free trial →</a>
+      </div>
     </div>
-    <div class="fi">
-      <button class="fq" onclick="tfaq(this)">Does it really read the job automatically? No copy-pasting at all?<span class="fi-icon">+</span></button>
-      <div class="fa">Yes — PropWise is a Chrome extension that runs directly on Upwork. When you click Write Proposal, it reads the job title, full description, required skills, budget, and client info from the page. You don't touch anything. No tab switching, no copy-pasting.</div>
-    </div>
-    <div class="fi">
-      <button class="fq" onclick="tfaq(this)">How is this different from just using ChatGPT?<span class="fi-icon">+</span></button>
-      <div class="fa">ChatGPT requires you to copy the job description, write a prompt, paste your profile info, and format the output — every single time. PropWise does all of that in one click. It also uses a hook system specifically for Upwork, picks the right hook per job type automatically, and only mentions skills relevant to that specific job. Speed + quality + zero friction.</div>
-    </div>
-    <div class="fi">
-      <button class="fq" onclick="tfaq(this)">How do I get the extension after paying?<span class="fi-icon">+</span></button>
-      <div class="fa">Immediately after payment, you'll receive an email with your license key and a download link. Install the extension, enter your key, fill in your profile — done in about 3 minutes.</div>
-    </div>
-    <div class="fi">
-      <button class="fq" onclick="tfaq(this)">Can I cancel anytime?<span class="fi-icon">+</span></button>
-      <div class="fa">Yes. Cancel from your billing portal at any time. No questions asked. Your access continues until the end of your billing period.</div>
-    </div>
-    <div class="fi">
-      <button class="fq" onclick="tfaq(this)">What if I don't win any jobs with it?<span class="fi-icon">+</span></button>
-      <div class="fa">The 3-day free trial lets you test it on real jobs before paying. If after the trial you don't see improved proposal quality, simply don't subscribe. We also offer support to review proposals and help you improve.</div>
-    </div>
+    <p class="pgn"><strong>2 free proposals</strong> to try · No card required · Instant license key by email · Cancel anytime</p>
   </div>
-</section>
+</div>
 
-<!-- CTA BANNER -->
-<div style="max-width:1140px;margin:0 auto;padding:0 0 80px">
-  <div class="cta-banner">
-    <h2>Try PropWise free for 3 days</h2>
+<div class="sec" id="faq">
+  <span class="ey rv">FAQ</span>
+  <h2 class="st2 rv">Honest <em>answers</em></h2>
+  <p class="ss rv">Questions freelancers ask before subscribing.</p>
+  <div class="fql rv">
+    <div class="fi"><button class="fq" onclick="tf(this)">Will it sound like AI? Clients are getting better at detecting it.<span class="fic">+</span></button><div class="fa">PropWise uses 7 specific hook patterns modelled on real winning proposals — not generic AI phrasing. It varies sentence length, uses contractions, avoids every clichéd phrase. In live tests on real Upwork jobs, the output rated 8.5–9.5/10 for human quality. You can also edit every word before copying.</div></div>
+    <div class="fi"><button class="fq" onclick="tf(this)">Does it really read the job automatically? No copy-pasting?<span class="fic">+</span></button><div class="fa">Yes — PropWise runs inside Upwork. When you click Write Proposal, it reads the job title, description, required skills, budget, and client info from the page. Nothing to touch. No tab switching.</div></div>
+    <div class="fi"><button class="fq" onclick="tf(this)">How is this different from just using ChatGPT?<span class="fic">+</span></button><div class="fa">ChatGPT requires you to copy the job, write a prompt, paste your profile, and format the output — every single time. PropWise does all of that in one click, uses a hook system specifically for Upwork, and only mentions skills relevant to that specific job.</div></div>
+    <div class="fi"><button class="fq" onclick="tf(this)">How do I get the extension after paying?<span class="fic">+</span></button><div class="fa">Immediately after payment, you'll receive an email with your license key and install instructions. Enter the key in the extension — done in 3 minutes.</div></div>
+    <div class="fi"><button class="fq" onclick="tf(this)">Can I cancel anytime?<span class="fic">+</span></button><div class="fa">Yes. Cancel from your Paddle billing portal at any time. No questions asked. Access continues until end of your billing period.</div></div>
+  </div>
+</div>
+
+<div class="ctaw">
+  <div class="ctai rv">
+    <h2>Start with <em>2 free proposals</em></h2>
     <p>No credit card. No commitment. Better proposals in 10 seconds.</p>
-    <a href="#pricing" class="btn-white">Start your free trial →</a>
-    <p class="cta-note">Cancel anytime · Instant setup · Works on any Upwork job</p>
+    <a href="#pricing" class="bg2">Try PropWise free →</a>
+    <p class="ctan">Cancel anytime · Instant setup · Works on any Upwork job</p>
   </div>
 </div>
 
 <footer>
-  <a href="#" class="footer-logo">
-    <div class="logo-mark" style="width:26px;height:26px;font-size:13px">P</div>
-    PropWise
-  </a>
-  <ul class="footer-links">
+  <a href="#" class="fl"><div class="flm">P</div><span class="fln">PropWise</span></a>
+  <ul class="flinks">
     <li><a href="#how">How it works</a></li>
     <li><a href="#pricing">Pricing</a></li>
-    <li><a href="#faq">FAQ</a></li>
+    <li><a href="terms.html">Terms</a></li>
+    <li><a href="privacy.html">Privacy</a></li>
+    <li><a href="refund.html">Refunds</a></li>
     <li><a href="mailto:support@propwise.app">Support</a></li>
   </ul>
-  <span>© 2026 PropWise. All rights reserved.</span>
+  <span class="fc">© 2026 PropWise. All rights reserved.</span>
 </footer>
 
 <script>
-function tfaq(btn){
-  const item=btn.closest('.fi');
-  const open=item.classList.contains('open');
-  document.querySelectorAll('.fi').forEach(i=>i.classList.remove('open'));
-  if(!open)item.classList.add('open');
-}
-const obs=new IntersectionObserver(entries=>{
-  entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('vis')});
-},{threshold:.1,rootMargin:'0px 0px -40px 0px'});
-document.querySelectorAll('.fu').forEach(el=>obs.observe(el));
+function tf(btn){const i=btn.closest('.fi'),o=i.classList.contains('op');document.querySelectorAll('.fi').forEach(x=>x.classList.remove('op'));if(!o)i.classList.add('op')}
+const obs=new IntersectionObserver(e=>{e.forEach(x=>{if(x.isIntersecting)x.target.classList.add('vs')})},{threshold:.08,rootMargin:'0px 0px -40px 0px'});
+document.querySelectorAll('.rv').forEach(el=>obs.observe(el));
 </script>
 </body>
 </html>

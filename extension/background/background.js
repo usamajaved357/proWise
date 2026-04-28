@@ -17,7 +17,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     return true;
   }
   if (msg.type === 'OPEN_PRICING') {
-    chrome.tabs.create({ url: 'https://propwise.app/#pricing' }); // ← update to your landing page
+    chrome.tabs.create({ url: 'https://prowiseai.netlify.app/#pricing' }); // ← update to your landing page
     sendResponse({ ok: true });
     return true;
   }
