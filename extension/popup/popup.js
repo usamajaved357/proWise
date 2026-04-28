@@ -35,6 +35,9 @@ function updateStatusUI(data) {
   else upgBtn.style.display = 'none';
 }
 
+// Upgrade button
+document.getElementById('upgrade-btn').addEventListener('click', openPricing);
+
 // License UI
 document.getElementById('lic-toggle').addEventListener('click', () => {
   document.getElementById('lic-row').classList.toggle('show');
