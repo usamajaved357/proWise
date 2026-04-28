@@ -1,7 +1,7 @@
 const SERVER = 'https://prowise-4e5t.onrender.com';
 
 function openPricing() {
-  chrome.tabs.create({ url: 'https://propwise.app/#pricing' });
+  chrome.tabs.create({ url: 'https://propwiseapp.netlify.app/#pricing' });
 }
 
 async function loadStatus() {
