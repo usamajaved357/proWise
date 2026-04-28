@@ -1,7 +1,7 @@
 {
   "name": "propwise-server",
-  "version": "1.0.0",
-  "description": "PropWise backend server",
+  "version": "5.0.0",
+  "description": "PropWise backend API",
   "main": "server.js",
   "scripts": { "start": "node server.js" },
   "dependencies": { "express": "^4.18.0" }
