@@ -101,7 +101,7 @@ function getUserStatus(email) {
 }
 
 // ── Email via Resend ──────────────────────────────────────────────────────────
-function sendWelcomeEmail(to, key, plan) {
+function sendWelcomeEmail(to, plan) {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
     console.log(`[EMAIL SKIP] To:${to} Key:${key} Plan:${plan}`);
@@ -243,14 +243,17 @@ app.get('/', (req, res) => res.json({ status: 'ok', service: 'PropWise API v5', 
 
 // Called by extension on load — returns user status
 app.post('/status', (req, res) => {
-  const key = req.headers['x-license-key'];
-  if (!key || !isValidKeyFormat(key)) {
-    // No key = brand new user, give them free tier
-    return res.json({ plan: 'free', limit: 2, used: 0, remaining: 2, needsKey: true });
+  const { email, anonId } = req.body;
+  if (email && users.has(email)) {
+    return res.json(getUserStatus(email));
   }
-  const email = emailFromKey(key);
-  if (!email) return res.status(401).json({ error: 'Invalid license key', needsKey: true });
-  res.json(getUserStatus(email));
+  // Anonymous user — check by anonId
+  const anonEmail = anonId ? anonId + '@propwise.local' : null;
+  if (anonEmail && users.has(anonEmail)) {
+    return res.json(getUserStatus(anonEmail));
+  }
+  // Brand new user
+  res.json({ plan: 'free', limit: 2, used: 0, remaining: 2 });
 });
 
 // Validate license key — called when user enters key in popup
@@ -265,21 +268,20 @@ app.post('/validate', (req, res) => {
 
 // Generate proposal
 app.post('/proposal', async (req, res) => {
-  const key = req.headers['x-license-key'];
-  const { job, profile, settings, tempEmail } = req.body;
+  const { job, profile, settings, email: userEmail, anonId } = req.body;
 
   if (!job?.title && !job?.description) {
     return res.status(400).json({ error: 'Could not read job from page.' });
   }
 
-  // Resolve user email
+  // Resolve user email — real email takes priority, then anonId
   let email = null;
-  if (key && isValidKeyFormat(key)) {
-    email = emailFromKey(key);
-    if (!email) return res.status(401).json({ error: 'Invalid license key.', showPaywall: true });
+  if (userEmail && userEmail.includes('@') && !userEmail.includes('propwise.local')) {
+    email = userEmail.toLowerCase().trim();
+  } else if (anonId) {
+    email = anonId + '@propwise.local';
   } else {
-    // Anonymous user — use temp identifier stored in extension
-    email = tempEmail || `anon_${crypto.randomBytes(8).toString('hex')}@propwise.local`;
+    email = 'anon_' + crypto.randomBytes(8).toString('hex') + '@propwise.local';
   }
 
   const u = getOrCreateUser(email);
@@ -398,7 +400,7 @@ app.post('/webhook/paddle', async (req, res) => {
 
     const key = generateKey(email);
     console.log(`Subscribed: ${email} | Plan: ${plan} | Key: ${key}`);
-    await sendWelcomeEmail(email, key, plan);
+    await sendWelcomeEmail(email, plan);
   }
 
   // Monthly renewal — reset usage
