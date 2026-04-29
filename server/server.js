@@ -126,7 +126,7 @@ function sendWelcomeEmail(to, key, plan) {
   </div>
   <h2 style="font-size:16px;font-weight:600;margin:0 0 14px">Get started in 3 minutes</h2>
   <ol style="color:#444;font-size:14px;line-height:1.9;padding-left:20px;margin:0 0 24px">
-    <li>Install the PropWise Chrome extension</li>
+    <li><a href="https://propwiseapp.netlify.app" style="color:#5b4fff">Visit propwiseapp.netlify.app</a> and follow the install instructions</li>
     <li>Click the PropWise icon in your toolbar</li>
     <li>Enter your license key: <strong style="font-family:monospace">${key}</strong></li>
     <li>Fill in your profile (name, skills, portfolio)</li>
@@ -380,7 +380,7 @@ app.post('/webhook/paddle', async (req, res) => {
     [process.env.PADDLE_PRICE_AGENCY]:  'agency',
   };
 
-  if (type === 'subscription.created' || type === 'transaction.completed') {
+  if (type === 'subscription.created' || type === 'subscription.activated' || type === 'transaction.completed') {
     const data   = event.data || event;
     const email  = data.customer?.email || data.email;
     const priceId= data.items?.[0]?.price?.id || data.subscription_plan_id;
