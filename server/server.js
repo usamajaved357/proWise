@@ -239,7 +239,7 @@ Return ONLY valid JSON:
 
 // ── Routes ────────────────────────────────────────────────────────────────────
 
-app.get('/', (req, res) => res.json({ status: 'ok', service: 'PropWise API v5', plans: PLANS }));
+app.get('/', (req, res) => res.json({ status: 'ok', service: 'Snag AI API v5', plans: PLANS }));
 
 // Called by extension on load — returns user status
 app.post('/status', (req, res) => {
