@@ -133,37 +133,54 @@
           ? "You've used your <strong>2 free proposals</strong>. Subscribe to unlock your full limit."
           : `You've used all <strong>${data.limit} proposals</strong> this month. Resets on the 1st.`
         }</div>
-        <div class="sn-plans">
+        <div class="sn-plans" id="sn-plans">
           <div class="sn-plan" data-plan="starter">
+            <div class="sn-plan-check"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
             <div class="sn-plan-name">Starter</div>
             <div class="sn-plan-price">$19<span>/mo</span></div>
             <div class="sn-plan-limit">150 proposals</div>
           </div>
-          <div class="sn-plan sn-plan-feat" data-plan="pro">
+          <div class="sn-plan sn-plan-feat sn-plan-selected" data-plan="pro">
             <div class="sn-plan-pop">BEST</div>
+            <div class="sn-plan-check"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
             <div class="sn-plan-name">Pro</div>
             <div class="sn-plan-price">$39<span>/mo</span></div>
             <div class="sn-plan-limit">400 proposals</div>
           </div>
           <div class="sn-plan" data-plan="agency">
+            <div class="sn-plan-check"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>
             <div class="sn-plan-name">Agency</div>
             <div class="sn-plan-price">$69<span>/mo</span></div>
             <div class="sn-plan-limit">900 proposals</div>
           </div>
         </div>
-        <button class="sn-cta-btn" id="sn-upgrade-btn">View plans & subscribe →</button>
+        <button class="sn-cta-btn" id="sn-upgrade-btn">Subscribe to Pro →</button>
         ${!isFree ? '<div class="sn-reset-note">Resets on the 1st of next month</div>' : ''}
       </div>
     `;
 
+    let selectedPlan = 'pro';
+
     function openPlanCheckout(plan) {
-      chrome.tabs.create({ url: 'https://snagai.netlify.app/checkout.html?plan=' + (plan || 'pro') });
+      chrome.runtime.sendMessage({ type: 'OPEN_CHECKOUT', plan: plan || 'pro' });
     }
 
-    document.getElementById('sn-upgrade-btn').addEventListener('click', () => openPlanCheckout('pro'));
+    function selectPlan(plan) {
+      selectedPlan = plan;
+      document.querySelectorAll('.sn-plan').forEach(el => {
+        el.classList.toggle('sn-plan-selected', el.dataset.plan === plan);
+      });
+      const labels = { starter: 'Starter', pro: 'Pro', agency: 'Agency' };
+      document.getElementById('sn-upgrade-btn').textContent = 'Subscribe to ' + (labels[plan] || plan) + ' →';
+    }
+
+    // Cards select only — no direct checkout on click
     document.querySelectorAll('.sn-plan').forEach(el => {
-      el.addEventListener('click', () => openPlanCheckout(el.dataset.plan || 'pro'));
+      el.addEventListener('click', () => selectPlan(el.dataset.plan));
     });
+
+    // Only button opens checkout
+    document.getElementById('sn-upgrade-btn').addEventListener('click', () => openPlanCheckout(selectedPlan));
   }
 
   // Read job
@@ -180,12 +197,35 @@
       document.querySelector('.job-description') ||
       document.querySelector('[class*="description"]')
     );
-    const description = descEl?.innerText?.trim() || document.body.innerText.slice(0, 2000);
-    const skills = Array.from(document.querySelectorAll('[data-test="Skill"] span, .air3-badge span'))
+    const fullDesc = descEl?.innerText?.trim() || document.body.innerText.slice(0, 3000);
+
+    // Extract additional questions from job description
+    // Upwork questions usually appear after "Questions" heading or numbered list at end
+    let description = fullDesc;
+    let questions = '';
+    const qMatch = fullDesc.match(/(?:additional\s+questions?|screening\s+questions?|please\s+answer|answer\s+the\s+following)[:\s]*([\s\S]+)/i);
+    if (qMatch) {
+      questions = qMatch[1].trim().slice(0, 800);
+    }
+
+    // Extract client name from reviews or job description
+    let clientName = '';
+    // Try from job description mentions
+    const nameMatch = fullDesc.match(/(?:I'?m|I am|My name is|This is)\s+([A-Z][a-z]+)(?:\s|,|\.)/);
+    if (nameMatch) clientName = nameMatch[1];
+    // Try from client info section
+    if (!clientName) {
+      const reviewTexts = Array.from(document.querySelectorAll('[data-test="client-reviews"] strong, .client-name, [class*="clientName"]'))
+        .map(el => el.innerText.trim()).filter(Boolean);
+      if (reviewTexts.length) clientName = reviewTexts[0];
+    }
+
+    const skills   = Array.from(document.querySelectorAll('[data-test="Skill"] span, .air3-badge span'))
       .map(s => s.innerText.trim()).filter(Boolean).join(', ');
-    const budget   = document.querySelector('[data-test="budget"] strong')?.innerText?.trim() || '';
+    const budget   = document.querySelector('[data-test="budget"] strong, [data-test="Budget"] strong')?.innerText?.trim() || '';
     const location = document.querySelector('[data-test="client-location"] strong')?.innerText?.trim() || '';
-    return { title, description, skills, budget, location };
+
+    return { title, description, skills, budget, location, clientName, questions };
   }
 
   // Generate
@@ -221,7 +261,7 @@
 
   // Render proposal
   function renderProposal(data) {
-    const { letter, hookType, hookDesc, tips, usage } = data;
+    const { letter, hookType, hookDesc, tips, usage, questions } = data;
     if (!letter) { showError('Empty proposal. Please try again.'); return; }
 
     const remaining = usage?.remaining;
@@ -274,6 +314,22 @@
           ${tips.map(t => `<div class="sn-tip"><span class="sn-tip-line"></span><span>${esc(t)}</span></div>`).join('')}
         </div>` : ''}
 
+        ${questions ? `
+        <div class="sn-questions">
+          <div class="sn-questions-head">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            Additional questions
+          </div>
+          <div class="sn-questions-body" id="sn-questions-text">${esc(questions)}</div>
+          <div class="sn-letter-footer" style="margin-top:8px">
+            <span class="sn-edit-hint">Copy and paste below your proposal</span>
+            <button class="sn-copy-btn" id="sn-copy-q">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Copy Q&amp;A
+            </button>
+          </div>
+        </div>` : ''}
+
         ${remaining !== undefined && remaining <= 10 ? `
         <div class="sn-low-bar">
           <span>${remaining === 0 ? '🚫 No proposals left' : `⚡ ${remaining} proposal${remaining === 1 ? '' : 's'} left this month`}</span>
@@ -302,6 +358,22 @@
         }, 2500);
       });
     });
+
+    // Copy Q&A button
+    const copyQBtn = document.getElementById('sn-copy-q');
+    if (copyQBtn) {
+      copyQBtn.addEventListener('click', () => {
+        const text = document.getElementById('sn-questions-text').innerText;
+        navigator.clipboard.writeText(text).then(() => {
+          copyQBtn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Copied!`;
+          copyQBtn.classList.add('copied');
+          setTimeout(() => {
+            copyQBtn.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy Q&A`;
+            copyQBtn.classList.remove('copied');
+          }, 2500);
+        });
+      });
+    }
 
     // Rewrite
     document.getElementById('sn-regen').addEventListener('click', () => {

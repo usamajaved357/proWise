@@ -1,5 +1,6 @@
 // Snag AI Server v7 — Supabase persistent storage
 const express = require('express');
+const { SYSTEM, buildUserMessage, processBold } = require('./prompt');
 const https   = require('https');
 const crypto  = require('crypto');
 
@@ -208,41 +209,6 @@ function callClaude(system, user) {
   });
 }
 
-const SYSTEM = `You are an elite Upwork proposal writer. Write short, human, winning proposals.
-
-OPENING HOOKS — pick the best one:
-- PROOF: Lead with a specific past result ("I built X for Y, it hit Z")
-- RELATABILITY: "I've solved this exact problem — here's how"
-- GUARANTEE: Bold risk-removing commitment specific to their project
-- EXTRA VALUE: Offer something concrete beyond what they asked
-- CALL: Push for a quick call today, urgent and easy
-- NUMBERS: Hard stats — years, projects, ratings
-- CLIENT-CENTERED: Show you understood their exact problem better than they explained it
-
-PRICING RULE:
-- FIXED PRICE job: end naturally mentioning you can do it for their budget
-- HOURLY job: end with your hourly rate naturally
-- UNKNOWN: end with call to action
-
-RULES:
-1. Opening MUST be specific to THIS job — never generic
-2. Only mention skills matching THIS job
-3. Include portfolio link naturally (not at start)
-4. 120-160 words MAX
-5. Sound like a confident human, not AI
-6. Short sentences. Vary rhythm. Use contractions.
-7. NEVER: "passionate", "extensive experience", "great fit", "excited about", "leverage", "seamlessly"
-8. Start some sentences with And, But, So
-9. One detail proving you read the job
-
-Return ONLY valid JSON:
-{
-  "letter": "complete proposal 120-160 words",
-  "hookType": "hook name",
-  "hookDesc": "one line why this hook fits",
-  "tips": ["tip 1", "tip 2", "tip 3"]
-}`;
-
 
 // ── Fetch customer email from Paddle API ─────────────────────────────────────
 function getPaddleCustomer(customerId) {
@@ -339,40 +305,13 @@ app.post('/proposal', async (req, res) => {
       }
     }
 
-    // Smart skill matching
-    const jobText = ((job.title||'')+' '+(job.description||'')+' '+(job.skills||'')).toLowerCase();
-    const allSkills = (profile.skills||'').split(',').map(s => s.trim()).filter(Boolean);
-    const matched = allSkills.filter(s => jobText.includes(s.toLowerCase()));
-    const relevantSkills = matched.length ? matched.slice(0,4) : allSkills.slice(0,2);
+    // Build message using prompt.js
+    const userMsg = buildUserMessage({ job, profile, settings });
+    const result  = await callClaude(SYSTEM, userMsg);
 
-    const isHourly = /hourly|\/hr|per hour/.test((job.description||'').toLowerCase());
-    const isFixed  = /fixed/.test((job.description||'').toLowerCase());
-    const pricingType = isHourly ? 'HOURLY' : isFixed ? 'FIXED' : 'UNKNOWN';
-    const links = (profile.portfolioLinks||[]).filter(Boolean);
-
-    const userMsg = `
-JOB TITLE: ${job.title}
-JOB DESCRIPTION: ${(job.description||'').slice(0,1200)}
-REQUIRED SKILLS: ${job.skills||'not listed'}
-BUDGET/RATE: ${job.budget||'not specified'}
-PRICING TYPE: ${pricingType}
-CLIENT LOCATION: ${job.location||'unknown'}
-
-FREELANCER:
-Name: ${profile.name}
-Role: ${profile.title}
-RELEVANT skills: ${relevantSkills.join(', ')}
-Pitch: ${profile.pitch||''}
-Hourly rate: ${profile.hourlyRate||'not set'}
-${links.length ? 'Portfolio: '+links[0] : ''}
-${profile.extra ? 'Extra: '+profile.extra : ''}
-${settings?.alwaysInclude ? 'Always include: '+settings.alwaysInclude : ''}
-${pricingType==='HOURLY' ? `HOURLY job — mention rate: "${profile.hourlyRate||'skip'}"` : ''}
-${pricingType==='FIXED'  ? `FIXED job — budget: ${job.budget}. Mention you can do it for this.` : ''}
-
-Write the proposal. 120-160 words. Sound human.`.trim();
-
-    const result = await callClaude(SYSTEM, userMsg);
+    // Convert **bold** markers to Unicode bold (Upwork-compatible)
+    if (result.letter) result.letter = processBold(result.letter);
+    if (result.questions) result.questions = processBold(result.questions);
 
     // Record usage
     if (isRealEmail) {

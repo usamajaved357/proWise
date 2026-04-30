@@ -157,24 +157,58 @@ async function loadProfile() {
   document.getElementById('tone').value          = settings.tone || 'professional';
   document.getElementById('length').value        = settings.length || 'medium';
   document.getElementById('always-include').value = settings.alwaysInclude || '';
-  const links = profile.portfolioLinks || [''];
-  links.forEach(l => addPortLink(l));
+  const portfolioItems = profile.portfolio || (profile.portfolioLinks||[]).filter(Boolean).map(url=>({url}));
+  if (portfolioItems.length) portfolioItems.forEach(p => addPortLink(typeof p === 'string' ? {url:p} : p));
+  else addPortLink({});
 }
 
-function addPortLink(val = '') {
+function fieldStyle() {
+  return 'width:100%;padding:8px 12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#f0eeea;font-size:12px;font-family:inherit;outline:none;margin-bottom:6px';
+}
+
+function addPortLink(item = {}) {
   const list = document.getElementById('port-list');
-  const row  = document.createElement('div');
-  row.className = 'port-item';
-  const inp = document.createElement('input');
-  inp.type = 'url'; inp.placeholder = 'https://apps.apple.com/...'; inp.value = val;
-  inp.style.cssText = 'flex:1;padding:10px 13px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#f0eeea;font-size:13px;font-family:inherit;outline:none';
-  inp.onfocus = () => inp.style.borderColor = '#c9a84c';
-  inp.onblur  = () => inp.style.borderColor = 'rgba(255,255,255,.12)';
-  const btn = document.createElement('button');
-  btn.className = 'port-remove'; btn.textContent = '×';
-  btn.onclick = () => row.remove();
-  row.appendChild(inp); row.appendChild(btn);
-  list.appendChild(row);
+  const wrap = document.createElement('div');
+  wrap.className = 'port-item';
+  wrap.style.cssText = 'display:flex;flex-direction:column;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px;margin-bottom:10px;position:relative';
+
+  const rmBtn = document.createElement('button');
+  rmBtn.className = 'port-remove';
+  rmBtn.textContent = '×';
+  rmBtn.style.cssText = 'position:absolute;top:10px;right:10px;width:26px;height:26px;font-size:14px;padding:0';
+  rmBtn.onclick = () => wrap.remove();
+
+  const nameInp = document.createElement('input');
+  nameInp.type = 'text'; nameInp.placeholder = 'Project name (e.g. TollBugata iOS App)';
+  nameInp.value = item.name || ''; nameInp.style.cssText = fieldStyle();
+  nameInp.dataset.field = 'name';
+
+  const urlInp = document.createElement('input');
+  urlInp.type = 'url'; urlInp.placeholder = 'URL (e.g. https://apps.apple.com/...)';
+  urlInp.value = item.url || ''; urlInp.style.cssText = fieldStyle();
+  urlInp.dataset.field = 'url';
+
+  const descInp = document.createElement('input');
+  descInp.type = 'text'; descInp.placeholder = 'One-line description (e.g. Live toll payment app, 10k+ downloads)';
+  descInp.value = item.desc || ''; descInp.style.cssText = fieldStyle();
+  descInp.dataset.field = 'desc';
+
+  const skillsInp = document.createElement('input');
+  skillsInp.type = 'text'; skillsInp.placeholder = 'Skills used (e.g. Flutter, Firebase, Stripe)';
+  skillsInp.value = item.skills || ''; skillsInp.style.cssText = fieldStyle().replace('margin-bottom:6px','margin-bottom:0');
+  skillsInp.dataset.field = 'skills';
+
+  [nameInp, urlInp, descInp, skillsInp].forEach(inp => {
+    inp.onfocus = () => inp.style.borderColor = '#c9a84c';
+    inp.onblur  = () => inp.style.borderColor = 'rgba(255,255,255,.12)';
+  });
+
+  wrap.appendChild(rmBtn);
+  wrap.appendChild(nameInp);
+  wrap.appendChild(urlInp);
+  wrap.appendChild(descInp);
+  wrap.appendChild(skillsInp);
+  list.appendChild(wrap);
 }
 document.getElementById('add-port').addEventListener('click', () => addPortLink());
 
@@ -185,7 +219,13 @@ function showSaved(id) {
 }
 
 document.getElementById('save-profile').addEventListener('click', async () => {
-  const links = Array.from(document.querySelectorAll('#port-list input')).map(i => i.value.trim()).filter(Boolean);
+  const portfolio = Array.from(document.querySelectorAll('#port-list .port-item')).map(wrap => ({
+    name:   wrap.querySelector('[data-field="name"]')?.value.trim()   || '',
+    url:    wrap.querySelector('[data-field="url"]')?.value.trim()    || '',
+    desc:   wrap.querySelector('[data-field="desc"]')?.value.trim()   || '',
+    skills: wrap.querySelector('[data-field="skills"]')?.value.trim() || '',
+  })).filter(p => p.name || p.url);
+  const portfolioLinks = portfolio.map(p => p.url).filter(Boolean);
   await chrome.storage.sync.set({ profile: {
     name:           document.getElementById('name').value.trim(),
     title:          document.getElementById('title').value.trim(),
@@ -193,7 +233,8 @@ document.getElementById('save-profile').addEventListener('click', async () => {
     hourlyRate:     document.getElementById('hourly-rate').value.trim(),
     pitch:          document.getElementById('pitch').value.trim(),
     extra:          document.getElementById('extra').value.trim(),
-    portfolioLinks: links,
+    portfolio,
+    portfolioLinks,
   }});
   showSaved('saved-profile-msg');
 });

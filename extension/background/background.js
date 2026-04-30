@@ -15,6 +15,12 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     sendResponse({ ok: true });
     return true;
   }
+  if (msg.type === 'OPEN_CHECKOUT') {
+    const plan = msg.plan || 'pro';
+    chrome.tabs.create({ url: 'https://snagai.netlify.app/checkout.html?plan=' + plan });
+    sendResponse({ ok: true });
+    return true;
+  }
 });
 
 async function getStatus() {
