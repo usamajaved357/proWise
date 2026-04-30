@@ -125,12 +125,18 @@ async function recordAnonUsage(anonId) {
 }
 
 // ── Middleware ────────────────────────────────────────────────────────────────
-// CORS first — before express.json so preflight OPTIONS requests work
+// CORS — works with Chrome extensions and browsers
+app.options('*', (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-admin-secret, x-license-key');
+  res.setHeader('Access-Control-Max-Age', '86400');
+  res.sendStatus(204);
+});
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-admin-secret');
-  if (req.method === 'OPTIONS') return res.sendStatus(200);
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-admin-secret, x-license-key');
   next();
 });
 app.use(express.json({ limit: '30kb' }));
@@ -377,10 +383,13 @@ app.post('/webhook/paddle', async (req, res) => {
   };
 
   if (['subscription.created','subscription.activated','transaction.completed'].includes(type)) {
-    const data   = event.data || event;
-    const email  = data.customer?.email || data.email;
+    const data    = event.data || event;
+    const email   = data.customer?.email || data.email;
     const priceId = data.items?.[0]?.price?.id || data.subscription_plan_id;
-    const plan   = PRICE_MAP[priceId] || 'starter';
+    const plan    = PRICE_MAP[priceId] || 'starter';
+    console.log('Price ID received:', priceId);
+    console.log('Plan mapped to:', plan);
+    console.log('PRICE_MAP keys:', Object.keys(PRICE_MAP));
     const subId  = data.id || data.subscription_id;
     if (!email) { console.error('No email in webhook'); return res.sendStatus(200); }
 
