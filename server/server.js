@@ -357,12 +357,14 @@ Write the proposal. 120-160 words. Sound human.`.trim();
 });
 
 // ── Paddle webhook ────────────────────────────────────────────────────────────
-app.post('/webhook/paddle', express.raw({ type: '*/*' }), async (req, res) => {
+app.post('/webhook/paddle', async (req, res) => {
   // Signature verification temporarily disabled for debugging
   // TODO: re-enable after confirming webhook flow works
-  let event;
-  try { event = JSON.parse(req.body.toString()); }
-  catch(e) { return res.status(400).send('Bad JSON'); }
+  // express.json already parsed the body
+  const event = req.body;
+  if (!event || typeof event !== 'object'){
+    return res.status(400).send('Bad JSON');
+  }
 
   const type = event.event_type || event.alert_name;
   console.log('Paddle event:', type);
