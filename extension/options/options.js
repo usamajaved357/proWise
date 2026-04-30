@@ -2,9 +2,9 @@ const SERVER = 'https://prowise-4e5t.onrender.com';
 
 // Checkout URLs — replace with your Paddle hosted checkout links
 const CHECKOUT = {
-  starter: 'https://prowiseai.netlify.app/#pricing',
-  pro:     'https://prowiseai.netlify.app/#pricing',
-  agency:  'https://prowiseai.netlify.app/#pricing',
+  starter: 'https://sandbox-pay.paddle.io/hsc_01kqd651acpxddjs8mzbg2emjm_bq60mkwxwvgj57yys3hppen4231th50x',
+  pro:     'https://sandbox-pay.paddle.io/hsc_01kqd66znk3gpbxrmxppepcxq7_75n4anpreek8jthbe9hyf2x1rps59c1z',
+  agency:  'https://sandbox-pay.paddle.io/hsc_01kqd67ng25ws49k91k8bg5276_6f2wje6xcp6dymb2dd7mt2w132qgwgsd',
 };
 
 function openCheckout(plan) {
