@@ -125,7 +125,6 @@ async function recordAnonUsage(anonId) {
 }
 
 // ── Middleware ────────────────────────────────────────────────────────────────
-app.use('/webhook/paddle', express.raw({ type: 'application/json' }));
 app.use(express.json({ limit: '30kb' }));
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -358,7 +357,7 @@ Write the proposal. 120-160 words. Sound human.`.trim();
 });
 
 // ── Paddle webhook ────────────────────────────────────────────────────────────
-app.post('/webhook/paddle', async (req, res) => {
+app.post('/webhook/paddle', express.raw({ type: '*/*' }), async (req, res) => {
   // Signature verification temporarily disabled for debugging
   // TODO: re-enable after confirming webhook flow works
   let event;
