@@ -82,16 +82,23 @@ function updateStatusUI(data) {
   const udLimit = document.getElementById('ud-limit');
   if (udLimit) udLimit.textContent = limit + ' total';
 
-  // Mark current plan
+  // Mark current plan — only disable current plan button, leave others clickable
   ['starter','pro','agency'].forEach(p => {
     const card = document.getElementById('plan-' + p);
     if (!card) return;
     card.classList.toggle('current', p === plan);
-    const btn = card.querySelector('.plan-btn');
+    const btn = card.querySelector('button');
+    if (!btn) return;
     if (p === plan) {
       btn.className = 'plan-current-badge';
       btn.textContent = '✓ Current plan';
-      btn.onclick = null;
+      btn.removeAttribute('data-plan');
+    } else {
+      // Re-attach click listener for upgrade buttons
+      btn.replaceWith(btn.cloneNode(true));
+      const newBtn = card.querySelector('button');
+      newBtn.setAttribute('data-plan', p);
+      newBtn.addEventListener('click', () => openCheckout(p));
     }
   });
 }
@@ -198,6 +205,19 @@ document.getElementById('save-settings').addEventListener('click', async () => {
   }});
   showSaved('saved-settings-msg');
 });
+
+// Plan button event listeners
+document.querySelectorAll('.plan-btn[data-plan]').forEach(btn => {
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const plan = btn.dataset.plan;
+    if (plan) openCheckout(plan);
+  });
+});
+
+// Sidebar upgrade button
+const sbUpgradeBtn = document.getElementById('sb-upgrade-btn');
+if (sbUpgradeBtn) sbUpgradeBtn.addEventListener('click', () => showSection('subscription'));
 
 // Init
 (async () => {

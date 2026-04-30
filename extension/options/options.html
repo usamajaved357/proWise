@@ -190,7 +190,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       </div>
       <div class="sb-plan-bar-wrap"><div class="sb-plan-bar" id="sb-bar" style="width:0%"></div></div>
       <div class="sb-plan-count" id="sb-count">0 / 2 used</div>
-      <button class="sb-upgrade" id="sb-upgrade" onclick="showSection('subscription')">Upgrade plan →</button>
+      <button class="sb-upgrade" id="sb-upgrade" id="sb-upgrade-btn">Upgrade plan →</button>
     </div>
   </div>
 
@@ -329,7 +329,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
             <div class="plan-price">$19<span>/mo</span></div>
             <div class="plan-limit">150 proposals/mo</div>
             <div class="plan-save">$0.127 per proposal</div>
-            <button class="plan-btn plan-btn-outline" onclick="openCheckout('starter')">Get Starter →</button>
+            <button class="plan-btn plan-btn-outline" data-plan="starter">Get Starter →</button>
           </div>
           <div class="plan-card featured" id="plan-pro">
             <div class="plan-pop">BEST VALUE</div>
@@ -337,14 +337,14 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
             <div class="plan-price">$39<span>/mo</span></div>
             <div class="plan-limit">400 proposals/mo</div>
             <div class="plan-save">Save 45% per proposal</div>
-            <button class="plan-btn plan-btn-gold" onclick="openCheckout('pro')">Get Pro →</button>
+            <button class="plan-btn plan-btn-gold" data-plan="pro">Get Pro →</button>
           </div>
           <div class="plan-card" id="plan-agency">
             <div class="plan-tier">Agency</div>
             <div class="plan-price">$69<span>/mo</span></div>
             <div class="plan-limit">900 proposals/mo</div>
             <div class="plan-save">Save 57% per proposal</div>
-            <button class="plan-btn plan-btn-outline" onclick="openCheckout('agency')">Get Agency →</button>
+            <button class="plan-btn plan-btn-outline" data-plan="agency">Get Agency →</button>
           </div>
         </div>
         <p style="font-size:11px;color:var(--white3);text-align:center">Cancel anytime · Instant activation · No hidden fees</p>
