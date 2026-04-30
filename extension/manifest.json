@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Snag AI — Upwork Proposal Writer",
-  "version": "5.0.0",
-  "description": "Write winning Upwork proposals in 10 seconds. One click while reading the job.",
+  "name": "Snag AI \u2014 Upwork Proposal Writer",
+  "version": "6.0.0",
+  "description": "Snag the job before anyone else. Write winning Upwork proposals in 10 seconds.",
   "permissions": [
     "activeTab",
     "storage",
@@ -40,5 +40,6 @@
   },
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'"
-  }
+  },
+  "options_page": "options/options.html"
 }

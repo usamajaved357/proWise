@@ -1,7 +1,55 @@
 const SERVER = 'https://prowise-4e5t.onrender.com';
 
-function openPricing() {
-  chrome.tabs.create({ url: 'https://snagai.netlify.app/#pricing' });
+// Open settings page
+document.getElementById('settings-btn').addEventListener('click', () => {
+  chrome.runtime.openOptionsPage();
+});
+document.getElementById('open-settings').addEventListener('click', () => {
+  chrome.runtime.openOptionsPage();
+});
+
+// Upgrade button
+document.getElementById('upgrade-btn').addEventListener('click', () => {
+  chrome.tabs.create({ url: 'https://prowiseai.netlify.app/#pricing' });
+});
+
+// Email toggle
+document.getElementById('email-toggle').addEventListener('click', () => {
+  document.getElementById('email-input-wrap').classList.toggle('show');
+  const inp = document.getElementById('email-inp');
+  if (document.getElementById('email-input-wrap').classList.contains('show')) inp.focus();
+});
+
+document.getElementById('email-save').addEventListener('click', async () => {
+  const email = document.getElementById('email-inp').value.trim().toLowerCase();
+  if (!email || !email.includes('@')) {
+    document.getElementById('email-inp').style.borderColor = '#ef4444';
+    setTimeout(() => document.getElementById('email-inp').style.borderColor = '', 2000);
+    return;
+  }
+  await chrome.storage.sync.set({ userEmail: email });
+  document.getElementById('email-input-wrap').classList.remove('show');
+  updateEmailUI(email);
+  loadStatus();
+});
+
+function updateEmailUI(email) {
+  const dot   = document.getElementById('email-dot');
+  const val   = document.getElementById('email-val');
+  const toggle = document.getElementById('email-toggle');
+  const label = document.getElementById('email-label-top');
+  if (email) {
+    dot.className = 'email-dot on';
+    val.textContent = email;
+    toggle.textContent = 'Change';
+    label.textContent = 'Subscription email';
+    document.getElementById('email-inp').value = email;
+  } else {
+    dot.className = 'email-dot';
+    val.textContent = 'Not set — required for subscription';
+    toggle.textContent = 'Add';
+    label.textContent = 'Your email';
+  }
 }
 
 async function loadStatus() {
@@ -14,121 +62,67 @@ async function loadStatus() {
     });
     const data = await res.json();
     updateStatusUI(data);
-  } catch(e) { console.log('Status error:', e); }
+  } catch(e) {
+    console.log('Status error:', e);
+  }
 }
 
 function updateStatusUI(data) {
-  const { plan = 'free', used = 0, limit = 2 } = data;
+  const { plan = 'free', used = 0, limit = 2, remaining = 2 } = data;
   const pct = Math.min(100, Math.round((used / limit) * 100));
-  const pill = document.getElementById('plan-pill');
-  const bar  = document.getElementById('usage-bar');
-  const lbl  = document.getElementById('usage-label');
-  const upgBtn = document.getElementById('upgrade-btn');
 
-  pill.className = 'plan-pill plan-' + plan;
-  pill.textContent = { free:'Free', starter:'Starter', pro:'Pro', agency:'Agency' }[plan] || plan;
-  lbl.textContent = used + ' / ' + limit + ' used this month';
+  // Plan badge
+  const badge = document.getElementById('plan-badge');
+  const labels = { free:'Free', starter:'Starter', pro:'Pro', agency:'Agency' };
+  badge.textContent = labels[plan] || plan;
+  badge.className = 'plan-badge badge-' + plan;
+
+  // Counts
+  document.getElementById('used-count').textContent = used;
+  document.getElementById('limit-count').textContent = limit;
+
+  // Bar
+  const bar = document.getElementById('usage-bar');
   bar.style.width = pct + '%';
-  bar.className = 'usage-bar' + (pct >= 90 ? ' danger' : pct >= 70 ? ' warn' : '');
-  if (plan === 'free' || pct >= 80) upgBtn.style.display = 'block';
-  else upgBtn.style.display = 'none';
-}
+  bar.className = 'bar-fill ' + (pct >= 90 ? 'bar-danger' : pct >= 70 ? 'bar-warn' : 'bar-ok');
 
-document.getElementById('upgrade-btn').addEventListener('click', openPricing);
+  // Status text
+  const statusEl = document.getElementById('usage-status');
+  const alertEl  = document.getElementById('alert-banner');
+  const upgBtn   = document.getElementById('upgrade-btn');
 
-async function loadEmail() {
-  const { userEmail } = await chrome.storage.sync.get(['userEmail']);
-  const dot    = document.getElementById('email-dot');
-  const label  = document.getElementById('email-label');
-  const toggle = document.getElementById('email-toggle');
-  if (userEmail) {
-    dot.className = 'lic-dot active';
-    label.textContent = userEmail;
-    toggle.textContent = 'Change';
-    document.getElementById('email-input').value = userEmail;
+  if (remaining === 0) {
+    statusEl.textContent = 'No proposals remaining';
+    statusEl.className = 'usage-status danger';
+    alertEl.style.display = 'block';
+    alertEl.className = 'alert-banner alert-danger';
+    alertEl.textContent = plan === 'free'
+      ? '🚫 Free limit reached. Subscribe to keep winning jobs.'
+      : '🚫 Monthly limit reached. Resets on the 1st.';
+    upgBtn.style.display = 'block';
+  } else if (remaining <= 10) {
+    statusEl.textContent = `⚠️ Only ${remaining} proposals left this month`;
+    statusEl.className = 'usage-status danger';
+    alertEl.style.display = 'block';
+    alertEl.className = 'alert-banner alert-warn';
+    alertEl.textContent = `Running low — ${remaining} proposals left. Upgrade to avoid running out.`;
+    if (plan === 'free') upgBtn.style.display = 'block';
+  } else if (remaining <= 30) {
+    statusEl.textContent = `${remaining} proposals remaining — use wisely`;
+    statusEl.className = 'usage-status warn';
+    alertEl.style.display = 'none';
+    upgBtn.style.display = plan === 'free' ? 'block' : 'none';
   } else {
-    dot.className = 'lic-dot';
-    label.textContent = 'Add email to sync your subscription';
-    toggle.textContent = 'Add email';
+    statusEl.textContent = `${remaining} proposals remaining this month`;
+    statusEl.className = 'usage-status';
+    alertEl.style.display = 'none';
+    upgBtn.style.display = plan === 'free' ? 'block' : 'none';
   }
 }
 
-document.getElementById('email-toggle').addEventListener('click', () => {
-  document.getElementById('email-row').classList.toggle('show');
-});
-
-document.getElementById('email-save').addEventListener('click', async () => {
-  const email = document.getElementById('email-input').value.trim().toLowerCase();
-  if (!email || !email.includes('@')) {
-    document.getElementById('email-input').style.borderColor = '#dc2626';
-    setTimeout(() => { document.getElementById('email-input').style.borderColor = ''; }, 2000);
-    return;
-  }
-  await chrome.storage.sync.set({ userEmail: email });
-  document.getElementById('email-dot').className = 'lic-dot active';
-  document.getElementById('email-label').textContent = email;
-  document.getElementById('email-toggle').textContent = 'Change';
-  document.getElementById('email-row').classList.remove('show');
-  loadStatus();
-});
-
-document.querySelectorAll('.tab').forEach(t => {
-  t.addEventListener('click', () => {
-    document.querySelectorAll('.tab,.tab-content').forEach(el => el.classList.remove('active'));
-    t.classList.add('active');
-    document.getElementById('tab-' + t.dataset.tab).classList.add('active');
-  });
-});
-
+// Init
 (async () => {
-  const { profile = {}, settings = {} } = await chrome.storage.sync.get(['profile', 'settings']);
-  document.getElementById('name').value           = profile.name || '';
-  document.getElementById('title').value          = profile.title || '';
-  document.getElementById('skills').value         = profile.skills || '';
-  document.getElementById('hourly-rate').value    = profile.hourlyRate || '';
-  document.getElementById('pitch').value          = profile.pitch || '';
-  document.getElementById('extra').value          = profile.extra || '';
-  document.getElementById('tone').value           = settings.tone || 'professional';
-  document.getElementById('length').value         = settings.length || 'medium';
-  document.getElementById('always-include').value = settings.alwaysInclude || '';
-  (profile.portfolioLinks || ['']).forEach(l => addPortLink(l));
-  await loadEmail();
+  const { userEmail } = await chrome.storage.sync.get(['userEmail']);
+  updateEmailUI(userEmail || '');
   await loadStatus();
 })();
-
-function addPortLink(val = '') {
-  const list = document.getElementById('port-list');
-  const row  = document.createElement('div');
-  row.className = 'portfolio-item';
-  row.innerHTML = '<input type="url" placeholder="https://..." value="' + val + '"><button class="rm-btn">×</button>';
-  row.querySelector('.rm-btn').addEventListener('click', () => row.remove());
-  list.appendChild(row);
-}
-document.getElementById('add-link').addEventListener('click', () => addPortLink());
-
-document.getElementById('save-profile').addEventListener('click', async () => {
-  const links = Array.from(document.querySelectorAll('#port-list input')).map(i => i.value.trim()).filter(Boolean);
-  await chrome.storage.sync.set({ profile: {
-    name: document.getElementById('name').value.trim(),
-    title: document.getElementById('title').value.trim(),
-    skills: document.getElementById('skills').value.trim(),
-    hourlyRate: document.getElementById('hourly-rate').value.trim(),
-    pitch: document.getElementById('pitch').value.trim(),
-    extra: document.getElementById('extra').value.trim(),
-    portfolioLinks: links,
-  }});
-  const m = document.getElementById('saved-msg');
-  m.textContent = '✓ Saved!';
-  setTimeout(() => m.textContent = '', 2000);
-});
-
-document.getElementById('save-settings').addEventListener('click', async () => {
-  await chrome.storage.sync.set({ settings: {
-    tone: document.getElementById('tone').value,
-    length: document.getElementById('length').value,
-    alwaysInclude: document.getElementById('always-include').value.trim(),
-  }});
-  const m = document.getElementById('saved-settings-msg');
-  m.textContent = '✓ Saved!';
-  setTimeout(() => m.textContent = '', 2000);
-});
