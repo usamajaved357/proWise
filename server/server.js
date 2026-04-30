@@ -1,3 +1,4 @@
+
 // Snag AI Server v7 — Supabase persistent storage
 const express = require('express');
 const { SYSTEM, buildUserMessage, processBold } = require('./prompt');
@@ -199,9 +200,37 @@ function callClaude(system, user) {
         try {
           const p = JSON.parse(d);
           if (p.error) return reject(new Error(p.error.message));
-          const m = (p.content?.[0]?.text || '').match(/\{[\s\S]*\}/);
+          const rawText = p.content?.[0]?.text || '';
+          // Find outermost JSON object - handle cases where Claude adds text after
+          const m = rawText.match(/\{[\s\S]*\}/);
           if (!m) return reject(new Error('Bad AI response'));
-          resolve(JSON.parse(m[0]));
+          // Clean control characters that break JSON.parse
+          const cleaned = m[0]
+            .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '')
+            .replace(/\n/g, '\\n')
+            .replace(/\r/g, '\\r')
+            .replace(/\t/g, '\\t');
+          // Try parsing — if fails, try a more aggressive clean
+          let parsed;
+          try {
+            parsed = JSON.parse(m[0]);
+          } catch(e1) {
+            try {
+              parsed = JSON.parse(cleaned);
+            } catch(e2) {
+              // Last resort: extract fields manually
+              const letterMatch = m[0].match(/"letter"\s*:\s*"([\s\S]*?)",\s*"(?:questions|hookType)"/);
+              if (letterMatch) {
+                parsed = {
+                  letter: letterMatch[1].replace(/\\n/g, '\n'),
+                  hookType: 'PROOF', hookDesc: '', tips: [], portfolioLinks: [], questions: ''
+                };
+              } else {
+                return reject(new Error('Parse error: ' + e2.message));
+              }
+            }
+          }
+          resolve(parsed);
         } catch(e) { reject(new Error('Parse error: ' + e.message)); }
       });
     });
@@ -209,6 +238,53 @@ function callClaude(system, user) {
   });
 }
 
+
+// ── Extract client name using AI ─────────────────────────────────────────────
+function extractClientName(reviewText, description) {
+  if (!reviewText && !description) return Promise.resolve('');
+  return new Promise((resolve) => {
+    const key = process.env.ANTHROPIC_API_KEY;
+    if (!key) return resolve('');
+    const textToSearch = [
+      reviewText ? 'REVIEWS: ' + reviewText.slice(0, 600) : '',
+      description ? 'JOB DESCRIPTION: ' + description.slice(0, 300) : ''
+    ].filter(Boolean).join('\n\n');
+
+    const body = JSON.stringify({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 20,
+      messages: [{
+        role: 'user',
+        content: `Extract the client's first name from this text. Freelancers often say things like "Thanks Ahmed", "Working with John was great", "Great client Sarah". Also check if the client introduced themselves in the job description.
+
+${textToSearch}
+
+Reply with ONLY the first name, nothing else. If no name found, reply with exactly: none`
+      }]
+    });
+
+    const req = https.request({
+      hostname: 'api.anthropic.com', path: '/v1/messages', method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01', 'Content-Length': Buffer.byteLength(body) }
+    }, res => {
+      let d = ''; res.on('data', c => d += c);
+      res.on('end', () => {
+        try {
+          const p = JSON.parse(d);
+          const name = (p.content?.[0]?.text || '').trim();
+          // Validate — must be a single capitalized word
+          if (name && name !== 'none' && /^[A-Z][a-z]{1,20}$/.test(name)) {
+            resolve(name);
+          } else {
+            resolve('');
+          }
+        } catch(e) { resolve(''); }
+      });
+    });
+    req.on('error', () => resolve(''));
+    req.write(body); req.end();
+  });
+}
 
 // ── Fetch customer email from Paddle API ─────────────────────────────────────
 function getPaddleCustomer(customerId) {
@@ -303,6 +379,12 @@ app.post('/proposal', async (req, res) => {
           plan: 'free', limit: 2, used: 2, remaining: 0
         });
       }
+    }
+
+    // Extract client name using separate AI call (fast, focused)
+    if (!job.clientName) {
+      job.clientName = await extractClientName(job.reviewText || '', job.description || '');
+      console.log('Client name extracted:', job.clientName || 'not found');
     }
 
     // Build message using prompt.js
