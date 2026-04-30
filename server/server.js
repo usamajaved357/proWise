@@ -313,14 +313,22 @@ app.post('/proposal', async (req, res) => {
     if (result.letter) result.letter = processBold(result.letter);
     if (result.questions) result.questions = processBold(result.questions);
 
-    // Append portfolio links section to letter if Claude returned them
+    // Insert portfolio links before CTA/sign-off, not at the end
     if (result.portfolioLinks && result.portfolioLinks.length > 0) {
-      const portSection = '\n\n**Portfolio:**\n' +
-        result.portfolioLinks
-          .filter(p => p.url)
-          .map(p => `- **${p.name}**: ${p.url}`)
-          .join('\n');
-      result.letter = result.letter + processBold(portSection);
+      const validLinks = result.portfolioLinks.filter(p => p.url);
+      if (validLinks.length > 0) {
+        const portSection = processBold(
+          '\n\n**Portfolio:**\n' + validLinks.map(p => `- **${p.name}**: ${p.url}`).join('\n')
+        );
+        // Insert before "Regards" sign-off
+        const regardsIdx = result.letter.lastIndexOf('Regards');
+        if (regardsIdx > -1) {
+          result.letter = result.letter.slice(0, regardsIdx).trimEnd() +
+            portSection + '\n\n' + result.letter.slice(regardsIdx);
+        } else {
+          result.letter = result.letter + portSection;
+        }
+      }
     }
 
     // Record usage

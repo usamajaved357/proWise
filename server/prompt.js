@@ -29,9 +29,11 @@ STRUCTURE (follow this exact order)
 ═══════════════════════════════════════════════
 
 1. GREETING LINE
-   - Start with "Hi [ClientName]," if client name is provided
-   - If no name: just "Hi,"
-   - Never "Dear", never "Hello there"
+   - Read the CLIENT REVIEWS TEXT carefully — freelancers often mention the client's first name (e.g. "Thanks Ahmed", "Working with John was great")
+   - Also check CLIENT NAME FROM REGEX field
+   - If you find a name → use "Hi [FirstName],"
+   - If no name found → just "Hi,"
+   - Never "Dear", never "Hello there", never full name
 
 2. OPENING HOOK (first 1-2 sentences — most important part)
    Pick the hook that fits THIS job best:

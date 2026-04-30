@@ -208,44 +208,33 @@
       questions = qMatch[1].trim().slice(0, 800);
     }
 
-    // Extract client name from reviews — freelancers often mention client name in reviews
+    // Extract client name — pass raw review text to AI for extraction
     let clientName = '';
 
-    // Method 1: Scan all review text for patterns like "Thank you Ahmed" or "working with John"
-    const allReviewText = Array.from(document.querySelectorAll(
-      '[data-test="feedback-text"], [class*="feedback"], [class*="review"], [class*="Review"]'
-    )).map(el => el.innerText).join(' ');
-
-    const reviewNamePatterns = [
-      /[Tt]hank(?:s| you),?\s+([A-Z][a-z]{2,})/,
-      /[Ww]orking with\s+([A-Z][a-z]{2,})/,
-      /[Gg]reat (?:client|working with)\s+([A-Z][a-z]{2,})/,
-      /[Cc]lient\s+([A-Z][a-z]{2,})\s+(?:was|is|has)/,
-      /[Hh]i\s+([A-Z][a-z]{2,})/,
-    ];
-    for (const pat of reviewNamePatterns) {
-      const m = allReviewText.match(pat);
-      if (m && m[1] && m[1].toLowerCase() !== 'you') { clientName = m[1]; break; }
-    }
-
-    // Method 2: Job description self-intro
-    if (!clientName) {
-      const descNameMatch = fullDesc.match(/(?:I'?m|I am|My name is|This is|I'm)\s+([A-Z][a-z]{2,})(?:\s|,|\.)/);
-      if (descNameMatch) clientName = descNameMatch[1];
-    }
+    // Try job description self-intro first (fast)
+    const descNameMatch = fullDesc.match(/(?:I'm|I am|My name is|This is)\s+([A-Z][a-z]{2,})(?:\s|,|\.)/);
+    if (descNameMatch) clientName = descNameMatch[1];
 
     const skills   = Array.from(document.querySelectorAll('[data-test="Skill"] span, .air3-badge span'))
       .map(s => s.innerText.trim()).filter(Boolean).join(', ');
     const budget   = document.querySelector('[data-test="budget"] strong, [data-test="Budget"] strong')?.innerText?.trim() || '';
     const location = document.querySelector('[data-test="client-location"] strong')?.innerText?.trim() || '';
 
-    // Extract job type (fixed/hourly) from page
+    // Extract job type
     const jobType = document.querySelector('[data-test="job-type"], [class*="jobType"]')?.innerText?.trim() || '';
 
-    // Get review text for AI name extraction
-    const reviewText = Array.from(document.querySelectorAll(
-      '[data-test="feedback-text"], [class*="feedback"], [class*="FeedbackContent"], [class*="review-text"]'
-    )).map(el => el.innerText.trim()).join(' ').slice(0, 800);
+    // Collect ALL visible text on page for AI name extraction — reviews, bio, everywhere
+    const reviewSelectors = [
+      '[data-test="feedback-text"]',
+      '[class*="FeedbackText"]',
+      '[class*="feedbackText"]',
+      '[class*="ReviewText"]',
+      '[class*="review-text"]',
+      '[data-ev-label="client_feedback"]',
+      '[class*="ClientFeedback"]',
+    ];
+    const reviewText = Array.from(document.querySelectorAll(reviewSelectors.join(',')))
+      .map(el => el.innerText.trim()).filter(Boolean).join(' ').slice(0, 1000);
 
     return { title, description, skills, budget, location, clientName, questions, reviewText, type: jobType };
   }
