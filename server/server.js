@@ -201,34 +201,35 @@ function callClaude(system, user) {
           const p = JSON.parse(d);
           if (p.error) return reject(new Error(p.error.message));
           const rawText = p.content?.[0]?.text || '';
-          // Find outermost JSON object - handle cases where Claude adds text after
-          const m = rawText.match(/\{[\s\S]*\}/);
-          if (!m) return reject(new Error('Bad AI response'));
-          // Clean control characters that break JSON.parse
-          const cleaned = m[0]
-            .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '')
-            .replace(/\n/g, '\\n')
-            .replace(/\r/g, '\\r')
-            .replace(/\t/g, '\\t');
-          // Try parsing — if fails, try a more aggressive clean
+          console.log('Claude raw (first 200):', rawText.slice(0, 200));
+
+          // Strip markdown code fences if present
+          let jsonText = rawText
+            .replace(/^```(?:json)?\s*/i, '')
+            .replace(/\s*```\s*$/i, '')
+            .trim();
+
+          // Find the JSON object
+          const start = jsonText.indexOf('{');
+          const end   = jsonText.lastIndexOf('}');
+          if (start === -1 || end === -1) return reject(new Error('No JSON found in response'));
+          jsonText = jsonText.slice(start, end + 1);
+
+          // Fix unescaped newlines inside string values
+          jsonText = jsonText.replace(/"([^"]*)"/gs, (match) => {
+            return match
+              .replace(/\n/g, '\\n')
+              .replace(/\r/g, '\\r')
+              .replace(/\t/g, '\\t')
+              .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '');
+          });
+
           let parsed;
           try {
-            parsed = JSON.parse(m[0]);
-          } catch(e1) {
-            try {
-              parsed = JSON.parse(cleaned);
-            } catch(e2) {
-              // Last resort: extract fields manually
-              const letterMatch = m[0].match(/"letter"\s*:\s*"([\s\S]*?)",\s*"(?:questions|hookType)"/);
-              if (letterMatch) {
-                parsed = {
-                  letter: letterMatch[1].replace(/\\n/g, '\n'),
-                  hookType: 'PROOF', hookDesc: '', tips: [], portfolioLinks: [], questions: ''
-                };
-              } else {
-                return reject(new Error('Parse error: ' + e2.message));
-              }
-            }
+            parsed = JSON.parse(jsonText);
+          } catch(e) {
+            console.error('JSON parse failed. Text sample:', jsonText.slice(0, 300));
+            return reject(new Error('Parse error: ' + e.message));
           }
           resolve(parsed);
         } catch(e) { reject(new Error('Parse error: ' + e.message)); }
