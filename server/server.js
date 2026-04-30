@@ -33,7 +33,9 @@ function supabase(method, table, body = null, filters = '') {
         'apikey': SUPABASE_KEY,
         'Authorization': `Bearer ${SUPABASE_KEY}`,
         'Content-Type': 'application/json',
-        'Prefer': method === 'POST' ? 'return=representation' : 'return=representation'
+        'Prefer': filters.includes('on_conflict')
+          ? 'return=representation,resolution=merge-duplicates'
+          : 'return=representation'
       }
     };
     const req = https.request(options, res => {
@@ -439,10 +441,12 @@ app.post('/webhook/paddle', async (req, res) => {
       return res.sendStatus(200);
     }
 
-    await upsertUser(email, {
-      plan, active: true, sub_id: subId,
-      used: 0, billing_month: currentMonth()
-    });
+    const existingUser = await getUser(email);
+    if (existingUser) {
+      await updateUser(email, { plan, active: true, sub_id: subId, billing_month: currentMonth() });
+    } else {
+      await upsertUser(email, { plan, active: true, sub_id: subId, used: 0, billing_month: currentMonth() });
+    }
     console.log('DB updated:', email, '→', plan);
     await sendWelcomeEmail(email, plan);
   }
@@ -471,9 +475,22 @@ app.post('/activate', async (req, res) => {
   const { email, plan = 'agency', secret } = req.body;
   if (secret !== SECRET) return res.status(401).json({ error: 'Unauthorized' });
   if (!email) return res.status(400).json({ error: 'Email required' });
-  await upsertUser(email, { plan, active: true, used: 0, billing_month: currentMonth() });
+  
+  const existing = await getUser(email);
+  if (existing) {
+    // User exists — use PATCH to update
+    await updateUser(email, { plan, active: true, sub_id: 'manual', billing_month: currentMonth() });
+    console.log('Updated existing user:', email, '→', plan);
+  } else {
+    // New user — insert
+    await upsertUser(email, { plan, active: true, used: 0, billing_month: currentMonth() });
+    console.log('Created new user:', email, '→', plan);
+  }
+  
+  // Small delay to ensure DB write completes
+  await new Promise(r => setTimeout(r, 300));
   const status = await getUserStatus(email);
-  console.log('Manual activate:', email, '→', plan);
+  console.log('Status after activate:', status);
   res.json({ ok: true, email, plan, status });
 });
 
