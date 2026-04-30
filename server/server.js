@@ -125,7 +125,7 @@ async function recordAnonUsage(anonId) {
 }
 
 // ── Middleware ────────────────────────────────────────────────────────────────
-app.use(express.json({ limit: '30kb' }));
+// CORS first — before express.json so preflight OPTIONS requests work
 app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
@@ -133,6 +133,7 @@ app.use((req, res, next) => {
   if (req.method === 'OPTIONS') return res.sendStatus(200);
   next();
 });
+app.use(express.json({ limit: '30kb' }));
 
 // ── Email via Resend ──────────────────────────────────────────────────────────
 function sendWelcomeEmail(to, plan) {
@@ -362,7 +363,7 @@ app.post('/webhook/paddle', async (req, res) => {
   // TODO: re-enable after confirming webhook flow works
   // express.json already parsed the body
   const event = req.body;
-  if (!event || typeof event !== 'object'){
+  if (!event || typeof event !== 'object') {
     return res.status(400).send('Bad JSON');
   }
 
