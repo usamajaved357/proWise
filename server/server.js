@@ -245,6 +245,32 @@ Return ONLY valid JSON:
   "tips": ["tip 1", "tip 2", "tip 3"]
 }`;
 
+
+// ── Fetch customer email from Paddle API ─────────────────────────────────────
+function getPaddleCustomer(customerId) {
+  return new Promise((resolve, reject) => {
+    const apiKey = process.env.PADDLE_API_KEY;
+    const isProd = process.env.PADDLE_ENVIRONMENT === 'production';
+    const hostname = isProd ? 'api.paddle.com' : 'sandbox-api.paddle.com';
+    const req = https.request({
+      hostname,
+      path: `/customers/${customerId}`,
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      }
+    }, res => {
+      let d = ''; res.on('data', c => d += c);
+      res.on('end', () => {
+        try { resolve(JSON.parse(d)?.data || null); }
+        catch(e) { resolve(null); }
+      });
+    });
+    req.on('error', reject); req.end();
+  });
+}
+
 // ── Routes ────────────────────────────────────────────────────────────────────
 
 app.get('/', (req, res) => res.json({ status: 'ok', service: 'Snag AI API v7' }));
@@ -367,6 +393,7 @@ Write the proposal. 120-160 words. Sound human.`.trim();
 app.post('/webhook/paddle', async (req, res) => {
   // Signature verification temporarily disabled for debugging
   // TODO: re-enable after confirming webhook flow works
+
   // express.json already parsed the body
   const event = req.body;
   if (!event || typeof event !== 'object') {
@@ -384,14 +411,29 @@ app.post('/webhook/paddle', async (req, res) => {
 
   if (['subscription.created','subscription.activated','transaction.completed'].includes(type)) {
     const data    = event.data || event;
-    const email   = data.customer?.email || data.email;
+    // Paddle transaction.completed has customer_id but not customer.email directly
+    // Email comes in subscription events via data.customer.email
+    // For transaction.completed, fetch customer email from Paddle API
+    let email = data.customer?.email || data.email;
+    
+    // If no email, try to get it from Paddle API using customer_id
+    if (!email && data.customer_id && process.env.PADDLE_API_KEY) {
+      try {
+        const custData = await getPaddleCustomer(data.customer_id);
+        email = custData?.email;
+        console.log('Fetched email from Paddle API:', email);
+      } catch(e) {
+        console.error('Failed to fetch customer:', e.message);
+      }
+    }
+    
     const priceId = data.items?.[0]?.price?.id || data.subscription_plan_id;
     const plan    = PRICE_MAP[priceId] || 'starter';
     console.log('Price ID received:', priceId);
     console.log('Plan mapped to:', plan);
-    console.log('PRICE_MAP keys:', Object.keys(PRICE_MAP));
-    const subId  = data.id || data.subscription_id;
-    if (!email) { console.error('No email in webhook'); return res.sendStatus(200); }
+    console.log('Email found:', email);
+    const subId  = data.subscription_id || data.id;
+    if (!email) { console.error('No email in webhook - customer_id:', data.customer_id); return res.sendStatus(200); }
 
     await upsertUser(email, {
       plan, active: true, sub_id: subId,
