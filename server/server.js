@@ -9,7 +9,6 @@
 const express = require('express');
 const https   = require('https');
 const crypto  = require('crypto');
-const http    = require('http');
 
 const app    = express();
 const PORT   = process.env.PORT || 3000;
@@ -112,7 +111,11 @@ async function canGenerate(email) {
 async function recordUsage(email) {
   const u = await getUser(email);
   const used = (u?.billing_month === currentMonth() ? u.used || 0 : 0) + 1;
-  await upsertUser(email, { plan: u?.plan || 'free', used, billing_month: currentMonth(), active: true });
+  if (u) {
+    await updateUser(email, { used, billing_month: currentMonth() });
+  } else {
+    await upsertUser(email, { plan: 'free', used, billing_month: currentMonth(), active: true });
+  }
 }
 
 async function canAnonGenerate(anonId) {
@@ -393,10 +396,7 @@ Write the proposal. 120-160 words. Sound human.`.trim();
 
 // ── Paddle webhook ────────────────────────────────────────────────────────────
 app.post('/webhook/paddle', async (req, res) => {
-  // Signature verification temporarily disabled for debugging
-  // TODO: re-enable after confirming webhook flow works
-
-  // express.json already parsed the body
+  // Body parsed by express.json middleware
   const event = req.body;
   if (!event || typeof event !== 'object') {
     return res.status(400).send('Bad JSON');
@@ -421,16 +421,11 @@ app.post('/webhook/paddle', async (req, res) => {
     const subId   = data.subscription_id || data.id;
     const custId  = data.customer_id;
 
-    console.log('Webhook received:', type);
-    console.log('Price ID:', priceId, '→ Plan:', plan);
-    console.log('Customer ID:', custId, 'Email:', email);
-
     // No email in transaction.completed — fetch from Paddle API
     if (!email && custId && process.env.PADDLE_API_KEY) {
       try {
         const custData = await getPaddleCustomer(custId);
         email = custData?.email;
-        console.log('Fetched email:', email);
       } catch(e) {
         console.error('Failed to fetch customer:', e.message);
       }
