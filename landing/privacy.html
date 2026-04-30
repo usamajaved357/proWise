@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privacy Policy — Snag AI</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0d1120;color:#f0eeea;line-height:1.7}
+nav{padding:18px 48px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.07);background:rgba(13,17,32,.9);position:sticky;top:0;z-index:10;backdrop-filter:blur(12px)}
+.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.nav-mark{width:28px;height:28px;background:linear-gradient(135deg,#b8860b,#e8c878);border-radius:7px;display:flex;align-items:center;justify-content:center}
+.nav-name{font-size:15px;font-weight:700;color:#f0eeea}
+.nav-back{font-size:13px;color:rgba(240,238,234,.4);text-decoration:none;transition:color .2s}
+.nav-back:hover{color:#c9a84c}
+.wrap{max-width:720px;margin:0 auto;padding:60px 48px 100px}
+h1{font-size:32px;font-weight:700;margin-bottom:8px;letter-spacing:-.02em}
+.meta{font-size:13px;color:rgba(240,238,234,.35);margin-bottom:48px}
+h2{font-size:17px;font-weight:700;color:#f0eeea;margin:36px 0 12px}
+p{font-size:14px;color:rgba(240,238,234,.65);margin-bottom:14px}
+ul{padding-left:20px;margin-bottom:14px}
+li{font-size:14px;color:rgba(240,238,234,.65);margin-bottom:6px}
+a{color:#c9a84c;text-decoration:none}
+a:hover{color:#e8c878}
+.note{background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);border-radius:10px;padding:16px 18px;font-size:13px;color:rgba(240,238,234,.6);margin:24px 0}
+@media(max-width:600px){.wrap{padding:40px 24px 80px}nav{padding:14px 20px}}
+</style>
+</head>
+<body>
+<nav>
+  <a href="index.html" class="nav-logo">
+    <div class="nav-mark"><svg width="16" height="16" viewBox="0 0 32 32" fill="none"><path d="M10 20.5C10 20.5 11.5 22 14 22C16.5 22 18 20.5 18 18.5C18 16.5 16 15.5 14 14.5C12 13.5 10.5 12.5 10.5 10.5C10.5 8.5 12 7 14.5 7C17 7 18 8.5 18 8.5" stroke="white" stroke-width="2" stroke-linecap="round"/><path d="M16 9L22 9C22 9 24 11 22 13C24 13 26 15 24 17C25 17 26 19 24 21C25 21 25 23 23 24L16 24" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <span class="nav-name">Snag AI</span>
+  </a>
+  <a href="index.html" class="nav-back">← Back to home</a>
+</nav>
+<div class="wrap">
+  <h1>Privacy Policy</h1>
+  <div class="meta">Last updated: May 1, 2026</div>
+
+  <p>This Privacy Policy explains how Snag AI ("we", "us", "our") collects, uses, and protects your information when you use our Chrome extension and website.</p>
+
+  <h2>1. Information We Collect</h2>
+  <p><strong>Information you provide:</strong></p>
+  <ul>
+    <li>Email address (used to identify your account and subscription)</li>
+    <li>Profile data stored locally in your browser: name, title, skills, hourly rate, portfolio links, and extra context</li>
+    <li>Proposal settings: tone, length, always-include text</li>
+  </ul>
+  <p><strong>Information collected automatically:</strong></p>
+  <ul>
+    <li>Anonymous usage count (number of proposals generated) stored against your email or anonymous ID</li>
+    <li>Subscription plan and billing status (managed by Paddle)</li>
+    <li>Job page content from Upwork (title, description, skills, budget) — read only when you click Write Proposal, never stored</li>
+  </ul>
+
+  <h2>2. How We Use Your Information</h2>
+  <ul>
+    <li>To generate personalised proposals using the job data and your profile</li>
+    <li>To track usage against your subscription limit</li>
+    <li>To verify your subscription status when you open the extension</li>
+    <li>To send transactional emails (subscription confirmation, plan activation) via Resend</li>
+  </ul>
+
+  <h2>3. What We Do NOT Do</h2>
+  <ul>
+    <li>We do not sell your data to third parties</li>
+    <li>We do not store the content of Upwork job pages you visit</li>
+    <li>We do not store the proposals generated — they exist only in your browser</li>
+    <li>We do not use your data for advertising</li>
+    <li>We do not read your Upwork messages, applications, or account data</li>
+  </ul>
+
+  <h2>4. Data Storage</h2>
+  <p>Your profile data (name, skills, settings) is stored locally in Chrome's sync storage — it stays in your browser and syncs across your Chrome devices if you're signed into Chrome.</p>
+  <p>Your email address, subscription plan, and usage count are stored in our secure database hosted on Supabase (PostgreSQL). This data is protected by industry-standard encryption.</p>
+
+  <h2>5. Third-Party Services</h2>
+  <ul>
+    <li><strong>Paddle</strong> — Payment processing and subscription management. Paddle is the Merchant of Record. See <a href="https://www.paddle.com/legal/privacy" target="_blank">Paddle's Privacy Policy</a>.</li>
+    <li><strong>Anthropic Claude API</strong> — AI proposal generation. Job content and your profile are sent to Anthropic's API to generate proposals. See <a href="https://www.anthropic.com/privacy" target="_blank">Anthropic's Privacy Policy</a>.</li>
+    <li><strong>Supabase</strong> — Database hosting. See <a href="https://supabase.com/privacy" target="_blank">Supabase's Privacy Policy</a>.</li>
+    <li><strong>Resend</strong> — Transactional email delivery. See <a href="https://resend.com/privacy" target="_blank">Resend's Privacy Policy</a>.</li>
+  </ul>
+
+  <h2>6. Chrome Extension Permissions</h2>
+  <p>Snag AI requests the following permissions:</p>
+  <ul>
+    <li><strong>activeTab / upwork.com</strong> — To read job descriptions on Upwork pages when you click Write Proposal</li>
+    <li><strong>storage</strong> — To save your profile and settings locally in Chrome</li>
+  </ul>
+  <p>We do not request access to your browsing history, other websites, or any data beyond what is described above.</p>
+
+  <h2>7. Data Retention</h2>
+  <p>We retain your email, plan, and usage data for as long as your account is active. You may request deletion at any time by emailing <a href="mailto:support@snagai.io">support@snagai.io</a>. We will delete your data within 30 days of your request.</p>
+
+  <h2>8. Your Rights</h2>
+  <p>You have the right to access, correct, or delete your personal data. To exercise these rights, contact us at <a href="mailto:support@snagai.io">support@snagai.io</a>.</p>
+
+  <h2>9. Children's Privacy</h2>
+  <p>Snag AI is not intended for users under 18. We do not knowingly collect data from minors.</p>
+
+  <h2>10. Changes to This Policy</h2>
+  <p>We may update this policy from time to time. We will notify users of significant changes via email.</p>
+
+  <h2>11. Contact</h2>
+  <p>Questions about this privacy policy? Contact us at <a href="mailto:support@snagai.io">support@snagai.io</a></p>
+</div>
+</body>
+</html>

@@ -145,7 +145,7 @@
     `;
 
     function openPlanCheckout(plan) {
-      chrome.tabs.create({ url: 'https://prowiseai.netlify.app/checkout.html?plan=' + (plan || 'pro') });
+      chrome.tabs.create({ url: 'https://snagai.netlify.app/checkout.html?plan=' + (plan || 'pro') });
     }
 
     document.getElementById('sn-upgrade-btn').addEventListener('click', () => openPlanCheckout('pro'));

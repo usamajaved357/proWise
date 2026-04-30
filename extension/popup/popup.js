@@ -10,7 +10,7 @@ document.getElementById('open-settings').addEventListener('click', () => {
 
 // Upgrade button
 document.getElementById('upgrade-btn').addEventListener('click', () => {
-  chrome.tabs.create({ url: 'https://prowiseai.netlify.app/#pricing' });
+  chrome.tabs.create({ url: 'https://snagai.netlify.app/#pricing' });
 });
 
 // Email toggle

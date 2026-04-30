@@ -9,7 +9,7 @@ const PRICE_IDS = {
 
 function openCheckout(plan) {
   // Open landing page with plan pre-selected — Paddle overlay fires there
-  chrome.tabs.create({ url: 'https://prowiseai.netlify.app/checkout.html?plan=' + plan });
+  chrome.tabs.create({ url: 'https://snagai.netlify.app/checkout.html?plan=' + plan });
 }
 
 // Navigation

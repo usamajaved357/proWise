@@ -11,7 +11,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     return true;
   }
   if (msg.type === 'OPEN_PRICING') {
-    chrome.tabs.create({ url: 'https://prowiseai.netlify.app/#pricing' });
+    chrome.tabs.create({ url: 'https://snagai.netlify.app/#pricing' });
     sendResponse({ ok: true });
     return true;
   }
