@@ -1,3 +1,4 @@
+
 'use strict';
 
 // ── Unicode Bold Sans-Serif converter (Upwork-compatible bold) ────────────────
@@ -132,7 +133,7 @@ function buildUserMessage({ job, profile, settings }) {
 
   // Pricing type detection
   const descLower = (job.description||'').toLowerCase();
-  const isHourly  = /hourly|\\/hr|per hour|\/hour/.test(descLower);
+  const isHourly  = /hourly|\/hr|per hour|\/hour/.test(descLower);
   const isFixed   = /fixed.price|fixed budget|lump.sum|one.time payment/.test(descLower);
   const pricingType = isHourly ? 'HOURLY' : isFixed ? 'FIXED' : 'UNKNOWN';
 
