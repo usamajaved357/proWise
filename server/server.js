@@ -411,35 +411,39 @@ app.post('/webhook/paddle', async (req, res) => {
 
   if (['subscription.created','subscription.activated','transaction.completed'].includes(type)) {
     const data    = event.data || event;
-    // Paddle transaction.completed has customer_id but not customer.email directly
-    // Email comes in subscription events via data.customer.email
-    // For transaction.completed, fetch customer email from Paddle API
-    let email = data.customer?.email || data.email;
-    
-    // If no email, try to get it from Paddle API using customer_id
-    if (!email && data.customer_id && process.env.PADDLE_API_KEY) {
+    let email     = data.customer?.email || data.email;
+    const priceId = data.items?.[0]?.price?.id || data.subscription_plan_id;
+    // Also try custom_data on the price for plan
+    const planFromCustomData = data.items?.[0]?.price?.custom_data?.plan;
+    const plan    = planFromCustomData || PRICE_MAP[priceId] || 'starter';
+    const subId   = data.subscription_id || data.id;
+    const custId  = data.customer_id;
+
+    console.log('Webhook received:', type);
+    console.log('Price ID:', priceId, '→ Plan:', plan);
+    console.log('Customer ID:', custId, 'Email:', email);
+
+    // No email in transaction.completed — fetch from Paddle API
+    if (!email && custId && process.env.PADDLE_API_KEY) {
       try {
-        const custData = await getPaddleCustomer(data.customer_id);
+        const custData = await getPaddleCustomer(custId);
         email = custData?.email;
-        console.log('Fetched email from Paddle API:', email);
+        console.log('Fetched email:', email);
       } catch(e) {
         console.error('Failed to fetch customer:', e.message);
       }
     }
-    
-    const priceId = data.items?.[0]?.price?.id || data.subscription_plan_id;
-    const plan    = PRICE_MAP[priceId] || 'starter';
-    console.log('Price ID received:', priceId);
-    console.log('Plan mapped to:', plan);
-    console.log('Email found:', email);
-    const subId  = data.subscription_id || data.id;
-    if (!email) { console.error('No email in webhook - customer_id:', data.customer_id); return res.sendStatus(200); }
+
+    if (!email) {
+      console.error('No email found for customer_id:', custId);
+      return res.sendStatus(200);
+    }
 
     await upsertUser(email, {
       plan, active: true, sub_id: subId,
       used: 0, billing_month: currentMonth()
     });
-    console.log(`Subscribed: ${email} | Plan: ${plan}`);
+    console.log('DB updated:', email, '→', plan);
     await sendWelcomeEmail(email, plan);
   }
 
@@ -460,6 +464,17 @@ app.post('/webhook/paddle', async (req, res) => {
   }
 
   res.sendStatus(200);
+});
+
+// Manual activate — for testing without Paddle
+app.post('/activate', async (req, res) => {
+  const { email, plan = 'agency', secret } = req.body;
+  if (secret !== SECRET) return res.status(401).json({ error: 'Unauthorized' });
+  if (!email) return res.status(400).json({ error: 'Email required' });
+  await upsertUser(email, { plan, active: true, used: 0, billing_month: currentMonth() });
+  const status = await getUserStatus(email);
+  console.log('Manual activate:', email, '→', plan);
+  res.json({ ok: true, email, plan, status });
 });
 
 // Admin
