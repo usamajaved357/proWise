@@ -1,10 +1,3 @@
-// PropWise Server v5
-// - 2 free proposals for every new user (no payment needed)
-// - Monthly subscription packages: Starter $19/150, Pro $39/400, Agency $69/900
-// - Auto-resets usage on new billing month
-// - Paddle webhook handles subscription events
-// - Resend.com sends license emails
-
 // Snag AI Server v7 — Supabase persistent storage
 const express = require('express');
 const https   = require('https');
@@ -310,12 +303,22 @@ app.post('/proposal', async (req, res) => {
 
   const isRealEmail = userEmail && userEmail.includes('@') && !userEmail.includes('propwise.local');
 
+  // Require either email or anonId — no anonymous unlimited access
+  if (!isRealEmail && !anonId) {
+    return res.status(402).json({
+      error: 'Add your email in the extension to track your free proposals.',
+      showPaywall: false,
+      plan: 'free', limit: 2, used: 0, remaining: 2
+    });
+  }
+
   try {
-    // Check usage limits
+    // Check usage limits — ALWAYS enforced
     if (isRealEmail) {
       const ok = await canGenerate(userEmail);
       if (!ok) {
         const status = await getUserStatus(userEmail);
+        console.log(`Limit reached: ${userEmail} | plan: ${status.plan} | used: ${status.used}/${status.limit}`);
         return res.status(402).json({
           error: status.plan === 'free'
             ? 'You\'ve used your 2 free proposals. Subscribe to keep winning jobs.'
@@ -327,6 +330,7 @@ app.post('/proposal', async (req, res) => {
     } else if (anonId) {
       const ok = await canAnonGenerate(anonId);
       if (!ok) {
+        console.log(`Anon limit reached: ${anonId}`);
         return res.status(402).json({
           error: 'You\'ve used your 2 free proposals. Subscribe to keep winning jobs.',
           showPaywall: true,

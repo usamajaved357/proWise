@@ -1,24 +1,36 @@
-# ProWise
+# PropWise — Upwork AI Proposal Writer
 
-Chrome extension + Node.js backend + Netlify landing page.
-
-## Structure
+One repo, three parts:
 
 ```
-├── server/      → Render.com (auto-deploy from main)
-├── extension/   → Chrome (load unpacked or Web Store)
-├── landing/     → Netlify (auto-deploy from main)
+propwise/
+├── server/          ← Node.js backend (deploy to Render)
+│   └── server.js
+├── extension/       ← Chrome extension
+│   ├── manifest.json
+│   ├── background/
+│   ├── content/
+│   ├── popup/
+│   └── icons/
+├── landing/         ← Landing page (deploy to GitHub Pages / Netlify)
+│   └── index.html
 └── README.md
 ```
 
-## Quick Setup
+## Deploy
 
-See `docs/SETUP.md` for full deployment guide.
+**Server** → Render.com (connect this repo, root dir: `server`)
+**Landing** → Netlify (connect this repo, root dir: `landing`)
+**Extension** → Load unpacked from `extension/` folder in Chrome
 
-## Tech Stack
+## Environment variables (Render)
 
-- Server: Node.js / Express / Render
-- Database: Supabase (Postgres)
-- Payments: Paddle
-- Email: Resend
-- Landing: Netlify
+```
+ANTHROPIC_API_KEY=sk-ant-...
+LICENSE_SECRET=your-secret
+RESEND_API_KEY=re_...        (from resend.com — free email sending)
+PADDLE_WEBHOOK_SECRET=...    (from Paddle dashboard)
+PADDLE_PRICE_STARTER=pri_... (Paddle price ID for $19 plan)
+PADDLE_PRICE_PRO=pri_...     (Paddle price ID for $39 plan)
+PADDLE_PRICE_AGENCY=pri_...  (Paddle price ID for $69 plan)
+```

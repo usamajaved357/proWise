@@ -74,11 +74,23 @@
 
   function toggle() { isOpen ? closePanel() : openAndGenerate(); }
 
-  function openAndGenerate() {
+  async function openAndGenerate() {
     document.getElementById('sn-overlay').classList.add('vis');
     document.getElementById('sn-panel').classList.add('vis');
     isOpen = true;
     showLoading();
+
+    // Check limit BEFORE generating — client-side gate
+    try {
+      const status = await chrome.runtime.sendMessage({ type: 'GET_STATUS' });
+      if (status && status.remaining !== undefined && status.remaining <= 0) {
+        showPaywall(status);
+        return;
+      }
+    } catch(e) {
+      // If status check fails, let server handle it
+    }
+
     generate();
   }
 
