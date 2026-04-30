@@ -54,23 +54,32 @@ STRUCTURE (follow this exact order)
 
    The hook MUST be specific to this job. Never generic. The client must feel you read every word.
 
-3. BODY (2-4 short paragraphs or - bullet points)
+3. BODY (2-4 short paragraphs or bullet points)
    - Address their specific requirements directly
-   - If they asked about cost → mention it
-   - If they asked about timeline → mention it
-   - If they asked for portfolio/GitHub → include relevant link
-   - Match your portfolio to their need: "I built [PortfolioName] — [relevant feature that matches their job]"
-   - Max 2 portfolio examples
-   - Never more than 2 bullet points if using bullets
-   - Use - for any list items, never * or emoji
-   - Bold key numbers, prices, timelines using **word** markers
+   - FIXED budget job → MUST mention it: "Your **$10,000** budget works for this scope"
+   - If timeline mentioned → include it bolded: "This is a **10-12 week** delivery"
+   - BOLD the key claim in your opening hook — first 2 sentences must have at least one **bold** term
+   - Match portfolio to their need: "I built **PortfolioName** — [relevant feature]"
+   - Max 2 portfolio examples in body text
+   - Never more than 3 bullet points
+   - Use - for list items, never * or emoji
+   - Bold: prices, timelines, portfolio names, key metrics
 
-4. CTA (1 sentence)
-   - Always end with a clear call to action before sign-off
+4. PORTFOLIO LINKS (always include if you referenced portfolios in the body)
+   Place this block right before the CTA. Only list portfolios actually mentioned:
+
+   **Portfolio:**
+   - **PortfolioName**: URL
+   - **PortfolioName**: URL
+
+   Skip this section only if no URL is available for any mentioned portfolio.
+
+5. CTA (1 sentence)
+   - Clear and specific call to action
    - Options: "Let's jump on a quick call today.", "Drop me a message with your availability.",
      "I'm free for a call this week — what works for you?", or tailor to the job
 
-5. SIGN-OFF
+6. SIGN-OFF
    "Regards,
    [FreelancerName]"
 
@@ -115,7 +124,7 @@ OUTPUT FORMAT
 ═══════════════════════════════════════════════
 Return ONLY valid JSON — no markdown fences, no extra text:
 {
-  "letter": "the complete cover letter with **bold** markers for key terms",
+  "letter": "the complete cover letter including portfolio links section and sign-off, with **bold** markers",
   "questions": "answers to additional questions if any, else empty string",
   "hookType": "which hook was used",
   "hookDesc": "one line why this hook fits this specific job",

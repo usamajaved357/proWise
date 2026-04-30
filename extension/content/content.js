@@ -208,16 +208,30 @@
       questions = qMatch[1].trim().slice(0, 800);
     }
 
-    // Extract client name from reviews or job description
+    // Extract client name from reviews — freelancers often mention client name in reviews
     let clientName = '';
-    // Try from job description mentions
-    const nameMatch = fullDesc.match(/(?:I'?m|I am|My name is|This is)\s+([A-Z][a-z]+)(?:\s|,|\.)/);
-    if (nameMatch) clientName = nameMatch[1];
-    // Try from client info section
+
+    // Method 1: Scan all review text for patterns like "Thank you Ahmed" or "working with John"
+    const allReviewText = Array.from(document.querySelectorAll(
+      '[data-test="feedback-text"], [class*="feedback"], [class*="review"], [class*="Review"]'
+    )).map(el => el.innerText).join(' ');
+
+    const reviewNamePatterns = [
+      /[Tt]hank(?:s| you),?\s+([A-Z][a-z]{2,})/,
+      /[Ww]orking with\s+([A-Z][a-z]{2,})/,
+      /[Gg]reat (?:client|working with)\s+([A-Z][a-z]{2,})/,
+      /[Cc]lient\s+([A-Z][a-z]{2,})\s+(?:was|is|has)/,
+      /[Hh]i\s+([A-Z][a-z]{2,})/,
+    ];
+    for (const pat of reviewNamePatterns) {
+      const m = allReviewText.match(pat);
+      if (m && m[1] && m[1].toLowerCase() !== 'you') { clientName = m[1]; break; }
+    }
+
+    // Method 2: Job description self-intro
     if (!clientName) {
-      const reviewTexts = Array.from(document.querySelectorAll('[data-test="client-reviews"] strong, .client-name, [class*="clientName"]'))
-        .map(el => el.innerText.trim()).filter(Boolean);
-      if (reviewTexts.length) clientName = reviewTexts[0];
+      const descNameMatch = fullDesc.match(/(?:I'?m|I am|My name is|This is|I'm)\s+([A-Z][a-z]{2,})(?:\s|,|\.)/);
+      if (descNameMatch) clientName = descNameMatch[1];
     }
 
     const skills   = Array.from(document.querySelectorAll('[data-test="Skill"] span, .air3-badge span'))
