@@ -1,4 +1,3 @@
-
 'use strict';
 
 // ── Unicode Bold Sans-Serif converter (Upwork-compatible bold) ────────────────
@@ -124,12 +123,16 @@ OUTPUT FORMAT
 ═══════════════════════════════════════════════
 Return ONLY valid JSON — no markdown fences, no extra text:
 {
-  "letter": "the complete cover letter including portfolio links section and sign-off, with **bold** markers",
+  "letter": "the complete cover letter with **bold** markers — do NOT include portfolio links inside this field",
+  "portfolioLinks": [{"name": "PortfolioName", "url": "https://..."}, ...],
   "questions": "answers to additional questions if any, else empty string",
+  "clientName": "extracted client first name from reviews, or empty string",
   "hookType": "which hook was used",
   "hookDesc": "one line why this hook fits this specific job",
   "tips": ["tip 1 specific to this job", "tip 2", "tip 3"]
-}`;
+}
+
+IMPORTANT: portfolioLinks must contain ONLY the portfolios you actually referenced in the letter body. Empty array [] if none mentioned.`;
 
 // ── User message builder ──────────────────────────────────────────────────────
 function buildUserMessage({ job, profile, settings }) {
@@ -140,10 +143,12 @@ function buildUserMessage({ job, profile, settings }) {
   const matched   = allSkills.filter(s => jobText.includes(s.toLowerCase()));
   const relevantSkills = matched.length ? matched.slice(0,5) : allSkills.slice(0,3);
 
-  // Pricing type detection
-  const descLower = (job.description||'').toLowerCase();
-  const isHourly  = /hourly|\/hr|per hour|\/hour/.test(descLower);
-  const isFixed   = /fixed.price|fixed budget|lump.sum|one.time payment/.test(descLower);
+  // Pricing type detection — check both description AND budget/type fields
+  const descLower   = (job.description||'').toLowerCase();
+  const budgetLower = (job.budget||'').toLowerCase();
+  const typeField   = (job.type||'').toLowerCase();
+  const isHourly  = /hourly|\/hr|per hour|\/hour/.test(descLower) || /hr|hour/.test(budgetLower) || typeField.includes('hourly');
+  const isFixed   = /fixed/.test(descLower) || /fixed/.test(budgetLower) || /fixed/.test(typeField) || !!job.budget;
   const pricingType = isHourly ? 'HOURLY' : isFixed ? 'FIXED' : 'UNKNOWN';
 
   // Portfolio — rich format with name, description, skills
@@ -165,10 +170,12 @@ JOB DESCRIPTION:
 ${(job.description||'').slice(0, 2500)}
 
 REQUIRED SKILLS: ${job.skills || 'not listed'}
-BUDGET/RATE: ${job.budget || 'not specified'}
+BUDGET/RATE: ${job.budget || 'not specified'} ${isFixed ? '(FIXED PRICE — YOU MUST MENTION THIS AMOUNT IN THE LETTER)' : ''}
 PRICING TYPE: ${pricingType}
 CLIENT LOCATION: ${job.location || 'unknown'}
-CLIENT NAME: ${job.clientName || 'unknown — use "Hi," only'}
+CLIENT NAME FROM REGEX: ${job.clientName || 'not found'}
+CLIENT REVIEWS TEXT (extract client first name from this if mentioned by freelancers):
+${(job.reviewText || '').slice(0, 600) || 'no reviews available'}
 
 ADDITIONAL QUESTIONS FROM CLIENT:
 ${job.questions || 'none'}

@@ -239,7 +239,15 @@
     const budget   = document.querySelector('[data-test="budget"] strong, [data-test="Budget"] strong')?.innerText?.trim() || '';
     const location = document.querySelector('[data-test="client-location"] strong')?.innerText?.trim() || '';
 
-    return { title, description, skills, budget, location, clientName, questions };
+    // Extract job type (fixed/hourly) from page
+    const jobType = document.querySelector('[data-test="job-type"], [class*="jobType"]')?.innerText?.trim() || '';
+
+    // Get review text for AI name extraction
+    const reviewText = Array.from(document.querySelectorAll(
+      '[data-test="feedback-text"], [class*="feedback"], [class*="FeedbackContent"], [class*="review-text"]'
+    )).map(el => el.innerText.trim()).join(' ').slice(0, 800);
+
+    return { title, description, skills, budget, location, clientName, questions, reviewText, type: jobType };
   }
 
   // Generate

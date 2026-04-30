@@ -313,6 +313,16 @@ app.post('/proposal', async (req, res) => {
     if (result.letter) result.letter = processBold(result.letter);
     if (result.questions) result.questions = processBold(result.questions);
 
+    // Append portfolio links section to letter if Claude returned them
+    if (result.portfolioLinks && result.portfolioLinks.length > 0) {
+      const portSection = '\n\n**Portfolio:**\n' +
+        result.portfolioLinks
+          .filter(p => p.url)
+          .map(p => `- **${p.name}**: ${p.url}`)
+          .join('\n');
+      result.letter = result.letter + processBold(portSection);
+    }
+
     // Record usage
     if (isRealEmail) {
       await recordUsage(userEmail);
