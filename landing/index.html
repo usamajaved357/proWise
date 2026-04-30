@@ -152,6 +152,28 @@ nav{padding:14px 24px}.nlinks{display:none}
 footer{padding:28px 24px;flex-direction:column;align-items:flex-start}
 .ctaw{padding:0 24px 60px}.ctai{padding:48px 28px}}
 </style>
+<script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
+<script>
+  Paddle.Environment.set('sandbox');
+  Paddle.Initialize({ token: 'test_774f670464415caafd3f6b20160' });
+
+  const PRICE_IDS = {
+    starter: 'pri_01kqatq4f1st85p5q2xgx792qj',
+    pro:     'pri_01kqats15v2v1kcx355gw24s5j',
+    agency:  'pri_01kqatwfp1fr3ch8xq32qpmdnt'
+  };
+
+  function openPaddleCheckout(plan) {
+    Paddle.Checkout.open({
+      items: [{ priceId: PRICE_IDS[plan], quantity: 1 }],
+      settings: {
+        displayMode: 'overlay',
+        theme: 'dark',
+        locale: 'en',
+      }
+    });
+  }
+</script>
 </head>
 <body>
 <nav>
@@ -298,7 +320,7 @@ footer{padding:28px 24px;flex-direction:column;align-items:flex-start}
         <div class="pper">billed monthly</div>
         <div class="psv">Base rate · $0.127 per proposal</div>
         <ul class="pfl"><li>150 proposals per month</li><li>All 7 hook types</li><li>Smart skill matching</li><li>Fixed + hourly pricing</li><li>Portfolio links</li></ul>
-        <a href="https://sandbox-pay.paddle.io/hsc_01kqd651acpxddjs8mzbg2emjm_bq60mkwxwvgj57yys3hppen4231th50x" class="pbtn pbo" id="btn-starter">Start free trial →</a>
+        <button class="pbtn pbo" onclick="openPaddleCheckout('starter')">Start free trial →</button>
       </div>
       <div class="pca ft rv">
         <div class="pop">SAVE 45% / PROPOSAL</div>
@@ -307,7 +329,7 @@ footer{padding:28px 24px;flex-direction:column;align-items:flex-start}
         <div class="pper">billed monthly</div>
         <div class="psv">45% cheaper per proposal vs Starter</div>
         <ul class="pfl"><li>400 proposals per month</li><li>All 7 hook types</li><li>Smart skill matching</li><li>Fixed + hourly pricing</li><li>Priority support</li></ul>
-        <a href="https://sandbox-pay.paddle.io/hsc_01kqd66znk3gpbxrmxppepcxq7_75n4anpreek8jthbe9hyf2x1rps59c1z" class="pbtn pbg" id="btn-pro">Start free trial →</a>
+        <button class="pbtn pbg" onclick="openPaddleCheckout('pro')">Start free trial →</button>
       </div>
       <div class="pca rv">
         <div class="ptr">Agency</div>
@@ -315,7 +337,7 @@ footer{padding:28px 24px;flex-direction:column;align-items:flex-start}
         <div class="pper">billed monthly</div>
         <div class="psv">57% cheaper per proposal vs Starter</div>
         <ul class="pfl"><li>900 proposals per month</li><li>All 7 hook types</li><li>Smart skill matching</li><li>Fixed + hourly pricing</li><li>Priority support + analytics</li></ul>
-        <a href="https://sandbox-pay.paddle.io/hsc_01kqd67ng25ws49k91k8bg5276_6f2wje6xcp6dymb2dd7mt2w132qgwgsd" class="pbtn pbo" id="btn-agency">Start free trial →</a>
+        <button class="pbtn pbo" onclick="openPaddleCheckout('agency')">Start free trial →</button>
       </div>
     </div>
     <p class="pgn"><strong>2 free proposals</strong> to snag · No card required · Instant email activation · Cancel anytime</p>

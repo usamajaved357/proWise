@@ -1,14 +1,15 @@
 const SERVER = 'https://prowise-4e5t.onrender.com';
 
 // Checkout URLs — replace with your Paddle hosted checkout links
-const CHECKOUT = {
-  starter: 'https://sandbox-pay.paddle.io/hsc_01kqd651acpxddjs8mzbg2emjm_bq60mkwxwvgj57yys3hppen4231th50x',
-  pro:     'https://sandbox-pay.paddle.io/hsc_01kqd66znk3gpbxrmxppepcxq7_75n4anpreek8jthbe9hyf2x1rps59c1z',
-  agency:  'https://sandbox-pay.paddle.io/hsc_01kqd67ng25ws49k91k8bg5276_6f2wje6xcp6dymb2dd7mt2w132qgwgsd',
+const PRICE_IDS = {
+  starter: 'pri_01kqatq4f1st85p5q2xgx792qj',
+  pro:     'pri_01kqats15v2v1kcx355gw24s5j',
+  agency:  'pri_01kqatwfp1fr3ch8xq32qpmdnt',
 };
 
 function openCheckout(plan) {
-  chrome.tabs.create({ url: CHECKOUT[plan] || 'https://prowiseai.netlify.app/#pricing' });
+  // Open landing page with plan pre-selected — Paddle overlay fires there
+  chrome.tabs.create({ url: 'https://prowiseai.netlify.app/checkout.html?plan=' + plan });
 }
 
 // Navigation

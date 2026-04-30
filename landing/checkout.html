@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Snag AI — Subscribe</title>
+<script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0d1120;color:#f0eeea;min-height:100vh;display:flex;align-items:center;justify-content:center}
+.wrap{text-align:center;padding:40px 20px}
+.logo{width:52px;height:52px;background:linear-gradient(135deg,#b8860b,#e8c878);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+h1{font-size:22px;font-weight:700;margin-bottom:8px}
+p{font-size:14px;color:rgba(240,238,234,.5);margin-bottom:28px}
+.spinner{width:32px;height:32px;border:2.5px solid rgba(255,255,255,.1);border-top-color:#c9a84c;border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.back{margin-top:24px;font-size:13px;color:rgba(240,238,234,.3)}
+.back a{color:#c9a84c;text-decoration:none}
+.back a:hover{color:#e8c878}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="logo">
+    <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
+      <path d="M10 20.5C10 20.5 11.5 22 14 22C16.5 22 18 20.5 18 18.5C18 16.5 16 15.5 14 14.5C12 13.5 10.5 12.5 10.5 10.5C10.5 8.5 12 7 14.5 7C17 7 18 8.5 18 8.5" stroke="white" stroke-width="2" stroke-linecap="round"/>
+      <path d="M16 9L22 9C22 9 24 11 22 13C24 13 26 15 24 17C25 17 26 19 24 21C25 21 25 23 23 24L16 24" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
+  <div class="spinner"></div>
+  <h1>Opening checkout…</h1>
+  <p id="plan-label">Loading your plan</p>
+  <div class="back">Changed your mind? <a href="index.html">Back to home</a></div>
+</div>
+
+<script>
+const PLANS = {
+  starter: { priceId: 'pri_01kqatq4f1st85p5q2xgx792qj', label: 'Starter — $19/mo' },
+  pro:     { priceId: 'pri_01kqats15v2v1kcx355gw24s5j', label: 'Pro — $39/mo' },
+  agency:  { priceId: 'pri_01kqatwfp1fr3ch8xq32qpmdnt', label: 'Agency — $69/mo' },
+};
+
+const params = new URLSearchParams(window.location.search);
+const plan   = params.get('plan') || 'pro';
+const config = PLANS[plan] || PLANS.pro;
+
+document.getElementById('plan-label').textContent = config.label;
+
+Paddle.Environment.set('sandbox');
+Paddle.Initialize({
+  token: 'test_774f670464415caafd3f6b20160',
+  eventCallback: function(data) {
+    if (data.name === 'checkout.completed') {
+      // Redirect back to home after successful payment
+      setTimeout(() => { window.location.href = 'index.html?subscribed=true'; }, 1500);
+    }
+    if (data.name === 'checkout.closed') {
+      window.location.href = 'index.html#pricing';
+    }
+  }
+});
+
+// Auto-open checkout after short delay
+setTimeout(() => {
+  Paddle.Checkout.open({
+    items: [{ priceId: config.priceId, quantity: 1 }],
+    settings: {
+      displayMode: 'overlay',
+      theme: 'dark',
+      locale: 'en',
+      allowLogout: false,
+    }
+  });
+}, 800);
+</script>
+</body>
+</html>

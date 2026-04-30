@@ -144,11 +144,13 @@
       </div>
     `;
 
-    document.getElementById('sn-upgrade-btn').addEventListener('click', () => {
-      chrome.runtime.sendMessage({ type: 'OPEN_PRICING' });
-    });
+    function openPlanCheckout(plan) {
+      chrome.tabs.create({ url: 'https://prowiseai.netlify.app/checkout.html?plan=' + (plan || 'pro') });
+    }
+
+    document.getElementById('sn-upgrade-btn').addEventListener('click', () => openPlanCheckout('pro'));
     document.querySelectorAll('.sn-plan').forEach(el => {
-      el.addEventListener('click', () => chrome.runtime.sendMessage({ type: 'OPEN_PRICING' }));
+      el.addEventListener('click', () => openPlanCheckout(el.dataset.plan || 'pro'));
     });
   }
 
