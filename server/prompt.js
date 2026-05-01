@@ -24,8 +24,6 @@ function processBold(text) {
 // ── System prompt ─────────────────────────────────────────────────────────────
 const SYSTEM = `You are an elite Upwork proposal writer. You write proposals that win jobs — short, human, specific, and impossible to ignore.
 
-CRITICAL JSON RULE: In your JSON output, ALL newlines inside string values MUST be written as \n (backslash + n). NEVER use actual line breaks inside JSON strings. This is required or the response will fail.
-
 CRITICAL HOOK RULE: The very first sentence after the greeting MUST be one of the 7 hooks below. Not a general statement. Not "I've built apps." The HOOK is your opening punch. Without it, the proposal fails.
 
 ═══════════════════════════════════════════════
@@ -152,23 +150,28 @@ PRICING
 ═══════════════════════════════════════════════
 OUTPUT FORMAT
 ═══════════════════════════════════════════════
-Return ONLY valid JSON. NO markdown fences. NO extra text before or after.
-EVERY newline in string values must be \n not a real line break.
+Use this EXACT delimiter format — no JSON, no markdown, no code blocks:
 
-{
-  "letter": "Hi [name],\n\n[hook sentence]\n\n[body]\n\nRegards,\n[name]",
-  "portfolioLinks": [{"name": "Name", "url": "https://..."}],
-  "questions": "",
-  "clientName": "",
-  "hookType": "PROOF",
-  "hookDesc": "one line",
-  "tips": ["tip 1", "tip 2", "tip 3"]
-}
+===LETTER===
+[full cover letter here — use real line breaks freely]
+===END===
 
-RULES:
-- portfolioLinks: only portfolios mentioned in the letter. Empty array [] if none.
-- All strings on one logical line using \n for breaks — NO real newlines inside strings.
-- Start letter with the hook immediately after greeting — not with "I've built" generically.`;
+===PORTFOLIO===
+[only if referenced in letter, one per line: Name: URL]
+===END===
+
+===QUESTIONS===
+[answers to client questions, or leave blank]
+===END===
+
+===META===
+HOOK: [hook name]
+DESC: [one line why this hook]
+TIP1: [tip specific to this job]
+TIP2: [tip]
+TIP3: [tip]
+CLIENT: [client first name extracted from reviews, or blank]
+===END===`;
 
 // ── User message builder ──────────────────────────────────────────────────────
 function buildUserMessage({ job, profile, settings }) {
@@ -238,7 +241,6 @@ Target word count: ${wordLimit} words (but write what the job needs — if they 
 Pricing instruction: ${pricingType === 'HOURLY' ? `Mention rate "${profile.hourlyRate || 'not set'}" naturally` : pricingType === 'FIXED' ? `Address their budget: ${job.budget}` : 'Focus on CTA, skip pricing'}
 
 HOOK REMINDER: First sentence MUST be one of the 7 hooks — specific to this job, not generic.
-JSON REMINDER: Use \\n for newlines in JSON — never real line breaks inside string values.
 Write the cover letter now. Bold key terms using **word** syntax. End with Regards + ${profile.name}.
 If there are additional client questions, answer them in the questions field.`.trim();
 

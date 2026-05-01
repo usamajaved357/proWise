@@ -179,6 +179,49 @@ function sendWelcomeEmail(to, plan) {
   });
 }
 
+// ── Parse delimiter format from Claude ───────────────────────────────────────
+function parseDelimiterFormat(text) {
+  const extract = (tag) => {
+    const re = new RegExp('===' + tag + '===\n([\s\S]*?)\n===END===', 'i');
+    const m = text.match(re);
+    return m ? m[1].trim() : '';
+  };
+
+  const letter    = extract('LETTER');
+  const portfolio = extract('PORTFOLIO');
+  const questions = extract('QUESTIONS');
+  const meta      = extract('META');
+
+  // Parse portfolio links
+  const portfolioLinks = [];
+  if (portfolio) {
+    portfolio.split('\n').forEach(line => {
+      const m = line.match(/^(.+?):\s*(https?:\/\/.+)$/);
+      if (m) portfolioLinks.push({ name: m[1].trim(), url: m[2].trim() });
+    });
+  }
+
+  // Parse meta fields
+  const getMetaField = (key) => {
+    const m = meta.match(new RegExp('^' + key + ':\s*(.+)$', 'im'));
+    return m ? m[1].trim() : '';
+  };
+
+  return {
+    letter,
+    portfolioLinks,
+    questions,
+    clientName: getMetaField('CLIENT'),
+    hookType:   getMetaField('HOOK'),
+    hookDesc:   getMetaField('DESC'),
+    tips: [
+      getMetaField('TIP1'),
+      getMetaField('TIP2'),
+      getMetaField('TIP3'),
+    ].filter(Boolean),
+  };
+}
+
 // ── Claude API ────────────────────────────────────────────────────────────────
 function callClaude(system, user) {
   return new Promise((resolve, reject) => {
@@ -186,7 +229,7 @@ function callClaude(system, user) {
     if (!key) return reject(new Error('ANTHROPIC_API_KEY not set'));
     const body = JSON.stringify({
       model: 'claude-haiku-4-5-20251001',
-      max_tokens: 600,
+      max_tokens: 1200,
       system,
       messages: [{ role: 'user', content: user }]
     });
@@ -202,73 +245,12 @@ function callClaude(system, user) {
           const rawText = p.content?.[0]?.text || '';
           console.log('Claude raw (first 200):', rawText.slice(0, 200));
 
-          // Strip markdown code fences
-          let jsonText = rawText
-            .replace(/^```(?:json)?[\r\n]*/i, '')
-            .replace(/[\r\n]*```\s*$/i, '')
-            .trim();
-
-          // Find JSON object boundaries
-          const start = jsonText.indexOf('{');
-          const end   = jsonText.lastIndexOf('}');
-          if (start === -1 || end === -1) return reject(new Error('No JSON found in response'));
-          jsonText = jsonText.slice(start, end + 1);
-
-          // Parse Claude JSON response robustly
-          // Add instruction to Claude to not use real newlines inside strings
-          let fixed = jsonText;
-
-          // The simplest reliable fix: use JSON5-style tolerant parsing
-          // Replace actual newlines inside string values by scanning manually
-          let result = '';
-          let inString = false;
-          let i = 0;
-          while (i < fixed.length) {
-            const c = fixed[i];
-            const code = fixed.charCodeAt(i);
-            if (!inString) {
-              if (c === '"') inString = true;
-              result += c;
-              i++;
-            } else {
-              if (c === '\\' && i + 1 < fixed.length) {
-                // Escaped char — keep both chars as-is
-                result += c + fixed[i+1];
-                i += 2;
-              } else if (c === '"') {
-                inString = false;
-                result += c;
-                i++;
-              } else if (code === 10) {
-                // Raw newline inside string — escape it
-                result += '\\n';
-                i++;
-              } else if (code === 13) {
-                result += '\\r';
-                i++;
-              } else if (code === 9) {
-                result += '\\t';
-                i++;
-              } else if (code < 32) {
-                // Other control chars — drop them
-                i++;
-              } else {
-                result += c;
-                i++;
-              }
-            }
-          }
-          fixed = result;
+          // Parse delimiter format — no JSON parsing needed
+          const parsed = parseDelimiterFormat(rawText);
+          if (!parsed.letter) return reject(new Error('No letter in response'));
+          return resolve(parsed);
 
 
-          let parsed;
-          try {
-            parsed = JSON.parse(fixed);
-          } catch(e) {
-            console.error('Parse failed, sample:', fixed.slice(0, 400));
-            return reject(new Error('Parse error: ' + e.message));
-          }
-          resolve(parsed);
         } catch(e) { reject(new Error('Parse error: ' + e.message)); }
       });
     });
