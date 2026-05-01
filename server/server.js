@@ -289,18 +289,21 @@ function extractClientName(reviewText, description) {
       description ? 'JOB DESCRIPTION:\n' + description.slice(0, 300) : ''
     ].filter(Boolean).join('\n\n');
 
-    const prompt = `Extract the client's first name from this text.
+    const prompt = `Find the CLIENT's first name from these Upwork reviews.
 
-Upwork labels each review with "To client: FirstName LastName" — this is the most reliable source.
-The text may look like: "TO CLIENT LABELS: John Doe, John Doe, John Doe"
+Freelancers write reviews about the client. Look for patterns like:
+- "John is an exceptional client to work with"
+- "Abduljalil is a great client"
+- "Working with Sarah was amazing"
+- "Thanks to Michael for the clear requirements"
 
-Text:
+Text to search:
 ${textToSearch}
 
 Rules:
-- If you see "TO CLIENT LABELS:" — use that first name, it is 100% the client
-- Return ONLY the first name (one word, e.g. "John" not "John Doe")
-- If no name found, reply: none`;
+- Return ONLY the client's first name (one word)
+- Do NOT return freelancer names (names after "To freelancer:" are freelancers, not the client)
+- If no client name found, reply: none`;
 
     const body = JSON.stringify({
       model: 'claude-haiku-4-5-20251001',
@@ -426,11 +429,12 @@ app.post('/proposal', async (req, res) => {
       }
     }
 
-    // Extract client name using separate AI call (fast, focused)
-    if (!job.clientName) {
+    // Use client name from extension (extracted via regex from reviews)
+    // Fall back to AI extraction only if not found
+    if (!job.clientName && (job.reviewText || job.description)) {
       job.clientName = await extractClientName(job.reviewText || '', job.description || '');
-      console.log('Client name extracted:', job.clientName || 'not found');
     }
+    console.log('Client name:', job.clientName || 'not found');
 
     // Build message using prompt.js
     const userMsg = buildUserMessage({ job, profile, settings });

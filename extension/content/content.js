@@ -223,24 +223,45 @@
     // Extract job type
     const jobType = document.querySelector('[data-test="job-type"], [class*="jobType"]')?.innerText?.trim() || '';
 
-    // Extract client name directly from "To client: [Name]" labels in reviews
-    // Upwork explicitly labels each review with "To client: FirstName LastName"
+    // Extract client name from review text
+    // Freelancers write "[ClientName] is an exceptional client" or similar
     let reviewText = '';
+    let clientNameFromReview = '';
     try {
       const pageText = document.body.innerText;
-      // Find all "To client: Name" occurrences
-      const toClientMatches = [...pageText.matchAll(/To client:\s*([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/g)];
-      if (toClientMatches.length > 0) {
-        // Use the most frequent name (in case of multiple reviews)
-        const names = toClientMatches.map(m => m[1].trim());
-        reviewText = 'TO CLIENT LABELS: ' + names.join(', ');
-        console.log('Found To client: labels:', reviewText);
+
+      // Find "Client's recent history" section
+      const histIdx = pageText.indexOf("Client's recent history");
+      if (histIdx > -1) {
+        const histSection = pageText.slice(histIdx, histIdx + 3000);
+        reviewText = histSection;
+
+        // Pattern: "[Name] is a/an exceptional/great/wonderful client"
+        const namePatterns = [
+          /([A-Z][a-z]{2,}(?:\s[A-Z][a-z]{2,})?)\s+is\s+(?:an?\s+)?(?:exceptional|great|wonderful|amazing|fantastic|excellent|outstanding|pleasure to work with|awesome)\s+client/,
+          /([A-Z][a-z]{2,}(?:\s[A-Z][a-z]{2,})?)\s+(?:was|is)\s+(?:a\s+)?great\s+(?:client|person|partner)/,
+          /(?:working|collaborated?|worked)\s+with\s+([A-Z][a-z]{2,}(?:\s[A-Z][a-z]{2,})?)\s+(?:was|is|has)/,
+          /[Tt]hanks?\s+(?:to\s+)?([A-Z][a-z]{2,})\s+for/,
+          /([A-Z][a-z]{2,})\s+(?:always|consistently|quickly|promptly)\s+(?:provided|responded|communicated)/,
+        ];
+
+        for (const pat of namePatterns) {
+          const m = histSection.match(pat);
+          if (m && m[1]) {
+            // Take only first name
+            clientNameFromReview = m[1].split(' ')[0];
+            console.log('Client name from review:', clientNameFromReview);
+            break;
+          }
+        }
       }
     } catch(e) {
       reviewText = '';
     }
 
-    return { title, description, skills, budget, location, clientName, questions, reviewText, type: jobType };
+    // Prefer review-extracted name over description-extracted name
+    const finalClientName = clientNameFromReview || clientName;
+    return { title, description, skills, budget, location, clientName: finalClientName, questions, reviewText, type: jobType };
   }
 
   // Generate
