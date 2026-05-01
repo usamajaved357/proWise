@@ -154,6 +154,10 @@ async function loadProfile() {
   document.getElementById('hourly-rate').value   = profile.hourlyRate || '';
   document.getElementById('pitch').value         = profile.pitch || '';
   document.getElementById('extra').value         = profile.extra || '';
+  document.getElementById('jss').value           = profile.jss || '';
+  document.getElementById('tier').value          = profile.tier || '';
+  document.getElementById('jobs-completed').value = profile.jobsCompleted || '';
+  document.getElementById('upwork-rating').value = profile.upworkRating || '';
   document.getElementById('tone').value          = settings.tone || 'professional';
   document.getElementById('length').value        = settings.length || 'medium';
   document.getElementById('always-include').value = settings.alwaysInclude || '';
@@ -233,6 +237,10 @@ document.getElementById('save-profile').addEventListener('click', async () => {
     hourlyRate:     document.getElementById('hourly-rate').value.trim(),
     pitch:          document.getElementById('pitch').value.trim(),
     extra:          document.getElementById('extra').value.trim(),
+    jss:            document.getElementById('jss').value.trim(),
+    tier:           document.getElementById('tier').value,
+    jobsCompleted:  document.getElementById('jobs-completed').value.trim(),
+    upworkRating:   document.getElementById('upwork-rating').value.trim(),
     portfolio,
     portfolioLinks,
   }});

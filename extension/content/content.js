@@ -210,58 +210,89 @@
 
     // Extract client name — pass raw review text to AI for extraction
     let clientName = '';
+    let clientNameFromReview = '';
 
     // Try job description self-intro first (fast)
     const descNameMatch = fullDesc.match(/(?:I'm|I am|My name is|This is)\s+([A-Z][a-z]{2,})(?:\s|,|\.)/);
     if (descNameMatch) clientName = descNameMatch[1];
+
+    // Extract review text from "Client's recent history" section
+    let reviewText = '';
+    try {
+      const pt = document.body.innerText;
+      const histIdx = pt.indexOf("Client's recent history");
+      if (histIdx > -1) {
+        reviewText = pt.slice(histIdx, histIdx + 2000);
+        // Extract name from patterns like "Abduljalil is an exceptional client"
+        const namePatterns = [
+          /([A-Z][a-z]{2,}(?:\s[A-Z][a-z]{2,})?)\s+is\s+(?:an?\s+)?(?:exceptional|great|wonderful|amazing|fantastic|excellent|outstanding|awesome)\s+client/,
+          /([A-Z][a-z]{2,}(?:\s[A-Z][a-z]{2,})?)\s+(?:was|is)\s+(?:a\s+)?great\s+(?:client|person|partner)/,
+          /working\s+with\s+([A-Z][a-z]{2,}(?:\s[A-Z][a-z]{2,})?)\s+(?:was|is|has)/i,
+          /[Tt]hanks?\s+(?:to\s+)?([A-Z][a-z]{2,})\s+for/,
+        ];
+        for (const pat of namePatterns) {
+          const m = reviewText.match(pat);
+          if (m && m[1]) { clientNameFromReview = m[1].split(' ')[0]; break; }
+        }
+      }
+    } catch(e) { reviewText = ''; }
 
     const skills   = Array.from(document.querySelectorAll('[data-test="Skill"] span, .air3-badge span'))
       .map(s => s.innerText.trim()).filter(Boolean).join(', ');
     const budget   = document.querySelector('[data-test="budget"] strong, [data-test="Budget"] strong')?.innerText?.trim() || '';
     const location = document.querySelector('[data-test="client-location"] strong')?.innerText?.trim() || '';
 
-    // Extract job type
+// Extract job type
     const jobType = document.querySelector('[data-test="job-type"], [class*="jobType"]')?.innerText?.trim() || '';
 
-    // Extract client name from review text
-    // Freelancers write "[ClientName] is an exceptional client" or similar
-    let reviewText = '';
-    let clientNameFromReview = '';
-    try {
-      const pageText = document.body.innerText;
+    // Job Intelligence Stats
+    const pageText2 = document.body.innerText;
 
-      // Find "Client's recent history" section
-      const histIdx = pageText.indexOf("Client's recent history");
-      if (histIdx > -1) {
-        const histSection = pageText.slice(histIdx, histIdx + 3000);
-        reviewText = histSection;
+    // Proposals submitted
+    let proposalCount = null;
+    const pm = pageText2.match(/(\d+)\s*(?:to\s*\d+\s*)?(?:proposals?|bids?|applicants?)/i);
+    if (pm) proposalCount = parseInt(pm[1]);
 
-        // Pattern: "[Name] is a/an exceptional/great/wonderful client"
-        const namePatterns = [
-          /([A-Z][a-z]{2,}(?:\s[A-Z][a-z]{2,})?)\s+is\s+(?:an?\s+)?(?:exceptional|great|wonderful|amazing|fantastic|excellent|outstanding|pleasure to work with|awesome)\s+client/,
-          /([A-Z][a-z]{2,}(?:\s[A-Z][a-z]{2,})?)\s+(?:was|is)\s+(?:a\s+)?great\s+(?:client|person|partner)/,
-          /(?:working|collaborated?|worked)\s+with\s+([A-Z][a-z]{2,}(?:\s[A-Z][a-z]{2,})?)\s+(?:was|is|has)/,
-          /[Tt]hanks?\s+(?:to\s+)?([A-Z][a-z]{2,})\s+for/,
-          /([A-Z][a-z]{2,})\s+(?:always|consistently|quickly|promptly)\s+(?:provided|responded|communicated)/,
-        ];
+    // Time posted
+    let timePosted = null;
+    const tm = pageText2.match(/(\d+)\s+(minutes?|hours?|days?|weeks?)\s+ago/i);
+    if (tm) timePosted = tm[1] + ' ' + tm[2] + ' ago';
 
-        for (const pat of namePatterns) {
-          const m = histSection.match(pat);
-          if (m && m[1]) {
-            // Take only first name
-            clientNameFromReview = m[1].split(' ')[0];
-            console.log('Client name from review:', clientNameFromReview);
-            break;
-          }
-        }
-      }
-    } catch(e) {
-      reviewText = '';
-    }
+    // Client avg hourly rate paid
+    let clientAvgRate = null;
+    const arm = pageText2.match(/\$([0-9,]+(?:\.\d+)?)\s*\/hr\s+avg/i);
+    if (arm) clientAvgRate = parseFloat(arm[1].replace(',',''));
 
-    // Prefer review-extracted name over description-extracted name
+    // Client total spent
+    let clientTotalSpent = null;
+    const sm = pageText2.match(/\$([0-9,.]+[KMkB]?)\s+total\s+spent/i);
+    if (sm) clientTotalSpent = sm[1];
+
+    // Client hire rate
+    let clientHireRate = null;
+    const hrm = pageText2.match(/(\d+)%\s+hire\s+rate/i);
+    if (hrm) clientHireRate = parseInt(hrm[1]);
+
+    // Client jobs posted
+    let clientJobsPosted = null;
+    const jpm = pageText2.match(/(\d+)\s+jobs?\s+posted/i);
+    if (jpm) clientJobsPosted = parseInt(jpm[1]);
+
+    // Client rating count
+    let clientRating = null;
+    const crm = pageText2.match(/Rating is (\d+(?:\.\d+)?) out of 5/i);
+    if (crm) clientRating = parseFloat(crm[1]);
+
+    // Interviewing count
+    let interviewingCount = null;
+    const im = pageText2.match(/Interviewing:\s*(\d+)/i);
+    if (im) interviewingCount = parseInt(im[1]);
+
+    const jobStats = { proposalCount, timePosted, clientAvgRate, clientTotalSpent, clientHireRate, clientJobsPosted, clientRating, interviewingCount };
+    console.log('Job stats:', JSON.stringify(jobStats));
+
     const finalClientName = clientNameFromReview || clientName;
-    return { title, description, skills, budget, location, clientName: finalClientName, questions, reviewText, type: jobType };
+    return { title, description, skills, budget, location, clientName: finalClientName, questions, reviewText, type: jobType, jobStats };
   }
 
   // Generate
@@ -288,6 +319,9 @@
         type: 'GENERATE_PROPOSAL',
         payload: { job }
       });
+      // Store job stats and profile for win probability rendering
+      window._snagJobStats = job.jobStats;
+      window._snagProfile  = stored.profile || {};
 
       if (!response) { showError('No response. Try refreshing the page.'); return; }
       if (response.showPaywall) { showPaywall(response.usage || response); return; }
@@ -297,6 +331,121 @@
       showError(err.message || 'Something went wrong.');
     }
   }
+
+  // ── Win Probability Calculator ────────────────────────────────────────────
+  function calcWinProbability(job, profile, jobStats) {
+    let score = 50; // baseline
+    const factors = [];
+    const warnings = [];
+
+    // 1. Competition level
+    const proposals = jobStats.proposalCount;
+    let competitionLabel = 'Unknown';
+    if (proposals !== null) {
+      if (proposals <= 5) {
+        score += 20; competitionLabel = 'Very Low';
+        factors.push({ label: 'Competition', value: proposals + ' proposals', good: true, note: 'Apply immediately' });
+      } else if (proposals <= 15) {
+        score += 10; competitionLabel = 'Low';
+        factors.push({ label: 'Competition', value: proposals + ' proposals', good: true, note: 'Good timing' });
+      } else if (proposals <= 30) {
+        score += 0; competitionLabel = 'Medium';
+        factors.push({ label: 'Competition', value: proposals + ' proposals', good: null, note: 'Stand out with specifics' });
+      } else if (proposals <= 50) {
+        score -= 10; competitionLabel = 'High';
+        factors.push({ label: 'Competition', value: proposals + ' proposals', good: false, note: 'Be very specific' });
+      } else {
+        score -= 20; competitionLabel = 'Very High';
+        factors.push({ label: 'Competition', value: proposals + ' proposals', good: false, note: 'Hard to win' });
+        warnings.push('Over 50 proposals — only apply if you perfectly match');
+      }
+    }
+
+    // 2. Timing bonus
+    const timeStr = jobStats.timePosted || '';
+    const minMatch = timeStr.match(/(\d+)\s*minute/i);
+    const hrMatch  = timeStr.match(/(\d+)\s*hour/i);
+    const dayMatch = timeStr.match(/(\d+)\s*day/i);
+    if (minMatch || (hrMatch && parseInt(hrMatch[1]) <= 2)) {
+      score += 15;
+      factors.push({ label: 'Timing', value: timeStr, good: true, note: 'Early applicant — big advantage' });
+    } else if (hrMatch && parseInt(hrMatch[1]) <= 6) {
+      score += 8;
+      factors.push({ label: 'Timing', value: timeStr, good: true, note: 'Good timing' });
+    } else if (hrMatch && parseInt(hrMatch[1]) <= 24) {
+      factors.push({ label: 'Timing', value: timeStr, good: null, note: 'Apply now' });
+    } else if (dayMatch) {
+      score -= 5;
+      factors.push({ label: 'Timing', value: timeStr, good: false, note: 'Late application' });
+    }
+
+    // 3. Rate alignment
+    const freelancerRate = parseFloat((profile.hourlyRate || '0').replace(/[^0-9.]/g, '')) || 0;
+    const clientAvgRate  = jobStats.clientAvgRate;
+    if (clientAvgRate && freelancerRate) {
+      const diff = Math.abs(clientAvgRate - freelancerRate);
+      const pct  = diff / clientAvgRate;
+      if (pct <= 0.15) {
+        score += 12;
+        factors.push({ label: 'Rate match', value: '$' + freelancerRate + '/hr vs $' + clientAvgRate + '/hr avg', good: true, note: 'Perfect rate alignment' });
+      } else if (pct <= 0.35) {
+        score += 5;
+        factors.push({ label: 'Rate match', value: '$' + freelancerRate + '/hr vs $' + clientAvgRate + '/hr avg', good: null, note: 'Close match' });
+      } else if (freelancerRate > clientAvgRate * 1.4) {
+        score -= 8;
+        factors.push({ label: 'Rate match', value: '$' + freelancerRate + '/hr vs $' + clientAvgRate + '/hr avg', good: false, note: 'Your rate is high for this client' });
+        warnings.push('Client avg $' + clientAvgRate + '/hr — consider adjusting your pitch');
+      } else {
+        factors.push({ label: 'Rate match', value: '$' + freelancerRate + '/hr vs $' + clientAvgRate + '/hr avg', good: null, note: 'Rate gap noted' });
+      }
+    }
+
+    // 4. Client quality
+    const clientRating = jobStats.clientRating;
+    const totalSpent   = jobStats.clientTotalSpent;
+    const hireRate     = jobStats.clientHireRate;
+    if (clientRating && clientRating >= 4.5) {
+      score += 5;
+      factors.push({ label: 'Client quality', value: clientRating + '★ rating', good: true, note: hireRate ? hireRate + '% hire rate' : '' });
+    } else if (clientRating && clientRating < 4.0) {
+      warnings.push('Client has low rating (' + clientRating + '★) — review carefully');
+    }
+
+    // 5. Freelancer tier bonus
+    const tierScores = { new: 0, rising: 5, top_rated: 12, top_rated_plus: 18, expert: 25 };
+    const tierBonus  = tierScores[profile.tier] || 0;
+    if (tierBonus > 0) {
+      score += tierBonus;
+      const tierLabels = { rising: 'Rising Talent', top_rated: 'Top Rated', top_rated_plus: 'Top Rated Plus', expert: 'Expert Vetted' };
+      factors.push({ label: 'Your tier', value: tierLabels[profile.tier] || profile.tier, good: true, note: 'Badge visible to client' });
+    }
+
+    // 6. JSS score
+    const jss = parseFloat((profile.jss || '0').replace(/[^0-9.]/g, '')) || 0;
+    if (jss >= 90) {
+      score += 8;
+      factors.push({ label: 'JSS', value: jss + '%', good: true, note: 'Strong success score' });
+    } else if (jss >= 80) {
+      score += 3;
+      factors.push({ label: 'JSS', value: jss + '%', good: null, note: 'Good' });
+    } else if (jss > 0 && jss < 70) {
+      score -= 10;
+      warnings.push('JSS below 70% — clients may skip your profile');
+    }
+
+    // Cap between 5 and 95
+    score = Math.max(5, Math.min(95, score));
+
+    // Win verdict
+    let verdict, verdictColor;
+    if (score >= 75) { verdict = 'Strong match'; verdictColor = '#34d399'; }
+    else if (score >= 55) { verdict = 'Good chance'; verdictColor = '#c9a84c'; }
+    else if (score >= 35) { verdict = 'Possible'; verdictColor = '#f59e0b'; }
+    else { verdict = 'Long shot'; verdictColor = '#f87171'; }
+
+    return { score, verdict, verdictColor, factors, warnings, competitionLabel };
+  }
+
 
   // Render proposal
   function renderProposal(data) {
@@ -344,14 +493,50 @@
           </div>
         </div>
 
-        ${tips?.length ? `
-        <div class="sn-tips">
-          <div class="sn-tips-head">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-            Tips for this job
-          </div>
-          ${tips.map(t => `<div class="sn-tip"><span class="sn-tip-line"></span><span>${esc(t)}</span></div>`).join('')}
-        </div>` : ''}
+        ${(() => {
+          const jobStats = window._snagJobStats || {};
+          const profile  = window._snagProfile  || {};
+          const wp = calcWinProbability({}, profile, jobStats);
+          const hasStats = Object.values(jobStats).some(v => v !== null && v !== undefined);
+
+          return `<div class="sn-intel">
+            <div class="sn-intel-head">
+              <div class="sn-intel-title">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                Job Intelligence
+              </div>
+              <div class="sn-win-score" style="color:${wp.verdictColor}">
+                <span class="sn-win-pct">${wp.score}%</span>
+                <span class="sn-win-label">${wp.verdict}</span>
+              </div>
+            </div>
+
+            <div class="sn-win-bar-wrap">
+              <div class="sn-win-bar" style="width:${wp.score}%;background:${wp.verdictColor}"></div>
+            </div>
+
+            ${hasStats ? `<div class="sn-intel-factors">
+              ${wp.factors.map(f => `
+                <div class="sn-factor">
+                  <div class="sn-factor-dot ${f.good === true ? 'green' : f.good === false ? 'red' : 'yellow'}"></div>
+                  <div class="sn-factor-body">
+                    <span class="sn-factor-label">${esc(f.label)}:</span>
+                    <span class="sn-factor-value">${esc(f.value)}</span>
+                    ${f.note ? `<span class="sn-factor-note">${esc(f.note)}</span>` : ''}
+                  </div>
+                </div>`).join('')}
+            </div>` : '<div class="sn-no-stats">No client stats available for this job</div>'}
+
+            ${wp.warnings.length ? `<div class="sn-warnings">
+              ${wp.warnings.map(w => `<div class="sn-warning">⚠ ${esc(w)}</div>`).join('')}
+            </div>` : ''}
+
+            ${tips?.length ? `<div class="sn-intel-tips">
+              <div class="sn-tips-label">Strategy tips</div>
+              ${tips.map(t => `<div class="sn-tip"><span class="sn-tip-line"></span><span>${esc(t)}</span></div>`).join('')}
+            </div>` : ''}
+          </div>`;
+        })()}
 
         ${questions ? `
         <div class="sn-questions">
