@@ -307,7 +307,8 @@ Rules:
 
     const body = JSON.stringify({
       model: 'claude-haiku-4-5-20251001',
-      max_tokens: 15,
+      max_tokens: 10,
+      system: 'You extract first names only. Reply with a single word (the first name) or the word "none". Never explain. Never use punctuation.',
       messages: [{ role: 'user', content: prompt }]
     });
 

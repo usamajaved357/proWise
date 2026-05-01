@@ -24,6 +24,10 @@ function processBold(text) {
 // ── System prompt ─────────────────────────────────────────────────────────────
 const SYSTEM = `You are an elite Upwork proposal writer. You write proposals that win jobs — short, human, specific, and impossible to ignore.
 
+CRITICAL JSON RULE: In your JSON output, ALL newlines inside string values MUST be written as \n (backslash + n). NEVER use actual line breaks inside JSON strings. This is required or the response will fail.
+
+CRITICAL HOOK RULE: The very first sentence after the greeting MUST be one of the 7 hooks below. Not a general statement. Not "I've built apps." The HOOK is your opening punch. Without it, the proposal fails.
+
 ═══════════════════════════════════════════════
 STRUCTURE (follow this exact order)
 ═══════════════════════════════════════════════
@@ -148,18 +152,23 @@ PRICING
 ═══════════════════════════════════════════════
 OUTPUT FORMAT
 ═══════════════════════════════════════════════
-Return ONLY valid JSON — no markdown fences, no extra text:
+Return ONLY valid JSON. NO markdown fences. NO extra text before or after.
+EVERY newline in string values must be \n not a real line break.
+
 {
-  "letter": "the complete cover letter with **bold** markers — do NOT include portfolio links inside this field",
-  "portfolioLinks": [{"name": "PortfolioName", "url": "https://..."}, ...],
-  "questions": "answers to additional questions if any, else empty string",
-  "clientName": "extracted client first name from reviews, or empty string",
-  "hookType": "which hook was used",
-  "hookDesc": "one line why this hook fits this specific job",
-  "tips": ["tip 1 specific to this job", "tip 2", "tip 3"]
+  "letter": "Hi [name],\n\n[hook sentence]\n\n[body]\n\nRegards,\n[name]",
+  "portfolioLinks": [{"name": "Name", "url": "https://..."}],
+  "questions": "",
+  "clientName": "",
+  "hookType": "PROOF",
+  "hookDesc": "one line",
+  "tips": ["tip 1", "tip 2", "tip 3"]
 }
 
-IMPORTANT: portfolioLinks must contain ONLY the portfolios you actually referenced in the letter body. Empty array [] if none mentioned.`;
+RULES:
+- portfolioLinks: only portfolios mentioned in the letter. Empty array [] if none.
+- All strings on one logical line using \n for breaks — NO real newlines inside strings.
+- Start letter with the hook immediately after greeting — not with "I've built" generically.`;
 
 // ── User message builder ──────────────────────────────────────────────────────
 function buildUserMessage({ job, profile, settings }) {
@@ -228,8 +237,10 @@ Tone: ${settings?.tone || 'professional'}
 Target word count: ${wordLimit} words (but write what the job needs — if they asked specific questions, answer them properly)
 Pricing instruction: ${pricingType === 'HOURLY' ? `Mention rate "${profile.hourlyRate || 'not set'}" naturally` : pricingType === 'FIXED' ? `Address their budget: ${job.budget}` : 'Focus on CTA, skip pricing'}
 
+HOOK REMINDER: First sentence MUST be one of the 7 hooks — specific to this job, not generic.
+JSON REMINDER: Use \\n for newlines in JSON — never real line breaks inside string values.
 Write the cover letter now. Bold key terms using **word** syntax. End with Regards + ${profile.name}.
-If there are additional client questions, answer them after the letter in the questions field.`.trim();
+If there are additional client questions, answer them in the questions field.`.trim();
 
   return msg;
 }
