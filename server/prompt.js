@@ -39,7 +39,8 @@ STRUCTURE (follow this exact order)
 
 2. OPENING HOOK (the VERY FIRST sentence after greeting — most critical part)
    This single sentence determines if the client reads the rest. Make it impossible to ignore.
-   Pick ONE hook that fits THIS job best. Use the EXACT format shown:
+   The REQUIRED HOOK is specified in the user message as "ASSIGNED HOOK: X". You MUST use that hook.
+   Format shown below for each hook type:
 
    HOOK 1 — PROOF OF SUCCESS:
    "I saved my past client [specific time/money/result]. I'd like to do the same for you."
@@ -202,6 +203,36 @@ function buildUserMessage({ job, profile, settings }) {
   const wordLimit = settings?.length === 'short' ? '100-130'
     : settings?.length === 'long' ? '160-220'
     : '130-160';
+
+  // Hook selection — pick best hook based on job characteristics
+  // Rotate through hooks so not always the same one
+  const jobTextLower = jobText.toLowerCase();
+  const budget = parseInt((job.budget || '0').replace(/[^0-9]/g, '')) || 0;
+  const hasTimeline = /week|day|month|deadline|urgent|asap|quickly|fast/i.test(jobTextLower);
+  const hasBurnedClient = /left mid|abandoned|previous developer|fired|failed|took over|inherit/i.test(jobTextLower);
+  const isLargeBudget = budget >= 5000;
+  const isDetailedJob = (job.description || '').length > 1000;
+  const hasSpecificMetric = /\d+%|\d+ (users|customers|clients|downloads|apps|projects)/i.test(jobTextLower);
+
+  let assignedHook;
+  if (hasBurnedClient) {
+    assignedHook = 'HOOK 3 — GUARANTEE'; // burned before, needs reassurance
+  } else if (hasSpecificMetric && profile.pitch) {
+    assignedHook = 'HOOK 1 — PROOF OF SUCCESS'; // measurable outcomes available
+  } else if (isLargeBudget && isDetailedJob) {
+    assignedHook = 'HOOK 7 — CLIENT-CENTERED'; // large budget = serious client, show you read it
+  } else if (isDetailedJob) {
+    assignedHook = 'HOOK 7 — CLIENT-CENTERED'; // detailed job = prove you understood it
+  } else if (hasTimeline) {
+    assignedHook = 'HOOK 4 — EXTRA VALUE'; // tight timeline = offer extra
+  } else if (isLargeBudget) {
+    assignedHook = 'HOOK 6 — QUICK PROOF (NUMBERS)'; // corporate/large = numbers
+  } else {
+    // Rotate between remaining hooks based on job title hash
+    const hooks = ['HOOK 1 — PROOF OF SUCCESS', 'HOOK 4 — EXTRA VALUE', 'HOOK 5 — GROWTH-ORIENTED (CALL)', 'HOOK 6 — QUICK PROOF (NUMBERS)'];
+    const idx = (job.title || '').split('').reduce((a, c) => a + c.charCodeAt(0), 0) % hooks.length;
+    assignedHook = hooks[idx];
+  }
 
   const msg = `
 JOB TITLE: ${job.title}
