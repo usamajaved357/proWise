@@ -14,11 +14,9 @@
   --accent:#a78bfa;
 }
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--white);min-height:100vh;font-size:14px;line-height:1.5}
-
-/* Layout */
 .layout{display:flex;min-height:100vh}
 .sidebar{width:220px;background:var(--bg2);border-right:1px solid var(--border);padding:24px 0;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto}
-.main{flex:1;padding:36px 48px;max-width:700px}
+.main{flex:1;padding:36px 48px;max-width:780px}
 
 /* Sidebar */
 .sb-logo{display:flex;align-items:center;gap:10px;padding:0 20px 24px;border-bottom:1px solid var(--border)}
@@ -32,9 +30,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .sb-item svg{opacity:.6;flex-shrink:0}
 .sb-item.active svg{opacity:1}
 .sb-divider{height:1px;background:var(--border);margin:8px 20px}
-.sb-section-label{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--white3);padding:8px 20px 4px}
-
-/* Plan card in sidebar */
 .sb-plan{margin:16px 12px 0;background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);border-radius:10px;padding:12px}
 .sb-plan-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
 .sb-plan-badge{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px}
@@ -44,8 +39,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .sb-upgrade{display:block;width:100%;margin-top:8px;padding:7px;background:var(--gold);color:#0d1120;border:none;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;text-align:center}
 
 /* Sections */
-.section{display:none}
-.section.active{display:block}
+.section{display:none}.section.active{display:block}
 .section-title{font-size:22px;font-weight:700;color:var(--white);margin-bottom:4px;letter-spacing:-.02em}
 .section-sub{font-size:13px;color:var(--white3);margin-bottom:28px}
 
@@ -53,41 +47,46 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:16px}
 .card-title{font-size:13px;font-weight:700;color:var(--white);margin-bottom:16px;display:flex;align-items:center;gap:8px}
 .card-title svg{color:var(--gold);opacity:.8}
+.card-title-note{font-size:10px;font-weight:400;color:var(--white3);margin-left:4px}
 
-/* Form fields */
-.field{margin-bottom:16px}
-.field:last-child{margin-bottom:0}
+/* Fields */
+.field{margin-bottom:14px}.field:last-child{margin-bottom:0}
 .field label{display:block;font-size:11px;font-weight:700;color:var(--white3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
-.field input,.field textarea,.field select{
-  width:100%;padding:10px 13px;
-  background:rgba(255,255,255,.05);
-  border:1px solid var(--border2);
-  border-radius:8px;
-  color:var(--white);
-  font-size:13px;font-family:inherit;
-  outline:none;resize:vertical;
-  transition:border-color .15s;
-}
+.field input,.field textarea,.field select{width:100%;padding:10px 13px;background:rgba(255,255,255,.05);border:1px solid var(--border2);border-radius:8px;color:var(--white);font-size:13px;font-family:inherit;outline:none;resize:vertical;transition:border-color .15s}
 .field input:focus,.field textarea:focus,.field select:focus{border-color:var(--gold)}
 .field input::placeholder,.field textarea::placeholder{color:var(--white3)}
 .field textarea{min-height:80px}
 .field select option{background:#1a2035}
 .field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
 
-/* Portfolio */
-.port-item{display:flex;gap:8px;margin-bottom:8px}
-.port-item input{flex:1}
-.port-remove{width:36px;height:38px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);border-radius:8px;color:#f87171;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.add-port{width:100%;padding:9px;border:1px dashed rgba(255,255,255,.15);border-radius:8px;background:transparent;color:var(--white3);font-size:12px;cursor:pointer;transition:all .15s;font-family:inherit}
+/* Portfolio — collapsible rows */
+.port-row{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:10px;margin-bottom:8px;overflow:hidden;transition:all .2s}
+.port-row-head{display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:default}
+.port-row-info{flex:1;min-width:0}
+.port-row-name{font-size:13px;font-weight:600;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.port-row-url{font-size:11px;color:var(--white3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.port-row-actions{display:flex;gap:6px;flex-shrink:0}
+.port-edit-btn{padding:4px 10px;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.2);border-radius:6px;color:var(--gold);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit}
+.port-edit-btn:hover{background:rgba(201,168,76,.2)}
+.port-del-btn{padding:4px 8px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.15);border-radius:6px;color:var(--red);font-size:13px;cursor:pointer;line-height:1}
+.port-del-btn:hover{background:rgba(239,68,68,.18)}
+.port-row-fields{display:none;padding:0 14px 14px;border-top:1px solid rgba(255,255,255,.06)}
+.port-row-fields.open{display:block}
+.port-row-fields .field{margin-bottom:10px;margin-top:10px}
+.port-row-fields .field:last-child{margin-bottom:0}
+.port-row-fields input{padding:8px 12px;font-size:12px}
+.port-save-btn{width:100%;padding:8px;background:var(--gold);color:#0d1120;border:none;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;margin-top:8px}
+.add-port{width:100%;padding:9px;border:1px dashed rgba(255,255,255,.12);border-radius:9px;background:transparent;color:var(--white3);font-size:12px;cursor:pointer;transition:all .15s;font-family:inherit}
 .add-port:hover{border-color:var(--gold);color:var(--gold)}
 
-/* Save button */
-.save-btn{padding:11px 28px;background:var(--gold);color:#0d1120;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;transition:opacity .15s;letter-spacing:.01em}
+/* Save */
+.save-btn{padding:11px 28px;background:var(--gold);color:#0d1120;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;transition:opacity .15s}
 .save-btn:hover{opacity:.9}
 .saved-msg{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--green);font-weight:600;opacity:0;transition:opacity .3s;margin-left:12px}
 .saved-msg.show{opacity:1}
 
-/* Email section */
+/* Email */
 .email-status{display:flex;align-items:center;gap:10px;padding:14px;background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:10px;margin-bottom:14px}
 .email-dot{width:9px;height:9px;border-radius:50%;background:#374151;flex-shrink:0}
 .email-dot.on{background:var(--green)}
@@ -95,9 +94,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .email-info-label{font-size:11px;color:var(--white3);margin-bottom:2px}
 .email-info-val{font-size:13px;font-weight:600;color:var(--white)}
 .email-change{font-size:12px;color:var(--gold);cursor:pointer}
-.email-change:hover{color:var(--gold2)}
 
-/* Plan cards */
+/* Plans */
 .plans-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
 .plan-card{background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:12px;padding:18px;cursor:pointer;transition:all .2s;position:relative;text-align:center}
 .plan-card:hover{border-color:rgba(201,168,76,.4);background:rgba(201,168,76,.05)}
@@ -115,8 +113,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .plan-btn-gold{background:var(--gold);color:#0d1120}
 .plan-btn-gold:hover{background:var(--gold2)}
 .plan-current-badge{width:100%;padding:9px;border-radius:8px;font-size:12px;font-weight:700;background:rgba(52,211,153,.15);color:var(--green);border:1px solid rgba(52,211,153,.25);text-align:center}
-
-/* Usage card in plan section */
 .usage-detail{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px}
 .ud-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
 .ud-plan{font-size:13px;font-weight:700;color:var(--white)}
@@ -126,7 +122,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .ud-counts{display:flex;justify-content:space-between;font-size:12px;color:var(--white3)}
 .ud-counts strong{color:var(--white)}
 
-/* How to use */
+/* How to */
 .how-item{display:flex;gap:14px;margin-bottom:20px}
 .how-num{width:28px;height:28px;border:1px solid var(--gold);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--gold);flex-shrink:0}
 .how-title{font-size:13px;font-weight:700;color:var(--white);margin-bottom:3px}
@@ -138,16 +134,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   .layout{flex-direction:column}
   .sidebar{width:100%;height:auto;position:relative}
   .main{padding:24px 20px}
-  .plans-grid{grid-template-columns:1fr}
-  .field-row{grid-template-columns:1fr}
+  .plans-grid,.field-row,.field-row-3{grid-template-columns:1fr}
 }
-</style>
 
+.port-url-row { display: flex; gap: 6px; margin-bottom: 6px; }
+.port-url-row input { flex: 1; }
+.port-url-del { width: 32px; height: 38px; background: rgba(239,68,68,.08); border: 1px solid rgba(239,68,68,.15); border-radius: 7px; color: #f87171; cursor: pointer; font-size: 14px; flex-shrink: 0; }
+.port-url-del:hover { background: rgba(239,68,68,.18); }
+</style>
 </head>
 <body>
-
 <div class="layout">
-  <!-- Sidebar -->
   <div class="sidebar">
     <div class="sb-logo">
       <div class="sb-icon">
@@ -156,53 +153,43 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
           <path d="M16 9L22 9C22 9 24 11 22 13C24 13 26 15 24 17C25 17 26 19 24 21C25 21 25 23 23 24L16 24" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </div>
-      <div>
-        <div class="sb-name">Snag AI</div>
-        <div class="sb-ver">v6.0.0</div>
-      </div>
+      <div><div class="sb-name">Snag AI</div><div class="sb-ver">v8.0.0</div></div>
     </div>
-
     <div class="sb-nav">
       <div class="sb-item active" data-section="profile">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        Profile
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profile
       </div>
       <div class="sb-item" data-section="settings">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-        Settings
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Settings
       </div>
       <div class="sb-divider"></div>
       <div class="sb-item" data-section="subscription">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-        Subscription
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>Subscription
       </div>
       <div class="sb-divider"></div>
       <div class="sb-item" data-section="howto">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-        How to use
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>How to use
       </div>
     </div>
-
-    <!-- Plan mini card -->
     <div class="sb-plan">
       <div class="sb-plan-top">
-        <span class="sb-plan-badge badge-free" id="sb-plan-badge" style="background:rgba(251,191,36,.15);color:#fbbf24;border:1px solid rgba(251,191,36,.25)">Free</span>
+        <span class="sb-plan-badge" id="sb-plan-badge" style="background:rgba(251,191,36,.15);color:#fbbf24;border:1px solid rgba(251,191,36,.25)">Free</span>
         <span style="font-size:10px;color:var(--white3)" id="sb-remaining">2 left</span>
       </div>
       <div class="sb-plan-bar-wrap"><div class="sb-plan-bar" id="sb-bar" style="width:0%"></div></div>
       <div class="sb-plan-count" id="sb-count">0 / 2 used</div>
-      <button class="sb-upgrade" id="sb-upgrade" id="sb-upgrade-btn">Upgrade plan →</button>
+      <button class="sb-upgrade" id="sb-upgrade-btn">Upgrade plan →</button>
     </div>
   </div>
 
-  <!-- Main content -->
   <div class="main">
 
     <!-- PROFILE -->
     <div class="section active" id="section-profile">
       <div class="section-title">Your Profile</div>
-      <div class="section-sub">This information is used in every proposal you generate.</div>
+      <div class="section-sub">Used in every proposal. The more detail, the better the output.</div>
 
+      <!-- Basic info -->
       <div class="card">
         <div class="card-title">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -215,41 +202,21 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
         <div class="field"><label>Top skills</label><input id="skills" placeholder="e.g. Swift, SwiftUI, Flutter, Firebase, React Native"></div>
         <div class="field-row">
           <div class="field"><label>Hourly rate</label><input id="hourly-rate" placeholder="e.g. $45/hr"></div>
-          <div class="field"><label>One-line value pitch</label><input id="pitch" placeholder="e.g. I ship iOS apps on time"></div>
+          <div class="field"><label>One-line pitch</label><input id="pitch" placeholder="e.g. I ship iOS apps on time"></div>
         </div>
+        <div class="field"><label>Always mention (optional)</label><textarea id="extra" placeholder="Timezone, availability, certifications…"></textarea></div>
       </div>
 
-      <div class="card">
-        <div class="card-title">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-          Portfolio projects
-        </div>
-        <div style="font-size:12px;color:var(--white3);margin-bottom:14px;line-height:1.6">Add your best projects. Snag AI will match the most relevant ones to each job automatically.</div>
-        <div id="port-list"></div>
-        <button class="add-port" id="add-port">+ Add project</button>
-      </div>
-
-      <div class="card">
-        <div class="card-title">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-          Extra context
-        </div>
-        <div class="field">
-          <label>Always mention (optional)</label>
-          <textarea id="extra" placeholder="Timezone, availability, testimonials, certifications, anything you always want included…"></textarea>
-        </div>
-      </div>
-
+      <!-- Upwork stats -->
       <div class="card">
         <div class="card-title">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-          Upwork profile stats
-          <span style="font-size:10px;font-weight:400;color:var(--white3);margin-left:4px">— used for win probability</span>
+          Upwork stats
+          <span class="card-title-note">— used for win probability</span>
         </div>
-        <div style="font-size:12px;color:var(--white3);margin-bottom:14px;line-height:1.6">These stats help Snag AI estimate your chances of winning each job and give smarter suggestions.</div>
         <div class="field-row">
-          <div class="field"><label>Job Success Score (JSS)</label><input id="jss" placeholder="e.g. 95%" type="text"></div>
-          <div class="field"><label>Upwork Level / Tier</label>
+          <div class="field"><label>Job Success Score</label><input id="jss" placeholder="e.g. 95%"></div>
+          <div class="field"><label>Level / Tier</label>
             <select id="tier">
               <option value="">Select tier</option>
               <option value="new">New freelancer</option>
@@ -261,28 +228,37 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
           </div>
         </div>
         <div class="field-row">
-          <div class="field"><label>Total jobs completed</label><input id="jobs-completed" placeholder="e.g. 47" type="number"></div>
-          <div class="field"><label>Your Upwork rating</label><input id="upwork-rating" placeholder="e.g. 4.9" type="number" step="0.1" min="1" max="5"></div>
+          <div class="field"><label>Jobs completed</label><input id="jobs-completed" placeholder="e.g. 47" type="number"></div>
+          <div class="field"><label>Upwork rating</label><input id="upwork-rating" placeholder="e.g. 4.9" type="number" step="0.1" min="1" max="5"></div>
         </div>
       </div>
 
+      <!-- Portfolio -->
+      <div class="card">
+        <div class="card-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+          Portfolio projects
+        </div>
+        <div style="font-size:12px;color:var(--white3);margin-bottom:14px;line-height:1.6">Add your best work. Snag AI matches the most relevant ones to each job automatically.</div>
+        <div id="port-list"></div>
+        <button class="add-port" id="add-port">+ Add project</button>
+      </div>
+
       <button class="save-btn" id="save-profile">Save profile</button>
-      <span class="saved-msg" id="saved-profile-msg">✓ Profile saved</span>
+      <span class="saved-msg" id="saved-profile-msg">✓ Saved</span>
     </div>
 
     <!-- SETTINGS -->
     <div class="section" id="section-settings">
       <div class="section-title">Proposal Settings</div>
       <div class="section-sub">Customize how Snag AI writes your proposals.</div>
-
       <div class="card">
         <div class="card-title">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
           Tone & length
         </div>
         <div class="field-row">
-          <div class="field">
-            <label>Proposal tone</label>
+          <div class="field"><label>Tone</label>
             <select id="tone">
               <option value="professional">Professional & confident</option>
               <option value="friendly">Friendly & approachable</option>
@@ -290,8 +266,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
               <option value="enthusiastic">Enthusiastic & energetic</option>
             </select>
           </div>
-          <div class="field">
-            <label>Proposal length</label>
+          <div class="field"><label>Length</label>
             <select id="length">
               <option value="short">Short (100–130 words)</option>
               <option value="medium" selected>Medium (130–160 words)</option>
@@ -299,28 +274,22 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
             </select>
           </div>
         </div>
-        <div class="field">
-          <label>Always include in every proposal</label>
-          <textarea id="always-include" placeholder="e.g. 'Available to start immediately · Pakistan timezone (PKT UTC+5)' or any text you always want at the end"></textarea>
-        </div>
+        <div class="field"><label>Always include</label><textarea id="always-include" placeholder="e.g. Available immediately · Pakistan timezone (PKT UTC+5)"></textarea></div>
       </div>
-
       <button class="save-btn" id="save-settings">Save settings</button>
-      <span class="saved-msg" id="saved-settings-msg">✓ Settings saved</span>
+      <span class="saved-msg" id="saved-settings-msg">✓ Saved</span>
     </div>
 
     <!-- SUBSCRIPTION -->
     <div class="section" id="section-subscription">
       <div class="section-title">Subscription</div>
       <div class="section-sub">Manage your plan and billing.</div>
-
-      <!-- Email -->
       <div class="card">
         <div class="card-title">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
           Subscription email
         </div>
-        <div style="font-size:12px;color:var(--white3);margin-bottom:14px;line-height:1.6">Your email is your subscription key. After purchasing, enter the same email here and your plan unlocks automatically.</div>
+        <div style="font-size:12px;color:var(--white3);margin-bottom:14px;line-height:1.6">Your email is your subscription key. After purchasing, enter the same email here and your plan unlocks instantly.</div>
         <div class="email-status" id="email-status">
           <div class="email-dot" id="email-dot-opt"></div>
           <div class="email-info-text">
@@ -330,22 +299,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
           <span class="email-change" id="email-toggle-opt">Add email</span>
         </div>
         <div id="email-edit-wrap" style="display:none;gap:8px;flex-direction:column">
-          <input type="email" class="field" id="email-inp-opt" placeholder="your@email.com" style="padding:10px 13px;background:rgba(255,255,255,.05);border:1px solid var(--border2);border-radius:8px;color:var(--white);font-size:13px;width:100%;outline:none">
+          <input type="email" id="email-inp-opt" placeholder="your@email.com" style="padding:10px 13px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#f0eeea;font-size:13px;width:100%;outline:none">
           <button class="save-btn" id="email-save-opt" style="padding:10px 20px;font-size:12px">Save email</button>
         </div>
       </div>
-
-      <!-- Current usage -->
-      <div class="usage-detail" id="usage-detail">
-        <div class="ud-top">
-          <div class="ud-plan" id="ud-plan">Free plan</div>
-          <div class="ud-reset">Resets monthly</div>
-        </div>
+      <div class="usage-detail">
+        <div class="ud-top"><div class="ud-plan" id="ud-plan">Free plan</div><div class="ud-reset">Resets monthly</div></div>
         <div class="ud-bar-wrap"><div class="ud-bar" id="ud-bar" style="width:0%;background:linear-gradient(90deg,#c9a84c,#e8c878)"></div></div>
         <div class="ud-counts"><span><strong id="ud-used">0</strong> used</span><span id="ud-limit">2 total</span></div>
       </div>
-
-      <!-- Plans -->
       <div class="card">
         <div class="card-title">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
@@ -383,34 +345,17 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div class="section" id="section-howto">
       <div class="section-title">How to use</div>
       <div class="section-sub">Get up and running in under 3 minutes.</div>
-
       <div class="card">
-        <div class="how-item">
-          <div class="how-num">1</div>
-          <div><div class="how-title">Fill in your profile</div><div class="how-desc">Add your name, skills, hourly rate, and portfolio links once. Snag AI uses this context in every proposal it writes — the more detail, the better the output.</div></div>
-        </div>
-        <div class="how-item">
-          <div class="how-num">2</div>
-          <div><div class="how-title">Open any Upwork job</div><div class="how-desc">Browse Upwork normally. The Snag AI button appears automatically in the bottom-right corner of every job page. No tab switching needed.</div></div>
-        </div>
-        <div class="how-item">
-          <div class="how-num">3</div>
-          <div><div class="how-title">Click once — done in 10 seconds</div><div class="how-desc">Snag AI reads the job title, description, required skills, and budget. It picks the best hook from 7 proven patterns and writes a personalised proposal.</div></div>
-        </div>
-        <div class="how-item" style="margin-bottom:0">
-          <div class="how-num">4</div>
-          <div><div class="how-title">Edit, copy, submit</div><div class="how-desc">The proposal text is fully editable — click anywhere to change wording. Hit Copy and paste directly into Upwork's proposal box.</div></div>
-        </div>
+        <div class="how-item"><div class="how-num">1</div><div><div class="how-title">Fill in your profile</div><div class="how-desc">Add your name, skills, hourly rate, portfolio, and Upwork stats once. The more detail, the better the proposals and win probability scores.</div></div></div>
+        <div class="how-item"><div class="how-num">2</div><div><div class="how-title">Open any Upwork job</div><div class="how-desc">Browse Upwork normally. The Snag AI button appears automatically in the bottom-right corner of every job page.</div></div></div>
+        <div class="how-item"><div class="how-num">3</div><div><div class="how-title">Click once — done in 10 seconds</div><div class="how-desc">Snag AI reads the job, picks the best hook from 7 proven patterns, and writes a personalised proposal. Win probability is shown instantly.</div></div></div>
+        <div class="how-item" style="margin-bottom:0"><div class="how-num">4</div><div><div class="how-title">Refine, copy, submit</div><div class="how-desc">Type a refinement instruction (e.g. "make it shorter") and hit Rewrite. Copy and paste directly into Upwork.</div></div></div>
       </div>
-
-      <div class="tip-box">
-        <strong>Pro tip:</strong> The more specific your profile, the better the proposals. Add real portfolio links, your actual hourly rate, and a specific value pitch. If you always want to mention your timezone or availability, put it in "Always include" in Settings.
-      </div>
+      <div class="tip-box"><strong>Pro tip:</strong> Add real portfolio links with descriptions and skills. Snag AI matches them to each job automatically and includes only the most relevant ones.</div>
     </div>
 
   </div>
 </div>
-
 <script src="options.js"></script>
 </body>
 </html>

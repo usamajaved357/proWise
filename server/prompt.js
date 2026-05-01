@@ -175,7 +175,7 @@ CLIENT: [client first name extracted from reviews, or blank]
 ===END===`;
 
 // ── User message builder ──────────────────────────────────────────────────────
-function buildUserMessage({ job, profile, settings }) {
+function buildUserMessage({ job, profile, settings, refineInstruction = '' }) {
 
   // Smart skill matching
   const jobText = ((job.title||'')+' '+(job.description||'')+' '+(job.skills||'')).toLowerCase();
@@ -272,6 +272,7 @@ Target word count: ${wordLimit} words (but write what the job needs — if they 
 Pricing instruction: ${pricingType === 'HOURLY' ? `Mention rate "${profile.hourlyRate || 'not set'}" naturally` : pricingType === 'FIXED' ? `Address their budget: ${job.budget}` : 'Focus on CTA, skip pricing'}
 
 HOOK REMINDER: First sentence MUST be one of the 7 hooks — specific to this job, not generic.
+${refineInstruction ? "REFINEMENT REQUEST from user: " + refineInstruction : ""}
 Write the cover letter now. Bold key terms using **word** syntax. End with Regards + ${profile.name}.
 If there are additional client questions, answer them in the questions field.`.trim();
 

@@ -163,58 +163,95 @@ async function loadProfile() {
   document.getElementById('always-include').value = settings.alwaysInclude || '';
   const portfolioItems = profile.portfolio || (profile.portfolioLinks||[]).filter(Boolean).map(url=>({url}));
   if (portfolioItems.length) portfolioItems.forEach(p => addPortLink(typeof p === 'string' ? {url:p} : p));
-  else addPortLink({});
-}
-
-function fieldStyle() {
-  return 'width:100%;padding:8px 12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#f0eeea;font-size:12px;font-family:inherit;outline:none;margin-bottom:6px';
 }
 
 function addPortLink(item = {}) {
   const list = document.getElementById('port-list');
-  const wrap = document.createElement('div');
-  wrap.className = 'port-item';
-  wrap.style.cssText = 'display:flex;flex-direction:column;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px;margin-bottom:10px;position:relative';
+  const row = document.createElement('div');
+  row.className = 'port-row';
 
-  const rmBtn = document.createElement('button');
-  rmBtn.className = 'port-remove';
-  rmBtn.textContent = '×';
-  rmBtn.style.cssText = 'position:absolute;top:10px;right:10px;width:26px;height:26px;font-size:14px;padding:0';
-  rmBtn.onclick = () => wrap.remove();
+  const nameVal  = item.name   || '';
+  const urlVal   = item.url    || '';
+  const descVal  = item.desc   || '';
+  const skillVal = item.skills || '';
 
-  const nameInp = document.createElement('input');
-  nameInp.type = 'text'; nameInp.placeholder = 'Project name (e.g. TollBugata iOS App)';
-  nameInp.value = item.name || ''; nameInp.style.cssText = fieldStyle();
-  nameInp.dataset.field = 'name';
+  const urlsHtml = (item.urls || [urlVal]).filter(Boolean)
+    .map(u => `<div class="port-url-row"><input data-field="urls" type="url" value="${u}" placeholder="https://..."><button class="port-url-del" title="Remove URL">×</button></div>`)
+    .join('') || '<div class="port-url-row"><input data-field="urls" type="url" placeholder="https://..."><button class="port-url-del" title="Remove URL">×</button></div>';
 
-  const urlInp = document.createElement('input');
-  urlInp.type = 'url'; urlInp.placeholder = 'URL (e.g. https://apps.apple.com/...)';
-  urlInp.value = item.url || ''; urlInp.style.cssText = fieldStyle();
-  urlInp.dataset.field = 'url';
+  row.innerHTML = `
+    <div class="port-row-head">
+      <div class="port-row-info">
+        <div class="port-row-name">${nameVal || 'New project'}</div>
+        <div class="port-row-url">${urlVal || 'No URL yet'}</div>
+      </div>
+      <div class="port-row-actions">
+        <button class="port-edit-btn">Edit</button>
+        <button class="port-del-btn">×</button>
+      </div>
+    </div>
+    <div class="port-row-fields">
+      <div class="field"><label>Project name</label><input data-field="name" type="text" value="${nameVal}" placeholder="e.g. TollBugata iOS App"></div>
+      <div class="field">
+        <label>URLs <span style="font-size:10px;font-weight:400;color:var(--white3)">(App Store, Play Store, website etc)</span></label>
+        <div class="port-urls-list">${urlsHtml}</div>
+        <button class="port-add-url" style="width:100%;padding:7px;margin-top:6px;border:1px dashed rgba(255,255,255,.12);border-radius:7px;background:transparent;color:var(--white3);font-size:11px;cursor:pointer;font-family:inherit">+ Add another URL</button>
+      </div>
+      <div class="field"><label>One-line description</label><input data-field="desc" type="text" value="${descVal}" placeholder="e.g. Live toll payment app, 10k+ downloads"></div>
+      <div class="field"><label>Skills used</label><input data-field="skills" type="text" value="${skillVal}" placeholder="e.g. Flutter, Firebase, Stripe"></div>
+      <button class="port-save-btn">Done</button>
+    </div>
+  `;
 
-  const descInp = document.createElement('input');
-  descInp.type = 'text'; descInp.placeholder = 'One-line description (e.g. Live toll payment app, 10k+ downloads)';
-  descInp.value = item.desc || ''; descInp.style.cssText = fieldStyle();
-  descInp.dataset.field = 'desc';
+  const head   = row.querySelector('.port-row-head');
+  const fields = row.querySelector('.port-row-fields');
+  const editBtn = row.querySelector('.port-edit-btn');
+  const delBtn  = row.querySelector('.port-del-btn');
+  const saveBtn = row.querySelector('.port-save-btn');
+  const nameEl  = row.querySelector('.port-row-name');
+  const urlEl   = row.querySelector('.port-row-url');
 
-  const skillsInp = document.createElement('input');
-  skillsInp.type = 'text'; skillsInp.placeholder = 'Skills used (e.g. Flutter, Firebase, Stripe)';
-  skillsInp.value = item.skills || ''; skillsInp.style.cssText = fieldStyle().replace('margin-bottom:6px','margin-bottom:0');
-  skillsInp.dataset.field = 'skills';
+  // Auto-open if new (no name)
+  if (!nameVal) fields.classList.add('open');
 
-  [nameInp, urlInp, descInp, skillsInp].forEach(inp => {
-    inp.onfocus = () => inp.style.borderColor = '#c9a84c';
-    inp.onblur  = () => inp.style.borderColor = 'rgba(255,255,255,.12)';
+  editBtn.addEventListener('click', () => {
+    fields.classList.toggle('open');
+    editBtn.textContent = fields.classList.contains('open') ? 'Close' : 'Edit';
   });
 
-  wrap.appendChild(rmBtn);
-  wrap.appendChild(nameInp);
-  wrap.appendChild(urlInp);
-  wrap.appendChild(descInp);
-  wrap.appendChild(skillsInp);
-  list.appendChild(wrap);
+  // Add URL button
+  fields.querySelector('.port-add-url').addEventListener('click', () => {
+    const urlsList = fields.querySelector('.port-urls-list');
+    const newRow = document.createElement('div');
+    newRow.className = 'port-url-row';
+    newRow.innerHTML = '<input data-field="urls" type="url" placeholder="https://..."><button class="port-url-del" title="Remove URL">×</button>';
+    newRow.querySelector('.port-url-del').addEventListener('click', () => newRow.remove());
+    urlsList.appendChild(newRow);
+    newRow.querySelector('input').focus();
+  });
+
+  // Existing URL delete buttons
+  fields.querySelectorAll('.port-url-del').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const urlRows = fields.querySelectorAll('.port-url-row');
+      if (urlRows.length > 1) btn.closest('.port-url-row').remove();
+    });
+  });
+
+  saveBtn.addEventListener('click', () => {
+    const n = row.querySelector('[data-field="name"]').value.trim();
+    const urls = Array.from(row.querySelectorAll('[data-field="urls"]')).map(i => i.value.trim()).filter(Boolean);
+    nameEl.textContent = n || 'Unnamed project';
+    urlEl.textContent  = urls.length ? urls[0] + (urls.length > 1 ? ' +' + (urls.length-1) + ' more' : '') : 'No URL';
+    fields.classList.remove('open');
+    editBtn.textContent = 'Edit';
+  });
+
+  delBtn.addEventListener('click', () => row.remove());
+
+  list.appendChild(row);
 }
-document.getElementById('add-port').addEventListener('click', () => addPortLink());
+document.getElementById('add-port').addEventListener('click', () => addPortLink({}));
 
 function showSaved(id) {
   const el = document.getElementById(id);
@@ -223,12 +260,16 @@ function showSaved(id) {
 }
 
 document.getElementById('save-profile').addEventListener('click', async () => {
-  const portfolio = Array.from(document.querySelectorAll('#port-list .port-item')).map(wrap => ({
-    name:   wrap.querySelector('[data-field="name"]')?.value.trim()   || '',
-    url:    wrap.querySelector('[data-field="url"]')?.value.trim()    || '',
-    desc:   wrap.querySelector('[data-field="desc"]')?.value.trim()   || '',
-    skills: wrap.querySelector('[data-field="skills"]')?.value.trim() || '',
-  })).filter(p => p.name || p.url);
+  const portfolio = Array.from(document.querySelectorAll('#port-list .port-row')).map(wrap => {
+    const urls = Array.from(wrap.querySelectorAll('[data-field="urls"]')).map(i => i.value.trim()).filter(Boolean);
+    return {
+      name:   wrap.querySelector('[data-field="name"]')?.value.trim()   || '',
+      url:    urls[0] || '',
+      urls:   urls,
+      desc:   wrap.querySelector('[data-field="desc"]')?.value.trim()   || '',
+      skills: wrap.querySelector('[data-field="skills"]')?.value.trim() || '',
+    };
+  }).filter(p => p.name || p.url);
   const portfolioLinks = portfolio.map(p => p.url).filter(Boolean);
   await chrome.storage.sync.set({ profile: {
     name:           document.getElementById('name').value.trim(),

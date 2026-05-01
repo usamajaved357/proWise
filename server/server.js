@@ -428,7 +428,8 @@ app.post('/proposal', async (req, res) => {
     console.log('Client name:', job.clientName || 'not found');
 
     // Build message using prompt.js
-    const userMsg = buildUserMessage({ job, profile, settings });
+    const refineInstruction = req.body.refineInstruction || '';
+    const userMsg = buildUserMessage({ job, profile, settings, refineInstruction });
     const result  = await callClaude(SYSTEM, userMsg);
 
     // Convert **bold** markers to Unicode bold (Upwork-compatible)
