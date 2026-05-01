@@ -181,9 +181,19 @@ function sendWelcomeEmail(to, plan) {
 
 // ── Parse delimiter format from Claude ───────────────────────────────────────
 function parseDelimiterFormat(text) {
+  console.log('Full response length:', text.length);
+  console.log('Has LETTER tag:', text.includes('===LETTER==='));
+  console.log('Has END tag:', text.includes('===END==='));
+
   const extract = (tag) => {
-    const re = new RegExp('===' + tag + '===\n([\s\S]*?)\n===END===', 'i');
-    const m = text.match(re);
+    // Try with ===END=== delimiter
+    let re = new RegExp('===' + tag + '===\s*\n([\s\S]*?)\n===END===', 'i');
+    let m = text.match(re);
+    if (m) return m[1].trim();
+
+    // Fallback: extract between this tag and the next === tag
+    re = new RegExp('===' + tag + '===\s*\n([\s\S]*?)(?=\n===[A-Z]|$)', 'i');
+    m = text.match(re);
     return m ? m[1].trim() : '';
   };
 
@@ -229,7 +239,7 @@ function callClaude(system, user) {
     if (!key) return reject(new Error('ANTHROPIC_API_KEY not set'));
     const body = JSON.stringify({
       model: 'claude-haiku-4-5-20251001',
-      max_tokens: 1200,
+      max_tokens: 2000,
       system,
       messages: [{ role: 'user', content: user }]
     });
