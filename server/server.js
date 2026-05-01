@@ -1,4 +1,3 @@
-
 // Snag AI Server v7 — Supabase persistent storage
 const express = require('express');
 const { SYSTEM, buildUserMessage, processBold } = require('./prompt');
@@ -246,22 +245,29 @@ function extractClientName(reviewText, description) {
   return new Promise((resolve) => {
     const key = process.env.ANTHROPIC_API_KEY;
     if (!key) return resolve('');
+
     const textToSearch = [
-      reviewText ? 'REVIEWS: ' + reviewText.slice(0, 600) : '',
-      description ? 'JOB DESCRIPTION: ' + description.slice(0, 300) : ''
+      reviewText ? 'CLIENT HISTORY/REVIEWS:\n' + reviewText.slice(0, 800) : '',
+      description ? 'JOB DESCRIPTION:\n' + description.slice(0, 300) : ''
     ].filter(Boolean).join('\n\n');
+
+    const prompt = `Extract the client's first name from this text.
+
+Upwork labels each review with "To client: FirstName LastName" — this is the most reliable source.
+The text may look like: "TO CLIENT LABELS: John Doe, John Doe, John Doe"
+
+Text:
+${textToSearch}
+
+Rules:
+- If you see "TO CLIENT LABELS:" — use that first name, it is 100% the client
+- Return ONLY the first name (one word, e.g. "John" not "John Doe")
+- If no name found, reply: none`;
 
     const body = JSON.stringify({
       model: 'claude-haiku-4-5-20251001',
-      max_tokens: 20,
-      messages: [{
-        role: 'user',
-        content: `Extract the client's first name from this text. Freelancers often say things like "Thanks Ahmed", "Working with John was great", "Great client Sarah". Also check if the client introduced themselves in the job description.
-
-${textToSearch}
-
-Reply with ONLY the first name, nothing else. If no name found, reply with exactly: none`
-      }]
+      max_tokens: 15,
+      messages: [{ role: 'user', content: prompt }]
     });
 
     const req = https.request({
@@ -273,8 +279,8 @@ Reply with ONLY the first name, nothing else. If no name found, reply with exact
         try {
           const p = JSON.parse(d);
           const name = (p.content?.[0]?.text || '').trim();
-          // Validate — must be a single capitalized word
-          if (name && name !== 'none' && /^[A-Z][a-z]{1,20}$/.test(name)) {
+          console.log('Name extraction result:', name);
+          if (name && name.toLowerCase() !== 'none' && /^[A-Z][a-z]{1,20}$/.test(name)) {
             resolve(name);
           } else {
             resolve('');

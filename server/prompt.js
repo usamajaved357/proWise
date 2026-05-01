@@ -35,25 +35,50 @@ STRUCTURE (follow this exact order)
    - If no name found → just "Hi,"
    - Never "Dear", never "Hello there", never full name
 
-2. OPENING HOOK (first 1-2 sentences — most important part)
-   Pick the hook that fits THIS job best:
+2. OPENING HOOK (the VERY FIRST sentence after greeting — most critical part)
+   This single sentence determines if the client reads the rest. Make it impossible to ignore.
+   Pick ONE hook that fits THIS job best. Use the EXACT format shown:
 
-   PROOF      → Lead with a specific past result matching their need
-                 "I built [X] for [type of client] — [specific outcome]."
-   RELATABILITY → Show you've lived their exact problem
-                 "Three months ago I took over a half-built [X] and shipped it."
-   NUMBERS    → Hard credibility stats specific to what they need
-                 "[X] apps shipped. [Y]★ average. [Z] years in [their stack]."
-   CLIENT-CENTERED → Prove you read their job better than they wrote it
-                 "You need [precise restatement of their core problem]."
-   GUARANTEE  → Remove their risk with a specific bold commitment
-                 "If I miss the deadline, you don't pay for that sprint."
-   EXTRA VALUE → Offer something concrete they didn't ask for but need
-                 "I'll do X — and also fix the [related issue] I can already see."
-   CALL       → Create urgency around a quick conversation
-                 "I can walk you through my approach in 15 minutes today."
+   HOOK 1 — PROOF OF SUCCESS:
+   "I saved my past client [specific time/money/result]. I'd like to do the same for you."
+   → Use when: job has a clear measurable outcome you've achieved before
+   → Example: "I **cut the load time by 60%** for a similar React Native app. I'd like to do the same for Emani."
 
-   The hook MUST be specific to this job. Never generic. The client must feel you read every word.
+   HOOK 2 — RELATABILITY:
+   "I've had [the same issue / done this exact thing]. This is how I fixed it:"
+   → Use when: you've literally done their exact project type before
+   → Example: "I've taken over a **half-finished React Native app** mid-project and shipped it. This is how I'd approach Emani:"
+
+   HOOK 3 — GUARANTEE:
+   "I can complete [X outcome] in [timeframe], and I'm willing to back that up with a guarantee. Here's why I'm confident: [short proof]."
+   → Use when: client needs reassurance — especially if they've been burned before
+   → Example: "I can complete the **full Emani platform in 10 weeks** and I'm willing to back that up. Here's why:"
+
+   HOOK 4 — EXTRA VALUE:
+   "I will not only [solve the issue], I'll include [one extra thing] to make sure you're happy."
+   → Use when: you can offer something beyond the scope that's genuinely useful
+   → Example: "I'll not only complete Emani — I'll include **free Saudi server deployment and config** so you're production-ready from day one."
+
+   HOOK 5 — GROWTH-ORIENTED (CALL):
+   "Let's hop on a call today — this is something I can walk you through in 15 minutes. No strings attached."
+   → Use when: project is complex and a call would close faster than a long proposal
+
+   HOOK 6 — QUICK PROOF (NUMBERS):
+   "Here are my numbers: [specific stats — apps shipped, rating, years, clients]."
+   → Use when: client is numbers-driven, corporate tone, or posted a large budget
+   → Example: "Here are my numbers: **8 production apps** shipped, **$15/hr**, **5 years** in React Native."
+
+   HOOK 7 — CLIENT-CENTERED:
+   "My understanding is that you need: [precise restatement of their core need, better than they described it]."
+   → Use when: job description is detailed and you can prove you understood it deeply
+   → Example: "My understanding: you need a **single React Native app with two roles** — customer and verified provider — not two separate apps."
+
+   CRITICAL RULES FOR THE HOOK:
+   - Must be the FIRST sentence (after greeting)
+   - Must be SPECIFIC to this job — not generic
+   - Must have at least ONE **bold** term
+   - Must be under 2 sentences
+   - The client should feel: "this person actually read my job" 
 
 3. BODY (2-4 short paragraphs or bullet points)
    - Address their specific requirements directly

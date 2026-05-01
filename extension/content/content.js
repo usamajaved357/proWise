@@ -223,18 +223,22 @@
     // Extract job type
     const jobType = document.querySelector('[data-test="job-type"], [class*="jobType"]')?.innerText?.trim() || '';
 
-    // Collect ALL visible text on page for AI name extraction — reviews, bio, everywhere
-    const reviewSelectors = [
-      '[data-test="feedback-text"]',
-      '[class*="FeedbackText"]',
-      '[class*="feedbackText"]',
-      '[class*="ReviewText"]',
-      '[class*="review-text"]',
-      '[data-ev-label="client_feedback"]',
-      '[class*="ClientFeedback"]',
-    ];
-    const reviewText = Array.from(document.querySelectorAll(reviewSelectors.join(',')))
-      .map(el => el.innerText.trim()).filter(Boolean).join(' ').slice(0, 1000);
+    // Extract client name directly from "To client: [Name]" labels in reviews
+    // Upwork explicitly labels each review with "To client: FirstName LastName"
+    let reviewText = '';
+    try {
+      const pageText = document.body.innerText;
+      // Find all "To client: Name" occurrences
+      const toClientMatches = [...pageText.matchAll(/To client:\s*([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/g)];
+      if (toClientMatches.length > 0) {
+        // Use the most frequent name (in case of multiple reviews)
+        const names = toClientMatches.map(m => m[1].trim());
+        reviewText = 'TO CLIENT LABELS: ' + names.join(', ');
+        console.log('Found To client: labels:', reviewText);
+      }
+    } catch(e) {
+      reviewText = '';
+    }
 
     return { title, description, skills, budget, location, clientName, questions, reviewText, type: jobType };
   }
@@ -254,6 +258,9 @@
         anonId = 'anon_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
         await chrome.storage.sync.set({ anonId });
       }
+
+      // Small delay to let dynamic content (reviews) finish rendering
+      await new Promise(r => setTimeout(r, 800));
 
       const job = getJob();
       const response = await chrome.runtime.sendMessage({
