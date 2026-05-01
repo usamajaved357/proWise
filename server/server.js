@@ -186,15 +186,13 @@ function parseDelimiterFormat(text) {
   console.log('Has END tag:', text.includes('===END==='));
 
   const extract = (tag) => {
-    // Try with ===END=== delimiter
-    let re = new RegExp('===' + tag + '===\s*\n([\s\S]*?)\n===END===', 'i');
-    let m = text.match(re);
-    if (m) return m[1].trim();
-
-    // Fallback: extract between this tag and the next === tag
-    re = new RegExp('===' + tag + '===\s*\n([\s\S]*?)(?=\n===[A-Z]|$)', 'i');
-    m = text.match(re);
-    return m ? m[1].trim() : '';
+    // Simple: grab everything between ===TAG=== and ===END===
+    const start = text.indexOf('===' + tag + '===');
+    if (start === -1) return '';
+    const contentStart = start + tag.length + 6; // skip ===TAG===
+    const end = text.indexOf('===END===', contentStart);
+    const raw = end === -1 ? text.slice(contentStart) : text.slice(contentStart, end);
+    return raw.replace(/^\r?\n/, '').replace(/\r?\n$/, '').trim();
   };
 
   const letter    = extract('LETTER');
