@@ -202,32 +202,51 @@ function callClaude(system, user) {
           const rawText = p.content?.[0]?.text || '';
           console.log('Claude raw (first 200):', rawText.slice(0, 200));
 
-          // Strip markdown code fences if present
+          // Strip markdown code fences
           let jsonText = rawText
-            .replace(/^```(?:json)?\s*/i, '')
-            .replace(/\s*```\s*$/i, '')
+            .replace(/^```(?:json)?[\r\n]*/i, '')
+            .replace(/[\r\n]*```\s*$/i, '')
             .trim();
 
-          // Find the JSON object
+          // Find JSON object boundaries
           const start = jsonText.indexOf('{');
           const end   = jsonText.lastIndexOf('}');
           if (start === -1 || end === -1) return reject(new Error('No JSON found in response'));
           jsonText = jsonText.slice(start, end + 1);
 
-          // Fix unescaped newlines inside string values
-          jsonText = jsonText.replace(/"([^"]*)"/gs, (match) => {
-            return match
-              .replace(/\n/g, '\\n')
-              .replace(/\r/g, '\\r')
-              .replace(/\t/g, '\\t')
-              .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '');
-          });
+          // Fix unescaped control chars inside JSON strings using state machine
+          // This correctly handles escaped quotes (") within strings
+          let fixed = '';
+          let inStr = false;
+          let escaped = false;
+          for (let i = 0; i < jsonText.length; i++) {
+            const ch = jsonText[i];
+            if (escaped) {
+              fixed += ch;
+              escaped = false;
+            } else if (ch === '\\') {
+              fixed += ch;
+              escaped = true;
+            } else if (ch === '"') {
+              fixed += ch;
+              inStr = !inStr;
+            } else if (inStr) {
+              // Inside a string — escape any raw control characters
+              if (ch === '\n')      fixed += '\\n';
+              else if (ch === '\r') fixed += '\\r';
+              else if (ch === '\t') fixed += '\\t';
+              else if (ch.charCodeAt(0) < 32) fixed += '';
+              else fixed += ch;
+            } else {
+              fixed += ch;
+            }
+          }
 
           let parsed;
           try {
-            parsed = JSON.parse(jsonText);
+            parsed = JSON.parse(fixed);
           } catch(e) {
-            console.error('JSON parse failed. Text sample:', jsonText.slice(0, 300));
+            console.error('Parse failed, sample:', fixed.slice(0, 400));
             return reject(new Error('Parse error: ' + e.message));
           }
           resolve(parsed);
