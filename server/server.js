@@ -214,33 +214,52 @@ function callClaude(system, user) {
           if (start === -1 || end === -1) return reject(new Error('No JSON found in response'));
           jsonText = jsonText.slice(start, end + 1);
 
-          // Fix unescaped control chars inside JSON strings using state machine
-          // This correctly handles escaped quotes (") within strings
-          let fixed = '';
-          let inStr = false;
-          let escaped = false;
-          for (let i = 0; i < jsonText.length; i++) {
-            const ch = jsonText[i];
-            if (escaped) {
-              fixed += ch;
-              escaped = false;
-            } else if (ch === '\\') {
-              fixed += ch;
-              escaped = true;
-            } else if (ch === '"') {
-              fixed += ch;
-              inStr = !inStr;
-            } else if (inStr) {
-              // Inside a string — escape any raw control characters
-              if (ch === '\n')      fixed += '\\n';
-              else if (ch === '\r') fixed += '\\r';
-              else if (ch === '\t') fixed += '\\t';
-              else if (ch.charCodeAt(0) < 32) fixed += '';
-              else fixed += ch;
+          // Parse Claude JSON response robustly
+          // Add instruction to Claude to not use real newlines inside strings
+          let fixed = jsonText;
+
+          // The simplest reliable fix: use JSON5-style tolerant parsing
+          // Replace actual newlines inside string values by scanning manually
+          let result = '';
+          let inString = false;
+          let i = 0;
+          while (i < fixed.length) {
+            const c = fixed[i];
+            const code = fixed.charCodeAt(i);
+            if (!inString) {
+              if (c === '"') inString = true;
+              result += c;
+              i++;
             } else {
-              fixed += ch;
+              if (c === '\\' && i + 1 < fixed.length) {
+                // Escaped char — keep both chars as-is
+                result += c + fixed[i+1];
+                i += 2;
+              } else if (c === '"') {
+                inString = false;
+                result += c;
+                i++;
+              } else if (code === 10) {
+                // Raw newline inside string — escape it
+                result += '\\n';
+                i++;
+              } else if (code === 13) {
+                result += '\\r';
+                i++;
+              } else if (code === 9) {
+                result += '\\t';
+                i++;
+              } else if (code < 32) {
+                // Other control chars — drop them
+                i++;
+              } else {
+                result += c;
+                i++;
+              }
             }
           }
+          fixed = result;
+
 
           let parsed;
           try {
