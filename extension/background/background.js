@@ -47,11 +47,12 @@ async function handleGenerate(payload) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      job:      payload.job,
-      profile:  stored.profile || {},
-      settings: stored.settings || {},
-      email:    stored.userEmail || null,
-      anonId:   anonId
+      job:              payload.job,
+      profile:          stored.profile || {},
+      settings:         stored.settings || {},
+      email:            stored.userEmail || null,
+      anonId:           anonId,
+      refineInstruction: payload.refineInstruction || ''
     })
   });
 

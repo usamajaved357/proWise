@@ -66,20 +66,110 @@
 
     document.getElementById('sn-btn').addEventListener('click', toggle);
     document.getElementById('sn-close').addEventListener('click', closePanel);
-    ov.addEventListener('click', closePanel);
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closePanel(); });
+    // ov click no longer closes panel — user needs to click through to job page
+
+    // ── Drag + resize — unified, no text selection ───────────────────────
+    const head = panel.querySelector('.sn-head');
+    const EDGE = 8, MIN_W = 560, MIN_H = 400;
+    let action = null; // 'drag' | 'resize'
+    let startX, startY, startW, startH, startT, startL, resizeDir;
+
+    // Drag from header
+    head.addEventListener('mousedown', e => {
+      if (e.target.closest('button')) return;
+      action = 'drag';
+      const r = panel.getBoundingClientRect();
+      startX = e.clientX - r.left;
+      startY = e.clientY - r.top;
+      e.preventDefault();
+    });
+
+    // Resize from edges/corners
+    panel.addEventListener('mousemove', e => {
+      if (action) return;
+      const r = panel.getBoundingClientRect();
+      const onTop = e.clientY - r.top < EDGE, onBot = r.bottom - e.clientY < EDGE;
+      const onL   = e.clientX - r.left < EDGE, onR = r.right - e.clientX < EDGE;
+      if      (onTop && onL)  panel.style.cursor = 'nw-resize';
+      else if (onTop && onR)  panel.style.cursor = 'ne-resize';
+      else if (onBot && onL)  panel.style.cursor = 'sw-resize';
+      else if (onBot && onR)  panel.style.cursor = 'se-resize';
+      else if (onTop)         panel.style.cursor = 'n-resize';
+      else if (onBot)         panel.style.cursor = 's-resize';
+      else if (onL)           panel.style.cursor = 'w-resize';
+      else if (onR)           panel.style.cursor = 'e-resize';
+      else                    panel.style.cursor = '';
+    });
+
+    panel.addEventListener('mousedown', e => {
+      const r = panel.getBoundingClientRect();
+      const onTop = e.clientY - r.top < EDGE, onBot = r.bottom - e.clientY < EDGE;
+      const onL   = e.clientX - r.left < EDGE, onR = r.right - e.clientX < EDGE;
+      if (!onTop && !onBot && !onL && !onR) return;
+      action = 'resize';
+      resizeDir = (onTop?'n':'') + (onBot?'s':'') + (onL?'w':'') + (onR?'e':'');
+      const r2 = panel.getBoundingClientRect();
+      startX = e.clientX; startY = e.clientY;
+      startW = r2.width;  startH = r2.height;
+      startT = r2.top;    startL = r2.left;
+      e.preventDefault();
+    });
+
+    // Shared mousemove on document — no text selection
+    const onMove = e => {
+      if (!action) return;
+      if (action === 'drag') {
+        const nx = Math.max(0, Math.min(window.innerWidth  - MIN_W, e.clientX - startX));
+        const ny = Math.max(0, Math.min(window.innerHeight - 60,    e.clientY - startY));
+        panel.style.left = nx + 'px';
+        panel.style.top  = ny + 'px';
+      } else {
+        const dx = e.clientX - startX, dy = e.clientY - startY;
+        if (resizeDir.includes('e')) panel.style.width  = Math.max(MIN_W, startW + dx) + 'px';
+        if (resizeDir.includes('s')) panel.style.height = Math.max(MIN_H, startH + dy) + 'px';
+        if (resizeDir.includes('w')) {
+          const nw = Math.max(MIN_W, startW - dx);
+          panel.style.width = nw + 'px';
+          panel.style.left  = (startL + startW - nw) + 'px';
+        }
+        if (resizeDir.includes('n')) {
+          const nh = Math.max(MIN_H, startH - dy);
+          panel.style.height = nh + 'px';
+          panel.style.top    = (startT + startH - nh) + 'px';
+        }
+      }
+    };
+
+    const onUp = () => { action = null; panel.style.cursor = ''; };
+
+    // Prevent text selection during drag/resize
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup',   onUp);
+    document.addEventListener('selectstart', e => { if (action) e.preventDefault(); });
   }
 
   let isOpen = false;
 
   function toggle() { isOpen ? closePanel() : openAndGenerate(); }
 
+  function centerPanel() {
+    const p = document.getElementById('sn-panel');
+    const pw = Math.min(860, window.innerWidth * 0.96);
+    const ph = Math.min(600, window.innerHeight * 0.88);
+    p.style.width  = pw + 'px';
+    p.style.height = ph + 'px';
+    p.style.left   = Math.round((window.innerWidth  - pw) / 2) + 'px';
+    p.style.top    = Math.round((window.innerHeight - ph) / 2) + 'px';
+    p.style.transform = 'none';
+  }
+
   async function openAndGenerate() {
+    centerPanel();
     document.getElementById('sn-overlay').classList.add('vis');
     document.getElementById('sn-panel').classList.add('vis');
     isOpen = true;
     showLoading();
-    // Probability check happens inside generate() — instantly, no server call
     generate();
   }
 
@@ -643,17 +733,20 @@
         <!-- LEFT: Cover letter -->
         <div class="sn-col-letter">
           <div class="sn-letter" id="sn-letter" contenteditable="true">${esc(letter)}</div>
-          <div class="sn-letter-bar">
-            <button class="sn-regen-inline-btn" id="sn-regen">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-              Rewrite
-            </button>
-            <textarea class="sn-refine-inp" id="sn-refine-inp" placeholder="Refine… e.g. make it shorter, add more about Flutter" rows="1"></textarea>
-            <button class="sn-copy-inline-btn" id="sn-copy">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-              Copy
+          <div class="sn-letter-actions">
+            <button class="sn-copy-top-btn" id="sn-copy">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Copy letter
             </button>
           </div>
+          <div class="sn-letter-bar">
+            <textarea class="sn-refine-inp" id="sn-refine-inp" placeholder="Request changes… e.g. change hook to guarantee, add GitHub link below portfolio, make it shorter" rows="2"></textarea>
+            <button class="sn-regen-inline-btn" id="sn-regen">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+              Generate
+            </button>
+          </div>
+          ${questions ? '<div class="sn-qa-section"><div class="sn-qa-head"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Client questions &amp; answers <button class="sn-qa-copy-btn" id="sn-copy-q">Copy Q&amp;A</button></div><div class="sn-qa-body" id="sn-questions-text">' + esc(questions) + '</div></div>' : ''}
         </div>
 
         <!-- RIGHT: Intelligence panel -->
@@ -687,7 +780,7 @@
 
           ${tips && tips.length ? '<div class="sn-intel-tips"><div class="sn-intel-tips-label">Tips</div>' + tips.map(t => '<div class="sn-itip">' + esc(t) + '</div>').join('') + '</div>' : ''}
 
-          ${questions ? '<div class="sn-intel-qa"><div class="sn-intel-tips-label">Q&amp;A answers <button class="sn-copy-qa-btn" id="sn-copy-q">Copy</button></div><div class="sn-qa-text" id="sn-questions-text">' + esc(questions) + '</div></div>' : ''}
+
 
           ${remaining !== null && remaining <= 10 ? '<div class="sn-low-bar"><span>' + (remaining === 0 ? '🚫 No proposals left' : '⚡ ' + remaining + ' left') + '</span><button class="sn-low-upgrade" id="sn-low-upgrade">Upgrade</button></div>' : ''}
 
