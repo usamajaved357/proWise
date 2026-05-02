@@ -296,8 +296,15 @@
     let clientAvgRate = null, clientRating = null;
     const arm = pageText2.match(/\$([0-9,]+(?:\.\d+)?)\s*\/hr\s+avg/i);
     if (arm) clientAvgRate = parseFloat(arm[1].replace(',',''));
-    const crm = pageText2.match(/Rating is (\d+(?:\.\d+)?) out of 5/i);
+    // Client rating is the FIRST one — appears right after "Payment method verified"
+    // Later ratings belong to freelancers in the review section
+    const paymentIdx = pageText2.indexOf('Payment method verified');
+    const ratingSearchArea = paymentIdx > -1
+      ? pageText2.slice(paymentIdx, paymentIdx + 200)
+      : pageText2.slice(0, 1000);
+    const crm = ratingSearchArea.match(/Rating is (\d+(?:\.\d+)?) out of 5/i);
     if (crm) clientRating = parseFloat(crm[1]);
+    console.log('Client rating found:', clientRating, 'from area:', ratingSearchArea.slice(0,80));
 
     // ── Job requirements (Preferred qualifications section) ──────────────
     let reqJSS = null, reqTalentType = null, reqEnglish = null;
@@ -326,10 +333,16 @@
       const scoreCol  = wp.probScore >= 60 ? '#34d399' : wp.probScore >= 40 ? '#f59e0b' : '#f87171';
       const topIssues = wp.topProb.filter(f => f.delta < 0).slice(0,3);
 
-      const allIssues = [...wp.topProb, ...wp.topMatch]
+      // Show all negative factors + warnings on alert
+      const allIssues = [...(wp.topProb || []), ...(wp.topMatch || [])]
         .filter(f => f.delta < 0)
-        .sort((a,b) => a.delta - b.delta) // worst first
-        .slice(0,4);
+        .sort((a,b) => a.delta - b.delta)
+        .slice(0,5);
+      // Also include any positive factors that give context (posted time, proposals)
+      const contextFactors = [...(wp.topProb || [])].filter(f => 
+        f.delta >= 0 && ['Posted','Proposals','Hire rate','Hired'].includes(f.label)
+      ).slice(0,2);
+      const displayIssues = allIssues.length > 0 ? allIssues : contextFactors;
       document.getElementById('sn-body').innerHTML = `
         <div class="sn-alert-wrap">
           <div class="sn-alert-header" style="background:${isHired ? 'rgba(248,113,113,.08)' : 'rgba(245,158,11,.07)'}; border-bottom:1px solid ${isHired ? 'rgba(248,113,113,.2)' : 'rgba(245,158,11,.2)'}">
@@ -348,10 +361,10 @@
                 ? '<strong>Someone was already hired.</strong> Applying now will only waste your Connects — which are real money.'
                 : 'Your <strong>Connects cost real money</strong>. With ' + wp.probScore + '% job odds, this job is a tough fight. Here\'s why:'}
             </div>
-            ${allIssues.length ? '<div class="sn-alert-issues">' + allIssues.map(f =>
-              '<div class="sn-alert-issue"><div class="sn-alert-issue-dot"></div><div><span class="sn-alert-issue-label">' + f.label + ':</span> ' + f.value + (f.note ? ' — ' + f.note : '') + '</div></div>'
+            ${displayIssues.length ? '<div class="sn-alert-issues">' + displayIssues.map(f =>
+              '<div class="sn-alert-issue"><div class="sn-alert-issue-dot" style="background:' + (f.delta < 0 ? '#f87171' : '#34d399') + '"></div><div><span class="sn-alert-issue-label">' + f.label + ':</span> ' + f.value + (f.note ? ' — ' + f.note : '') + '</div></div>'
             ).join('') + '</div>' : ''}
-            ${wp.warnings.length ? '<div class="sn-alert-warn-box">' + wp.warnings.slice(0,1).map(w => '⚠ ' + w).join('') + '</div>' : ''}
+            ${wp.warnings.length ? '<div class="sn-alert-warns-list">' + wp.warnings.slice(0,3).map(w => '<div class="sn-alert-warn-item">⚠ ' + w + '</div>').join('') + '</div>' : ''}
           </div>
           <div class="sn-alert-footer">
             <button class="sn-alert-cancel" id="sn-alert-cancel">← Skip this job</button>

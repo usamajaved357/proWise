@@ -632,3 +632,10 @@
   cursor: pointer; font-family: inherit; transition: all .15s;
 }
 .sn-alert-anyway:hover { background: rgba(201,168,76,.25); color: var(--sn-gold2); }
+
+.sn-alert-warns-list { display: flex; flex-direction: column; gap: 5px; }
+.sn-alert-warn-item {
+  font-size: 11px; color: #f59e0b; line-height: 1.5;
+  padding: 5px 10px; background: rgba(245,158,11,.08);
+  border-radius: 6px; border-left: 2px solid #f59e0b;
+}
