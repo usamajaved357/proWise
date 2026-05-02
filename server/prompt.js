@@ -37,51 +37,22 @@ STRUCTURE (follow this exact order)
    - If no name found → just "Hi,"
    - Never "Dear", never "Hello there", never full name
 
-2. OPENING HOOK (the VERY FIRST sentence after greeting — most critical part)
-   This single sentence determines if the client reads the rest. Make it impossible to ignore.
-   The REQUIRED HOOK is specified in the user message as "ASSIGNED HOOK: X". You MUST use that hook.
-   Format shown below for each hook type:
+2. OPENING HOOK — THE SINGLE MOST IMPORTANT SENTENCE
+   The ASSIGNED HOOK is given in the user message. You MUST use that exact hook template.
+   Fill in the [brackets] with specific details from the job. Keep it to 1-2 sentences max.
+   The hook MUST contain at least one **bold** term on the key claim.
 
-   HOOK 1 — PROOF OF SUCCESS:
-   "I saved my past client [specific time/money/result]. I'd like to do the same for you."
-   → Use when: job has a clear measurable outcome you've achieved before
-   → Example: "I **cut the load time by 60%** for a similar React Native app. I'd like to do the same for Emani."
+   The 7 hook templates:
 
-   HOOK 2 — RELATABILITY:
-   "I've had [the same issue / done this exact thing]. This is how I fixed it:"
-   → Use when: you've literally done their exact project type before
-   → Example: "I've taken over a **half-finished React Native app** mid-project and shipped it. This is how I'd approach Emani:"
+   HOOK 1 — PROOF: "I [specific result I achieved] for a past client. I'd like to do the same for you."
+   HOOK 2 — RELATABILITY: "I've [done this exact thing before — specific]. This is how I'd approach [their project]:"
+   HOOK 3 — GUARANTEE: "I can [deliver X outcome] in [timeframe], and I'm willing to back that up — [short proof point]."
+   HOOK 4 — EXTRA VALUE: "I'll not only [solve their main problem] — I'll also [one bonus thing they didn't ask for]."
+   HOOK 5 — CALL: "Let's jump on a quick call today — I can walk you through my exact approach in 15 minutes."
+   HOOK 6 — NUMBERS: "Here are my numbers: [stat 1], [stat 2], [stat 3] — all relevant to what you need."
+   HOOK 7 — CLIENT-CENTERED: "My understanding: you need [precise restatement of their core problem, better than they wrote it]."
 
-   HOOK 3 — GUARANTEE:
-   "I can complete [X outcome] in [timeframe], and I'm willing to back that up with a guarantee. Here's why I'm confident: [short proof]."
-   → Use when: client needs reassurance — especially if they've been burned before
-   → Example: "I can complete the **full Emani platform in 10 weeks** and I'm willing to back that up. Here's why:"
-
-   HOOK 4 — EXTRA VALUE:
-   "I will not only [solve the issue], I'll include [one extra thing] to make sure you're happy."
-   → Use when: you can offer something beyond the scope that's genuinely useful
-   → Example: "I'll not only complete Emani — I'll include **free Saudi server deployment and config** so you're production-ready from day one."
-
-   HOOK 5 — GROWTH-ORIENTED (CALL):
-   "Let's hop on a call today — this is something I can walk you through in 15 minutes. No strings attached."
-   → Use when: project is complex and a call would close faster than a long proposal
-
-   HOOK 6 — QUICK PROOF (NUMBERS):
-   "Here are my numbers: [specific stats — apps shipped, rating, years, clients]."
-   → Use when: client is numbers-driven, corporate tone, or posted a large budget
-   → Example: "Here are my numbers: **8 production apps** shipped, **$15/hr**, **5 years** in React Native."
-
-   HOOK 7 — CLIENT-CENTERED:
-   "My understanding is that you need: [precise restatement of their core need, better than they described it]."
-   → Use when: job description is detailed and you can prove you understood it deeply
-   → Example: "My understanding: you need a **single React Native app with two roles** — customer and verified provider — not two separate apps."
-
-   CRITICAL RULES FOR THE HOOK:
-   - Must be the FIRST sentence (after greeting)
-   - Must be SPECIFIC to this job — not generic
-   - Must have at least ONE **bold** term
-   - Must be under 2 sentences
-   - The client should feel: "this person actually read my job" 
+   MANDATORY: Your opening sentence MUST match the assigned hook template above. Not similar — exactly that structure.
 
 3. BODY (2-4 short paragraphs or bullet points)
    - Address their specific requirements directly
@@ -211,25 +182,31 @@ function buildUserMessage({ job, profile, settings, refineInstruction = '' }) {
   const isDetailedJob = (job.description || '').length > 1000;
   const hasSpecificMetric = /\d+%|\d+ (users|customers|clients|downloads|apps|projects)/i.test(jobTextLower);
 
-  let assignedHook;
+  // Determine hook — use title hash as primary rotator, then refine by job type
+  // This ensures variety across jobs while still picking smart hooks
+  const titleHash = (job.title || '').split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+  const allHooks = [
+    'HOOK 1 — PROOF OF SUCCESS',
+    'HOOK 2 — RELATABILITY',
+    'HOOK 3 — GUARANTEE',
+    'HOOK 4 — EXTRA VALUE',
+    'HOOK 5 — GROWTH-ORIENTED (CALL)',
+    'HOOK 6 — QUICK PROOF (NUMBERS)',
+    'HOOK 7 — CLIENT-CENTERED'
+  ];
+  // Start with rotation-based hook
+  let assignedHook = allHooks[titleHash % 7];
+
+  // Override only for very strong signals
   if (hasBurnedClient) {
-    assignedHook = 'HOOK 3 — GUARANTEE'; // burned before, needs reassurance
-  } else if (hasSpecificMetric && profile.pitch) {
-    assignedHook = 'HOOK 1 — PROOF OF SUCCESS'; // measurable outcomes available
-  } else if (isLargeBudget && isDetailedJob) {
-    assignedHook = 'HOOK 7 — CLIENT-CENTERED'; // large budget = serious client, show you read it
-  } else if (isDetailedJob) {
-    assignedHook = 'HOOK 7 — CLIENT-CENTERED'; // detailed job = prove you understood it
-  } else if (hasTimeline) {
-    assignedHook = 'HOOK 4 — EXTRA VALUE'; // tight timeline = offer extra
-  } else if (isLargeBudget) {
-    assignedHook = 'HOOK 6 — QUICK PROOF (NUMBERS)'; // corporate/large = numbers
-  } else {
-    // Rotate between remaining hooks based on job title hash
-    const hooks = ['HOOK 1 — PROOF OF SUCCESS', 'HOOK 4 — EXTRA VALUE', 'HOOK 5 — GROWTH-ORIENTED (CALL)', 'HOOK 6 — QUICK PROOF (NUMBERS)'];
-    const idx = (job.title || '').split('').reduce((a, c) => a + c.charCodeAt(0), 0) % hooks.length;
-    assignedHook = hooks[idx];
+    assignedHook = 'HOOK 3 — GUARANTEE';
+  } else if (isLargeBudget && budget >= 10000) {
+    // Big budget jobs: alternate between 6 and 7
+    assignedHook = titleHash % 2 === 0 ? 'HOOK 6 — QUICK PROOF (NUMBERS)' : 'HOOK 7 — CLIENT-CENTERED';
+  } else if (hasTimeline && !isDetailedJob) {
+    assignedHook = 'HOOK 4 — EXTRA VALUE';
   }
+  // No more fallback to 1 or 2 by default — rotation handles it
 
   const msg = `
 JOB TITLE: ${job.title}
@@ -268,7 +245,16 @@ Tone: ${settings?.tone || 'professional'}
 Target word count: ${wordLimit} words (but write what the job needs — if they asked specific questions, answer them properly)
 Pricing instruction: ${pricingType === 'HOURLY' ? `Mention rate "${profile.hourlyRate || 'not set'}" naturally` : pricingType === 'FIXED' ? `Address their budget: ${job.budget}` : 'Focus on CTA, skip pricing'}
 
-HOOK REMINDER: First sentence MUST be one of the 7 hooks — specific to this job, not generic.
+YOUR ASSIGNED HOOK: ${assignedHook}
+HOOK TEMPLATE TO FOLLOW EXACTLY:
+${assignedHook.includes('1') ? "HOOK 1 TEMPLATE: "I [specific result I got for a past client relevant to this job]. I'd like to do the same for you." → Replace [specific result] with a real achievement from your portfolio that matches what this client needs." :
+  assignedHook.includes('2') ? "HOOK 2 TEMPLATE: "I've [describe the exact matching experience you have]. This is how I'd approach [their specific project or task]:" → Replace with the most specific experience match. End with colon — the body continues from here." :
+  assignedHook.includes('3') ? "HOOK 3 TEMPLATE: "I can [deliver specific outcome for this job] in [realistic timeframe], and I'm willing to back that up — [one credibility proof]." → Use real numbers. Make the guarantee feel confident not desperate." :
+  assignedHook.includes('4') ? "HOOK 4 TEMPLATE: "I'll not only [solve their main stated problem] — I'll also [one genuinely useful extra they didn't ask for but will appreciate]." → The extra must be real and relevant, not generic." :
+  assignedHook.includes('5') ? "HOOK 5 TEMPLATE: "Let's jump on a quick call today — I can walk you through my exact approach in 15 minutes. No strings attached." → Use this nearly verbatim. Only adjust timing if needed." :
+  assignedHook.includes('6') ? "HOOK 6 TEMPLATE: "Here are my numbers: [relevant stat 1], [relevant stat 2], [relevant stat 3]." → Pick stats that directly answer what this client needs to see. Real numbers only." :
+  "HOOK 7 TEMPLATE: "My understanding: you need [restate their core problem sharper and more specifically than how they wrote it]." → Prove you read every word. Be more precise than the client was."}
+YOUR FIRST SENTENCE AFTER THE GREETING MUST USE THIS EXACT STRUCTURE. Not similar. This exact pattern.
 ${refineInstruction ? "REFINEMENT REQUEST from user: " + refineInstruction : ""}
 Write the cover letter now. Bold key terms using **word** syntax. End with Regards + ${profile.name}.
 If there are additional client questions, answer them in the questions field.`.trim();
