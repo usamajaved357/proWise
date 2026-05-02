@@ -94,14 +94,11 @@ STRUCTURE (follow this exact order)
    - Use - for list items, never * or emoji
    - Bold: prices, timelines, portfolio names, key metrics
 
-4. PORTFOLIO LINKS (always include if you referenced portfolios in the body)
-   Place this block right before the CTA. Only list portfolios actually mentioned:
-
-   **Portfolio:**
-   - **PortfolioName**: URL
-   - **PortfolioName**: URL
-
-   Skip this section only if no URL is available for any mentioned portfolio.
+4. PORTFOLIO LINKS
+   IMPORTANT: Do NOT include portfolio URLs anywhere inside the letter field.
+   The system automatically appends the portfolio section before the sign-off.
+   In the letter body, mention portfolio names naturally without URLs (e.g. "I built TollBugata").
+   Only populate the portfolioLinks field in your JSON output with the projects you mentioned.
 
 5. CTA (1 sentence)
    - Clear and specific call to action

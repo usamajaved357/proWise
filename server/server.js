@@ -440,10 +440,20 @@ app.post('/proposal', async (req, res) => {
     if (result.portfolioLinks && result.portfolioLinks.length > 0) {
       const validLinks = result.portfolioLinks.filter(p => p.url);
       if (validLinks.length > 0) {
+        // Strip any portfolio block Claude already included in the letter
+        // (matches "Portfolio:" or "𝗣𝗼𝗿𝘁𝗳𝗼𝗹𝗶𝗼:" with bold unicode)
+        result.letter = result.letter
+          .replace(/\n{0,2}[\s\S]*?[Pp]ortfolio[:\s][\s\S]*?(?=\n\nRegards|\nRegards|$)/g, (match) => {
+            // Only strip if it contains a URL
+            if (/https?:\/\//.test(match)) return '';
+            return match;
+          })
+          .trimEnd();
+
+        // Build portfolio section and insert BEFORE Regards
         const portSection = processBold(
-          '\n\n**Portfolio:**\n' + validLinks.map(p => `- **${p.name}**: ${p.url}`).join('\n')
+          '\n\n**Portfolio:**\n' + validLinks.map(p => '- **' + p.name + '**: ' + p.url).join('\n')
         );
-        // Insert before "Regards" sign-off
         const regardsIdx = result.letter.lastIndexOf('Regards');
         if (regardsIdx > -1) {
           result.letter = result.letter.slice(0, regardsIdx).trimEnd() +
