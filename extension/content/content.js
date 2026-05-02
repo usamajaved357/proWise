@@ -79,18 +79,7 @@
     document.getElementById('sn-panel').classList.add('vis');
     isOpen = true;
     showLoading();
-
-    // Check limit BEFORE generating — client-side gate
-    try {
-      const status = await chrome.runtime.sendMessage({ type: 'GET_STATUS' });
-      if (status && status.remaining !== undefined && status.remaining <= 0) {
-        showPaywall(status);
-        return;
-      }
-    } catch(e) {
-      // If status check fails, let server handle it
-    }
-
+    // Probability check happens inside generate() — instantly, no server call
     generate();
   }
 
@@ -269,13 +258,15 @@
     if (lvMatch) lastViewed = lvMatch[1].trim();
 
     // Interviewing, invites sent, unanswered invites
-    let interviewingCount = null, invitesSent = null, unansweredInvites = null;
+    let interviewingCount = null, invitesSent = null, unansweredInvites = null, hiredCount = null;
     const intM = pageText2.match(/Interviewing[:\s]+(\d+)/i);
     if (intM) interviewingCount = parseInt(intM[1]);
     const invM = pageText2.match(/Invites sent[:\s]+(\d+)/i);
     if (invM) invitesSent = parseInt(invM[1]);
     const unM = pageText2.match(/Unanswered invites[:\s]+(\d+)/i);
     if (unM) unansweredInvites = parseInt(unM[1]);
+    const hirM = pageText2.match(/Hired[:\s]+(\d+)/i);
+    if (hirM) hiredCount = parseInt(hirM[1]);
 
     // Time posted — "Posted X ago" on job page
     let timePosted = null;
@@ -318,7 +309,7 @@
     if (engM) reqEnglish = engM[1].trim();
 
     const jobStats = {
-      proposalCount, lastViewed, interviewingCount, invitesSent, unansweredInvites,
+      proposalCount, lastViewed, interviewingCount, invitesSent, unansweredInvites, hiredCount,
       timePosted, timePostedMinutes, clientAvgRate, clientHireRate, clientTotalSpent, clientRating,
       reqJSS, reqTalentType, reqEnglish
     };
@@ -328,7 +319,63 @@
     return { title, description, skills, budget, location, clientName: finalClientName, questions, reviewText, type: jobType, jobStats };
   }
 
-  // Generate
+  // ── Pre-generation probability alert ────────────────────────────────────────
+  function showProbAlert(wp, hired) {
+    return new Promise(resolve => {
+      const isHired   = hired > 0;
+      const scoreCol  = wp.probScore >= 60 ? '#34d399' : wp.probScore >= 40 ? '#f59e0b' : '#f87171';
+      const topIssues = wp.topProb.filter(f => f.delta < 0).slice(0,3);
+
+      const allIssues = [...wp.topProb, ...wp.topMatch]
+        .filter(f => f.delta < 0)
+        .sort((a,b) => a.delta - b.delta) // worst first
+        .slice(0,4);
+      document.getElementById('sn-body').innerHTML = `
+        <div class="sn-alert-wrap">
+          <div class="sn-alert-header" style="background:${isHired ? 'rgba(248,113,113,.08)' : 'rgba(245,158,11,.07)'}; border-bottom:1px solid ${isHired ? 'rgba(248,113,113,.2)' : 'rgba(245,158,11,.2)'}">
+            <div class="sn-alert-score-ring" style="border-color:${scoreCol}">
+              <span class="sn-alert-ring-pct" style="color:${scoreCol}">${isHired ? '0' : wp.probScore}</span>
+              <span class="sn-alert-ring-label">%</span>
+            </div>
+            <div class="sn-alert-header-text">
+              <div class="sn-alert-title">${isHired ? 'Already hired' : 'Low win odds'}</div>
+              <div class="sn-alert-sub" style="color:${scoreCol}">${isHired ? 'This job is closed' : wp.probScore >= 40 ? 'Possible but unlikely' : 'Very hard to win'}</div>
+            </div>
+          </div>
+          <div class="sn-alert-body">
+            <div class="sn-alert-msg">
+              ${isHired
+                ? '<strong>Someone was already hired.</strong> Applying now will only waste your Connects — which are real money.'
+                : 'Your <strong>Connects cost real money</strong>. With ' + wp.probScore + '% job odds, this job is a tough fight. Here\'s why:'}
+            </div>
+            ${allIssues.length ? '<div class="sn-alert-issues">' + allIssues.map(f =>
+              '<div class="sn-alert-issue"><div class="sn-alert-issue-dot"></div><div><span class="sn-alert-issue-label">' + f.label + ':</span> ' + f.value + (f.note ? ' — ' + f.note : '') + '</div></div>'
+            ).join('') + '</div>' : ''}
+            ${wp.warnings.length ? '<div class="sn-alert-warn-box">' + wp.warnings.slice(0,1).map(w => '⚠ ' + w).join('') + '</div>' : ''}
+          </div>
+          <div class="sn-alert-footer">
+            <button class="sn-alert-cancel" id="sn-alert-cancel">← Skip this job</button>
+            ${isHired ? '' : '<button class="sn-alert-anyway" id="sn-alert-anyway">Write anyway</button>'}
+          </div>
+        </div>
+      `;
+
+      document.getElementById('sn-alert-cancel').addEventListener('click', () => {
+        closePanel();
+        resolve(true); // blocked
+      });
+
+      const anywayBtn = document.getElementById('sn-alert-anyway');
+      if (anywayBtn) {
+        anywayBtn.addEventListener('click', () => {
+          showLoading();
+          resolve(false); // proceed
+        });
+      }
+    });
+  }
+
+  // ── Generate
   async function generate() {
     try {
       const stored = await chrome.storage.sync.get(['profile', 'userEmail', 'anonId', 'settings']);
@@ -344,11 +391,34 @@
         await chrome.storage.sync.set({ anonId });
       }
 
-      // Small delay to let dynamic content (reviews) finish rendering
-      await new Promise(r => setTimeout(r, 800));
-
+      // Read job immediately for probability check (no delay needed)
       const job = getJob();
       const refineInstruction = window._snagRefineInstruction || '';
+
+      // STEP 1: Instant probability check (pure client-side — no server needed)
+      if (!refineInstruction) {
+        const preProfile = stored.profile || {};
+        const preWp = calcWinProbability(job.jobStats || {}, preProfile);
+        const hired = job.jobStats?.hiredCount;
+        if (hired > 0 || preWp.probScore < 60) {
+          const blocked = await showProbAlert(preWp, hired);
+          if (blocked) return; // cancelled — zero server calls made
+        }
+      }
+
+      // STEP 2: Check usage limit (may wake Render — show loading first)
+      showLoading();
+      try {
+        const status = await chrome.runtime.sendMessage({ type: 'GET_STATUS' });
+        if (status && status.remaining !== undefined && status.remaining <= 0) {
+          showPaywall(status); return;
+        }
+      } catch(e) { /* let server enforce */ }
+
+      // STEP 3: Short delay to let reviews render for name extraction
+      await new Promise(r => setTimeout(r, 500));
+      const jobWithReviews = getJob();
+      Object.assign(job, { clientName: jobWithReviews.clientName, reviewText: jobWithReviews.reviewText });
       window._snagRefineInstruction = ''; // clear after use
       const response = await chrome.runtime.sendMessage({
         type: 'GENERATE_PROPOSAL',
@@ -416,14 +486,43 @@
       else               { probScore -= 12; probFactors.push({ label: 'Interviewing', value: ic + ' in progress', delta: -12, note: 'Client already shortlisting heavily' }); }
     }
 
-    // 5. Invites sent
-    const invS = jobStats.invitesSent;
-    if (invS !== null && invS !== undefined) {
-      if (invS === 0) { probScore += 8; probFactors.push({ label: 'Invites', value: 'None sent', delta: +8, note: 'Client open to proposals' }); }
-      else            { probScore -= 3; probFactors.push({ label: 'Invites', value: invS + ' freelancers invited', delta: -3, note: 'Client also headhunting' }); }
+    // 5. Hired count — if someone is already hired, probability = 0
+    const hired = jobStats.hiredCount;
+    if (hired !== null && hired !== undefined && hired > 0) {
+      probScore = 0;
+      probFactors.push({ label: 'Hired', value: hired + ' already hired', delta: -999, note: 'Job likely closed — do not apply' });
+      warnings.push('Client already hired ' + hired + ' freelancer(s) — this job is likely closed');
     }
 
-    probScore = Math.max(5, Math.min(95, Math.round(probScore)));
+    // 6. Invites sent — important signal
+    const invS = jobStats.invitesSent;
+    if (invS !== null && invS !== undefined && !hired) {
+      if (invS === 0) {
+        probScore += 8; probFactors.push({ label: 'Invites', value: 'None sent', delta: +8, note: 'Client open to proposals' });
+      } else if (invS <= 3) {
+        probScore -= 5; probFactors.push({ label: 'Invites', value: invS + ' invited', delta: -5, note: 'Client prefers invited freelancers' });
+        warnings.push('Client invited ' + invS + ' freelancers — proposal acceptance is lower');
+      } else {
+        probScore -= 12; probFactors.push({ label: 'Invites', value: invS + ' invited', delta: -12, note: 'Client mostly hiring via invites' });
+        warnings.push('Client sent ' + invS + ' invites — they likely already have preferred candidates');
+      }
+    }
+
+    // Client rating — low rating signals problematic client
+    const cr = jobStats.clientRating;
+    if (cr !== null && cr !== undefined) {
+      if      (cr >= 4.8) { probScore += 5;  probFactors.push({ label: 'Client rating', value: cr + '★', delta: +5,  note: 'Excellent client' }); }
+      else if (cr >= 4.0) { /* neutral */ }
+      else if (cr >= 3.0) { probScore -= 8;  probFactors.push({ label: 'Client rating', value: cr + '★', delta: -8,  note: 'Below average — risk of disputes' }); warnings.push('Client rating ' + cr + '★ — below 4.0, may be difficult to work with'); }
+      else                { probScore -= 18; probFactors.push({ label: 'Client rating', value: cr + '★', delta: -18, note: 'Poor client — high dispute risk' }); warnings.push('Client only ' + cr + '★ — serious risk of disputes or non-payment'); }
+    }
+
+    // Balance: if old posting but low competition + no interviewing, recover score
+    if (jobStats.timePostedMinutes > 1440 && (jobStats.proposalCount || 99) <= 10 && interviewingCount === 0) {
+      probScore += 8;
+    }
+
+    probScore = Math.max(0, Math.min(95, Math.round(probScore)));
 
     // ══ PROFILE MATCH FACTORS ════════════════════════════════════════════════
 
@@ -526,72 +625,82 @@
     }
 
     document.getElementById('sn-body').innerHTML = `
-      <div class="sn-proposal">
+      <div class="sn-two-col">
 
-        <div class="sn-prob-panel">
-          <div class="sn-prob-cols">
-            <div class="sn-prob-col">
-              <div class="sn-prob-col-head">
-                <span class="sn-prob-col-label">Job odds</span>
-                <span class="sn-prob-col-pct" style="color:${wp.probColor}">${wp.probScore}%</span>
-              </div>
-              <div class="sn-prob-col-bar-wrap"><div class="sn-prob-col-bar" style="width:${wp.probScore}%;background:${wp.probColor}"></div></div>
-              <div class="sn-prob-chips">
-                ${wp.topProb.map(f => '<div class="sn-chip ' + (f.delta > 0 ? 'chip-g' : f.delta < 0 ? 'chip-r' : 'chip-y') + '" title="' + esc(f.note) + '"><span class="chip-dot"></span>' + esc(f.label) + ': ' + esc(f.value) + '</div>').join('')}
-              </div>
-            </div>
-            <div class="sn-prob-divider"></div>
-            <div class="sn-prob-col">
-              <div class="sn-prob-col-head">
-                <span class="sn-prob-col-label">Profile fit</span>
-                <span class="sn-prob-col-pct" style="color:${wp.matchColor}">${wp.matchScore}%</span>
-              </div>
-              <div class="sn-prob-col-bar-wrap"><div class="sn-prob-col-bar" style="width:${wp.matchScore}%;background:${wp.matchColor}"></div></div>
-              <div class="sn-prob-chips">
-                ${wp.topMatch.map(f => '<div class="sn-chip ' + (f.delta > 0 ? 'chip-g' : f.warn ? 'chip-r' : 'chip-y') + '" title="' + esc(f.note) + '"><span class="chip-dot"></span>' + esc(f.label) + ': ' + esc(f.value) + '</div>').join('')}
-              </div>
-            </div>
-          </div>
-          ${wp.warnings.length ? '<div class="sn-prob-warnings">' + wp.warnings.slice(0,2).map(w => '<div class="sn-prob-warn">⚠ ' + esc(w) + '</div>').join('') + '</div>' : ''}
-        </div>
-
-        <div class="sn-letter-container" id="sn-letter-container">
+        <!-- LEFT: Cover letter -->
+        <div class="sn-col-letter">
           <div class="sn-letter" id="sn-letter" contenteditable="true">${esc(letter)}</div>
-          <div class="sn-letter-footer">
-            <span class="sn-edit-hint">Click to edit</span>
-            <button class="sn-copy-btn" id="sn-copy">
+          <div class="sn-letter-bar">
+            <button class="sn-regen-inline-btn" id="sn-regen">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+              Rewrite
+            </button>
+            <textarea class="sn-refine-inp" id="sn-refine-inp" placeholder="Refine… e.g. make it shorter, add more about Flutter" rows="1"></textarea>
+            <button class="sn-copy-inline-btn" id="sn-copy">
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
               Copy
             </button>
           </div>
         </div>
 
-        ${questions ? '<div class="sn-questions"><div class="sn-questions-head"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Additional questions</div><div class="sn-questions-body" id="sn-questions-text">' + esc(questions) + '</div><div class="sn-letter-footer"><span class="sn-edit-hint">Paste below proposal</span><button class="sn-copy-btn" id="sn-copy-q"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy Q&amp;A</button></div></div>' : ''}
+        <!-- RIGHT: Intelligence panel -->
+        <div class="sn-col-intel">
 
-        ${tips && tips.length ? '<div class="sn-intel"><div class="sn-intel-head"><div class="sn-intel-title"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> Strategy</div></div><div class="sn-intel-factors">' + tips.map(t => '<div class="sn-factor"><div class="sn-factor-dot yellow"></div><div class="sn-factor-body"><span>' + esc(t) + '</span></div></div>').join('') + '</div></div>' : ''}
+          <!-- Probability + Match chips -->
+          <div class="sn-intel-scores">
+            <div class="sn-score-row">
+              <div class="sn-score-head">
+                <span class="sn-score-label">Job odds</span>
+                <span class="sn-score-val" style="color:${wp.probColor}">${wp.probScore}%</span>
+              </div>
+              <div class="sn-score-bar-wrap"><div class="sn-score-bar" style="width:${wp.probScore}%;background:${wp.probColor}"></div></div>
+              <div class="sn-chips-row">
+                ${wp.topProb.slice(0,3).map(f => '<span class="sn-chip2 ' + (f.delta > 0 ? 'c-g' : f.delta < 0 ? 'c-r' : 'c-y') + '" title="' + esc(f.note) + '">' + esc(f.label) + ': ' + esc(f.value) + '</span>').join('')}
+              </div>
+            </div>
+            <div class="sn-score-row">
+              <div class="sn-score-head">
+                <span class="sn-score-label">Profile fit</span>
+                <span class="sn-score-val" style="color:${wp.matchColor}">${wp.matchScore}%</span>
+              </div>
+              <div class="sn-score-bar-wrap"><div class="sn-score-bar" style="width:${wp.matchScore}%;background:${wp.matchColor}"></div></div>
+              <div class="sn-chips-row">
+                ${wp.topMatch.slice(0,3).map(f => '<span class="sn-chip2 ' + (f.delta > 0 ? 'c-g' : f.warn ? 'c-r' : 'c-y') + '" title="' + esc(f.note) + '">' + esc(f.label) + ': ' + esc(f.value) + '</span>').join('')}
+              </div>
+            </div>
+          </div>
 
-        ${remaining !== null && remaining <= 10 ? '<div class="sn-low-bar"><span>' + (remaining === 0 ? '🚫 No proposals left' : '⚡ ' + remaining + ' left') + '</span><button class="sn-low-upgrade" id="sn-low-upgrade">Upgrade →</button></div>' : ''}
+          ${wp.warnings.length ? '<div class="sn-intel-warns">' + wp.warnings.slice(0,2).map(w => '<div class="sn-intel-warn">⚠ ' + esc(w) + '</div>').join('') + '</div>' : ''}
 
-        <div class="sn-refine-bar">
-          <input class="sn-refine-inp" id="sn-refine-inp" placeholder="Refine: e.g. make it shorter, focus more on Flutter…">
-          <button class="sn-regen-btn" id="sn-regen">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-            Rewrite
-          </button>
+          ${tips && tips.length ? '<div class="sn-intel-tips"><div class="sn-intel-tips-label">Tips</div>' + tips.map(t => '<div class="sn-itip">' + esc(t) + '</div>').join('') + '</div>' : ''}
+
+          ${questions ? '<div class="sn-intel-qa"><div class="sn-intel-tips-label">Q&amp;A answers <button class="sn-copy-qa-btn" id="sn-copy-q">Copy</button></div><div class="sn-qa-text" id="sn-questions-text">' + esc(questions) + '</div></div>' : ''}
+
+          ${remaining !== null && remaining <= 10 ? '<div class="sn-low-bar"><span>' + (remaining === 0 ? '🚫 No proposals left' : '⚡ ' + remaining + ' left') + '</span><button class="sn-low-upgrade" id="sn-low-upgrade">Upgrade</button></div>' : ''}
+
+
+
         </div>
-
       </div>
     `;
 
+    // Auto-expand textarea
+    const refineInp = document.getElementById('sn-refine-inp');
+    if (refineInp) {
+      refineInp.addEventListener('input', () => {
+        refineInp.style.height = 'auto';
+        refineInp.style.height = refineInp.scrollHeight + 'px';
+      });
+    }
+
     document.getElementById('sn-copy').addEventListener('click', () => {
-      const text = document.getElementById('sn-letter').innerText;
-      navigator.clipboard.writeText(text).then(() => {
+      navigator.clipboard.writeText(document.getElementById('sn-letter').innerText).then(() => {
         const btn = document.getElementById('sn-copy');
         btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Copied!';
-        btn.classList.add('copied');
+        btn.style.background = 'var(--sn-green)';
         setTimeout(() => {
           btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy';
-          btn.classList.remove('copied');
+          btn.style.background = '';
         }, 2500);
       });
     });
@@ -600,9 +709,7 @@
     if (copyQBtn) {
       copyQBtn.addEventListener('click', () => {
         navigator.clipboard.writeText(document.getElementById('sn-questions-text').innerText).then(() => {
-          copyQBtn.textContent = '✓ Copied!';
-          copyQBtn.classList.add('copied');
-          setTimeout(() => { copyQBtn.textContent = 'Copy Q&A'; copyQBtn.classList.remove('copied'); }, 2500);
+          copyQBtn.textContent = '✓ Copied'; setTimeout(() => copyQBtn.textContent = 'Copy', 2000);
         });
       });
     }
