@@ -277,6 +277,7 @@
       document.querySelector('[class*="description"]')
     );
     const fullDesc = descEl?.innerText?.trim() || document.body.innerText.slice(0, 3000);
+    const description = fullDesc; // alias for return object
 
     // Extract additional questions — Upwork shows these in a separate section below the job
     // Pattern: "You will be asked to answer the following questions when submitting a proposal:"
