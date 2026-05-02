@@ -83,14 +83,16 @@ STRUCTURE (follow this exact order)
 ═══════════════════════════════════════════════
 ADDITIONAL QUESTIONS
 ═══════════════════════════════════════════════
-If the job has additional questions listed, answer them SEPARATELY after the cover letter.
-Format:
----
-Q1: [question]
-[answer]
+If ADDITIONAL QUESTIONS FROM CLIENT contains any questions, you MUST answer ALL of them in the ===QUESTIONS=== section.
+These are screening questions the client requires every applicant to answer — skipping them means instant rejection.
+Write detailed, specific answers using the freelancer's real experience. Do NOT write "see cover letter".
+Format each answer clearly:
 
-Q2: [question]
-[answer]
+Q1: [copy the question exactly]
+[your detailed answer — 2-5 sentences, specific, using real portfolio examples]
+
+Q2: [copy the question exactly]
+[your detailed answer]
 
 ═══════════════════════════════════════════════
 RULES — NEVER BREAK THESE

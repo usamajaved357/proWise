@@ -278,14 +278,40 @@
     );
     const fullDesc = descEl?.innerText?.trim() || document.body.innerText.slice(0, 3000);
 
-    // Extract additional questions from job description
-    // Upwork questions usually appear after "Questions" heading or numbered list at end
-    let description = fullDesc;
+    // Extract additional questions — Upwork shows these in a separate section below the job
+    // Pattern: "You will be asked to answer the following questions when submitting a proposal:"
     let questions = '';
-    const qMatch = fullDesc.match(/(?:additional\s+questions?|screening\s+questions?|please\s+answer|answer\s+the\s+following)[:\s]*([\s\S]+)/i);
-    if (qMatch) {
-      questions = qMatch[1].trim().slice(0, 800);
-    }
+    try {
+      const fullPageText = document.body.innerText;
+
+      // Method 1: Upwork's exact phrase for screening questions
+      const asked = fullPageText.indexOf('You will be asked to answer the following questions');
+      if (asked > -1) {
+        const after = fullPageText.slice(asked);
+        const colonIdx = after.indexOf(':');
+        if (colonIdx > -1) {
+          // Grab everything after the colon up to next major section break
+          let chunk = after.slice(colonIdx + 1).trim();
+          // Stop at "About the client" or similar
+          const stopAt = chunk.search(/\nAbout the client|\nRequired Connects|\nActivity on this job/);
+          if (stopAt > -1) chunk = chunk.slice(0, stopAt);
+          questions = chunk.trim().slice(0, 1500);
+        }
+      }
+
+      // Method 2: Look for numbered questions at end of description
+      if (!questions) {
+        const lines = fullDesc.split('\n');
+        const qLines = [];
+        let inQ = false;
+        for (const line of lines) {
+          if (/^\d+[\.\)]/.test(line.trim())) { inQ = true; }
+          if (inQ && line.trim()) qLines.push(line.trim());
+        }
+        if (qLines.length >= 2) questions = qLines.join('\n').slice(0, 1500);
+      }
+    } catch(e) { questions = ''; }
+
 
     // Extract client name — pass raw review text to AI for extraction
     let clientName = '';
