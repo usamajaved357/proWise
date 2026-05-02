@@ -246,15 +246,17 @@ Target word count: ${wordLimit} words (but write what the job needs — if they 
 Pricing instruction: ${pricingType === 'HOURLY' ? `Mention rate "${profile.hourlyRate || 'not set'}" naturally` : pricingType === 'FIXED' ? `Address their budget: ${job.budget}` : 'Focus on CTA, skip pricing'}
 
 YOUR ASSIGNED HOOK: ${assignedHook}
-HOOK TEMPLATE TO FOLLOW EXACTLY:
-${assignedHook.includes('1') ? "HOOK 1 TEMPLATE: "I [specific result I got for a past client relevant to this job]. I'd like to do the same for you." → Replace [specific result] with a real achievement from your portfolio that matches what this client needs." :
-  assignedHook.includes('2') ? "HOOK 2 TEMPLATE: "I've [describe the exact matching experience you have]. This is how I'd approach [their specific project or task]:" → Replace with the most specific experience match. End with colon — the body continues from here." :
-  assignedHook.includes('3') ? "HOOK 3 TEMPLATE: "I can [deliver specific outcome for this job] in [realistic timeframe], and I'm willing to back that up — [one credibility proof]." → Use real numbers. Make the guarantee feel confident not desperate." :
-  assignedHook.includes('4') ? "HOOK 4 TEMPLATE: "I'll not only [solve their main stated problem] — I'll also [one genuinely useful extra they didn't ask for but will appreciate]." → The extra must be real and relevant, not generic." :
-  assignedHook.includes('5') ? "HOOK 5 TEMPLATE: "Let's jump on a quick call today — I can walk you through my exact approach in 15 minutes. No strings attached." → Use this nearly verbatim. Only adjust timing if needed." :
-  assignedHook.includes('6') ? "HOOK 6 TEMPLATE: "Here are my numbers: [relevant stat 1], [relevant stat 2], [relevant stat 3]." → Pick stats that directly answer what this client needs to see. Real numbers only." :
-  "HOOK 7 TEMPLATE: "My understanding: you need [restate their core problem sharper and more specifically than how they wrote it]." → Prove you read every word. Be more precise than the client was."}
-YOUR FIRST SENTENCE AFTER THE GREETING MUST USE THIS EXACT STRUCTURE. Not similar. This exact pattern.
+TEMPLATE FOR YOUR OPENING SENTENCE:
+${({
+  '1': 'HOOK 1: Write — I [specific measurable result for a past client]. I would like to do the same for you.',
+  '2': 'HOOK 2: Write — I have [exact matching experience]. This is how I would approach [their specific project]:',
+  '3': 'HOOK 3: Write — I can [deliver specific outcome] in [timeframe], and I am willing to back that up — [one proof point].',
+  '4': 'HOOK 4: Write — I will not only [solve their main problem] — I will also [one genuinely useful extra].',
+  '5': 'HOOK 5: Write — Let us jump on a quick call today — I can walk you through my approach in 15 minutes. No strings attached.',
+  '6': 'HOOK 6: Write — Here are my numbers: [relevant stat 1], [relevant stat 2], [relevant stat 3].',
+  '7': 'HOOK 7: Write — My understanding: you need [restate their core problem more precisely than they wrote it].'
+})[assignedHook.match(/\d/)?.[0]] || 'Use the assigned hook format above.'}
+MANDATORY: Your first sentence after the greeting must follow this exact structure. Bold the key claim.
 ${refineInstruction ? "REFINEMENT REQUEST from user: " + refineInstruction : ""}
 Write the cover letter now. Bold key terms using **word** syntax. End with Regards + ${profile.name}.
 If there are additional client questions, answer them in the questions field.`.trim();
