@@ -237,7 +237,7 @@ function callClaude(system, user) {
     if (!key) return reject(new Error('ANTHROPIC_API_KEY not set'));
     const body = JSON.stringify({
       model: 'claude-haiku-4-5-20251001',
-      max_tokens: 2000,
+      max_tokens: 2500,
       system,
       messages: [{ role: 'user', content: user }]
     });

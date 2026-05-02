@@ -234,6 +234,15 @@ ${(job.reviewText || '').slice(0, 600) || 'no reviews available'}
 
 ADDITIONAL QUESTIONS FROM CLIENT:
 ${job.questions || 'none'}
+${job.questions && job.questions !== 'none' ? `
+Q&A RULES — READ BEFORE WRITING ANSWERS:
+- Answer ONLY the questions listed above. Do NOT invent questions.
+- MAX 2-3 SHORT sentences per answer. Under 60 words total per answer. If you go over, cut it.
+- Plain prose only. Zero bold, zero bullets, zero headers.
+- Sound like a human texting a reply — short, direct, confident.
+- One sentence max if experience doesn't match, then pivot fast.
+- Never repeat the question. Never start with "Great question".
+- Answers go in ===QUESTIONS=== only.` : ''}
 
 ──────────────────────────────
 FREELANCER PROFILE
