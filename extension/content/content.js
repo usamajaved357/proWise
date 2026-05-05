@@ -443,46 +443,115 @@
     return { title, description, skills, budget, location, clientName: finalClientName, questions, reviewText, type: jobType, jobStats };
   }
 
+
+  // ── Gauge: fat triangular needle, red(0%)→green(100%) ──────────────────────
+  function buildGauge(score, size) {
+    size = size || 100;
+    const cx = size/2, cy = size*0.65, r = size*0.38;
+    const pi = Math.PI;
+    const x1 = cx - r, y1 = cy;  // leftmost = 0% = red
+    const x2 = cx + r, y2 = cy;  // rightmost = 100% = green
+    // Needle: 0%→left(180deg), 100%→right(0deg)
+    const angleDeg = 180 - (score/100)*180;
+    const angleRad = angleDeg * pi/180;
+    const nx = cx + r*0.78*Math.cos(angleRad);
+    const ny = cy - r*0.78*Math.sin(angleRad);
+    // Fat triangular base
+    const bh = size*0.045, pa = angleRad + pi/2;
+    const b1x = cx + bh*Math.cos(pa), b1y = cy - bh*Math.sin(pa);
+    const b2x = cx - bh*Math.cos(pa), b2y = cy + bh*Math.sin(pa);
+    const color = score>=70?'#34d399':score>=40?'#f59e0b':'#f87171';
+    const id = 'g'+Math.random().toString(36).slice(2,6);
+    const arcLen = pi*r;
+    const dashOff = arcLen*(1-score/100);
+    return `<svg viewBox="0 0 ${size} ${Math.round(size*0.72)}" width="${size}" height="${Math.round(size*0.72)}" xmlns="http://www.w3.org/2000/svg">
+      <defs><linearGradient id="${id}" x1="0%" y1="0%" x2="100%" y2="0%">
+        <stop offset="0%" stop-color="#f87171"/>
+        <stop offset="50%" stop-color="#f59e0b"/>
+        <stop offset="100%" stop-color="#34d399"/>
+      </linearGradient></defs>
+      <path d="M ${x1} ${y1} A ${r} ${r} 0 0 1 ${x2} ${y2}" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="${size*0.09}" stroke-linecap="round"/>
+      <path d="M ${x1} ${y1} A ${r} ${r} 0 0 1 ${x2} ${y2}" fill="none" stroke="url(#${id})" stroke-width="${size*0.09}" stroke-linecap="round" stroke-dasharray="${arcLen}" stroke-dashoffset="${dashOff}"/>
+      <polygon points="${nx},${ny} ${b1x},${b1y} ${b2x},${b2y}" fill="${color}"/>
+      <circle cx="${cx}" cy="${cy}" r="${size*0.055}" fill="#0d1120" stroke="${color}" stroke-width="${size*0.028}"/>
+    </svg>`;
+  }
+
   // ── Pre-generation probability alert ────────────────────────────────────────
   function showProbAlert(wp, hired) {
     return new Promise(resolve => {
-      const isHired   = hired > 0;
-      const scoreCol  = wp.probScore >= 60 ? '#34d399' : wp.probScore >= 40 ? '#f59e0b' : '#f87171';
-      const topIssues = wp.topProb.filter(f => f.delta < 0).slice(0,3);
+      const isHired  = hired > 0;
+      const score    = isHired ? 0 : wp.probScore;
+      const scoreCol = score >= 70 ? '#34d399' : score >= 45 ? '#f59e0b' : '#f87171';
+      const verdict  = isHired ? 'Already Hired' : score >= 70 ? 'Strong Odds' : score >= 45 ? 'Possible' : 'Long Shot';
 
-      // Show all negative factors + warnings on alert
-      const allIssues = [...(wp.topProb || []), ...(wp.topMatch || [])]
-        .filter(f => f.delta < 0)
-        .sort((a,b) => a.delta - b.delta)
-        .slice(0,5);
-      // Also include any positive factors that give context (posted time, proposals)
-      const contextFactors = [...(wp.topProb || [])].filter(f => 
-        f.delta >= 0 && ['Posted','Proposals','Hire rate','Hired'].includes(f.label)
-      ).slice(0,2);
-      const displayIssues = allIssues.length > 0 ? allIssues : contextFactors;
+      // All probability factors (including posted time)
+      const allProbFactors = [...(wp.topProb || [])].sort((a,b) => a.delta - b.delta);
+
+      // Separate client rating as warning only — remove from prob factors display
+      const ratingWarning = allProbFactors.find(f => f.label === 'Client rating' && f.delta < 0);
+      const probFactors   = allProbFactors.filter(f => f.label !== 'Client rating' && f.label !== 'Client rating');
+      // Also deduplicate warnings — remove rating text if already in ratingWarning
+      const cleanWarnings = (wp.warnings || []).filter(w => !w.toLowerCase().includes('rating'));
+
+      // Skill mismatch check (from matchFactors)
+      const skillMismatch = (wp.topMatch || []).filter(f => f.delta <= -15);
+
+      // Build warning score (inverse of prob issues + rating)
+      const warnIssues = [...cleanWarnings];
+      if (ratingWarning) warnIssues.unshift(ratingWarning.value + ' — risky client');
+      skillMismatch.forEach(f => warnIssues.unshift('Skill mismatch: ' + f.label));
+      const warnScore = Math.max(0, 100 - (warnIssues.length * 25));
+      const warnCol   = warnScore >= 70 ? '#34d399' : warnScore >= 40 ? '#f59e0b' : '#f87171';
+
       document.getElementById('sn-body').innerHTML = `
         <div class="sn-alert-wrap">
-          <div class="sn-alert-header" style="background:${isHired ? 'rgba(248,113,113,.08)' : 'rgba(245,158,11,.07)'}; border-bottom:1px solid ${isHired ? 'rgba(248,113,113,.2)' : 'rgba(245,158,11,.2)'}">
-            <div class="sn-alert-score-ring" style="border-color:${scoreCol}">
-              <span class="sn-alert-ring-pct" style="color:${scoreCol}">${isHired ? '0' : wp.probScore}</span>
-              <span class="sn-alert-ring-label">%</span>
-            </div>
-            <div class="sn-alert-header-text">
-              <div class="sn-alert-title">${isHired ? 'Already hired' : 'Low win odds'}</div>
-              <div class="sn-alert-sub" style="color:${scoreCol}">${isHired ? 'This job is closed' : wp.probScore >= 40 ? 'Possible but unlikely' : 'Very hard to win'}</div>
-            </div>
+
+          <!-- Top message -->
+          <div class="sn-alert-top-msg" style="color:${isHired ? '#f87171' : scoreCol}">
+            ${isHired ? '🚫 Someone was already hired — applying wastes your Connects' : 'Your Connects are real money — this job scores ' + score + '%'}
           </div>
-          <div class="sn-alert-body">
-            <div class="sn-alert-msg">
-              ${isHired
-                ? '<strong>Someone was already hired.</strong> Applying now will only waste your Connects — which are real money.'
-                : 'Your <strong>Connects cost real money</strong>. With ' + wp.probScore + '% job odds, this job is a tough fight. Here\'s why:'}
+
+          <!-- Dual gauges + factors -->
+          <div class="sn-alert-dual-gauges">
+
+            <!-- Probability gauge -->
+            <div class="sn-alert-gauge-col">
+              <div class="sn-alert-gauge-label">Win Probability</div>
+              ${buildGauge(score, 96)}
+              <div class="sn-alert-gauge-inline">
+                <span class="sn-alert-gauge-score" style="color:${scoreCol}">${score}%</span>
+                <span class="sn-alert-gauge-verdict" style="color:${scoreCol}">${verdict}</span>
+              </div>
+              <div class="sn-alert-factor-mini">
+                ${probFactors.slice(0,4).map(f =>
+                  '<div class="sn-afm-row"><div class="sn-fdot" style="background:' + (f.delta > 0 ? '#34d399' : f.delta < 0 ? '#f87171' : '#f59e0b') + '"></div>' +
+                  '<span class="sn-afm-label">' + f.label + ':</span> <span class="sn-afm-val">' + f.value + '</span></div>'
+                ).join('')}
+              </div>
             </div>
-            ${displayIssues.length ? '<div class="sn-alert-issues">' + displayIssues.map(f =>
-              '<div class="sn-alert-issue"><div class="sn-alert-issue-dot" style="background:' + (f.delta < 0 ? '#f87171' : '#34d399') + '"></div><div><span class="sn-alert-issue-label">' + f.label + ':</span> ' + f.value + (f.note ? ' — ' + f.note : '') + '</div></div>'
-            ).join('') + '</div>' : ''}
-            ${wp.warnings.length ? '<div class="sn-alert-warns-list">' + wp.warnings.slice(0,3).map(w => '<div class="sn-alert-warn-item">⚠ ' + w + '</div>').join('') + '</div>' : ''}
+
+            <div class="sn-alert-gauge-sep"></div>
+
+            <!-- Risk gauge -->
+            <div class="sn-alert-gauge-col">
+              <div class="sn-alert-gauge-label">Risk Level</div>
+              ${buildGauge(warnScore, 96)}
+              <div class="sn-alert-gauge-inline">
+                <span class="sn-alert-gauge-score" style="color:${warnCol}">${warnIssues.length === 0 ? '0' : warnIssues.length} ${warnIssues.length === 1 ? 'warning' : warnIssues.length === 0 ? 'issues' : 'warnings'}</span>
+                <span class="sn-alert-gauge-verdict" style="color:${warnCol}">${warnScore >= 70 ? 'Low risk' : warnScore >= 40 ? 'Some risk' : 'High risk'}</span>
+              </div>
+              <div class="sn-alert-factor-mini">
+                ${warnIssues.slice(0,4).map(w =>
+                  '<div class="sn-afm-row"><div class="sn-fdot" style="background:#f59e0b"></div>' +
+                  '<span class="sn-afm-val">' + w + '</span></div>'
+                ).join('')}
+                ${warnIssues.length === 0 ? '<div class="sn-afm-row"><div class="sn-fdot" style="background:#34d399"></div><span class="sn-afm-val">No warnings found</span></div>' : ''}
+              </div>
+            </div>
+
           </div>
+
           <div class="sn-alert-footer">
             <button class="sn-alert-cancel" id="sn-alert-cancel">← Skip this job</button>
             ${isHired ? '' : '<button class="sn-alert-anyway" id="sn-alert-anyway">Write anyway</button>'}
@@ -490,20 +559,12 @@
         </div>
       `;
 
-      document.getElementById('sn-alert-cancel').addEventListener('click', () => {
-        closePanel();
-        resolve(true); // blocked
-      });
-
+      document.getElementById('sn-alert-cancel').addEventListener('click', () => { closePanel(); resolve(true); });
       const anywayBtn = document.getElementById('sn-alert-anyway');
-      if (anywayBtn) {
-        anywayBtn.addEventListener('click', () => {
-          showLoading();
-          resolve(false); // proceed
-        });
-      }
+      if (anywayBtn) anywayBtn.addEventListener('click', () => { showLoading(); resolve(false); });
     });
   }
+
 
   // ── Generate
   async function generate() {
@@ -757,7 +818,7 @@
     document.getElementById('sn-body').innerHTML = `
       <div class="sn-two-col">
 
-        <!-- LEFT: Cover letter -->
+        <!-- LEFT: Cover letter only -->
         <div class="sn-col-letter">
           <div class="sn-letter" id="sn-letter" contenteditable="true">${esc(letter)}</div>
           <div class="sn-letter-actions">
@@ -767,51 +828,54 @@
             </button>
           </div>
           <div class="sn-letter-bar">
-            <textarea class="sn-refine-inp" id="sn-refine-inp" placeholder="Request changes… e.g. change hook to guarantee, add GitHub link below portfolio, make it shorter" rows="2"></textarea>
+            <textarea class="sn-refine-inp" id="sn-refine-inp" placeholder="Request changes… e.g. change to guarantee hook, add GitHub link, make shorter" rows="2"></textarea>
             <button class="sn-regen-inline-btn" id="sn-regen">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
               Generate
             </button>
           </div>
-          ${questions ? '<div class="sn-qa-section"><div class="sn-qa-head"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Client questions &amp; answers <button class="sn-qa-copy-btn" id="sn-copy-q">Copy Q&amp;A</button></div><div class="sn-qa-body" id="sn-questions-text">' + esc(questions) + '</div></div>' : ''}
         </div>
 
-        <!-- RIGHT: Intelligence panel -->
+        <!-- RIGHT: Intel + tips + Q&A -->
         <div class="sn-col-intel">
 
-          <!-- Probability + Match chips -->
-          <div class="sn-intel-scores">
-            <div class="sn-score-row">
-              <div class="sn-score-head">
-                <span class="sn-score-label">Job odds</span>
-                <span class="sn-score-val" style="color:${wp.probColor}">${wp.probScore}%</span>
-              </div>
-              <div class="sn-score-bar-wrap"><div class="sn-score-bar" style="width:${wp.probScore}%;background:${wp.probColor}"></div></div>
-              <div class="sn-chips-row">
-                ${wp.topProb.slice(0,3).map(f => '<span class="sn-chip2 ' + (f.delta > 0 ? 'c-g' : f.delta < 0 ? 'c-r' : 'c-y') + '" title="' + esc(f.note) + '">' + esc(f.label) + ': ' + esc(f.value) + '</span>').join('')}
-              </div>
+          <!-- Job Odds gauge -->
+          <div class="sn-right-section">
+            <div class="sn-right-label">Job Odds</div>
+            <div class="sn-gauge-center">
+              ${buildGauge(wp.probScore, 76)}
             </div>
-            <div class="sn-score-row">
-              <div class="sn-score-head">
-                <span class="sn-score-label">Profile fit</span>
-                <span class="sn-score-val" style="color:${wp.matchColor}">${wp.matchScore}%</span>
-              </div>
-              <div class="sn-score-bar-wrap"><div class="sn-score-bar" style="width:${wp.matchScore}%;background:${wp.matchColor}"></div></div>
-              <div class="sn-chips-row">
-                ${wp.topMatch.slice(0,3).map(f => '<span class="sn-chip2 ' + (f.delta > 0 ? 'c-g' : f.warn ? 'c-r' : 'c-y') + '" title="' + esc(f.note) + '">' + esc(f.label) + ': ' + esc(f.value) + '</span>').join('')}
-              </div>
+            <div class="sn-gauge-readout">
+              <span style="color:${wp.probColor};font-size:14px;font-weight:800">${wp.probScore}%</span>
+              <span style="color:${wp.probColor};font-size:10px;font-weight:700;margin-left:4px">${wp.probScore>=70?'Strong':wp.probScore>=45?'Possible':'Long shot'}</span>
+            </div>
+            <div class="sn-right-chips">
+              ${wp.topProb.slice(0,3).map(f=>'<span class="sn-rchip '+(f.delta>0?'rc-g':f.delta<0?'rc-r':'rc-y')+'">'+esc(f.label)+': '+esc(f.value)+'</span>').join('')}
             </div>
           </div>
 
-          ${wp.warnings.length ? '<div class="sn-intel-warns">' + wp.warnings.slice(0,2).map(w => '<div class="sn-intel-warn">⚠ ' + esc(w) + '</div>').join('') + '</div>' : ''}
+          <!-- Risk Level gauge -->
+          <div class="sn-right-section">
+            <div class="sn-right-label">Risk Level</div>
+            <div class="sn-gauge-center">
+              ${buildGauge(wp.matchScore, 76)}
+            </div>
+            <div class="sn-gauge-readout">
+              <span style="color:${wp.matchColor};font-size:14px;font-weight:800">${wp.matchScore}%</span>
+              <span style="color:${wp.matchColor};font-size:10px;font-weight:700;margin-left:4px">${wp.matchScore>=70?'Low risk':wp.matchScore>=45?'Some risk':'High risk'}</span>
+            </div>
+            <div class="sn-right-chips">
+              ${[...wp.topMatch,(wp.warnings.length?{label:'⚠',value:wp.warnings[0],delta:-1,warn:true}:null)].filter(Boolean).slice(0,3).map(f=>'<span class="sn-rchip '+(f.delta>0?'rc-g':f.warn||f.delta<0?'rc-r':'rc-y')+'">'+esc(f.label+(f.label==='⚠'?'':':'))+' '+esc(f.value)+'</span>').join('')}
+            </div>
+          </div>
 
-          ${tips && tips.length ? '<div class="sn-intel-tips"><div class="sn-intel-tips-label">Tips</div>' + tips.map(t => '<div class="sn-itip">' + esc(t) + '</div>').join('') + '</div>' : ''}
+          <!-- Tips -->
+          ${tips&&tips.length?'<div class="sn-right-section sn-tips-section"><div class="sn-right-label">Tips</div>'+tips.slice(0,3).map(t=>'<div class="sn-rtip">'+esc(t.length>70?t.slice(0,70)+'…':t)+'</div>').join('')+'</div>':''}
 
+          <!-- Q&A -->
+          ${questions?'<div class="sn-right-section sn-qa-section-r"><div class="sn-right-label" style="display:flex;align-items:center;justify-content:space-between">Q&amp;A <button class="sn-qa-copy-btn" id="sn-copy-q">Copy</button></div><div class="sn-qa-rbody" id="sn-questions-text">'+esc(questions)+'</div></div>':''}
 
-
-          ${remaining !== null && remaining <= 10 ? '<div class="sn-low-bar"><span>' + (remaining === 0 ? '🚫 No proposals left' : '⚡ ' + remaining + ' left') + '</span><button class="sn-low-upgrade" id="sn-low-upgrade">Upgrade</button></div>' : ''}
-
-
+          ${remaining!==null&&remaining<=10?'<div class="sn-low-bar"><span>'+(remaining===0?'🚫 No proposals left':'⚡ '+remaining+' left')+'</span><button class="sn-low-upgrade" id="sn-low-upgrade">Upgrade</button></div>':''}
 
         </div>
       </div>
@@ -829,12 +893,16 @@
     document.getElementById('sn-copy').addEventListener('click', () => {
       navigator.clipboard.writeText(document.getElementById('sn-letter').innerText).then(() => {
         const btn = document.getElementById('sn-copy');
-        btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Copied!';
-        btn.style.background = 'var(--sn-green)';
+        const orig = btn.innerHTML;
+        btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>';
+        btn.classList.add('sn-copy-anim');
         setTimeout(() => {
-          btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy';
-          btn.style.background = '';
-        }, 2500);
+          btn.classList.add('sn-copy-fade');
+          setTimeout(() => {
+            btn.innerHTML = orig;
+            btn.classList.remove('sn-copy-anim', 'sn-copy-fade');
+          }, 400);
+        }, 1200);
       });
     });
 
