@@ -366,7 +366,8 @@
     let proposalCount = null;
     if (proposalsRaw) {
       const nums = proposalsRaw.match(/\d+/g);
-      proposalCount = nums ? parseInt(nums[0]) : null;
+      if (nums && nums.length >= 2) proposalCount = parseInt(nums[nums.length-1]);
+      else if (nums) proposalCount = parseInt(nums[0]);
     }
 
     // Last viewed by client
@@ -432,10 +433,16 @@
     const engM     = pageText2.match(/English level[:\s]+([^\n]+)/i);
     if (engM) reqEnglish = engM[1].trim();
 
+    const paymentVerified = pageText2.includes('Payment method verified');
+    let clientSpentNum = 0;
+    if (clientTotalSpent) {
+      const spRaw = clientTotalSpent.replace(/[,$]/g,'');
+      clientSpentNum = /[Kk]$/.test(spRaw) ? parseFloat(spRaw)*1000 : parseFloat(spRaw)||0;
+    }
     const jobStats = {
       proposalCount, lastViewed, interviewingCount, invitesSent, unansweredInvites, hiredCount,
       timePosted, timePostedMinutes, clientAvgRate, clientHireRate, clientTotalSpent, clientRating,
-      reqJSS, reqTalentType, reqEnglish
+      reqJSS, reqTalentType, reqEnglish, paymentVerified, clientSpentNum
     };
     console.log('Job stats:', JSON.stringify(jobStats));
 
@@ -443,125 +450,136 @@
     return { title, description, skills, budget, location, clientName: finalClientName, questions, reviewText, type: jobType, jobStats };
   }
 
-
-  // ── Gauge: fat triangular needle, red(0%)→green(100%) ──────────────────────
+  // ── Pre-generation probability alert ────────────────────────────────────────
+  // ── SVG Gauge: solid arc, fat needle, CSP-safe (no gradient) ────────────────
   function buildGauge(score, size) {
     size = size || 100;
-    const cx = size/2, cy = size*0.65, r = size*0.38;
+    const cx = size / 2, cy = size * 0.64, r = size * 0.38;
     const pi = Math.PI;
-    const x1 = cx - r, y1 = cy;  // leftmost = 0% = red
-    const x2 = cx + r, y2 = cy;  // rightmost = 100% = green
-    // Needle: 0%→left(180deg), 100%→right(0deg)
-    const angleDeg = 180 - (score/100)*180;
-    const angleRad = angleDeg * pi/180;
-    const nx = cx + r*0.78*Math.cos(angleRad);
-    const ny = cy - r*0.78*Math.sin(angleRad);
-    // Fat triangular base
-    const bh = size*0.045, pa = angleRad + pi/2;
-    const b1x = cx + bh*Math.cos(pa), b1y = cy - bh*Math.sin(pa);
-    const b2x = cx - bh*Math.cos(pa), b2y = cy + bh*Math.sin(pa);
-    const color = score>=70?'#34d399':score>=40?'#f59e0b':'#f87171';
-    const id = 'g'+Math.random().toString(36).slice(2,6);
-    const arcLen = pi*r;
-    const dashOff = arcLen*(1-score/100);
-    return `<svg viewBox="0 0 ${size} ${Math.round(size*0.72)}" width="${size}" height="${Math.round(size*0.72)}" xmlns="http://www.w3.org/2000/svg">
-      <defs><linearGradient id="${id}" x1="0%" y1="0%" x2="100%" y2="0%">
-        <stop offset="0%" stop-color="#f87171"/>
-        <stop offset="50%" stop-color="#f59e0b"/>
-        <stop offset="100%" stop-color="#34d399"/>
-      </linearGradient></defs>
-      <path d="M ${x1} ${y1} A ${r} ${r} 0 0 1 ${x2} ${y2}" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="${size*0.09}" stroke-linecap="round"/>
-      <path d="M ${x1} ${y1} A ${r} ${r} 0 0 1 ${x2} ${y2}" fill="none" stroke="url(#${id})" stroke-width="${size*0.09}" stroke-linecap="round" stroke-dasharray="${arcLen}" stroke-dashoffset="${dashOff}"/>
-      <polygon points="${nx},${ny} ${b1x},${b1y} ${b2x},${b2y}" fill="${color}"/>
-      <circle cx="${cx}" cy="${cy}" r="${size*0.055}" fill="#0d1120" stroke="${color}" stroke-width="${size*0.028}"/>
-    </svg>`;
+    const x1 = cx - r, y1 = cy, x2 = cx + r, y2 = cy;
+    const clamped = Math.max(0, Math.min(100, score));
+    // Needle: 0% → left(180°), 100% → right(0°)
+    const ang = (1 - clamped / 100) * pi;
+    const nl = r * 0.76;
+    const nx = cx + nl * Math.cos(ang), ny = cy - nl * Math.sin(ang);
+    const bh = size * 0.042, pa = ang + pi / 2;
+    const b1x = cx + bh * Math.cos(pa), b1y = cy - bh * Math.sin(pa);
+    const b2x = cx - bh * Math.cos(pa), b2y = cy + bh * Math.sin(pa);
+    const nc = clamped >= 70 ? '#34d399' : clamped >= 40 ? '#f59e0b' : '#f87171';
+    const arcLen = pi * r;
+    const dashOff = arcLen * (1 - clamped / 100);
+    const h = Math.round(size * 0.70);
+    // Three zone arcs: red 0-40, yellow 40-70, green 70-100
+    function zoneArc(from, to, color) {
+      const f = Math.max(0, Math.min(100, from));
+      const t = Math.max(0, Math.min(100, to));
+      if (f >= t) return '';
+      const off1 = arcLen * (1 - t / 100);
+      const len  = arcLen * (t - f) / 100;
+      return '<path d="M ' + x1 + ' ' + y1 + ' A ' + r + ' ' + r + ' 0 0 1 ' + x2 + ' ' + y2 + '"'
+        + ' fill="none" stroke="' + color + '" stroke-width="' + (size * 0.085) + '" stroke-linecap="butt"'
+        + ' stroke-dasharray="' + len + ' ' + arcLen + '" stroke-dashoffset="' + off1 + '" opacity=".25"/>';
+    }
+    return '<svg viewBox="0 0 ' + size + ' ' + h + '" width="' + size + '" height="' + h + '" xmlns="http://www.w3.org/2000/svg">'
+      // Track
+      + '<path d="M ' + x1 + ' ' + y1 + ' A ' + r + ' ' + r + ' 0 0 1 ' + x2 + ' ' + y2 + '"'
+      + ' fill="none" stroke="rgba(255,255,255,.07)" stroke-width="' + (size * 0.085) + '" stroke-linecap="round"/>'
+      // Zone backgrounds (dimmed)
+      + zoneArc(0, 40, '#f87171') + zoneArc(40, 70, '#f59e0b') + zoneArc(70, 100, '#34d399')
+      // Active fill (solid color)
+      + '<path d="M ' + x1 + ' ' + y1 + ' A ' + r + ' ' + r + ' 0 0 1 ' + x2 + ' ' + y2 + '"'
+      + ' fill="none" stroke="' + nc + '" stroke-width="' + (size * 0.085) + '" stroke-linecap="round"'
+      + ' stroke-dasharray="' + arcLen + '" stroke-dashoffset="' + dashOff + '"/>'
+      // Needle
+      + '<polygon points="' + nx + ',' + ny + ' ' + b1x + ',' + b1y + ' ' + b2x + ',' + b2y + '" fill="' + nc + '"/>'
+      // Hub
+      + '<circle cx="' + cx + '" cy="' + cy + '" r="' + (size * 0.05) + '" fill="#131829" stroke="' + nc + '" stroke-width="' + (size * 0.025) + '"/>'
+      + '</svg>';
   }
 
-  // ── Pre-generation probability alert ────────────────────────────────────────
   function showProbAlert(wp, hired) {
     return new Promise(resolve => {
-      const isHired  = hired > 0;
-      const score    = isHired ? 0 : wp.probScore;
-      const scoreCol = score >= 70 ? '#34d399' : score >= 45 ? '#f59e0b' : '#f87171';
-      const verdict  = isHired ? 'Already Hired' : score >= 70 ? 'Strong Odds' : score >= 45 ? 'Possible' : 'Long Shot';
+      const isHired = hired > 0;
 
-      // All probability factors (including posted time)
-      const allProbFactors = [...(wp.topProb || [])].sort((a,b) => a.delta - b.delta);
+      const riskPenalty = Math.min(40, (wp.riskItems || []).length * 12);
+      const combined = isHired ? 0 : Math.max(0, Math.min(95,
+        Math.round(wp.probScore * 0.60 + wp.matchScore * 0.25 - riskPenalty * 0.15)
+      ));
+      const nc = combined >= 70 ? '#34d399' : combined >= 45 ? '#f59e0b' : '#f87171';
+      const label = isHired ? 'Job Closed'
+        : combined >= 70 ? 'Good Opportunity'
+        : combined >= 55 ? 'Proceed with Caution'
+        : combined >= 35 ? 'Warning — Low Odds'
+        : 'Warning — High Risk';
 
-      // Separate client rating as warning only — remove from prob factors display
-      const ratingWarning = allProbFactors.find(f => f.label === 'Client rating' && f.delta < 0);
-      const probFactors   = allProbFactors.filter(f => f.label !== 'Client rating' && f.label !== 'Client rating');
-      // Also deduplicate warnings — remove rating text if already in ratingWarning
-      const cleanWarnings = (wp.warnings || []).filter(w => !w.toLowerCase().includes('rating'));
+      // Summary line based on score
+      const summary = isHired
+        ? 'This job is already closed. Applying will burn your Connects for zero chance of success.'
+        : combined >= 70
+          ? 'This job looks promising. Competition is manageable and your profile aligns well.'
+          : combined >= 55
+            ? 'Some factors are working against you. Review the signals before deciding.'
+            : combined >= 35
+              ? 'Multiple red flags detected. Your Connects are real money — spend them wisely.'
+              : 'This job has serious risk factors. High chance of wasted Connects.';
 
-      // Skill mismatch check (from matchFactors)
-      const skillMismatch = (wp.topMatch || []).filter(f => f.delta <= -15);
+      // ONLY show alarming + neutral factors — exclude purely positive profile match items
+      const jobFactors = (wp.topProb || []);
+      const riskItems  = (wp.riskItems || []);
 
-      // Build warning score (inverse of prob issues + rating)
-      const warnIssues = [...cleanWarnings];
-      if (ratingWarning) warnIssues.unshift(ratingWarning.value + ' — risky client');
-      skillMismatch.forEach(f => warnIssues.unshift('Skill mismatch: ' + f.label));
-      const warnScore = Math.max(0, 100 - (warnIssues.length * 25));
-      const warnCol   = warnScore >= 70 ? '#34d399' : warnScore >= 40 ? '#f59e0b' : '#f87171';
+      // From match factors only show negatives and neutrals (skip positives like JSS met, badge)
+      const matchFactorsFiltered = (wp.topMatch || []).filter(f => f.delta <= 0 || f.warn);
+
+      const allFactors = [
+        ...riskItems.map(r => ({ label: r, value: '', delta: -99, isRisk: true, group: 'Risk' })),
+        ...jobFactors.filter(f => f.delta < 0).map(f => ({ ...f, group: 'Job' })),
+        ...matchFactorsFiltered.map(f => ({ ...f, group: 'Match' })),
+        ...jobFactors.filter(f => f.delta === 0).map(f => ({ ...f, group: 'Job' })),
+        ...jobFactors.filter(f => f.delta > 0).map(f => ({ ...f, group: 'Job' })),
+      ];
+
+      function factorPill(f) {
+        const col  = f.isRisk ? '#f87171' : f.delta > 0 ? '#34d399' : f.delta < 0 ? '#f87171' : '#f59e0b';
+        const bg   = f.isRisk ? 'rgba(248,113,113,.08)' : f.delta > 0 ? 'rgba(52,211,153,.08)' : f.delta < 0 ? 'rgba(248,113,113,.08)' : 'rgba(245,158,11,.08)';
+        const border = f.isRisk ? 'rgba(248,113,113,.2)' : f.delta > 0 ? 'rgba(52,211,153,.2)' : f.delta < 0 ? 'rgba(248,113,113,.2)' : 'rgba(245,158,11,.2)';
+        const text = f.isRisk
+          ? f.label
+          : '<strong>' + f.label + (f.value ? ': ' + f.value : '') + '</strong>' + (f.note ? ' · ' + f.note : '');
+        return '<div class="sn-af-pill" style="background:' + bg + ';border-color:' + border + '">'
+          + '<div class="sn-af-dot" style="background:' + col + '"></div>'
+          + '<div class="sn-af-text">' + text + '</div>'
+          + '</div>';
+      }
 
       document.getElementById('sn-body').innerHTML = `
-        <div class="sn-alert-wrap">
+        <div class="sn-alv2-wrap">
 
-          <!-- Top message -->
-          <div class="sn-alert-top-msg" style="color:${isHired ? '#f87171' : scoreCol}">
-            ${isHired ? '🚫 Someone was already hired — applying wastes your Connects' : 'Your Connects are real money — this job scores ' + score + '%'}
+          <!-- Gauge + score + summary -->
+          <div class="sn-alv2-gauge-block">
+            ${buildGauge(combined, 96)}
+            <div class="sn-alv2-score" style="color:${nc}">${combined}%</div>
+            <div class="sn-alv2-label" style="color:${nc}">${label}</div>
+            <div class="sn-alv2-cta">Your Connects are real money — spend them wisely.</div>
+            <div class="sn-alv2-summary">${summary}</div>
           </div>
 
-          <!-- Dual gauges + factors -->
-          <div class="sn-alert-dual-gauges">
-
-            <!-- Probability gauge -->
-            <div class="sn-alert-gauge-col">
-              <div class="sn-alert-gauge-label">Win Probability</div>
-              ${buildGauge(score, 96)}
-              <div class="sn-alert-gauge-inline">
-                <span class="sn-alert-gauge-score" style="color:${scoreCol}">${score}%</span>
-                <span class="sn-alert-gauge-verdict" style="color:${scoreCol}">${verdict}</span>
-              </div>
-              <div class="sn-alert-factor-mini">
-                ${probFactors.slice(0,4).map(f =>
-                  '<div class="sn-afm-row"><div class="sn-fdot" style="background:' + (f.delta > 0 ? '#34d399' : f.delta < 0 ? '#f87171' : '#f59e0b') + '"></div>' +
-                  '<span class="sn-afm-label">' + f.label + ':</span> <span class="sn-afm-val">' + f.value + '</span></div>'
-                ).join('')}
-              </div>
-            </div>
-
-            <div class="sn-alert-gauge-sep"></div>
-
-            <!-- Risk gauge -->
-            <div class="sn-alert-gauge-col">
-              <div class="sn-alert-gauge-label">Risk Level</div>
-              ${buildGauge(warnScore, 96)}
-              <div class="sn-alert-gauge-inline">
-                <span class="sn-alert-gauge-score" style="color:${warnCol}">${warnIssues.length === 0 ? '0' : warnIssues.length} ${warnIssues.length === 1 ? 'warning' : warnIssues.length === 0 ? 'issues' : 'warnings'}</span>
-                <span class="sn-alert-gauge-verdict" style="color:${warnCol}">${warnScore >= 70 ? 'Low risk' : warnScore >= 40 ? 'Some risk' : 'High risk'}</span>
-              </div>
-              <div class="sn-alert-factor-mini">
-                ${warnIssues.slice(0,4).map(w =>
-                  '<div class="sn-afm-row"><div class="sn-fdot" style="background:#f59e0b"></div>' +
-                  '<span class="sn-afm-val">' + w + '</span></div>'
-                ).join('')}
-                ${warnIssues.length === 0 ? '<div class="sn-afm-row"><div class="sn-fdot" style="background:#34d399"></div><span class="sn-afm-val">No warnings found</span></div>' : ''}
-              </div>
-            </div>
-
+          <!-- Factors -->
+          <div class="sn-alv2-factors">
+            ${allFactors.length ? allFactors.map(f => factorPill(f)).join('') : '<div class="sn-af-empty">No major issues detected</div>'}
           </div>
 
-          <div class="sn-alert-footer">
-            <button class="sn-alert-cancel" id="sn-alert-cancel">← Skip this job</button>
-            ${isHired ? '' : '<button class="sn-alert-anyway" id="sn-alert-anyway">Write anyway</button>'}
+          <!-- Buttons -->
+          <div class="sn-alv2-footer">
+            <button class="sn-alv2-cancel" id="sn-alert-cancel">Skip this job</button>
+            ${isHired ? '' : '<button class="sn-alv2-anyway" id="sn-alert-anyway">Write anyway →</button>'}
           </div>
+
         </div>
       `;
 
       document.getElementById('sn-alert-cancel').addEventListener('click', () => { closePanel(); resolve(true); });
-      const anywayBtn = document.getElementById('sn-alert-anyway');
-      if (anywayBtn) anywayBtn.addEventListener('click', () => { showLoading(); resolve(false); });
+      const ab = document.getElementById('sn-alert-anyway');
+      if (ab) ab.addEventListener('click', () => { showLoading(); resolve(false); });
     });
   }
 
@@ -582,18 +600,20 @@
         await chrome.storage.sync.set({ anonId });
       }
 
-      // Read job immediately for probability check (no delay needed)
+      // Wait for Upwork dynamic sections to render (rating, payment, activity)
+      await new Promise(r => setTimeout(r, 800));
       const job = getJob();
       const refineInstruction = window._snagRefineInstruction || '';
 
-      // STEP 1: Instant probability check (pure client-side — no server needed)
+      // Check probability + risk before any server call
       if (!refineInstruction) {
         const preProfile = stored.profile || {};
         const preWp = calcWinProbability(job.jobStats || {}, preProfile);
         const hired = job.jobStats?.hiredCount;
-        if (hired > 0 || preWp.probScore < 60) {
+        const hasRisk = (preWp.riskItems||[]).length > 0;
+        if (hired > 0 || preWp.probScore < 60 || hasRisk) {
           const blocked = await showProbAlert(preWp, hired);
-          if (blocked) return; // cancelled — zero server calls made
+          if (blocked) return;
         }
       }
 
@@ -793,7 +813,23 @@
     const probColor  = probScore  >= 60 ? '#34d399' : probScore  >= 40 ? '#c9a84c' : '#f87171';
     const matchColor = matchScore >= 60 ? '#34d399' : matchScore >= 40 ? '#c9a84c' : '#f87171';
 
-    return { probScore, matchScore, combined, verdict, verdictColor, probColor, matchColor, topProb, topMatch, warnings };
+    // 10 critical risk conditions
+    const riskItems = [];
+    if ((jobStats.proposalCount||0) >= 50) riskItems.push('50+ proposals — very high competition');
+    const _ic = jobStats.interviewingCount||0;
+    if (_ic >= 1 && _ic <= 2) riskItems.push(_ic + ' freelancer(s) already interviewing');
+    else if (_ic >= 3) riskItems.push(_ic + ' freelancers interviewing — heavily shortlisting');
+    if ((jobStats.timePostedMinutes||0) > 1440 && _ic > 0) riskItems.push('Posted ' + jobStats.timePosted + ' with active interviews — likely decided');
+    if ((jobStats.hiredCount||0) > 0) riskItems.push('Already hired — job is closed');
+    if (jobStats.clientRating !== null && jobStats.clientRating !== undefined && jobStats.clientRating < 4.0) riskItems.push(jobStats.clientRating + '★ client rating — below 4.0');
+    if (jobStats.clientHireRate !== null && jobStats.clientHireRate !== undefined && jobStats.clientHireRate < 30) riskItems.push(jobStats.clientHireRate + '% hire rate — rarely hires from proposals');
+    const _inv = jobStats.invitesSent||0;
+    if (_inv >= 1 && _inv <= 4) riskItems.push('Client sent ' + _inv + ' invite(s) — prefers invited freelancers');
+    else if (_inv > 4) riskItems.push('Client sent ' + _inv + ' invites — hiring by invite only');
+    if ((jobStats.clientSpentNum||0) === 0 && jobStats.clientTotalSpent !== null && jobStats.clientTotalSpent !== undefined) riskItems.push('$0 total spent — never paid a freelancer');
+    if (jobStats.paymentVerified === false) riskItems.push('Payment method not verified — risk of non-payment');
+    console.log('[SnagAI] clientRating:', jobStats.clientRating, '| riskItems:', riskItems.length, riskItems);
+    return { probScore, matchScore, combined, verdict, verdictColor, probColor, matchColor, topProb, topMatch, warnings, riskItems };
   }
 
   // ── Render proposal ───────────────────────────────────────────────────────
@@ -818,7 +854,7 @@
     document.getElementById('sn-body').innerHTML = `
       <div class="sn-two-col">
 
-        <!-- LEFT: Cover letter only -->
+        <!-- LEFT: Cover letter -->
         <div class="sn-col-letter">
           <div class="sn-letter" id="sn-letter" contenteditable="true">${esc(letter)}</div>
           <div class="sn-letter-actions">
@@ -828,52 +864,52 @@
             </button>
           </div>
           <div class="sn-letter-bar">
-            <textarea class="sn-refine-inp" id="sn-refine-inp" placeholder="Request changes… e.g. change to guarantee hook, add GitHub link, make shorter" rows="2"></textarea>
+            <textarea class="sn-refine-inp" id="sn-refine-inp" placeholder="Request changes… e.g. change hook to guarantee, add GitHub link below portfolio, make it shorter" rows="2"></textarea>
             <button class="sn-regen-inline-btn" id="sn-regen">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
               Generate
             </button>
           </div>
+          ${questions ? '<div class="sn-qa-section"><div class="sn-qa-head"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Client questions &amp; answers <button class="sn-qa-copy-btn" id="sn-copy-q">Copy Q&amp;A</button></div><div class="sn-qa-body" id="sn-questions-text">' + esc(questions) + '</div></div>' : ''}
         </div>
 
-        <!-- RIGHT: Intel + tips + Q&A -->
+        <!-- RIGHT: Intel panel -->
         <div class="sn-col-intel">
 
-          <!-- Job Odds gauge -->
-          <div class="sn-right-section">
-            <div class="sn-right-label">Job Odds</div>
-            <div class="sn-gauge-center">
-              ${buildGauge(wp.probScore, 76)}
-            </div>
-            <div class="sn-gauge-readout">
-              <span style="color:${wp.probColor};font-size:14px;font-weight:800">${wp.probScore}%</span>
+          <!-- Win Probability -->
+          <div class="sn-ic-card">
+            <div class="sn-ic-card-title">Win Probability</div>
+            <div class="sn-ic-gauge-wrap">${buildGauge(wp.probScore, 80)}</div>
+            <div class="sn-ic-readout">
+              <span style="color:${wp.probColor};font-size:15px;font-weight:800">${wp.probScore}%</span>
               <span style="color:${wp.probColor};font-size:10px;font-weight:700;margin-left:4px">${wp.probScore>=70?'Strong':wp.probScore>=45?'Possible':'Long shot'}</span>
             </div>
-            <div class="sn-right-chips">
-              ${wp.topProb.slice(0,3).map(f=>'<span class="sn-rchip '+(f.delta>0?'rc-g':f.delta<0?'rc-r':'rc-y')+'">'+esc(f.label)+': '+esc(f.value)+'</span>').join('')}
+            <div class="sn-ic-factors">
+              ${(wp.topProb||[]).slice(0,3).map(f=>'<div class="sn-icf-row"><div class="sn-icf-dot" style="background:'+(f.delta>0?'#34d399':f.delta<0?'#f87171':'#f59e0b')+'"></div><span class="sn-icf-lbl">'+esc(f.label)+':</span> <span class="sn-icf-val">'+esc(f.value)+'</span></div>').join('')}
             </div>
           </div>
 
-          <!-- Risk Level gauge -->
-          <div class="sn-right-section">
-            <div class="sn-right-label">Risk Level</div>
-            <div class="sn-gauge-center">
-              ${buildGauge(wp.matchScore, 76)}
+          <!-- Profile Match -->
+          <div class="sn-ic-card">
+            <div class="sn-ic-card-title">Profile Match</div>
+            <div class="sn-ic-gauge-wrap">${buildGauge(wp.matchScore, 80)}</div>
+            <div class="sn-ic-readout">
+              <span style="color:${wp.matchColor};font-size:15px;font-weight:800">${wp.matchScore}%</span>
+              <span style="color:${wp.matchColor};font-size:10px;font-weight:700;margin-left:4px">${wp.matchScore>=70?'Great fit':wp.matchScore>=45?'Partial':'Weak fit'}</span>
             </div>
-            <div class="sn-gauge-readout">
-              <span style="color:${wp.matchColor};font-size:14px;font-weight:800">${wp.matchScore}%</span>
-              <span style="color:${wp.matchColor};font-size:10px;font-weight:700;margin-left:4px">${wp.matchScore>=70?'Low risk':wp.matchScore>=45?'Some risk':'High risk'}</span>
-            </div>
-            <div class="sn-right-chips">
-              ${[...wp.topMatch,(wp.warnings.length?{label:'⚠',value:wp.warnings[0],delta:-1,warn:true}:null)].filter(Boolean).slice(0,3).map(f=>'<span class="sn-rchip '+(f.delta>0?'rc-g':f.warn||f.delta<0?'rc-r':'rc-y')+'">'+esc(f.label+(f.label==='⚠'?'':':'))+' '+esc(f.value)+'</span>').join('')}
+            <div class="sn-ic-factors">
+              ${(wp.topMatch||[]).slice(0,3).map(f=>'<div class="sn-icf-row"><div class="sn-icf-dot" style="background:'+(f.delta>0?'#34d399':f.warn||f.delta<0?'#f87171':'#f59e0b')+'"></div><span class="sn-icf-lbl">'+esc(f.label)+':</span> <span class="sn-icf-val">'+esc(f.value)+'</span></div>').join('')}
             </div>
           </div>
+
+          <!-- Client Risk (only if exists) -->
+          ${(wp.riskItems||[]).length ? '<div class="sn-ic-card sn-ic-risk"><div class="sn-ic-card-title" style="color:#f59e0b">⚠ Risk Flags</div>'+(wp.riskItems||[]).map(r=>'<div class="sn-icf-row"><div class="sn-icf-dot" style="background:#f87171"></div><span class="sn-icf-val sn-icf-risk">'+esc(r)+'</span></div>').join('')+'</div>' : ''}
 
           <!-- Tips -->
-          ${tips&&tips.length?'<div class="sn-right-section sn-tips-section"><div class="sn-right-label">Tips</div>'+tips.slice(0,3).map(t=>'<div class="sn-rtip">'+esc(t.length>70?t.slice(0,70)+'…':t)+'</div>').join('')+'</div>':''}
+          ${tips&&tips.length?'<div class="sn-ic-card"><div class="sn-ic-card-title">Tips</div>'+tips.slice(0,3).map(t=>'<div class="sn-ic-tip">'+esc(t.length>72?t.slice(0,72)+'…':t)+'</div>').join('')+'</div>':''}
 
           <!-- Q&A -->
-          ${questions?'<div class="sn-right-section sn-qa-section-r"><div class="sn-right-label" style="display:flex;align-items:center;justify-content:space-between">Q&amp;A <button class="sn-qa-copy-btn" id="sn-copy-q">Copy</button></div><div class="sn-qa-rbody" id="sn-questions-text">'+esc(questions)+'</div></div>':''}
+          ${questions?'<div class="sn-ic-card sn-ic-qa"><div class="sn-ic-card-title" style="color:#a78bfa;display:flex;align-items:center;justify-content:space-between">Q&amp;A <button class="sn-qa-copy-btn" id="sn-copy-q" style="font-size:10px;color:var(--sn-gold);background:none;border:none;cursor:pointer;font-family:inherit">Copy</button></div><div class="sn-ic-qa-body" id="sn-questions-text">'+esc(questions)+'</div></div>':''}
 
           ${remaining!==null&&remaining<=10?'<div class="sn-low-bar"><span>'+(remaining===0?'🚫 No proposals left':'⚡ '+remaining+' left')+'</span><button class="sn-low-upgrade" id="sn-low-upgrade">Upgrade</button></div>':''}
 
@@ -893,16 +929,12 @@
     document.getElementById('sn-copy').addEventListener('click', () => {
       navigator.clipboard.writeText(document.getElementById('sn-letter').innerText).then(() => {
         const btn = document.getElementById('sn-copy');
-        const orig = btn.innerHTML;
-        btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>';
-        btn.classList.add('sn-copy-anim');
+        btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Copied!';
+        btn.style.background = 'var(--sn-green)';
         setTimeout(() => {
-          btn.classList.add('sn-copy-fade');
-          setTimeout(() => {
-            btn.innerHTML = orig;
-            btn.classList.remove('sn-copy-anim', 'sn-copy-fade');
-          }, 400);
-        }, 1200);
+          btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy';
+          btn.style.background = '';
+        }, 2500);
       });
     });
 
