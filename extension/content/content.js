@@ -343,8 +343,14 @@
       }
     } catch(e) { reviewText = ''; }
 
-    const skills   = Array.from(document.querySelectorAll('[data-test="Skill"] span, .air3-badge span'))
-      .map(s => s.innerText.trim()).filter(Boolean).join(', ');
+    // Extract skills as array (try multiple Upwork selectors)
+    const skillsArr = Array.from(document.querySelectorAll(
+      '[data-test="Skill"] span, .air3-badge span, [data-test="attr-item"] span, ' +
+      '.skills-list span, [class*="skill"] span, .up-skill-badge'
+    )).map(s => s.innerText.trim()).filter(Boolean);
+    // Deduplicate
+    const skillsSet = [...new Set(skillsArr)];
+    const skills = skillsSet.join(', ');
     const budget   = document.querySelector('[data-test="budget"] strong, [data-test="Budget"] strong')?.innerText?.trim() || '';
     const location = document.querySelector('[data-test="client-location"] strong')?.innerText?.trim() || '';
 
@@ -442,7 +448,8 @@
     const jobStats = {
       proposalCount, lastViewed, interviewingCount, invitesSent, unansweredInvites, hiredCount,
       timePosted, timePostedMinutes, clientAvgRate, clientHireRate, clientTotalSpent, clientRating,
-      reqJSS, reqTalentType, reqEnglish, paymentVerified, clientSpentNum
+      reqJSS, reqTalentType, reqEnglish, paymentVerified, clientSpentNum,
+      jobSkills: skillsSet || []
     };
     console.log('Job stats:', JSON.stringify(jobStats));
 
@@ -514,28 +521,47 @@
 
       // Summary line based on score
       const summary = isHired
-        ? 'This job is already closed. Applying will burn your Connects for zero chance of success.'
+        ? 'Job is already closed. No point applying — you have zero chance.'
         : combined >= 70
-          ? 'This job looks promising. Competition is manageable and your profile aligns well.'
+          ? 'Solid opportunity. Competition is low and your profile is a good fit.'
           : combined >= 55
-            ? 'Some factors are working against you. Review the signals before deciding.'
+            ? 'A few factors are working against you — weigh them before deciding.'
             : combined >= 35
-              ? 'Multiple red flags detected. Your Connects are real money — spend them wisely.'
-              : 'This job has serious risk factors. High chance of wasted Connects.';
+              ? 'Multiple issues detected. Consider skipping and finding a better fit.'
+              : 'Serious risk factors present. Very low probability of winning this job.';
 
       // ONLY show alarming + neutral factors — exclude purely positive profile match items
-      const jobFactors = (wp.topProb || []);
+      // Build factor list — deduplicated (risk items take priority, no doubling)
       const riskItems  = (wp.riskItems || []);
-
-      // From match factors only show negatives and neutrals (skip positives like JSS met, badge)
+      const jobFactors = (wp.topProb  || []);
       const matchFactorsFiltered = (wp.topMatch || []).filter(f => f.delta <= 0 || f.warn);
 
+      // If a risk item already covers this prob factor, skip it
+      const riskKeys = ['proposal','hired','interview','invite','rating','hire rate','spent','payment'];
+      function coveredByRisk(f) {
+        const fl = f.label.toLowerCase();
+        return riskItems.some(r => riskKeys.some(k => r.toLowerCase().includes(k) && fl.includes(k)));
+      }
+
+      // Skill mismatch goes first — it's the most critical profile signal
+      const skillMismatch = (wp.topMatch || []).filter(f => f.skillMatch && f.delta < 0);
+      const otherMatch    = matchFactorsFiltered.filter(f => !f.skillMatch && f.delta < 0);
+      const neutralMatch  = matchFactorsFiltered.filter(f => f.delta === 0);
+
       const allFactors = [
+        // 1st: skill mismatch (most alarming)
+        ...skillMismatch.map(f => ({ ...f, group: 'Match' })),
+        // 2nd: other risk items
         ...riskItems.map(r => ({ label: r, value: '', delta: -99, isRisk: true, group: 'Risk' })),
-        ...jobFactors.filter(f => f.delta < 0).map(f => ({ ...f, group: 'Job' })),
-        ...matchFactorsFiltered.map(f => ({ ...f, group: 'Match' })),
-        ...jobFactors.filter(f => f.delta === 0).map(f => ({ ...f, group: 'Job' })),
-        ...jobFactors.filter(f => f.delta > 0).map(f => ({ ...f, group: 'Job' })),
+        // 3rd: negative job factors
+        ...jobFactors.filter(f => f.delta < 0 && !coveredByRisk(f)).map(f => ({ ...f, group: 'Job' })),
+        // 4th: other negative match factors
+        ...otherMatch.map(f => ({ ...f, group: 'Match' })),
+        // 5th: neutral
+        ...jobFactors.filter(f => f.delta === 0 && !coveredByRisk(f)).map(f => ({ ...f, group: 'Job' })),
+        ...neutralMatch.map(f => ({ ...f, group: 'Match' })),
+        // 6th: green
+        ...jobFactors.filter(f => f.delta > 0 && !coveredByRisk(f)).map(f => ({ ...f, group: 'Job' })),
       ];
 
       function factorPill(f) {
@@ -559,7 +585,7 @@
             ${buildGauge(combined, 96)}
             <div class="sn-alv2-score" style="color:${nc}">${combined}%</div>
             <div class="sn-alv2-label" style="color:${nc}">${label}</div>
-            <div class="sn-alv2-cta">Your Connects are real money — spend them wisely.</div>
+            <div class="sn-alv2-cta">Your Connects are real money.</div>
             <div class="sn-alv2-summary">${summary}</div>
           </div>
 
@@ -760,8 +786,6 @@
       matchScore -= 8;
       matchFactors.push({ label: 'English', value: reqEng + ' required', delta: -8, note: 'Must be explicit in proposal', warn: true });
       warnings.push('Client requires ' + reqEng + ' English — make your fluency obvious');
-    } else if (reqEng) {
-      matchFactors.push({ label: 'English', value: reqEng, delta: 0, note: 'Showcase in proposal' });
     }
 
     // 3. Talent type
@@ -796,11 +820,35 @@
       matchFactors.push({ label: 'Badge', value: tl[profile.tier], delta: tb, note: 'Visible on proposal' });
     }
 
+    // ── Skill matching — compare job skills vs profile ─────────────────────────
+    const rawJobSkills = Array.isArray(jobStats.jobSkills) ? jobStats.jobSkills : [];
+    const jobSkillsNorm = rawJobSkills.map(s => s.toLowerCase().replace(/[^a-z0-9+#.\s]/gi,'').trim()).filter(Boolean);
+    const profileSkillsStr = ((profile.skills || '') + ' ' + (profile.title || '')).toLowerCase();
+
+    if (jobSkillsNorm.length > 0 && profileSkillsStr.trim().length > 0) {
+      const matched  = jobSkillsNorm.filter(s => profileSkillsStr.includes(s));
+      const missing  = rawJobSkills.filter((s,i) => !profileSkillsStr.includes(jobSkillsNorm[i]));
+      const matchPct = Math.round((matched.length / jobSkillsNorm.length) * 100);
+
+      if (matchPct >= 75) {
+        matchScore += 10;
+        matchFactors.push({ label: 'Skills', value: 'Strong match — ' + matchPct + '%', delta: +10, note: matched.slice(0,3).join(', '), skillMatch: true });
+      } else if (matchPct >= 45) {
+        matchScore -= 5;
+        matchFactors.push({ label: 'Skills', value: matchPct + '% skill overlap', delta: -5, note: 'Missing: ' + missing.slice(0,3).join(', '), warn: true, skillMatch: true });
+      } else if (matchPct >= 20) {
+        matchScore -= 15;
+        matchFactors.push({ label: 'Skills', value: 'Weak match — ' + matchPct + '%', delta: -15, note: 'Missing key skills: ' + missing.slice(0,4).join(', '), warn: true, skillMatch: true });
+      } else {
+        matchScore -= 25;
+        matchFactors.push({ label: 'Skills', value: 'Profile mismatch — ' + matchPct + '%', delta: -25, note: 'Job needs: ' + missing.slice(0,5).join(', '), warn: true, skillMatch: true });
+      }
+    }
     matchScore = Math.max(5, Math.min(95, Math.round(matchScore)));
 
     // Pick TOP 3 factors for each section (by absolute delta impact)
     const topProb  = [...probFactors].sort((a,b) => Math.abs(b.delta) - Math.abs(a.delta)).slice(0,3);
-    const topMatch = [...matchFactors].sort((a,b) => Math.abs(b.delta) - Math.abs(a.delta)).slice(0,3);
+    const topMatch = [...matchFactors].sort((a,b) => Math.abs(b.delta) - Math.abs(a.delta));
 
     // Overall verdict uses combined score
     const combined = Math.round((probScore * 0.6) + (matchScore * 0.4));
