@@ -459,24 +459,27 @@
 
   // ── Pre-generation probability alert ────────────────────────────────────────
   // ── Gauge using gauge-chart library ─────────────────────────────────────────
+  // Gauge: LEFT=Match(green) → RIGHT=Critical(red)
+  // Segments ordered left to right: Match, Medium, Neutral, High, Critical
   const GAUGE_COLORS = ['#22c55e','#84cc16','#eab308','#f97316','#ef4444'];
-  const GAUGE_LABELS = ['Low','Guarded','Elevated','High','Severe'];
+  const GAUGE_LABELS = ['Match','Medium','Neutral','High','Critical'];
 
+  // score = combined score (high=good). We INVERT for needle: 0→right(Critical), 100→left(Match)
   function getGaugeLabel(score) {
     const s = Math.max(0, Math.min(100, score));
-    if (s < 20) return GAUGE_LABELS[0];
-    if (s < 40) return GAUGE_LABELS[1];
-    if (s < 60) return GAUGE_LABELS[2];
-    if (s < 80) return GAUGE_LABELS[3];
-    return GAUGE_LABELS[4];
+    if (s >= 80) return 'Match';
+    if (s >= 60) return 'Medium';
+    if (s >= 40) return 'Neutral';
+    if (s >= 20) return 'High';
+    return 'Critical';
   }
   function getGaugeColor(score) {
     const s = Math.max(0, Math.min(100, score));
-    if (s < 20) return GAUGE_COLORS[0];
-    if (s < 40) return GAUGE_COLORS[1];
-    if (s < 60) return GAUGE_COLORS[2];
-    if (s < 80) return GAUGE_COLORS[3];
-    return GAUGE_COLORS[4];
+    if (s >= 80) return '#22c55e';
+    if (s >= 60) return '#84cc16';
+    if (s >= 40) return '#eab308';
+    if (s >= 20) return '#f97316';
+    return '#ef4444';
   }
 
   function buildGauge(score, size, id) {
@@ -485,7 +488,6 @@
   }
 
   function drawGauge(id, score, size) {
-    // Use rAF to ensure DOM element exists and has dimensions
     requestAnimationFrame(() => {
       const el = document.getElementById(id);
       if (!el || !window.GaugeChart) return;
@@ -493,35 +495,79 @@
       score = Math.max(0, Math.min(100, score || 0));
       size = size || 120;
       const col = getGaugeColor(score);
+      const needlePos = 100 - score;
 
       try {
+        // 9 delimiters so labels land at segment CENTERS (10,30,50,70,90)
         window.GaugeChart.gaugeChart(el, size, {
           hasNeedle: true,
-          needleColor: col,
-          needleStartValue: score,
+          needleColor: '#transparent',
+          needleStartValue: needlePos,
           needleUpdateSpeed: 0,
-          arcColors: GAUGE_COLORS,
-          arcDelimiters: [20, 40, 60, 80],
-          arcLabels: GAUGE_LABELS,
-          arcPadding: 2,
+          arcColors: ['#22c55e','#22c55e','#84cc16','#84cc16','#eab308','#eab308','#f97316','#f97316','#ef4444','#ef4444'],
+          arcDelimiters: [10, 20, 30, 40, 50, 60, 70, 80, 90],
+          arcLabels: ['Match', '', 'Medium', '', 'Neutral', '', 'High', '', 'Critical'],
+          arcPadding: 1,
           arcPaddingColor: '#0d1120',
-          rangeLabel: ['0', '100'],
-          centralLabel: score + '%',
-          labelsFont: '-apple-system,sans-serif',
+          rangeLabel: ['', ''],
+          centralLabel: '',
+          labelsFont: '-apple-system,BlinkMacSystemFont,sans-serif',
         });
-        // Style the text elements after render
+
         setTimeout(() => {
-          el.querySelectorAll('text').forEach(t => {
-            if (!t.getAttribute('fill') || t.getAttribute('fill') === 'black') {
-              t.setAttribute('fill', '#f0eeea');
-            }
+          const svg = el.querySelector('svg');
+          if (!svg) return;
+
+          // Find hub center from gauge-chart's needle transform
+          let cx = size / 2, cy = size * 0.42; // fallback
+          svg.querySelectorAll('path').forEach(p => {
+            const t = p.getAttribute('transform') || '';
+            const m = t.match(/translate\(([^,]+),\s*([^)]+)\)/);
+            if (m) { cx = parseFloat(m[1]); cy = parseFloat(m[2]); }
           });
-        }, 50);
-      } catch(e) {
-        console.error('[SnagAI] Gauge error:', e);
-      }
+
+          // Remove gauge-chart needle (it's the path with needleColor)
+          svg.querySelectorAll('path').forEach(p => {
+            const f = p.getAttribute('fill') || '';
+            const s = p.getAttribute('stroke') || '';
+            if (f === 'transparent' || f === '#transparent' || s === 'transparent')
+              p.remove();
+          });
+
+          // Draw our fat triangular needle
+          const angle = (needlePos / 100 - 0.5) * Math.PI;
+          const nLen = cx * 0.82;
+          const nx = cx + Math.sin(angle) * nLen;
+          const ny = cy - Math.cos(angle) * nLen;
+          const bw = cx * 0.046;
+          const pa = angle + Math.PI / 2;
+          const b1x = cx + bw * Math.cos(pa), b1y = cy - bw * Math.sin(pa);
+          const b2x = cx - bw * Math.cos(pa), b2y = cy + bw * Math.sin(pa);
+
+          const ns = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+          ns.setAttribute('points', nx+','+ny+' '+b1x+','+b1y+' '+b2x+','+b2y);
+          ns.setAttribute('fill', col);
+          svg.appendChild(ns);
+
+          // Hub
+          const hub = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+          hub.setAttribute('cx', cx); hub.setAttribute('cy', cy);
+          hub.setAttribute('r', cx * 0.05);
+          hub.setAttribute('fill', '#131829');
+          hub.setAttribute('stroke', col);
+          hub.setAttribute('stroke-width', cx * 0.027);
+          svg.appendChild(hub);
+
+          // White text labels
+          svg.querySelectorAll('text').forEach(t => {
+            if (!t.getAttribute('fill') || t.getAttribute('fill') === 'black')
+              t.setAttribute('fill', '#f0eeea');
+          });
+        }, 100);
+      } catch(e) { console.error('[SnagAI] Gauge error:', e); }
     });
   }
+
 
   function drawAllGauges() {
     document.querySelectorAll('[data-gauge-score]').forEach(el => {
@@ -539,8 +585,8 @@
       let combined = isHired ? 0 : Math.max(0, Math.min(95,
         Math.round(wp.probScore * 0.60 + wp.matchScore * 0.25 - riskPenalty * 0.15)
       ));
-      if (severeMismatch) combined = Math.min(combined, 22); // 0% skill match → cap low
-      else if (weakMismatch) combined = Math.min(combined, 45); // weak match → limit upside
+      if (severeMismatch) combined = Math.min(combined, 12); // 0% skill match → needle in Critical
+      else if (weakMismatch) combined = Math.min(combined, 38); // weak match → High zone
       const nc = combined >= 70 ? '#34d399' : combined >= 45 ? '#f59e0b' : '#f87171';
       const label = isHired ? 'Job Closed'
         : combined >= 70 ? 'Good Opportunity'
@@ -550,14 +596,16 @@
 
       // Summary line based on score
       const summary = isHired
-        ? 'Job is already closed. No point applying — you have zero chance.'
+        ? 'Already hired — applying only burns your Connects with zero chance.'
         : combined >= 70
-          ? 'Solid opportunity. Competition is low and your profile is a good fit.'
+          ? 'Strong opportunity. Low competition and your profile is a good match.'
           : combined >= 55
-            ? 'A few factors are working against you — weigh them before deciding.'
+            ? 'Some factors against you — worth applying if you can stand out.'
             : combined >= 35
-              ? 'Multiple issues detected. Consider skipping and finding a better fit.'
-              : 'Serious risk factors present. Very low probability of winning this job.';
+              ? 'Multiple red flags. High chance your proposal gets ignored.'
+              : combined >= 20
+                ? 'Poor match — very high competition or profile mismatch. Skip it.'
+                : 'Critical mismatch. Your profile does not meet this job. Save your Connects.';
 
       // ONLY show alarming + neutral factors — exclude purely positive profile match items
       // Build factor list — deduplicated (risk items take priority, no doubling)
@@ -610,12 +658,13 @@
         <div class="sn-alv2-wrap">
 
           <!-- Gauge + score + summary -->
+          <!-- Gauge + label + summary -->
           <div class="sn-alv2-gauge-block">
-            ${buildGauge(combined, 180, "sn-alert-gauge")}
-            <div class="sn-alv2-cta">Your Connects are real money.</div>
+            ${buildGauge(combined, 220, "sn-alert-gauge")}
+            <div class="sn-alv2-gauge-label" style="color:${nc}">${getGaugeLabel(combined)} &mdash; ${combined}%</div>
             <div class="sn-alv2-summary">${summary}</div>
+            <div class="sn-alv2-cta">Your Connects are real money.</div>
           </div>
-
           <!-- Factors -->
           <div class="sn-alv2-factors">
             ${allFactors.length ? allFactors.map(f => factorPill(f)).join('') : '<div class="sn-af-empty">No major issues detected</div>'}
@@ -631,7 +680,7 @@
       `;
 
       // Draw gauge after DOM settles
-      setTimeout(() => drawGauge('sn-alert-gauge', combined, 180), 0);
+      setTimeout(() => drawGauge('sn-alert-gauge', combined, 220), 0);
 
       document.getElementById('sn-alert-cancel').addEventListener('click', () => { closePanel(); resolve(true); });
       const ab = document.getElementById('sn-alert-anyway');
@@ -957,7 +1006,7 @@
           <!-- Win Probability -->
           <div class="sn-ic-card">
             <div class="sn-ic-card-title">Win Probability</div>
-            <div class="sn-ic-gauge-wrap">${buildGauge(wp.probScore, 130, "sn-prob-gauge")}</div>
+            <div class="sn-ic-gauge-wrap">${buildGauge(wp.probScore, 160, "sn-prob-gauge")}</div>
             <div class="sn-ic-factors">
               ${(wp.topProb||[]).slice(0,3).map(f=>'<div class="sn-icf-row"><div class="sn-icf-dot" style="background:'+(f.delta>0?'#34d399':f.delta<0?'#f87171':'#f59e0b')+'"></div><span class="sn-icf-lbl">'+esc(f.label)+':</span> <span class="sn-icf-val">'+esc(f.value)+'</span></div>').join('')}
             </div>
@@ -966,7 +1015,7 @@
           <!-- Profile Match -->
           <div class="sn-ic-card">
             <div class="sn-ic-card-title">Profile Match</div>
-            <div class="sn-ic-gauge-wrap">${buildGauge(wp.matchScore, 130, "sn-match-gauge")}</div>
+            <div class="sn-ic-gauge-wrap">${buildGauge(wp.matchScore, 160, "sn-match-gauge")}</div>
             <div class="sn-ic-factors">
               ${(wp.topMatch||[]).slice(0,3).map(f=>'<div class="sn-icf-row"><div class="sn-icf-dot" style="background:'+(f.delta>0?'#34d399':f.warn||f.delta<0?'#f87171':'#f59e0b')+'"></div><span class="sn-icf-lbl">'+esc(f.label)+':</span> <span class="sn-icf-val">'+esc(f.value)+'</span></div>').join('')}
             </div>
@@ -989,8 +1038,8 @@
 
     // Draw gauges after DOM settles
     setTimeout(() => {
-      drawGauge('sn-prob-gauge', wp.probScore, 130);
-      drawGauge('sn-match-gauge', wp.matchScore, 130);
+      drawGauge('sn-prob-gauge', wp.probScore, 160);
+      drawGauge('sn-match-gauge', wp.matchScore, 160);
     }, 0);
 
     // Auto-expand textarea

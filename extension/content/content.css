@@ -1040,3 +1040,22 @@
   color: #c9a84c;
   letter-spacing: .04em; margin-top: 7px; text-align: center;
 }
+
+/* Gauge label + tighter gaps */
+.sn-alv2-gauge-block {
+  padding-bottom: 6px !important;
+}
+.sn-alv2-gauge-label {
+  font-size: 14px; font-weight: 800; letter-spacing: .02em;
+  margin-top: -2px; text-align: center;
+}
+.sn-alv2-summary {
+  margin-top: 4px !important;
+  font-size: 11.5px; color: rgba(240,238,234,.55);
+  line-height: 1.55; text-align: center; max-width: 300px; padding: 0 8px;
+}
+.sn-alv2-cta {
+  margin-top: 3px !important;
+  font-size: 11px; font-weight: 700; color: #c9a84c;
+  letter-spacing: .04em; text-align: center;
+}
