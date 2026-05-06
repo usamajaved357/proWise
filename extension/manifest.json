@@ -21,6 +21,7 @@
         "https://www.upwork.com/ab/proposals/*"
       ],
       "js": [
+        "gauge.min.js",
         "content/content.js"
       ],
       "css": [

@@ -458,50 +458,75 @@
   }
 
   // ── Pre-generation probability alert ────────────────────────────────────────
-  // ── SVG Gauge: solid arc, fat needle, CSP-safe (no gradient) ────────────────
-  function buildGauge(score, size) {
-    size = size || 100;
-    const cx = size / 2, cy = size * 0.64, r = size * 0.38;
-    const pi = Math.PI;
-    const x1 = cx - r, y1 = cy, x2 = cx + r, y2 = cy;
-    const clamped = Math.max(0, Math.min(100, score));
-    // Needle: 0% → left(180°), 100% → right(0°)
-    const ang = (1 - clamped / 100) * pi;
-    const nl = r * 0.76;
-    const nx = cx + nl * Math.cos(ang), ny = cy - nl * Math.sin(ang);
-    const bh = size * 0.042, pa = ang + pi / 2;
-    const b1x = cx + bh * Math.cos(pa), b1y = cy - bh * Math.sin(pa);
-    const b2x = cx - bh * Math.cos(pa), b2y = cy + bh * Math.sin(pa);
-    const nc = clamped >= 70 ? '#34d399' : clamped >= 40 ? '#f59e0b' : '#f87171';
-    const arcLen = pi * r;
-    const dashOff = arcLen * (1 - clamped / 100);
-    const h = Math.round(size * 0.70);
-    // Three zone arcs: red 0-40, yellow 40-70, green 70-100
-    function zoneArc(from, to, color) {
-      const f = Math.max(0, Math.min(100, from));
-      const t = Math.max(0, Math.min(100, to));
-      if (f >= t) return '';
-      const off1 = arcLen * (1 - t / 100);
-      const len  = arcLen * (t - f) / 100;
-      return '<path d="M ' + x1 + ' ' + y1 + ' A ' + r + ' ' + r + ' 0 0 1 ' + x2 + ' ' + y2 + '"'
-        + ' fill="none" stroke="' + color + '" stroke-width="' + (size * 0.085) + '" stroke-linecap="butt"'
-        + ' stroke-dasharray="' + len + ' ' + arcLen + '" stroke-dashoffset="' + off1 + '" opacity=".25"/>';
-    }
-    return '<svg viewBox="0 0 ' + size + ' ' + h + '" width="' + size + '" height="' + h + '" xmlns="http://www.w3.org/2000/svg">'
-      // Track
-      + '<path d="M ' + x1 + ' ' + y1 + ' A ' + r + ' ' + r + ' 0 0 1 ' + x2 + ' ' + y2 + '"'
-      + ' fill="none" stroke="rgba(255,255,255,.07)" stroke-width="' + (size * 0.085) + '" stroke-linecap="round"/>'
-      // Zone backgrounds (dimmed)
-      + zoneArc(0, 40, '#f87171') + zoneArc(40, 70, '#f59e0b') + zoneArc(70, 100, '#34d399')
-      // Active fill (solid color)
-      + '<path d="M ' + x1 + ' ' + y1 + ' A ' + r + ' ' + r + ' 0 0 1 ' + x2 + ' ' + y2 + '"'
-      + ' fill="none" stroke="' + nc + '" stroke-width="' + (size * 0.085) + '" stroke-linecap="round"'
-      + ' stroke-dasharray="' + arcLen + '" stroke-dashoffset="' + dashOff + '"/>'
-      // Needle
-      + '<polygon points="' + nx + ',' + ny + ' ' + b1x + ',' + b1y + ' ' + b2x + ',' + b2y + '" fill="' + nc + '"/>'
-      // Hub
-      + '<circle cx="' + cx + '" cy="' + cy + '" r="' + (size * 0.05) + '" fill="#131829" stroke="' + nc + '" stroke-width="' + (size * 0.025) + '"/>'
-      + '</svg>';
+  // ── Gauge using gauge-chart library ─────────────────────────────────────────
+  const GAUGE_COLORS = ['#22c55e','#84cc16','#eab308','#f97316','#ef4444'];
+  const GAUGE_LABELS = ['Low','Guarded','Elevated','High','Severe'];
+
+  function getGaugeLabel(score) {
+    const s = Math.max(0, Math.min(100, score));
+    if (s < 20) return GAUGE_LABELS[0];
+    if (s < 40) return GAUGE_LABELS[1];
+    if (s < 60) return GAUGE_LABELS[2];
+    if (s < 80) return GAUGE_LABELS[3];
+    return GAUGE_LABELS[4];
+  }
+  function getGaugeColor(score) {
+    const s = Math.max(0, Math.min(100, score));
+    if (s < 20) return GAUGE_COLORS[0];
+    if (s < 40) return GAUGE_COLORS[1];
+    if (s < 60) return GAUGE_COLORS[2];
+    if (s < 80) return GAUGE_COLORS[3];
+    return GAUGE_COLORS[4];
+  }
+
+  function buildGauge(score, size, id) {
+    id = id || ('sg' + Math.random().toString(36).slice(2,6));
+    return '<div id="' + id + '" data-gauge-score="' + score + '" data-gauge-size="' + (size||120) + '" style="width:' + (size||120) + 'px;height:' + Math.round((size||120)*0.6) + 'px"></div>';
+  }
+
+  function drawGauge(id, score, size) {
+    // Use rAF to ensure DOM element exists and has dimensions
+    requestAnimationFrame(() => {
+      const el = document.getElementById(id);
+      if (!el || !window.GaugeChart) return;
+      el.innerHTML = '';
+      score = Math.max(0, Math.min(100, score || 0));
+      size = size || 120;
+      const col = getGaugeColor(score);
+
+      try {
+        window.GaugeChart.gaugeChart(el, size, {
+          hasNeedle: true,
+          needleColor: col,
+          needleStartValue: score,
+          needleUpdateSpeed: 0,
+          arcColors: GAUGE_COLORS,
+          arcDelimiters: [20, 40, 60, 80],
+          arcLabels: GAUGE_LABELS,
+          arcPadding: 2,
+          arcPaddingColor: '#0d1120',
+          rangeLabel: ['0', '100'],
+          centralLabel: score + '%',
+          labelsFont: '-apple-system,sans-serif',
+        });
+        // Style the text elements after render
+        setTimeout(() => {
+          el.querySelectorAll('text').forEach(t => {
+            if (!t.getAttribute('fill') || t.getAttribute('fill') === 'black') {
+              t.setAttribute('fill', '#f0eeea');
+            }
+          });
+        }, 50);
+      } catch(e) {
+        console.error('[SnagAI] Gauge error:', e);
+      }
+    });
+  }
+
+  function drawAllGauges() {
+    document.querySelectorAll('[data-gauge-score]').forEach(el => {
+      drawGauge(el.id, parseInt(el.dataset.gaugeScore), parseInt(el.dataset.gaugeSize));
+    });
   }
 
   function showProbAlert(wp, hired) {
@@ -509,9 +534,13 @@
       const isHired = hired > 0;
 
       const riskPenalty = Math.min(40, (wp.riskItems || []).length * 12);
-      const combined = isHired ? 0 : Math.max(0, Math.min(95,
+      const severeMismatch = (wp.topMatch || []).some(f => f.skillMatch && f.delta <= -25);
+      const weakMismatch   = (wp.topMatch || []).some(f => f.skillMatch && f.delta <= -15);
+      let combined = isHired ? 0 : Math.max(0, Math.min(95,
         Math.round(wp.probScore * 0.60 + wp.matchScore * 0.25 - riskPenalty * 0.15)
       ));
+      if (severeMismatch) combined = Math.min(combined, 22); // 0% skill match → cap low
+      else if (weakMismatch) combined = Math.min(combined, 45); // weak match → limit upside
       const nc = combined >= 70 ? '#34d399' : combined >= 45 ? '#f59e0b' : '#f87171';
       const label = isHired ? 'Job Closed'
         : combined >= 70 ? 'Good Opportunity'
@@ -582,9 +611,7 @@
 
           <!-- Gauge + score + summary -->
           <div class="sn-alv2-gauge-block">
-            ${buildGauge(combined, 96)}
-            <div class="sn-alv2-score" style="color:${nc}">${combined}%</div>
-            <div class="sn-alv2-label" style="color:${nc}">${label}</div>
+            ${buildGauge(combined, 180, "sn-alert-gauge")}
             <div class="sn-alv2-cta">Your Connects are real money.</div>
             <div class="sn-alv2-summary">${summary}</div>
           </div>
@@ -602,6 +629,9 @@
 
         </div>
       `;
+
+      // Draw gauge after DOM settles
+      setTimeout(() => drawGauge('sn-alert-gauge', combined, 180), 0);
 
       document.getElementById('sn-alert-cancel').addEventListener('click', () => { closePanel(); resolve(true); });
       const ab = document.getElementById('sn-alert-anyway');
@@ -927,11 +957,7 @@
           <!-- Win Probability -->
           <div class="sn-ic-card">
             <div class="sn-ic-card-title">Win Probability</div>
-            <div class="sn-ic-gauge-wrap">${buildGauge(wp.probScore, 80)}</div>
-            <div class="sn-ic-readout">
-              <span style="color:${wp.probColor};font-size:15px;font-weight:800">${wp.probScore}%</span>
-              <span style="color:${wp.probColor};font-size:10px;font-weight:700;margin-left:4px">${wp.probScore>=70?'Strong':wp.probScore>=45?'Possible':'Long shot'}</span>
-            </div>
+            <div class="sn-ic-gauge-wrap">${buildGauge(wp.probScore, 130, "sn-prob-gauge")}</div>
             <div class="sn-ic-factors">
               ${(wp.topProb||[]).slice(0,3).map(f=>'<div class="sn-icf-row"><div class="sn-icf-dot" style="background:'+(f.delta>0?'#34d399':f.delta<0?'#f87171':'#f59e0b')+'"></div><span class="sn-icf-lbl">'+esc(f.label)+':</span> <span class="sn-icf-val">'+esc(f.value)+'</span></div>').join('')}
             </div>
@@ -940,11 +966,7 @@
           <!-- Profile Match -->
           <div class="sn-ic-card">
             <div class="sn-ic-card-title">Profile Match</div>
-            <div class="sn-ic-gauge-wrap">${buildGauge(wp.matchScore, 80)}</div>
-            <div class="sn-ic-readout">
-              <span style="color:${wp.matchColor};font-size:15px;font-weight:800">${wp.matchScore}%</span>
-              <span style="color:${wp.matchColor};font-size:10px;font-weight:700;margin-left:4px">${wp.matchScore>=70?'Great fit':wp.matchScore>=45?'Partial':'Weak fit'}</span>
-            </div>
+            <div class="sn-ic-gauge-wrap">${buildGauge(wp.matchScore, 130, "sn-match-gauge")}</div>
             <div class="sn-ic-factors">
               ${(wp.topMatch||[]).slice(0,3).map(f=>'<div class="sn-icf-row"><div class="sn-icf-dot" style="background:'+(f.delta>0?'#34d399':f.warn||f.delta<0?'#f87171':'#f59e0b')+'"></div><span class="sn-icf-lbl">'+esc(f.label)+':</span> <span class="sn-icf-val">'+esc(f.value)+'</span></div>').join('')}
             </div>
@@ -964,6 +986,12 @@
         </div>
       </div>
     `;
+
+    // Draw gauges after DOM settles
+    setTimeout(() => {
+      drawGauge('sn-prob-gauge', wp.probScore, 130);
+      drawGauge('sn-match-gauge', wp.matchScore, 130);
+    }, 0);
 
     // Auto-expand textarea
     const refineInp = document.getElementById('sn-refine-inp');
