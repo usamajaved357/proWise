@@ -692,23 +692,51 @@
   // ── Generate
   async function generate() {
     try {
-      const stored = await chrome.storage.sync.get(['profile', 'userEmail', 'anonId', 'settings']);
+      const stored = await chrome.storage.sync.get(['profile', 'userEmail', 'anonId', 'settings', 'registeredProfiles']);
       const prof = stored.profile || {};
-      if (!prof.name && !prof.jss) {
+      const regProfiles = stored.registeredProfiles || [];
+      const hasRegisteredUrl = regProfiles.some(p => p && p.url);
+      const hasAutoReadData  = regProfiles.some(p => p && (p.name || p.jss)) || prof._autoRead;
+
+      // No profile URL registered in new system → always show setup prompt
+      if (!hasRegisteredUrl) {
         document.getElementById('sn-body').innerHTML = `
           <div style="padding:28px 24px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:14px">
             <div style="font-size:28px">👤</div>
-            <div style="font-size:15px;font-weight:700;color:#f0eeea">Visit your Upwork profile first</div>
+            <div style="font-size:15px;font-weight:700;color:#f0eeea">Set up your profile first</div>
             <div style="font-size:12px;color:rgba(240,238,234,.55);line-height:1.7;max-width:320px">
-              Snag AI needs to read your profile data once.<br>
-              Click below to open your profile — the extension will read everything automatically in 1-2 seconds.
+              Go to Settings → Subscription → add your Upwork profile URL.<br>
+              Then visit that URL once and Snag AI reads everything automatically.
             </div>
-            <a href="https://www.upwork.com/freelancers/me" target="_blank"
-               style="padding:10px 24px;background:#c9a84c;color:#0d1120;border-radius:9px;font-size:13px;font-weight:700;text-decoration:none;display:inline-block">
-              → Open my Upwork profile
-            </a>
+            <button id="sn-open-settings-btn" style="padding:10px 24px;background:#c9a84c;color:#0d1120;border-radius:9px;font-size:13px;font-weight:700;border:none;cursor:pointer;font-family:inherit">
+              → Open Settings
+            </button>
           </div>
         `;
+        document.getElementById('sn-open-settings-btn')?.addEventListener('click', () => {
+          chrome.runtime.openOptionsPage();
+        });
+        return;
+      }
+
+      // URL registered but not yet visited — no auto-read data
+      if (hasRegisteredUrl && !hasAutoReadData) {
+        const firstUrl = regProfiles.find(p => p && p.url)?.url || 'https://www.upwork.com/freelancers/me';
+        document.getElementById('sn-body').innerHTML = `
+          <div style="padding:28px 24px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:14px">
+            <div style="font-size:28px">🔄</div>
+            <div style="font-size:15px;font-weight:700;color:#f0eeea">Visit your profile to sync</div>
+            <div style="font-size:12px;color:rgba(240,238,234,.55);line-height:1.7;max-width:320px">
+              Your profile URL is saved. Visit it once so Snag AI can read your skills, tier and data automatically.
+            </div>
+            <button id="sn-open-profile-btn" style="padding:10px 24px;background:#c9a84c;color:#0d1120;border-radius:9px;font-size:13px;font-weight:700;border:none;cursor:pointer;font-family:inherit">
+              → Open my Upwork profile
+            </button>
+          </div>
+        `;
+        document.getElementById('sn-open-profile-btn')?.addEventListener('click', () => {
+          window.open(firstUrl, '_blank');
+        });
         return;
       }
       // Use skillsArr from auto-read if available (more accurate)

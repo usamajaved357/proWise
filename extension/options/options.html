@@ -10,25 +10,21 @@
   --border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.12);
   --gold:#c9a84c;--gold2:#e8c878;
   --white:#f0eeea;--white2:rgba(240,238,234,.65);--white3:rgba(240,238,234,.35);
-  --green:#34d399;--red:#f87171;--yellow:#fbbf24;
-  --accent:#a78bfa;
+  --green:#34d399;--red:#f87171;--yellow:#fbbf24;--purple:#a78bfa;
 }
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--white);min-height:100vh;font-size:14px;line-height:1.5}
 .layout{display:flex;min-height:100vh}
-.sidebar{width:220px;background:var(--bg2);border-right:1px solid var(--border);padding:24px 0;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto}
-.main{flex:1;padding:36px 48px;max-width:780px}
 
 /* Sidebar */
+.sidebar{width:220px;background:var(--bg2);border-right:1px solid var(--border);padding:24px 0;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto}
 .sb-logo{display:flex;align-items:center;gap:10px;padding:0 20px 24px;border-bottom:1px solid var(--border)}
 .sb-icon{width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#b8860b,#e8c878);display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.sb-name{font-size:15px;font-weight:700;color:var(--white)}
+.sb-name{font-size:15px;font-weight:700}
 .sb-ver{font-size:10px;color:var(--white3)}
 .sb-nav{padding:16px 0}
 .sb-item{display:flex;align-items:center;gap:10px;padding:10px 20px;font-size:13px;font-weight:500;color:var(--white2);cursor:pointer;transition:all .15s;border-left:2px solid transparent}
 .sb-item:hover{color:var(--white);background:rgba(255,255,255,.04)}
 .sb-item.active{color:var(--white);border-left-color:var(--gold);background:rgba(201,168,76,.08)}
-.sb-item svg{opacity:.6;flex-shrink:0}
-.sb-item.active svg{opacity:1}
 .sb-divider{height:1px;background:var(--border);margin:8px 20px}
 .sb-plan{margin:16px 12px 0;background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);border-radius:10px;padding:12px}
 .sb-plan-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
@@ -36,111 +32,138 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .sb-plan-bar-wrap{height:4px;background:rgba(255,255,255,.08);border-radius:2px;margin-bottom:6px}
 .sb-plan-bar{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--gold),var(--gold2))}
 .sb-plan-count{font-size:11px;color:var(--white3)}
-.sb-upgrade{display:block;width:100%;margin-top:8px;padding:7px;background:var(--gold);color:#0d1120;border:none;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;text-align:center}
+.sb-upgrade{display:block;width:100%;margin-top:8px;padding:7px;background:var(--gold);color:#0d1120;border:none;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer}
 
-/* Sections */
+.main{flex:1;padding:36px 48px;max-width:860px}
 .section{display:none}.section.active{display:block}
-.section-title{font-size:22px;font-weight:700;color:var(--white);margin-bottom:4px;letter-spacing:-.02em}
+.section-title{font-size:22px;font-weight:700;margin-bottom:4px;letter-spacing:-.02em}
 .section-sub{font-size:13px;color:var(--white3);margin-bottom:28px}
 
 /* Cards */
-.card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:24px;margin-bottom:16px}
-.card-title{font-size:13px;font-weight:700;color:var(--white);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:22px;margin-bottom:16px}
+.card-title{font-size:13px;font-weight:700;margin-bottom:16px;display:flex;align-items:center;gap:8px}
 .card-title svg{color:var(--gold);opacity:.8}
-.card-title-note{font-size:10px;font-weight:400;color:var(--white3);margin-left:4px}
 
 /* Fields */
 .field{margin-bottom:14px}.field:last-child{margin-bottom:0}
 .field label{display:block;font-size:11px;font-weight:700;color:var(--white3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
-.field input,.field textarea,.field select{width:100%;padding:10px 13px;background:rgba(255,255,255,.05);border:1px solid var(--border2);border-radius:8px;color:var(--white);font-size:13px;font-family:inherit;outline:none;resize:vertical;transition:border-color .15s}
+.field input,.field textarea,.field select{width:100%;padding:9px 12px;background:rgba(255,255,255,.05);border:1px solid var(--border2);border-radius:8px;color:var(--white);font-size:13px;font-family:inherit;outline:none;resize:vertical;transition:border-color .15s}
 .field input:focus,.field textarea:focus,.field select:focus{border-color:var(--gold)}
 .field input::placeholder,.field textarea::placeholder{color:var(--white3)}
-.field textarea{min-height:80px}
-.field select option{background:#1a2035}
 .field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.field-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
 
-/* Portfolio — collapsible rows */
-.port-row{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:10px;margin-bottom:8px;overflow:hidden;transition:all .2s}
-.port-row-head{display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:default}
-.port-row-info{flex:1;min-width:0}
-.port-row-name{font-size:13px;font-weight:600;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.port-row-url{font-size:11px;color:var(--white3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
-.port-row-actions{display:flex;gap:6px;flex-shrink:0}
-.port-edit-btn{padding:4px 10px;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.2);border-radius:6px;color:var(--gold);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit}
-.port-edit-btn:hover{background:rgba(201,168,76,.2)}
-.port-del-btn{padding:4px 8px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.15);border-radius:6px;color:var(--red);font-size:13px;cursor:pointer;line-height:1}
-.port-del-btn:hover{background:rgba(239,68,68,.18)}
-.port-row-fields{display:none;padding:0 14px 14px;border-top:1px solid rgba(255,255,255,.06)}
-.port-row-fields.open{display:block}
-.port-row-fields .field{margin-bottom:10px;margin-top:10px}
-.port-row-fields .field:last-child{margin-bottom:0}
-.port-row-fields input{padding:8px 12px;font-size:12px}
-.port-save-btn{width:100%;padding:8px;background:var(--gold);color:#0d1120;border:none;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;margin-top:8px}
-.add-port{width:100%;padding:9px;border:1px dashed rgba(255,255,255,.12);border-radius:9px;background:transparent;color:var(--white3);font-size:12px;cursor:pointer;transition:all .15s;font-family:inherit}
-.add-port:hover{border-color:var(--gold);color:var(--gold)}
+/* Profile slider */
+.profile-slider-wrap{position:relative}
+.profile-slides{overflow:hidden}
+.profile-slide{display:none}.profile-slide.active{display:block}
+.slider-nav{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:16px}
+.slider-dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.2);cursor:pointer;transition:all .2s}
+.slider-dot.active{background:var(--gold);transform:scale(1.2)}
+.slider-arrows{display:flex;gap:8px;margin-left:auto}
+.slider-arr{width:28px;height:28px;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:6px;color:var(--white2);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px}
+.slider-arr:hover{background:rgba(255,255,255,.1);color:var(--white)}
+
+/* Profile card */
+.profile-card{background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:12px;overflow:hidden}
+.profile-card-header{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--border);background:rgba(255,255,255,.02)}
+.profile-card-avatar{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#b8860b,#e8c878);display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;color:#0d1120;flex-shrink:0}
+.profile-card-info{flex:1;min-width:0}
+.profile-card-name{font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.profile-card-sub{font-size:11px;color:var(--white3);margin-top:2px}
+.profile-card-actions{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.sync-toggle{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--white3)}
+.toggle-switch{position:relative;width:34px;height:19px;flex-shrink:0}
+.toggle-switch input{opacity:0;width:0;height:0;position:absolute}
+.toggle-slider{position:absolute;inset:0;background:rgba(255,255,255,.12);border-radius:20px;cursor:pointer;transition:.2s}
+.toggle-slider:before{content:'';position:absolute;width:13px;height:13px;left:3px;bottom:3px;background:rgba(255,255,255,.5);border-radius:50%;transition:.2s}
+.toggle-switch input:checked + .toggle-slider{background:var(--gold)}
+.toggle-switch input:checked + .toggle-slider:before{transform:translateX(15px);background:#0d1120}
+.profile-delete-btn{width:26px;height:26px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.2);border-radius:6px;color:var(--red);cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center}
+
+.profile-card-body{padding:16px}
+.profile-stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+.pstat{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:8px;padding:8px 10px;text-align:center}
+.pstat-val{font-size:15px;font-weight:700;color:var(--gold)}
+.pstat-lbl{font-size:10px;color:var(--white3);margin-top:2px}
+
+/* Editable field */
+.edit-field{display:flex;align-items:flex-start;gap:6px;margin-bottom:8px}
+.edit-field-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--white3);min-width:70px;padding-top:8px}
+.edit-field-val{flex:1;padding:6px 10px;background:rgba(255,255,255,.04);border:1px solid transparent;border-radius:7px;color:var(--white);font-size:12px;font-family:inherit;outline:none;cursor:default;line-height:1.5}
+.edit-field-val:focus{background:rgba(255,255,255,.07);border-color:var(--gold);cursor:text}
+.edit-field-val[data-multi]{min-height:60px;resize:none}
+
+/* Skills chips */
+.skills-chips{display:flex;flex-wrap:wrap;gap:5px;padding:8px 0}
+.skill-chip{font-size:11px;padding:3px 9px;background:rgba(52,211,153,.1);color:var(--green);border-radius:20px;border:1px solid rgba(52,211,153,.2)}
+
+/* Portfolio section in profile */
+.port-item{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:10px;padding:12px 14px;margin-bottom:8px}
+.port-item-head{display:flex;align-items:flex-start;gap:8px}
+.port-incomplete{font-size:9px;font-weight:700;background:rgba(245,158,11,.15);color:#f59e0b;border:1px solid rgba(245,158,11,.25);border-radius:20px;padding:2px 7px;white-space:nowrap;margin-top:2px}
+.port-complete{font-size:9px;font-weight:700;background:rgba(52,211,153,.12);color:var(--green);border:1px solid rgba(52,211,153,.2);border-radius:20px;padding:2px 7px;white-space:nowrap;margin-top:2px}
+.port-item-title{font-size:12px;font-weight:600;color:var(--white);flex:1}
+.port-item-body{margin-top:8px;display:none}
+.port-item-body.open{display:block}
+.port-url-row{display:flex;gap:6px;margin-bottom:6px}
+.port-url-row input{flex:1;padding:6px 10px;background:rgba(255,255,255,.05);border:1px solid var(--border2);border-radius:6px;color:var(--white);font-size:11px;font-family:inherit;outline:none}
+.port-url-row input:focus{border-color:var(--gold)}
+.port-url-del{width:28px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.15);border-radius:6px;color:var(--red);cursor:pointer;font-size:12px}
+.port-add-url{font-size:10px;color:var(--gold);background:none;border:1px dashed rgba(201,168,76,.3);border-radius:5px;padding:3px 10px;cursor:pointer;font-family:inherit;width:100%;margin-top:2px}
+.port-btns{display:flex;gap:6px;margin-top:6px}
+.port-edit-toggle{font-size:10px;background:rgba(255,255,255,.06);border:1px solid var(--border);border-radius:5px;padding:3px 10px;color:var(--white2);cursor:pointer;font-family:inherit}
+.port-del{font-size:10px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.15);border-radius:5px;padding:3px 8px;color:var(--red);cursor:pointer;font-family:inherit}
+
+/* Add profile button */
+.add-profile-btn{width:100%;padding:12px;border:2px dashed rgba(201,168,76,.3);border-radius:10px;background:transparent;color:var(--gold);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;margin-bottom:16px}
+.add-profile-btn:hover{border-color:var(--gold);background:rgba(201,168,76,.05)}
 
 /* Save */
-.save-btn{padding:11px 28px;background:var(--gold);color:#0d1120;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;transition:opacity .15s}
+.save-btn{padding:11px 28px;background:var(--gold);color:#0d1120;border:none;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer}
 .save-btn:hover{opacity:.9}
 .saved-msg{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--green);font-weight:600;opacity:0;transition:opacity .3s;margin-left:12px}
 .saved-msg.show{opacity:1}
 
-/* Email */
-.email-status{display:flex;align-items:center;gap:10px;padding:14px;background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:10px;margin-bottom:14px}
-.email-dot{width:9px;height:9px;border-radius:50%;background:#374151;flex-shrink:0}
-.email-dot.on{background:var(--green)}
-.email-info-text{flex:1}
-.email-info-label{font-size:11px;color:var(--white3);margin-bottom:2px}
-.email-info-val{font-size:13px;font-weight:600;color:var(--white)}
-.email-change{font-size:12px;color:var(--gold);cursor:pointer}
-
 /* Plans */
 .plans-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
 .plan-card{background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:12px;padding:18px;cursor:pointer;transition:all .2s;position:relative;text-align:center}
-.plan-card:hover{border-color:rgba(201,168,76,.4);background:rgba(201,168,76,.05)}
-.plan-card.current{border-color:var(--green);background:rgba(52,211,153,.05)}
-.plan-card.featured{border-color:rgba(201,168,76,.35);background:rgba(201,168,76,.06)}
-.plan-pop{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--gold);color:#0d1120;font-size:9px;font-weight:700;padding:2px 10px;border-radius:20px;white-space:nowrap;letter-spacing:.05em}
+.plan-card:hover{border-color:rgba(201,168,76,.4)}
+.plan-card.featured{border-color:rgba(201,168,76,.35);background:rgba(201,168,76,.05)}
+.plan-card.current{border-color:var(--green);background:rgba(52,211,153,.04)}
+.plan-pop{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--gold);color:#0d1120;font-size:9px;font-weight:700;padding:2px 10px;border-radius:20px}
 .plan-tier{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--white3);margin-bottom:6px}
-.plan-price{font-size:28px;font-weight:700;color:var(--white);line-height:1;margin-bottom:2px}
+.plan-price{font-size:28px;font-weight:700;line-height:1;margin-bottom:2px}
 .plan-price span{font-size:13px;font-weight:400;color:var(--white3)}
-.plan-limit{font-size:12px;color:var(--white2);margin-bottom:10px}
-.plan-save{font-size:11px;color:var(--green);font-weight:600;margin-bottom:12px}
-.plan-btn{width:100%;padding:9px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:none;font-family:inherit;transition:all .2s}
+.plan-limit{font-size:12px;color:var(--white2);margin-bottom:4px}
+.plan-profiles{font-size:11px;color:var(--purple);margin-bottom:10px;font-weight:600}
+.plan-btn{width:100%;padding:9px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:none;font-family:inherit}
 .plan-btn-outline{background:transparent;border:1px solid var(--border2);color:var(--white2)}
 .plan-btn-outline:hover{border-color:var(--gold);color:var(--gold)}
 .plan-btn-gold{background:var(--gold);color:#0d1120}
 .plan-btn-gold:hover{background:var(--gold2)}
-.plan-current-badge{width:100%;padding:9px;border-radius:8px;font-size:12px;font-weight:700;background:rgba(52,211,153,.15);color:var(--green);border:1px solid rgba(52,211,153,.25);text-align:center}
+
+/* Subscription profile slots */
+.profile-slots{margin-bottom:16px}
+.profile-slot{display:flex;align-items:center;gap:10px;padding:10px 14px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:10px;margin-bottom:8px}
+.slot-num{width:22px;height:22px;border-radius:50%;background:rgba(201,168,76,.15);color:var(--gold);font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.slot-input{flex:1;padding:7px 10px;background:rgba(255,255,255,.05);border:1px solid var(--border2);border-radius:7px;color:var(--white);font-size:12px;font-family:inherit;outline:none}
+.slot-input:focus{border-color:var(--gold)}
+.slot-input::placeholder{color:var(--white3)}
+.slot-sync-btn{padding:5px 12px;background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.2);border-radius:7px;color:var(--green);font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;white-space:nowrap}
+
 .usage-detail{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:16px}
 .ud-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-.ud-plan{font-size:13px;font-weight:700;color:var(--white)}
-.ud-reset{font-size:11px;color:var(--white3)}
+.ud-plan{font-size:13px;font-weight:700}
 .ud-bar-wrap{height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden;margin-bottom:8px}
-.ud-bar{height:100%;border-radius:3px;transition:width .4s}
+.ud-bar{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--gold),var(--gold2))}
 .ud-counts{display:flex;justify-content:space-between;font-size:12px;color:var(--white3)}
 .ud-counts strong{color:var(--white)}
 
 /* How to */
 .how-item{display:flex;gap:14px;margin-bottom:20px}
 .how-num{width:28px;height:28px;border:1px solid var(--gold);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--gold);flex-shrink:0}
-.how-title{font-size:13px;font-weight:700;color:var(--white);margin-bottom:3px}
+.how-title{font-size:13px;font-weight:700;margin-bottom:3px}
 .how-desc{font-size:12px;color:var(--white2);line-height:1.6}
-.tip-box{background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);border-radius:10px;padding:14px 16px;font-size:12px;color:rgba(240,238,234,.7);line-height:1.7}
-.tip-box strong{color:var(--gold)}
-
-@media(max-width:600px){
-  .layout{flex-direction:column}
-  .sidebar{width:100%;height:auto;position:relative}
-  .main{padding:24px 20px}
-  .plans-grid,.field-row,.field-row-3{grid-template-columns:1fr}
-}
-
-.port-url-row { display: flex; gap: 6px; margin-bottom: 6px; }
-.port-url-row input { flex: 1; }
-.port-url-del { width: 32px; height: 38px; background: rgba(239,68,68,.08); border: 1px solid rgba(239,68,68,.15); border-radius: 7px; color: #f87171; cursor: pointer; font-size: 14px; flex-shrink: 0; }
-.port-url-del:hover { background: rgba(239,68,68,.18); }
 </style>
 </head>
 <body>
@@ -153,11 +176,11 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
           <path d="M16 9L22 9C22 9 24 11 22 13C24 13 26 15 24 17C25 17 26 19 24 21C25 21 25 23 23 24L16 24" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
       </div>
-      <div><div class="sb-name">Snag AI</div><div class="sb-ver">v8.0.0</div></div>
+      <div><div class="sb-name">Snag AI</div><div class="sb-ver">v13.0</div></div>
     </div>
     <div class="sb-nav">
-      <div class="sb-item active" data-section="profile">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profile
+      <div class="sb-item active" data-section="profiles">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profiles
       </div>
       <div class="sb-item" data-section="settings">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>Settings
@@ -173,7 +196,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     </div>
     <div class="sb-plan">
       <div class="sb-plan-top">
-        <span class="sb-plan-badge" id="sb-plan-badge" style="background:rgba(251,191,36,.15);color:#fbbf24;border:1px solid rgba(251,191,36,.25)">Free</span>
+        <span class="sb-plan-badge" id="sb-plan-badge" style="background:rgba(251,191,36,.15);color:#fbbf24">Free</span>
         <span style="font-size:10px;color:var(--white3)" id="sb-remaining">2 left</span>
       </div>
       <div class="sb-plan-bar-wrap"><div class="sb-plan-bar" id="sb-bar" style="width:0%"></div></div>
@@ -184,54 +207,33 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
   <div class="main">
 
-    <!-- PROFILE -->
-    <div class="section active" id="section-profile">
-      <div class="section-title">Your Profile</div>
-      <div class="section-sub">Used in every proposal. The more detail, the better the output.</div>
+    <!-- PROFILES -->
+    <div class="section active" id="section-profiles">
+      <div class="section-title">Your Profiles</div>
+      <div class="section-sub" id="profiles-sub">Auto-synced from your Upwork profile page. Portfolio links must be added manually.</div>
 
-      <!-- Auto-read profile status -->
-      <div class="card" id="auto-profile-card">
-        <div class="card-title">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          Profile — auto-read from Upwork
-        </div>
-        <div id="profile-status-box" style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px 16px">
-          <div id="profile-not-read" style="display:none">
-            <div style="color:#f59e0b;font-weight:600;margin-bottom:8px">⚠ Profile not read yet</div>
-            <div style="font-size:12px;color:rgba(240,238,234,.55);line-height:1.7">
-              Visit your Upwork profile page once and Snag AI will automatically read your name, title, JSS, tier, skills, bio, employment history, education, certifications and languages.<br><br>
-              <a href="https://www.upwork.com/freelancers/me" target="_blank" style="color:#c9a84c;font-weight:600">→ Open my Upwork profile</a>
-            </div>
+      <div id="profiles-container">
+        <!-- Profiles rendered by JS -->
+      </div>
+
+      <button class="add-profile-btn" id="add-profile-btn" style="display:none">+ Add another profile</button>
+
+      <div id="no-profiles-msg" style="display:none">
+        <div class="card" style="text-align:center;padding:32px">
+          <div style="font-size:36px;margin-bottom:12px">👤</div>
+          <div style="font-size:15px;font-weight:700;margin-bottom:8px">No profiles added yet</div>
+          <div style="font-size:12px;color:var(--white3);line-height:1.7;margin-bottom:16px">
+            Go to the Subscription tab and add your Upwork profile URL.<br>
+            Then visit that URL and Snag AI will read everything automatically.
           </div>
-          <div id="profile-read-info" style="display:none">
-            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-              <span style="color:#34d399;font-weight:700;font-size:13px">✓ Profile synced from Upwork</span>
-              <span id="profile-read-time" style="font-size:10px;color:rgba(240,238,234,.35)"></span>
-            </div>
-            <div id="profile-read-details" style="font-size:12px;color:rgba(240,238,234,.65);line-height:1.8"></div>
-            <a href="https://www.upwork.com/freelancers/me" target="_blank" style="display:inline-block;margin-top:10px;font-size:11px;color:#c9a84c">↻ Re-sync by visiting your profile</a>
-          </div>
-        </div>
-        <!-- Always mention (still manual) -->
-        <div class="field" style="margin-top:14px">
-          <label>Always mention in proposals (optional)</label>
-          <textarea id="extra" placeholder="Timezone, availability, specific certifications to highlight…"></textarea>
+          <button class="save-btn" id="goto-sub-btn">Go to Subscription →</button>
         </div>
       </div>
 
-      <!-- Portfolio -->
-      <div class="card">
-        <div class="card-title">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-          Portfolio projects
-        </div>
-        <div style="font-size:12px;color:var(--white3);margin-bottom:14px;line-height:1.6">Add your best work. Snag AI matches the most relevant ones to each job automatically.</div>
-        <div id="port-list"></div>
-        <button class="add-port" id="add-port">+ Add project</button>
+      <div style="margin-top:8px">
+        <button class="save-btn" id="save-profiles">Save changes</button>
+        <span class="saved-msg" id="saved-profiles-msg">✓ Saved</span>
       </div>
-
-      <button class="save-btn" id="save-profile">Save profile</button>
-      <span class="saved-msg" id="saved-profile-msg">✓ Saved</span>
     </div>
 
     <!-- SETTINGS -->
@@ -239,10 +241,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div class="section-title">Proposal Settings</div>
       <div class="section-sub">Customize how Snag AI writes your proposals.</div>
       <div class="card">
-        <div class="card-title">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          Tone & length
-        </div>
+        <div class="card-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>Tone & length</div>
         <div class="field-row">
           <div class="field"><label>Tone</label>
             <select id="tone">
@@ -269,42 +268,48 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <!-- SUBSCRIPTION -->
     <div class="section" id="section-subscription">
       <div class="section-title">Subscription</div>
-      <div class="section-sub">Manage your plan and billing.</div>
+      <div class="section-sub">Manage your plan, billing, and profile URLs.</div>
+
       <div class="card">
-        <div class="card-title">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-          Subscription email
+        <div class="card-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>Subscription email</div>
+        <div id="email-status" style="display:flex;align-items:center;gap:10px;padding:12px;background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:10px;margin-bottom:12px">
+          <div id="email-dot" style="width:9px;height:9px;border-radius:50%;background:#374151;flex-shrink:0"></div>
+          <div style="flex:1"><div style="font-size:11px;color:var(--white3)">Email</div><div id="email-val" style="font-size:13px;font-weight:600">Not set</div></div>
+          <span id="email-toggle" style="font-size:12px;color:var(--gold);cursor:pointer">Add</span>
         </div>
-        <div style="font-size:12px;color:var(--white3);margin-bottom:14px;line-height:1.6">Your email is your subscription key. After purchasing, enter the same email here and your plan unlocks instantly.</div>
-        <div class="email-status" id="email-status">
-          <div class="email-dot" id="email-dot-opt"></div>
-          <div class="email-info-text">
-            <div class="email-info-label">Email address</div>
-            <div class="email-info-val" id="email-val-opt">Not set</div>
-          </div>
-          <span class="email-change" id="email-toggle-opt">Add email</span>
-        </div>
-        <div id="email-edit-wrap" style="display:none;gap:8px;flex-direction:column">
-          <input type="email" id="email-inp-opt" placeholder="your@email.com" style="padding:10px 13px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#f0eeea;font-size:13px;width:100%;outline:none">
-          <button class="save-btn" id="email-save-opt" style="padding:10px 20px;font-size:12px">Save email</button>
+        <div id="email-edit" style="display:none;gap:8px">
+          <input type="email" id="email-inp" placeholder="your@email.com" style="width:100%;padding:9px 12px;background:rgba(255,255,255,.05);border:1px solid var(--border2);border-radius:8px;color:var(--white);font-size:13px;outline:none;margin-bottom:8px">
+          <button class="save-btn" id="email-save" style="font-size:12px;padding:8px 18px">Save email</button>
         </div>
       </div>
+
+      <!-- Profile URL slots -->
+      <div class="card">
+        <div class="card-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Profile URLs <span style="font-size:11px;font-weight:400;color:var(--white3);margin-left:4px">— paste your Upwork profile link(s)</span></div>
+        <div style="font-size:12px;color:var(--white3);line-height:1.6;margin-bottom:14px">
+          Snag AI will only auto-read profiles from these URLs. After adding, visit the URL and the extension reads everything automatically.
+        </div>
+        <div class="profile-slots" id="profile-slots">
+          <!-- Rendered by JS based on plan -->
+        </div>
+        <button class="save-btn" id="save-profile-urls" style="font-size:12px;padding:9px 20px">Save URLs</button>
+        <span class="saved-msg" id="saved-urls-msg">✓ Saved</span>
+      </div>
+
       <div class="usage-detail">
-        <div class="ud-top"><div class="ud-plan" id="ud-plan">Free plan</div><div class="ud-reset">Resets monthly</div></div>
-        <div class="ud-bar-wrap"><div class="ud-bar" id="ud-bar" style="width:0%;background:linear-gradient(90deg,#c9a84c,#e8c878)"></div></div>
+        <div class="ud-top"><div class="ud-plan" id="ud-plan">Free plan</div><div style="font-size:11px;color:var(--white3)">Resets monthly</div></div>
+        <div class="ud-bar-wrap"><div class="ud-bar" id="ud-bar" style="width:0%"></div></div>
         <div class="ud-counts"><span><strong id="ud-used">0</strong> used</span><span id="ud-limit">2 total</span></div>
       </div>
+
       <div class="card">
-        <div class="card-title">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-          Choose a plan
-        </div>
+        <div class="card-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Choose a plan</div>
         <div class="plans-grid">
           <div class="plan-card" id="plan-starter">
             <div class="plan-tier">Starter</div>
             <div class="plan-price">$19<span>/mo</span></div>
             <div class="plan-limit">150 proposals/mo</div>
-            <div class="plan-save">$0.127 per proposal</div>
+            <div class="plan-profiles">1 Upwork profile</div>
             <button class="plan-btn plan-btn-outline" data-plan="starter">Get Starter →</button>
           </div>
           <div class="plan-card featured" id="plan-pro">
@@ -312,32 +317,31 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
             <div class="plan-tier">Pro</div>
             <div class="plan-price">$39<span>/mo</span></div>
             <div class="plan-limit">400 proposals/mo</div>
-            <div class="plan-save">Save 45% per proposal</div>
+            <div class="plan-profiles">3 Upwork profiles</div>
             <button class="plan-btn plan-btn-gold" data-plan="pro">Get Pro →</button>
           </div>
           <div class="plan-card" id="plan-agency">
             <div class="plan-tier">Agency</div>
             <div class="plan-price">$69<span>/mo</span></div>
             <div class="plan-limit">900 proposals/mo</div>
-            <div class="plan-save">Save 57% per proposal</div>
+            <div class="plan-profiles">5 Upwork profiles</div>
             <button class="plan-btn plan-btn-outline" data-plan="agency">Get Agency →</button>
           </div>
         </div>
-        <p style="font-size:11px;color:var(--white3);text-align:center">Cancel anytime · Instant activation · No hidden fees</p>
+        <p style="font-size:11px;color:var(--white3);text-align:center">Cancel anytime · Instant activation</p>
       </div>
     </div>
 
     <!-- HOW TO USE -->
     <div class="section" id="section-howto">
       <div class="section-title">How to use</div>
-      <div class="section-sub">Get up and running in under 3 minutes.</div>
+      <div class="section-sub">Get up and running in 3 minutes.</div>
       <div class="card">
-        <div class="how-item"><div class="how-num">1</div><div><div class="how-title">Fill in your profile</div><div class="how-desc">Add your name, skills, hourly rate, portfolio, and Upwork stats once. The more detail, the better the proposals and win probability scores.</div></div></div>
-        <div class="how-item"><div class="how-num">2</div><div><div class="how-title">Open any Upwork job</div><div class="how-desc">Browse Upwork normally. The Snag AI button appears automatically in the bottom-right corner of every job page.</div></div></div>
-        <div class="how-item"><div class="how-num">3</div><div><div class="how-title">Click once — done in 10 seconds</div><div class="how-desc">Snag AI reads the job, picks the best hook from 7 proven patterns, and writes a personalised proposal. Win probability is shown instantly.</div></div></div>
-        <div class="how-item" style="margin-bottom:0"><div class="how-num">4</div><div><div class="how-title">Refine, copy, submit</div><div class="how-desc">Type a refinement instruction (e.g. "make it shorter") and hit Rewrite. Copy and paste directly into Upwork.</div></div></div>
+        <div class="how-item"><div class="how-num">1</div><div><div class="how-title">Add your profile URL</div><div class="how-desc">Go to Subscription tab → paste your Upwork profile URL. Snag AI will only read data from registered profiles.</div></div></div>
+        <div class="how-item"><div class="how-num">2</div><div><div class="how-title">Visit your Upwork profile</div><div class="how-desc">Open the URL you registered. Snag AI reads your name, JSS, tier, skills, employment history, education and certifications automatically.</div></div></div>
+        <div class="how-item"><div class="how-num">3</div><div><div class="how-title">Add portfolio links</div><div class="how-desc">Go to Profiles tab → expand each portfolio item → add your App Store, Play Store or website links. These are included automatically in proposals.</div></div></div>
+        <div class="how-item" style="margin-bottom:0"><div class="how-num">4</div><div><div class="how-title">Open any job and click Write</div><div class="how-desc">Snag AI uses your real profile data — skills, tier, portfolio — to write a targeted proposal and calculate your win probability.</div></div></div>
       </div>
-      <div class="tip-box"><strong>Pro tip:</strong> Add real portfolio links with descriptions and skills. Snag AI matches them to each job automatically and includes only the most relevant ones.</div>
     </div>
 
   </div>
