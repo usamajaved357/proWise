@@ -189,47 +189,33 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
       <div class="section-title">Your Profile</div>
       <div class="section-sub">Used in every proposal. The more detail, the better the output.</div>
 
-      <!-- Basic info -->
-      <div class="card">
+      <!-- Auto-read profile status -->
+      <div class="card" id="auto-profile-card">
         <div class="card-title">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          Basic info
+          Profile — auto-read from Upwork
         </div>
-        <div class="field-row">
-          <div class="field"><label>Your name</label><input id="name" placeholder="e.g. Ahmed Hassan"></div>
-          <div class="field"><label>Title / role</label><input id="title" placeholder="e.g. iOS Developer · 5 years"></div>
-        </div>
-        <div class="field"><label>Top skills</label><input id="skills" placeholder="e.g. Swift, SwiftUI, Flutter, Firebase, React Native"></div>
-        <div class="field-row">
-          <div class="field"><label>Hourly rate</label><input id="hourly-rate" placeholder="e.g. $45/hr"></div>
-          <div class="field"><label>One-line pitch</label><input id="pitch" placeholder="e.g. I ship iOS apps on time"></div>
-        </div>
-        <div class="field"><label>Always mention (optional)</label><textarea id="extra" placeholder="Timezone, availability, certifications…"></textarea></div>
-      </div>
-
-      <!-- Upwork stats -->
-      <div class="card">
-        <div class="card-title">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-          Upwork stats
-          <span class="card-title-note">— used for win probability</span>
-        </div>
-        <div class="field-row">
-          <div class="field"><label>Job Success Score</label><input id="jss" placeholder="e.g. 95%"></div>
-          <div class="field"><label>Level / Tier</label>
-            <select id="tier">
-              <option value="">Select tier</option>
-              <option value="new">New freelancer</option>
-              <option value="rising">Rising Talent</option>
-              <option value="top_rated">Top Rated</option>
-              <option value="top_rated_plus">Top Rated Plus</option>
-              <option value="expert">Expert Vetted</option>
-            </select>
+        <div id="profile-status-box" style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:14px 16px">
+          <div id="profile-not-read" style="display:none">
+            <div style="color:#f59e0b;font-weight:600;margin-bottom:8px">⚠ Profile not read yet</div>
+            <div style="font-size:12px;color:rgba(240,238,234,.55);line-height:1.7">
+              Visit your Upwork profile page once and Snag AI will automatically read your name, title, JSS, tier, skills, bio, employment history, education, certifications and languages.<br><br>
+              <a href="https://www.upwork.com/freelancers/me" target="_blank" style="color:#c9a84c;font-weight:600">→ Open my Upwork profile</a>
+            </div>
+          </div>
+          <div id="profile-read-info" style="display:none">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+              <span style="color:#34d399;font-weight:700;font-size:13px">✓ Profile synced from Upwork</span>
+              <span id="profile-read-time" style="font-size:10px;color:rgba(240,238,234,.35)"></span>
+            </div>
+            <div id="profile-read-details" style="font-size:12px;color:rgba(240,238,234,.65);line-height:1.8"></div>
+            <a href="https://www.upwork.com/freelancers/me" target="_blank" style="display:inline-block;margin-top:10px;font-size:11px;color:#c9a84c">↻ Re-sync by visiting your profile</a>
           </div>
         </div>
-        <div class="field-row">
-          <div class="field"><label>Jobs completed</label><input id="jobs-completed" placeholder="e.g. 47" type="number"></div>
-          <div class="field"><label>Upwork rating</label><input id="upwork-rating" placeholder="e.g. 4.9" type="number" step="0.1" min="1" max="5"></div>
+        <!-- Always mention (still manual) -->
+        <div class="field" style="margin-top:14px">
+          <label>Always mention in proposals (optional)</label>
+          <textarea id="extra" placeholder="Timezone, availability, specific certifications to highlight…"></textarea>
         </div>
       </div>
 

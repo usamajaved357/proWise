@@ -693,9 +693,27 @@
   async function generate() {
     try {
       const stored = await chrome.storage.sync.get(['profile', 'userEmail', 'anonId', 'settings']);
-      if (!stored.profile?.name) {
-        showError('Fill in your profile first — click the Snag AI icon in the Chrome toolbar → Settings.');
+      const prof = stored.profile || {};
+      if (!prof.name && !prof.jss) {
+        document.getElementById('sn-body').innerHTML = `
+          <div style="padding:28px 24px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:14px">
+            <div style="font-size:28px">👤</div>
+            <div style="font-size:15px;font-weight:700;color:#f0eeea">Visit your Upwork profile first</div>
+            <div style="font-size:12px;color:rgba(240,238,234,.55);line-height:1.7;max-width:320px">
+              Snag AI needs to read your profile data once.<br>
+              Click below to open your profile — the extension will read everything automatically in 1-2 seconds.
+            </div>
+            <a href="https://www.upwork.com/freelancers/me" target="_blank"
+               style="padding:10px 24px;background:#c9a84c;color:#0d1120;border-radius:9px;font-size:13px;font-weight:700;text-decoration:none;display:inline-block">
+              → Open my Upwork profile
+            </a>
+          </div>
+        `;
         return;
+      }
+      // Use skillsArr from auto-read if available (more accurate)
+      if (prof.skillsArr && prof.skillsArr.length) {
+        prof._skillsForMatching = prof.skillsArr;
       }
 
       // Ensure anonId exists
@@ -902,7 +920,11 @@
     // ── Skill matching — compare job skills vs profile ─────────────────────────
     const rawJobSkills = Array.isArray(jobStats.jobSkills) ? jobStats.jobSkills : [];
     const jobSkillsNorm = rawJobSkills.map(s => s.toLowerCase().replace(/[^a-z0-9+#.\s]/gi,'').trim()).filter(Boolean);
-    const profileSkillsStr = ((profile.skills || '') + ' ' + (profile.title || '')).toLowerCase();
+    // Use skillsArr from Upwork profile if available (more accurate than manual entry)
+    const profileSkillsList = profile._skillsForMatching || profile.skillsArr || [];
+    const profileSkillsStr = (profileSkillsList.length
+      ? profileSkillsList.join(' ')
+      : (profile.skills || '')) + ' ' + (profile.title || '');
 
     if (jobSkillsNorm.length > 0 && profileSkillsStr.trim().length > 0) {
       const matched  = jobSkillsNorm.filter(s => profileSkillsStr.includes(s));
