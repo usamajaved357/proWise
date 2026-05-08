@@ -1,12 +1,13 @@
-// ── Snag AI Options v14 ───────────────────────────────────────────────────────
+// ── Snag AI Options v15 ───────────────────────────────────────────────────────
 
 const PLAN_LIMITS  = { free: 1, starter: 1, pro: 3, agency: 5 };
 const PLAN_LABELS  = { free: 'Free', starter: 'Starter', pro: 'Pro', agency: 'Agency' };
 const PLAN_QUOTAS  = { free: 2, starter: 150, pro: 400, agency: 900 };
+const SKILLS_SHOW  = 8; // visible before "x more"
 
 let currentSlide = 0;
 
-// ── Sidebar navigation ────────────────────────────────────────────────────────
+// ── Section navigation ────────────────────────────────────────────────────────
 function switchSection(name) {
   document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('active'));
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
@@ -15,22 +16,32 @@ function switchSection(name) {
   if (item) item.classList.add('active');
   if (sec)  sec.classList.add('active');
 }
+document.querySelectorAll('.sb-item[data-section]').forEach(el =>
+  el.addEventListener('click', () => switchSection(el.dataset.section))
+);
+// URL param routing: options.html?tab=subscription
+const _tab = new URLSearchParams(window.location.search).get('tab');
+if (_tab) switchSection(_tab);
 
-document.querySelectorAll('.sb-item[data-section]').forEach(item => {
-  item.addEventListener('click', () => switchSection(item.dataset.section));
-});
-
-// ── URL param routing (e.g. options.html?tab=subscription) ────────────────────
-const urlParams = new URLSearchParams(window.location.search);
-const initTab = urlParams.get('tab');
-if (initTab) switchSection(initTab);
-
-// ── Storage change listener — re-render profile page when sync completes ──────
+// ── Storage change listener — live refresh when profile syncs ─────────────────
 chrome.storage.onChanged.addListener((changes, area) => {
+  if (area === 'local' && changes.primaryProfileId) {
+    renderProfilesPage(); // re-render to show updated primary badge
+    return;
+  }
   if (area !== 'sync') return;
   if (changes.registeredProfiles || changes.profile) {
     renderProfilesPage();
     renderProfileSlots();
+  }
+  if (changes.userPlan || changes.usageCount) {
+    const plan  = changes.userPlan?.newValue;
+    const used  = changes.usageCount?.newValue;
+    if (plan !== undefined || used !== undefined) {
+      chrome.storage.sync.get(['userPlan','usageCount','usageLimit'], s => {
+        updatePlanUI(s.userPlan || 'free', s.usageCount || 0, s.usageLimit || PLAN_QUOTAS[s.userPlan] || 2);
+      });
+    }
   }
 });
 
@@ -41,58 +52,85 @@ function showSaved(id) {
   el.classList.add('show');
   setTimeout(() => el.classList.remove('show'), 2500);
 }
-
 function openCheckout(plan) {
   chrome.tabs.create({ url: `https://snagai.netlify.app/checkout.html?plan=${plan}` });
 }
-
-// ── SAFE skill array helper — handles both array and string formats ────────────
-function getSkillsArray(profile) {
+function getSkillsArr(profile) {
   if (!profile) return [];
-  // v3+: skillsArr is an array
   if (Array.isArray(profile.skillsArr) && profile.skillsArr.length) return profile.skillsArr;
-  // v3+: skills is a comma-string
-  if (typeof profile.skills === 'string' && profile.skills.trim()) {
+  if (typeof profile.skills === 'string' && profile.skills.trim())
     return profile.skills.split(',').map(s => s.trim()).filter(Boolean);
-  }
-  // v2 bug: skills was accidentally saved as array
   if (Array.isArray(profile.skills) && profile.skills.length) return profile.skills;
   return [];
 }
 
-// ── Status bar ────────────────────────────────────────────────────────────────
+// ── Status / plan UI ──────────────────────────────────────────────────────────
+function updatePlanUI(plan, used, quota) {
+  const rem = Math.max(0, quota - used);
+  const pct = Math.min(100, (used / quota) * 100);
+  const label = PLAN_LABELS[plan] || 'Free';
+
+  // Sidebar widget
+  const badge = document.getElementById('sb-plan-badge');
+  badge.textContent = label;
+  badge.className   = 'sb-plan-badge badge-' + plan;
+  document.getElementById('sb-remaining').textContent = rem + ' left';
+  document.getElementById('sb-count').textContent     = used + ' / ' + quota + ' used';
+  document.getElementById('sb-bar').style.width       = pct + '%';
+
+  // Subscription page usage section
+  document.getElementById('ud-plan').textContent  = label + ' plan';
+  document.getElementById('ud-used').textContent  = used;
+  document.getElementById('ud-limit').textContent = quota + ' total';
+  document.getElementById('ud-bar').style.width   = pct + '%';
+
+  // Highlight active plan card
+  // Reset all plan cards and buttons
+  document.querySelectorAll('.plan-card').forEach(c => {
+    c.classList.remove('current');
+    const btn = c.querySelector('.plan-btn[data-plan]');
+    if (btn) {
+      const p = btn.dataset.plan;
+      const labels = { starter: 'Get Starter →', pro: 'Get Pro →', agency: 'Get Agency →' };
+      btn.textContent = labels[p] || 'Upgrade →';
+      btn.disabled    = false;
+      btn.className   = 'plan-btn ' + (p === 'pro' ? 'plan-btn-gold' : 'plan-btn-outline');
+    }
+  });
+  // Highlight and lock the active plan card
+  const activeCard = document.getElementById('plan-' + plan);
+  if (activeCard && plan !== 'free') {
+    activeCard.classList.add('current');
+    const btn = activeCard.querySelector('.plan-btn[data-plan]');
+    if (btn) {
+      btn.textContent = '✓ Current plan';
+      btn.disabled    = true;
+      btn.className   = 'plan-btn plan-btn-current';
+    }
+  } else if (activeCard) {
+    activeCard.classList.add('current');
+  }
+}
+
 async function loadStatus() {
-  let plan = 'free', used = 0, quota = 2;
+  // 1. Show cached data immediately — no blank screen
+  const cached = await chrome.storage.sync.get(['userPlan','usageCount','usageLimit']);
+  const cPlan  = cached.userPlan  || 'free';
+  const cUsed  = cached.usageCount || 0;
+  const cQuota = cached.usageLimit || PLAN_QUOTAS[cPlan] || 2;
+  updatePlanUI(cPlan, cUsed, cQuota);
+
+  // 2. Fetch fresh from server in background
   try {
     const status = await chrome.runtime.sendMessage({ type: 'GET_STATUS' });
     if (status && !status.error) {
-      plan  = status.plan  || 'free';
-      used  = status.used  || 0;
-      quota = status.limit || PLAN_QUOTAS[plan] || 2;
-      await chrome.storage.sync.set({ userPlan: plan });
+      const plan  = status.plan  || 'free';
+      const used  = status.used  || 0;
+      const quota = status.limit || PLAN_QUOTAS[plan] || 2;
+      await chrome.storage.sync.set({ userPlan: plan, usageCount: used, usageLimit: quota });
+      updatePlanUI(plan, used, quota);
     }
-  } catch(e) {
-    const cached = await chrome.storage.sync.get(['userPlan', 'usageCount']);
-    plan  = cached.userPlan   || 'free';
-    used  = cached.usageCount || 0;
-    quota = PLAN_QUOTAS[plan] || 2;
-  }
-
-  const rem = Math.max(0, quota - used);
-  const pct = Math.min(100, (used / quota) * 100);
-
-  document.getElementById('sb-plan-badge').textContent = PLAN_LABELS[plan] || 'Free';
-  document.getElementById('sb-remaining').textContent  = rem + ' left';
-  document.getElementById('sb-count').textContent      = used + ' / ' + quota + ' used';
-  document.getElementById('sb-bar').style.width        = pct + '%';
-  document.getElementById('ud-plan').textContent       = (PLAN_LABELS[plan] || 'Free') + ' plan';
-  document.getElementById('ud-used').textContent       = used;
-  document.getElementById('ud-limit').textContent      = quota + ' total';
-  document.getElementById('ud-bar').style.width        = pct + '%';
-
-  document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('current'));
-  const active = document.getElementById('plan-' + plan);
-  if (active) active.classList.add('current');
+  } catch(e) { /* use cached */ }
 }
 
 // ── Email ─────────────────────────────────────────────────────────────────────
@@ -100,27 +138,15 @@ async function loadEmail() {
   const { userEmail } = await chrome.storage.sync.get(['userEmail']);
   updateEmailUI(userEmail);
 }
-
 function updateEmailUI(email) {
-  const dot = document.getElementById('email-dot');
-  const val = document.getElementById('email-val');
-  const tog = document.getElementById('email-toggle');
-  if (email) {
-    dot.style.background = '#34d399';
-    val.textContent      = email;
-    tog.textContent      = 'Change';
-  } else {
-    dot.style.background = '#374151';
-    val.textContent      = 'Not set';
-    tog.textContent      = 'Add';
-  }
+  document.getElementById('email-dot').style.background = email ? '#34d399' : '#374151';
+  document.getElementById('email-val').textContent      = email || 'Not set';
+  document.getElementById('email-toggle').textContent   = email ? 'Change' : 'Add';
 }
-
 document.getElementById('email-toggle').addEventListener('click', () => {
-  const wrap = document.getElementById('email-edit');
-  wrap.style.display = wrap.style.display === 'none' ? 'block' : 'none';
+  const w = document.getElementById('email-edit');
+  w.style.display = w.style.display === 'none' ? 'block' : 'none';
 });
-
 document.getElementById('email-save').addEventListener('click', async () => {
   const email = document.getElementById('email-inp').value.trim();
   if (!email.includes('@')) return;
@@ -130,56 +156,44 @@ document.getElementById('email-save').addEventListener('click', async () => {
   showSaved('saved-urls-msg');
 });
 
-// ── Profile URL slots (Subscription page) ─────────────────────────────────────
+// ── Profile URL slots ─────────────────────────────────────────────────────────
 async function renderProfileSlots() {
-  const { userPlan = 'free', registeredProfiles = [] } = await chrome.storage.sync.get(['userPlan', 'registeredProfiles']);
+  const { userPlan = 'free', registeredProfiles = [] } = await chrome.storage.sync.get(['userPlan','registeredProfiles']);
   const limit = PLAN_LIMITS[userPlan] || 1;
   const slots = document.getElementById('profile-slots');
   slots.innerHTML = '';
 
   for (let i = 0; i < limit; i++) {
-    const existing = registeredProfiles[i];
-    const hasUrl   = existing?.url;
-    const synced   = !!(existing?.name || existing?.jss);
+    const p      = registeredProfiles[i];
+    const hasUrl = p?.url;
+    const synced = !!(p?.name || p?.jss || p?._readAt);
     const div = document.createElement('div');
     div.className = 'profile-slot';
     div.innerHTML = `
       <div class="slot-num">${i + 1}</div>
-      <input class="slot-input" type="url" placeholder="https://www.upwork.com/freelancers/~..." value="${existing?.url || ''}" data-slot="${i}">
-      ${hasUrl ? `
-        <div class="slot-status ${synced ? 'slot-synced' : 'slot-pending'}">
-          ${synced ? '✓ Synced' : '⏳ Not synced'}
-        </div>
-        <button class="slot-sync-btn" data-slot="${i}">Open →</button>
-      ` : ''}
+      <input class="slot-input" type="url" placeholder="https://www.upwork.com/freelancers/~..." value="${p?.url || ''}" data-slot="${i}">
+      ${hasUrl ? `<span class="slot-status-badge ${synced ? 'slot-synced' : 'slot-pending'}">${synced ? '✓ Synced' : '⏳ Pending'}</span>` : ''}
+      ${hasUrl ? `<button class="btn-slot-open" data-slot="${i}">Open →</button>` : ''}
     `;
     slots.appendChild(div);
   }
-
-  slots.querySelectorAll('.slot-sync-btn').forEach(btn => {
-    const i   = parseInt(btn.dataset.slot);
+  slots.querySelectorAll('.btn-slot-open').forEach(btn => {
+    const i = parseInt(btn.dataset.slot);
     const url = slots.querySelectorAll('.slot-input')[i]?.value;
     if (url) btn.addEventListener('click', () => chrome.tabs.create({ url }));
   });
 }
 
 document.getElementById('save-profile-urls').addEventListener('click', async () => {
-  const { userPlan = 'free', registeredProfiles = [] } = await chrome.storage.sync.get(['userPlan', 'registeredProfiles']);
+  const { userPlan = 'free', registeredProfiles = [] } = await chrome.storage.sync.get(['userPlan','registeredProfiles']);
   const inputs  = document.querySelectorAll('.slot-input');
   const updated = [...registeredProfiles];
-
   inputs.forEach((inp, i) => {
     const url = inp.value.trim();
     if (!url) return;
     const existing = updated[i] || {};
-    updated[i] = {
-      ...existing,
-      url,
-      id:          existing.id || ('profile_' + (i + 1)),
-      syncEnabled: existing.syncEnabled !== false,
-    };
+    updated[i] = { ...existing, url, id: existing.id || ('profile_' + (i + 1)), syncEnabled: existing.syncEnabled !== false };
   });
-
   await chrome.storage.sync.set({ registeredProfiles: updated });
   showSaved('saved-urls-msg');
   await renderProfileSlots();
@@ -188,60 +202,61 @@ document.getElementById('save-profile-urls').addEventListener('click', async () 
 
 // ── Profiles page ──────────────────────────────────────────────────────────────
 async function renderProfilesPage() {
-  const { registeredProfiles = [], userPlan = 'free', activeProfileId } = await chrome.storage.sync.get(['registeredProfiles', 'userPlan', 'activeProfileId']);
+  const [syncStored, localStored] = await Promise.all([
+    chrome.storage.sync.get(['registeredProfiles','userPlan','activeProfileId']),
+    chrome.storage.local.get(['primaryProfileId'])
+  ]);
+  const { registeredProfiles = [], userPlan = 'free' } = syncStored;
+  const primaryProfileId = localStored.primaryProfileId || null;
   const limit     = PLAN_LIMITS[userPlan] || 1;
   const container = document.getElementById('profiles-container');
   const noMsg     = document.getElementById('no-profiles-msg');
   const addBtn    = document.getElementById('add-profile-btn');
-
   container.innerHTML = '';
 
   const registered = registeredProfiles.filter(p => p && p.url);
 
   if (!registered.length) {
-    noMsg.style.display  = 'block';
+    noMsg.style.display = 'block';
     addBtn.style.display = 'none';
     return;
   }
-  noMsg.style.display = 'none';
+  noMsg.style.display  = 'none';
+  addBtn.style.display = registered.length < limit ? 'flex' : 'none';
 
   if (registered.length === 1) {
-    renderProfileCard(container, registered[0], 0, registered, false);
+    renderProfileCard(container, registered[0], 0, registered, primaryProfileId);
   } else {
-    const slidesWrap = document.createElement('div');
-    slidesWrap.className = 'profile-slider-wrap';
-    const slidesEl = document.createElement('div');
-    slidesEl.className = 'profile-slides';
-    slidesWrap.appendChild(slidesEl);
-
+    const wrap   = document.createElement('div');
+    wrap.className = 'profile-slider-wrap';
+    const slides = document.createElement('div');
+    slides.className = 'profile-slides';
     registered.forEach((p, i) => {
       const slide = document.createElement('div');
       slide.className = 'profile-slide' + (i === currentSlide ? ' active' : '');
       slide.id = 'slide-' + i;
-      renderProfileCard(slide, p, i, registered, true);
-      slidesEl.appendChild(slide);
+      renderProfileCard(slide, p, i, registered, primaryProfileId);
+      slides.appendChild(slide);
     });
+    wrap.appendChild(slides);
 
-    const nav = document.createElement('div');
-    nav.className = 'slider-nav';
+    // Centered slider controls: ‹  ● ● ○  ›
+    const ctrl = document.createElement('div');
+    ctrl.className = 'slider-controls';
+    ctrl.innerHTML = `<button class="slider-arr" id="sl-prev">‹</button>`;
     registered.forEach((_, i) => {
       const dot = document.createElement('div');
       dot.className = 'slider-dot' + (i === currentSlide ? ' active' : '');
       dot.addEventListener('click', () => goToSlide(i));
-      nav.appendChild(dot);
+      ctrl.appendChild(dot);
     });
-    const arrows = document.createElement('div');
-    arrows.className = 'slider-arrows';
-    arrows.innerHTML = '<button class="slider-arr" id="slide-prev">‹</button><button class="slider-arr" id="slide-next">›</button>';
-    nav.appendChild(arrows);
-    slidesWrap.appendChild(nav);
-    container.appendChild(slidesWrap);
+    ctrl.innerHTML += `<button class="slider-arr" id="sl-next">›</button>`;
+    wrap.appendChild(ctrl);
+    container.appendChild(wrap);
 
-    document.getElementById('slide-prev')?.addEventListener('click', () => goToSlide(Math.max(0, currentSlide - 1)));
-    document.getElementById('slide-next')?.addEventListener('click', () => goToSlide(Math.min(registered.length - 1, currentSlide + 1)));
+    document.getElementById('sl-prev')?.addEventListener('click', () => goToSlide(Math.max(0, currentSlide - 1)));
+    document.getElementById('sl-next')?.addEventListener('click', () => goToSlide(Math.min(registered.length - 1, currentSlide + 1)));
   }
-
-  addBtn.style.display = registered.length < limit ? 'block' : 'none';
 }
 
 function goToSlide(idx) {
@@ -250,343 +265,368 @@ function goToSlide(idx) {
   document.querySelectorAll('.slider-dot').forEach((d, i)  => d.classList.toggle('active', i === idx));
 }
 
-function renderProfileCard(container, profile, idx, allProfiles, showActive) {
+function renderProfileCard(container, profile, idx, allProfiles, primaryProfileId) {
   const card = document.createElement('div');
   card.className = 'profile-card';
   card.dataset.profileIdx = idx;
 
-  const isSynced      = !!(profile.name || profile.jss);
-  const avatarLetter  = (profile.name || '?').charAt(0).toUpperCase();
-  const syncChecked   = profile.syncEnabled !== false ? 'checked' : '';
-  const readAt        = profile._readAt
+  const synced       = !!(profile.name || profile.jss || profile._readAt);
+  const avatarLetter = (profile.name || '?').charAt(0).toUpperCase();
+  const syncChecked  = profile.syncEnabled !== false;
+  const validProfiles = allProfiles.filter(p => p && p.url);
+  // A profile is primary if: explicitly set, or it's the only one, or it's first and nothing set
+  const isPrimary    = validProfiles.length <= 1
+    ? true
+    : (primaryProfileId
+        ? profile.id === primaryProfileId
+        : idx === 0);
+  const readAt       = profile._readAt
     ? new Date(profile._readAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
     : null;
+  const skillsArr    = getSkillsArr(profile);
+  const portfolios   = profile.portfolios || [];
 
-  // CRITICAL FIX: use safe skill getter — handles array and string
-  const skillsArr  = getSkillsArray(profile);
-  const skillsHtml = skillsArr.length
-    ? skillsArr.slice(0, 14).map(s => `<span class="skill-chip">${s}</span>`).join('') +
-      (skillsArr.length > 14 ? `<span class="skill-chip skill-chip-more">+${skillsArr.length - 14} more</span>` : '')
-    : '<span class="sync-hint">Visit your profile page to sync skills automatically</span>';
+  // ── Tier badge ────────────────────────────────────────────────────────────
+  const tierClasses = { expert:'tier-expert', top_rated_plus:'tier-top_rated_plus', top_rated:'tier-top_rated', rising:'tier-rising' };
+  const tierClass   = tierClasses[profile.tierKey] || 'tier-new';
+  const tierIcons   = { expert:'⚡', top_rated_plus:'⭐', top_rated:'✦', rising:'🚀' };
+  const tierIcon    = tierIcons[profile.tierKey] || '';
+  const tierHtml    = tierClass !== 'tier-new'
+    ? `<div class="tier-badge ${tierClass}">${tierIcon} ${profile.tier || ''}</div>` : '';
 
-  const portfolios    = profile.portfolios || [];
-  const portfolioHtml = portfolios.length
-    ? portfolios.map((p, pi) => buildPortfolioItem(p, pi)).join('')
-    : '<div class="port-empty">No portfolio items yet. Add them manually or they appear automatically after syncing.</div>';
-
-  if (!isSynced) {
-    // Profile URL saved but not yet synced — show "waiting" state
+  // ── Pending (not synced yet) ───────────────────────────────────────────────
+  if (!synced) {
     card.innerHTML = `
-      <div class="profile-card-header">
-        <div class="profile-card-avatar profile-card-avatar-pending">?</div>
-        <div class="profile-card-info">
-          <div class="profile-card-name" style="color:var(--white2)">Not synced yet</div>
-          <div class="profile-card-sub">${profile.url}</div>
+      <div class="profile-card-hdr">
+        <div class="profile-avatar profile-avatar-pending">?</div>
+        <div class="profile-info">
+          <div class="profile-name" style="color:var(--white3)">Not synced yet</div>
+          <div class="profile-meta" style="font-size:10px;word-break:break-all">${profile.url}</div>
         </div>
-        <div class="profile-card-actions">
-          <button class="profile-delete-btn" title="Remove profile">×</button>
+        <div class="profile-actions">
+          <button class="btn-delete" title="Remove">×</button>
         </div>
       </div>
-      <div class="profile-pending-body">
+      <div class="pending-body">
         <div class="pending-icon">🔄</div>
-        <div class="pending-title">One more step to sync your profile</div>
-        <div class="pending-desc">
-          Click the button below to open your Upwork profile page.<br>
-          Snag AI will read your data automatically when the page loads.
-        </div>
-        <button class="pending-open-btn" id="open-profile-${idx}">Open my Upwork profile →</button>
+        <div class="pending-title">One more step</div>
+        <div class="pending-desc">Click below to open your Upwork profile. Snag AI will automatically read your data when the page loads.</div>
+        <button class="btn-primary" id="open-pending-${idx}" style="margin-top:4px">Open my Upwork profile →</button>
       </div>
     `;
-    card.querySelector(`#open-profile-${idx}`)?.addEventListener('click', () => {
-      chrome.tabs.create({ url: profile.url });
-    });
-    card.querySelector('.profile-delete-btn')?.addEventListener('click', () => {
+    card.querySelector(`#open-pending-${idx}`)?.addEventListener('click', () => chrome.tabs.create({ url: profile.url }));
+    card.querySelector('.btn-delete')?.addEventListener('click', () => {
       if (!confirm('Remove this profile?')) return;
       allProfiles.splice(idx, 1);
-      saveProfiles(allProfiles);
+      chrome.storage.sync.set({ registeredProfiles: allProfiles });
       renderProfilesPage();
     });
     container.appendChild(card);
     return;
   }
 
-  // ── Synced profile card ───────────────────────────────────────────────────────
+  // ── Synced profile card ────────────────────────────────────────────────────
   card.innerHTML = `
-    <div class="profile-card-header">
-      <div class="profile-card-avatar">${avatarLetter}</div>
-      <div class="profile-card-info">
-        <div class="profile-card-name">${profile.name || 'Unknown'}</div>
-        <div class="profile-card-sub">
-          ${[profile.tier, profile.jss ? profile.jss + ' JSS' : ''].filter(Boolean).join(' · ')}
-          ${readAt ? ' · Synced ' + readAt : ''}
+    <div class="profile-card-hdr">
+      <div class="profile-avatar">${avatarLetter}</div>
+      <div class="profile-info">
+        <div class="profile-name">${profile.name || 'Unknown'}</div>
+        <div class="profile-meta">
+          ${[profile.tier || '', profile.jss ? profile.jss + ' JSS' : ''].filter(Boolean).join(' · ')}
+          ${readAt ? `<span style="opacity:.5"> · Synced ${readAt}</span>` : ''}
         </div>
       </div>
-      <div class="profile-card-actions">
-        <button class="profile-resync-btn" id="resync-${idx}" title="Re-sync by opening profile page">↻ Sync</button>
-        <label class="sync-toggle">
+      <div class="profile-actions">
+        ${allProfiles.filter(p=>p&&p.url).length > 1 ? (
+          isPrimary
+            ? '<span class="badge-primary">★ Primary</span>'
+            : `<button class="btn-set-primary" id="btn-primary-${idx}">Set primary</button>`
+        ) : ''}
+        <button class="btn-resync" id="btn-resync-${idx}">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>
+          Sync
+        </button>
+        <div class="sync-toggle-wrap">
           <span>Auto-sync</span>
           <label class="toggle-switch">
-            <input type="checkbox" class="sync-check" ${syncChecked}>
+            <input type="checkbox" class="sync-check" ${syncChecked ? 'checked' : ''}>
             <span class="toggle-slider"></span>
           </label>
-        </label>
-        <button class="profile-delete-btn" title="Remove profile">×</button>
+        </div>
+        <button class="btn-delete" title="Remove profile">×</button>
       </div>
     </div>
 
-    <div class="profile-card-body">
-      <!-- Stats row -->
-      <div class="profile-stat-row">
-        <div class="pstat"><div class="pstat-val">${profile.jss || '—'}</div><div class="pstat-lbl">JSS</div></div>
-        <div class="pstat"><div class="pstat-val">${profile.rate || '—'}</div><div class="pstat-lbl">Rate</div></div>
-        <div class="pstat"><div class="pstat-val">${profile.jobs || '—'}</div><div class="pstat-lbl">Jobs</div></div>
-        <div class="pstat"><div class="pstat-val">${profile.earnings || '—'}</div><div class="pstat-lbl">Earned</div></div>
+    <div class="profile-body">
+      <div class="stats-row">
+        <div class="stat-box"><div class="stat-val">${profile.jss || '—'}</div><div class="stat-lbl">JSS</div></div>
+        <div class="stat-box"><div class="stat-val">${profile.rate || '—'}</div><div class="stat-lbl">Rate</div></div>
+        <div class="stat-box"><div class="stat-val">${profile.jobs || '—'}</div><div class="stat-lbl">Jobs</div></div>
+        <div class="stat-box"><div class="stat-val">${profile.earnings || '—'}</div><div class="stat-lbl">Earned</div></div>
       </div>
+      ${tierHtml}
 
-      <!-- Tier badge -->
-      ${profile.tier ? `<div class="tier-badge">${profile.tier}</div>` : ''}
-
-      <!-- Editable fields -->
-      <div class="edit-field">
-        <span class="edit-field-label">Title</span>
-        <textarea class="edit-field-val" data-field="title" rows="2">${profile.title || ''}</textarea>
-      </div>
-      <div class="edit-field">
-        <span class="edit-field-label">Bio</span>
-        <textarea class="edit-field-val" rows="3" data-field="bio">${profile.bio || ''}</textarea>
-      </div>
-      <div class="edit-field">
-        <span class="edit-field-label">Country</span>
-        <input class="edit-field-val" type="text" data-field="country" value="${profile.country || ''}">
-      </div>
-      <div class="edit-field">
-        <span class="edit-field-label">Always add</span>
-        <textarea class="edit-field-val" rows="2" data-field="extra">${profile.extra || ''}</textarea>
-      </div>
+      <div class="edit-row"><span class="edit-lbl">Title</span><textarea class="edit-val" data-field="title" rows="2">${profile.title || ''}</textarea></div>
+      <div class="edit-row"><span class="edit-lbl">Bio</span><textarea class="edit-val" rows="3" data-field="bio">${profile.bio || ''}</textarea></div>
+      <div class="edit-row"><span class="edit-lbl">Country</span><input class="edit-val" type="text" data-field="country" value="${profile.country || ''}"></div>
+      <div class="edit-row"><span class="edit-lbl">Availability</span><textarea class="edit-val" rows="2" data-field="extra" placeholder="e.g. Available 30+ hrs/week · Pakistan">${profile.extra || ''}</textarea></div>
 
       <!-- Skills -->
-      <div class="section-block">
-        <div class="section-block-header">
-          <span class="section-block-title">Skills</span>
-          <span class="section-block-count">${skillsArr.length} detected</span>
+      <div class="profile-section">
+        <div class="profile-section-hdr">
+          <span class="profile-section-title">Skills</span>
+          <span class="profile-section-count">${skillsArr.length} detected</span>
         </div>
-        <div class="skills-chips">${skillsHtml}</div>
-        <div class="section-block-hint">Skills are read automatically from your Upwork profile page.</div>
+        <div class="skills-wrap" id="skills-wrap-${idx}"></div>
+        <div style="font-size:11px;color:var(--white3);margin-top:6px">Read automatically from your Upwork profile.</div>
       </div>
 
       <!-- Portfolio -->
-      <div class="section-block">
-        <div class="section-block-header">
-          <span class="section-block-title">Portfolio</span>
-          <button class="port-add-manual" data-action="add-portfolio">+ Add manually</button>
+      <div class="profile-section">
+        <div class="portfolio-section-hdr">
+          <span class="profile-section-title">Portfolio <span style="font-weight:400;opacity:.6">(${portfolios.length})</span></span>
+          <button class="btn-port-add" data-action="add-port">+ Add item</button>
         </div>
-        <div class="portfolio-list">${portfolioHtml}</div>
-        <div class="section-block-hint">Portfolio URLs must be added manually (App Store, GitHub, website, etc).</div>
+        <div class="port-list" id="port-list-${idx}"></div>
+        ${!portfolios.length ? `<div class="port-empty-msg">No portfolio items yet. Add them manually or visit your Upwork profile page.</div>` : ''}
       </div>
+    </div>
+
+    <div class="profile-save-bar">
+      <span class="saved-msg" id="saved-card-${idx}">✓ Saved</span>
+      <button class="btn-primary" style="font-size:12px;padding:8px 18px" data-action="save-card">Save changes</button>
     </div>
   `;
 
-  // Re-sync button — opens profile URL to trigger profile-reader.js
-  card.querySelector(`#resync-${idx}`)?.addEventListener('click', () => {
+  // Attach skills expand/collapse
+  renderSkillsExpand(card.querySelector(`#skills-wrap-${idx}`), skillsArr);
+
+  // Render portfolio items
+  const portList = card.querySelector(`#port-list-${idx}`);
+  portfolios.forEach((p, pi) => renderPortfolioItem(portList, p, pi, allProfiles, idx));
+
+  // Set primary button — stores choice in chrome.storage.local (device-local)
+  card.querySelector(`#btn-primary-${idx}`)?.addEventListener('click', () => {
+    const profileId = profile.id || ('profile_' + (idx + 1));
+    chrome.runtime.sendMessage({ type: 'SET_PRIMARY_PROFILE', profileId }, () => {
+      renderProfilesPage(); // re-render to show updated primary badge
+    });
+  });
+
+  // Resync button
+  card.querySelector(`#btn-resync-${idx}`)?.addEventListener('click', () => {
     if (profile.url) chrome.tabs.create({ url: profile.url });
   });
 
   // Sync toggle
   card.querySelector('.sync-check')?.addEventListener('change', function() {
     allProfiles[idx].syncEnabled = this.checked;
-    saveProfiles(allProfiles);
+    chrome.storage.sync.set({ registeredProfiles: allProfiles });
   });
 
   // Delete profile
-  card.querySelector('.profile-delete-btn')?.addEventListener('click', () => {
+  card.querySelector('.btn-delete')?.addEventListener('click', () => {
     if (!confirm('Remove this profile?')) return;
     allProfiles.splice(idx, 1);
-    saveProfiles(allProfiles);
+    chrome.storage.sync.set({ registeredProfiles: allProfiles });
     renderProfilesPage();
   });
 
-  // Add portfolio manually
-  card.querySelector('[data-action="add-portfolio"]')?.addEventListener('click', () => {
-    const list   = card.querySelector('.portfolio-list');
-    const newItem = { title: '', urls: [], desc: '', skills: '', _manual: true };
+  // Add portfolio
+  card.querySelector('[data-action="add-port"]')?.addEventListener('click', () => {
+    const newItem = { title: '', urls: [], desc: '', _manual: true };
     allProfiles[idx].portfolios = allProfiles[idx].portfolios || [];
     allProfiles[idx].portfolios.push(newItem);
-    const pi  = allProfiles[idx].portfolios.length - 1;
-
-    // Remove empty state message if present
-    const emptyMsg = list.querySelector('.port-empty');
-    if (emptyMsg) emptyMsg.remove();
-
-    const div = document.createElement('div');
-    div.innerHTML = buildPortfolioItem(newItem, pi);
-    list.appendChild(div.firstElementChild);
-    const newEl = list.lastElementChild;
-    attachPortfolioListeners(newEl, allProfiles, idx, pi);
-    newEl.querySelector('.port-item-body')?.classList.add('open');
-    newEl.querySelector('.port-edit-toggle').textContent = 'Done';
-    newEl.querySelector('.port-title-inp')?.focus();
+    const pi = allProfiles[idx].portfolios.length - 1;
+    // Remove empty state msg if present
+    portList.querySelector('.port-empty-msg')?.remove();
+    renderPortfolioItem(portList, newItem, pi, allProfiles, idx, true);
   });
 
-  // Attach portfolio listeners to existing items
-  card.querySelectorAll('.port-item').forEach((el, pi) => {
-    attachPortfolioListeners(el, allProfiles, idx, pi);
-  });
+  // Save card
+  card.querySelector('[data-action="save-card"]')?.addEventListener('click', () => saveCard(card, idx, allProfiles));
 
   container.appendChild(card);
 }
 
-function buildPortfolioItem(p, pi) {
-  const hasUrls  = p.urls && p.urls.length > 0 && p.urls.some(u => u.trim());
-  const badge    = hasUrls
-    ? '<span class="port-complete">✓ Links added</span>'
-    : '<span class="port-incomplete">⚠ No links yet</span>';
+// ── Skills expand/collapse ────────────────────────────────────────────────────
+function renderSkillsExpand(wrap, skillsArr, expanded) {
+  if (!wrap) return;
+  wrap.innerHTML = '';
+  if (!skillsArr.length) {
+    wrap.innerHTML = '<span class="skills-hint">No skills found — visit your Upwork profile to sync.</span>';
+    return;
+  }
+  const visible = expanded ? skillsArr : skillsArr.slice(0, SKILLS_SHOW);
+  visible.forEach(s => {
+    const chip = document.createElement('span');
+    chip.className = 'skill-chip';
+    chip.textContent = s;
+    wrap.appendChild(chip);
+  });
+  if (skillsArr.length > SKILLS_SHOW) {
+    const btn = document.createElement('button');
+    btn.className = 'skills-toggle';
+    if (!expanded) {
+      btn.textContent = `+${skillsArr.length - SKILLS_SHOW} more`;
+      btn.addEventListener('click', () => renderSkillsExpand(wrap, skillsArr, true));
+    } else {
+      btn.textContent = 'Show less';
+      btn.addEventListener('click', () => renderSkillsExpand(wrap, skillsArr, false));
+    }
+    wrap.appendChild(btn);
+  }
+}
+
+// ── Portfolio item renderer ───────────────────────────────────────────────────
+function renderPortfolioItem(list, p, pi, allProfiles, profileIdx, autoOpen) {
+  const hasLinks = p.urls && p.urls.some(u => u.trim());
+  const item = document.createElement('div');
+  item.className = 'port-item';
+  item.dataset.pi = pi;
+
   const urlsHtml = (p.urls && p.urls.length ? p.urls : ['']).map(u => `
     <div class="port-url-row">
       <input type="url" class="port-url-inp" value="${u}" placeholder="https://apps.apple.com/...">
-      <button class="port-url-del">×</button>
+      <button class="btn-url-del">×</button>
     </div>`).join('');
 
-  return `
-    <div class="port-item" data-pi="${pi}">
-      <div class="port-item-head">
-        <div class="port-item-title">${p.title || 'New project'}</div>
-        ${badge}
+  item.innerHTML = `
+    <div class="port-item-row">
+      <span class="port-item-icon">${hasLinks ? '📁' : '📂'}</span>
+      <span class="port-item-name">${p.title || 'New project'}</span>
+      ${hasLinks ? '' : '<span class="port-badge-warn">⚠ No link</span>'}
+      <div class="port-item-actions">
+        <button class="btn-port-edit">Edit</button>
+        <button class="btn-port-del">Remove</button>
       </div>
-      <div class="port-btns">
-        <button class="port-edit-toggle">Edit</button>
-        <button class="port-del">Remove</button>
+    </div>
+    <div class="port-edit-body" style="display:none">
+      <div class="field">
+        <label>Project name</label>
+        <input type="text" class="port-title-inp" value="${p.title || ''}" placeholder="e.g. TollBugata iOS App">
       </div>
-      <div class="port-item-body">
-        <div class="field" style="margin-top:10px;margin-bottom:8px">
-          <label>Project name</label>
-          <input type="text" class="port-title-inp" value="${p.title || ''}" placeholder="e.g. TollBugata iOS App">
-        </div>
-        <div class="field" style="margin-bottom:8px">
-          <label>Links <span style="font-size:10px;font-weight:400;color:var(--white3)">(App Store, Play Store, GitHub, website…)</span></label>
-          <div class="port-urls-list">${urlsHtml}</div>
-          <button class="port-add-url" style="margin-top:6px">+ Add another link</button>
-        </div>
-        <div class="field" style="margin-bottom:0">
-          <label>Short description</label>
-          <input type="text" class="port-desc-inp" value="${p.desc || ''}" placeholder="e.g. Live app, 10k+ downloads">
-        </div>
+      <div class="field">
+        <label>Links <span style="font-size:10px;font-weight:400;color:var(--white3)">(App Store, Play Store, GitHub, website…)</span></label>
+        <div class="port-urls-list">${urlsHtml}</div>
+        <button class="btn-url-add">+ Add another link</button>
       </div>
-    </div>`;
-}
+      <div class="field">
+        <label>Short description</label>
+        <input type="text" class="port-desc-inp" value="${p.desc || ''}" placeholder="e.g. Live app, 10k+ downloads">
+      </div>
+    </div>
+  `;
 
-function attachPortfolioListeners(el, allProfiles, profileIdx, pi) {
-  const body    = el.querySelector('.port-item-body');
-  const editBtn = el.querySelector('.port-edit-toggle');
-  const delBtn  = el.querySelector('.port-del');
-  const addUrl  = el.querySelector('.port-add-url');
+  const editBody = item.querySelector('.port-edit-body');
+  const editBtn  = item.querySelector('.btn-port-edit');
 
-  editBtn?.addEventListener('click', () => {
-    body?.classList.toggle('open');
-    if (editBtn) editBtn.textContent = body?.classList.contains('open') ? 'Done' : 'Edit';
+  editBtn.addEventListener('click', () => {
+    const open = editBody.style.display !== 'none' && editBody.style.display !== '';
+    editBody.style.display = open ? 'none' : 'block';
+    editBtn.textContent    = open ? 'Edit' : 'Done';
   });
 
-  delBtn?.addEventListener('click', () => {
-    if (allProfiles[profileIdx]?.portfolios) allProfiles[profileIdx].portfolios.splice(pi, 1);
-    el.remove();
+  item.querySelector('.btn-port-del').addEventListener('click', () => {
+    allProfiles[profileIdx]?.portfolios?.splice(pi, 1);
+    item.remove();
   });
 
-  addUrl?.addEventListener('click', () => {
-    const list = el.querySelector('.port-urls-list');
-    const row  = document.createElement('div');
+  item.querySelector('.btn-url-add').addEventListener('click', () => {
+    const urlList = item.querySelector('.port-urls-list');
+    const row = document.createElement('div');
     row.className = 'port-url-row';
-    row.innerHTML = '<input type="url" class="port-url-inp" placeholder="https://..."><button class="port-url-del">×</button>';
-    row.querySelector('.port-url-del').addEventListener('click', () => {
-      if (list.querySelectorAll('.port-url-row').length > 1) row.remove();
+    row.innerHTML = '<input type="url" class="port-url-inp" placeholder="https://..."><button class="btn-url-del">×</button>';
+    row.querySelector('.btn-url-del').addEventListener('click', () => {
+      if (urlList.querySelectorAll('.port-url-row').length > 1) row.remove();
     });
-    list.appendChild(row);
+    urlList.appendChild(row);
     row.querySelector('input')?.focus();
   });
 
-  el.querySelectorAll('.port-url-del').forEach(btn => {
+  item.querySelectorAll('.btn-url-del').forEach(btn => {
     btn.addEventListener('click', () => {
-      const list = el.querySelector('.port-urls-list');
-      if (list && list.querySelectorAll('.port-url-row').length > 1) btn.closest('.port-url-row')?.remove();
+      const urlList = item.querySelector('.port-urls-list');
+      if (urlList.querySelectorAll('.port-url-row').length > 1) btn.closest('.port-url-row')?.remove();
     });
   });
+
+  list.appendChild(item);
+
+  if (autoOpen) {
+    editBody.style.display = 'block';
+    editBtn.textContent    = 'Done';
+    item.querySelector('.port-title-inp')?.focus();
+  }
 }
 
-function saveProfiles(profiles) {
-  chrome.storage.sync.set({ registeredProfiles: profiles });
-}
+// ── Save card ─────────────────────────────────────────────────────────────────
+function saveCard(card, idx, allProfiles) {
+  chrome.storage.sync.get(['registeredProfiles'], (stored) => {
+    const profiles = stored.registeredProfiles || [];
+    if (!profiles[idx]) return;
 
-document.getElementById('save-profiles').addEventListener('click', async () => {
-  const { registeredProfiles = [] } = await chrome.storage.sync.get(['registeredProfiles']);
-  const cards = document.querySelectorAll('.profile-card');
+    profiles[idx].title   = card.querySelector('[data-field="title"]')?.value?.trim()   || profiles[idx].title;
+    profiles[idx].bio     = card.querySelector('[data-field="bio"]')?.value?.trim()     || profiles[idx].bio;
+    profiles[idx].country = card.querySelector('[data-field="country"]')?.value?.trim() || profiles[idx].country;
+    profiles[idx].extra   = card.querySelector('[data-field="extra"]')?.value?.trim()   || profiles[idx].extra;
 
-  cards.forEach(card => {
-    const idx = parseInt(card.dataset.profileIdx);
-    if (!registeredProfiles[idx]) return;
-
-    registeredProfiles[idx].title   = card.querySelector('[data-field="title"]')?.value?.trim()   || registeredProfiles[idx].title;
-    registeredProfiles[idx].bio     = card.querySelector('[data-field="bio"]')?.value?.trim()     || registeredProfiles[idx].bio;
-    registeredProfiles[idx].country = card.querySelector('[data-field="country"]')?.value?.trim() || registeredProfiles[idx].country;
-    registeredProfiles[idx].extra   = card.querySelector('[data-field="extra"]')?.value?.trim()   || registeredProfiles[idx].extra;
-
-    const portItems = card.querySelectorAll('.port-item');
-    registeredProfiles[idx].portfolios = [...portItems].map(el => ({
+    profiles[idx].portfolios = [...card.querySelectorAll('.port-item')].map(el => ({
       title: el.querySelector('.port-title-inp')?.value?.trim()  || '',
       urls:  [...el.querySelectorAll('.port-url-inp')].map(i => i.value.trim()).filter(Boolean),
       desc:  el.querySelector('.port-desc-inp')?.value?.trim()   || '',
     })).filter(p => p.title || p.urls.length);
 
-    // Sync legacy profile key for backward compat (background.js)
+    // Keep legacy profile key in sync for background.js
     if (idx === 0) {
-      const p = registeredProfiles[0];
-      chrome.storage.sync.get(['profile'], (stored) => {
-        const merged = {
-          ...(stored.profile || {}), ...p,
-          tier:      p.tierKey || stored.profile?.tier,
-          skills:    typeof p.skills === 'string' ? p.skills : (Array.isArray(p.skills) ? p.skills.join(', ') : stored.profile?.skills || ''),
-          skillsArr: Array.isArray(p.skillsArr) ? p.skillsArr : getSkillsArray(p),
-          portfolio: p.portfolios || stored.profile?.portfolio || [],
-          extra:     p.extra || stored.profile?.extra || '',
+      chrome.storage.sync.get(['profile'], (s) => {
+        const p = profiles[0];
+        const merged = { ...(s.profile || {}), ...p,
+          tier:      p.tierKey || s.profile?.tier,
+          skills:    typeof p.skills === 'string' ? p.skills : getSkillsArr(p).join(', '),
+          skillsArr: getSkillsArr(p),
+          portfolio: p.portfolios || s.profile?.portfolio || [],
+          extra:     p.extra || s.profile?.extra || '',
         };
         chrome.storage.sync.set({ profile: merged });
       });
     }
+
+    chrome.storage.sync.set({ registeredProfiles: profiles }, () => {
+      showSaved('saved-card-' + idx);
+    });
   });
+}
 
-  await chrome.storage.sync.set({ registeredProfiles });
-  showSaved('saved-profiles-msg');
-});
-
+// ── Navigation shortcuts ──────────────────────────────────────────────────────
 document.getElementById('add-profile-btn')?.addEventListener('click', () => switchSection('subscription'));
-document.getElementById('goto-sub-btn')?.addEventListener('click', () => switchSection('subscription'));
-
-// ── Settings ──────────────────────────────────────────────────────────────────
-document.getElementById('save-settings').addEventListener('click', async () => {
-  await chrome.storage.sync.set({ settings: {
-    tone:          document.getElementById('tone').value,
-    length:        document.getElementById('length').value,
-    alwaysInclude: document.getElementById('always-include').value.trim(),
-  }});
-  showSaved('saved-settings-msg');
-});
+document.getElementById('goto-sub-btn')?.addEventListener('click',    () => switchSection('subscription'));
 
 // ── Plan buttons ──────────────────────────────────────────────────────────────
 document.querySelectorAll('.plan-btn[data-plan]').forEach(btn => {
   btn.addEventListener('click', e => { e.stopPropagation(); openCheckout(btn.dataset.plan); });
 });
 
-const sbUpgradeBtn = document.getElementById('sb-upgrade-btn');
-if (sbUpgradeBtn) sbUpgradeBtn.addEventListener('click', () => switchSection('subscription'));
+// ── Settings (now in Subscription section) ────────────────────────────────────
+document.getElementById('save-settings').addEventListener('click', async () => {
+  await chrome.storage.sync.set({ settings: {
+    tone:   document.getElementById('tone').value,
+    length: document.getElementById('length').value,
+  }});
+  showSaved('saved-settings-msg');
+});
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 async function init() {
-  await loadStatus();   // sets userPlan in storage first
-  await loadEmail();
-  await renderProfileSlots();
-  await renderProfilesPage();
+  // Load cached data first (instant render), then server in parallel
+  loadStatus();     // async — shows cached immediately, fetches fresh in background
+  loadEmail();      // instant from storage
+  renderProfileSlots();
+  renderProfilesPage();
 
   const { settings = {} } = await chrome.storage.sync.get(['settings']);
-  document.getElementById('tone').value           = settings.tone          || 'professional';
-  document.getElementById('length').value         = settings.length        || 'medium';
-  document.getElementById('always-include').value = settings.alwaysInclude || '';
+  document.getElementById('tone').value   = settings.tone   || 'professional';
+  document.getElementById('length').value = settings.length || 'medium';
 }
 
 init();

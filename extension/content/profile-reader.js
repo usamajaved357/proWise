@@ -47,6 +47,10 @@
     return '';
   }
 
+
+  // Upwork "Top Traits" / Attributes section words — never real technical skills
+  const UPWORK_TRAITS = /^(Committed to|Clear Communicator|Accountable for|Detail Oriented|Solution Oriented|Collaborative$|Reliable$|Deadline|Self-Motivated|Highly Organized|Effective Communicator|Client Focused|Results Driven|Independent|Interpersonal)/i;
+
   // ── Skills extraction — comprehensive with multiple fallbacks ─────────────────
   function readSkills() {
     // DOM selectors: try each until we get results
@@ -64,10 +68,10 @@
       try {
         const els = document.querySelectorAll(sel);
         if (els.length > 0) {
-          const extracted = [...new Set([...els]
+          const extracted = filterTraits([...new Set([...els]
             .map(e => e.innerText.trim().split('\n')[0].trim())
             .filter(s => s && s.length >= 2 && s.length <= 60)
-          )];
+          )]);
           if (extracted.length >= 1) return extracted;
         }
       } catch(e) {}
@@ -163,6 +167,83 @@
     return [...new Set(titles)];
   }
 
+
+  // ── Bio (overview) extraction ─────────────────────────────────────────────────
+  function truncateBio(text) {
+    const max = 300;
+    if (text.length <= max) return text;
+    const cut = text.slice(0, max);
+    const last = cut.lastIndexOf(' ');
+    return cut.slice(0, last > 200 ? last : max) + '\u2026';
+  }
+
+  // UI/nav/sidebar text — never appears in a real bio
+  const UI_REJECT = /\b(Edit|Buy Connects|View details|Hours per week|contract to hire|Open to|Verifications|Military|Boost your profile|Video introduction|Profile strength|Documents|Licenses|Certifications\s*\n|My Stats|Proposals sent|Job invites|Profile views)\b/i;
+
+  function readBio(pt) {
+    // Method 1: Upwork overview section DOM — most accurate
+    const bioSelectors = [
+      '[data-test="AboutMe-section"] [data-test="pre-line-text"]',
+      '[data-test="AboutMe-section"] p',
+      '[data-test="overview-content"]',
+      '[data-test="freelancerOverview"]',
+      '[class*="AboutSection"]',
+      '[class*="overview-text"]',
+      '[class*="freelancer-overview"] p',
+    ];
+    for (const sel of bioSelectors) {
+      try {
+        const el = document.querySelector(sel);
+        if (el) {
+          const text = el.innerText.trim().replace(/\n+/g, ' ').replace(/\s+/g, ' ');
+          if (text.length > 80 && !UI_REJECT.test(text)) return truncateBio(text);
+        }
+      } catch(e) {}
+    }
+
+    // Method 2: find "Overview" section in page text and extract clean lines only
+    const overviewStart = pt.search(/\nOverview\s*\n/i);
+    if (overviewStart > -1) {
+      const after = pt.slice(overviewStart + 10, overviewStart + 2000);
+      const sectionEnd = after.search(/\n(?:Work history|Skills|Portfolio|Employment|Education|Certifications|Languages|Other Experience)\s*\n/i);
+      const raw = (sectionEnd > -1 ? after.slice(0, sectionEnd) : after);
+      const bioLines = raw.split('\n')
+        .map(l => l.trim())
+        .filter(l => l.length > 25 && !UI_REJECT.test(l) && /[a-z]{4,}/i.test(l));
+      if (bioLines.length > 0) {
+        const text = bioLines.join(' ').replace(/\s+/g, ' ').trim();
+        if (text.length > 80) return truncateBio(text);
+      }
+    }
+
+    // Method 3: largest clean paragraph that looks like a professional summary
+    // Must pass ALL checks: no UI patterns, has sentence endings, multiple words
+    for (const block of pt.split('\n\n')) {
+      const clean = block.trim().replace(/\n+/g, ' ').replace(/\s+/g, ' ');
+      if (
+        clean.length >= 120 && clean.length <= 2000 &&
+        !UI_REJECT.test(clean) &&
+        /[a-z]{5,}.*[a-z]{5,}/i.test(clean) &&
+        /[.!?]/.test(clean) &&
+        !/^(Languages|Education|Employment|Certifications|Skills)\b/i.test(clean)
+      ) {
+        return truncateBio(clean);
+      }
+    }
+    return '';
+  }
+
+  // Extract hours/week availability from profile text
+  function readAvailability(pt) {
+    const m = pt.match(/More than 30 hrs\/week|Less than 30 hrs\/week|As needed[\s—-]+open to offers|As needed/i);
+    if (!m) return '';
+    const v = m[0].toLowerCase();
+    if (v.includes('more than 30') || v.includes('30+')) return 'Available 30+ hrs/week';
+    if (v.includes('less than 30'))  return 'Available <30 hrs/week';
+    if (v.includes('as needed'))     return 'Available as needed';
+    return '';
+  }
+
   // ── Main profile data reader ──────────────────────────────────────────────────
   function readProfileData() {
     const pt = document.body.innerText;
@@ -190,15 +271,8 @@
     const certifications = readCertifications(pt);
     const portfolioTitles = extractPortfolioTitles();
 
-    // Bio: first long paragraph in the body text
-    let bio = '';
-    pt.split('\n\n').some(block => {
-      const clean = block.trim();
-      if (clean.length > 100 && clean.length < 1000 && !/^\$|Job Success|Total|Rising|Top Rated/i.test(clean)) {
-        bio = clean.slice(0, 600);
-        return true;
-      }
-    });
+    // Bio — read from actual Upwork "Overview" / "About Me" section
+    const bio = readBio(pt);
 
     // Country from timezone line
     const locM = pt.match(/([\w][\w\s,]+?)\s*[–—-]\s*\d+:\d+\s*(?:am|pm)\s*local time/i);
@@ -276,15 +350,38 @@
       // GUARD 2: not on a profile slug URL
       if (!curSlug) return;
 
-      // Match registered URL by slug only (handles URL variations and trailing paths)
-      const matchedProfile = registered.find(p => {
+      // ── Primary match: slug-for-slug ────────────────────────────────────────
+      let targetProfile = registered.find(p => {
         if (!p || !p.url) return false;
         const regSlug = p.url.split('/freelancers/')[1]?.split('/')[0]?.split('?')[0] || '';
         return regSlug && regSlug === curSlug;
       });
 
-      // GUARD 3: user hasn't registered this specific URL — do nothing
-      if (!matchedProfile) return;
+      // ── Fallback: custom username registered (no ~), Upwork redirected to ~xxx
+      // Only fires when we detect this is the user's OWN profile page (edit controls visible)
+      if (!targetProfile && curSlug.startsWith('~')) {
+        const ownProfile = !!(
+          document.querySelector('[data-test="pib-edit-button"]') ||
+          document.querySelector('[class*="edit-profile"]') ||
+          document.querySelector('[aria-label*="Edit profile"]') ||
+          document.querySelector('a[href*="/profile/edit"]')
+        );
+        if (ownProfile) {
+          // Find a registered profile whose URL uses a custom username (no ~)
+          targetProfile = registered.find(p => {
+            if (!p || !p.url) return false;
+            const regSlug = p.url.split('/freelancers/')[1]?.split('/')[0]?.split('?')[0] || '';
+            return regSlug && !regSlug.startsWith('~');
+          });
+        }
+      }
+
+      // GUARD 3: user hasn't registered this page — do nothing
+      if (!targetProfile) return;
+
+      // Keep original URL for array lookup; we'll update it to the resolved ~xxx URL
+      const originalStoredUrl = targetProfile.url;
+      const matchedProfile    = targetProfile;
 
       // Sync disabled — only update last visited timestamp
       if (matchedProfile.syncEnabled === false) {
@@ -295,9 +392,29 @@
 
       const data = readProfileData();
 
-      // If page not yet loaded, retry up to 3 times
-      if (!data.name && !data.jss && data.skillsArr.length === 0) {
-        if (attempt <= 3) setTimeout(() => init(attempt + 1), 2000 * attempt);
+      // Auto-populate 'extra' with availability on first sync (only if user hasn't set it)
+      const availability = readAvailability(document.body.innerText);
+      const autoExtra = matchedProfile.extra
+        ? matchedProfile.extra  // preserve user-edited value
+        : [availability, data.country].filter(Boolean).join(' · ');
+
+      // If page not yet loaded (truly nothing detected), retry up to 3 times
+      const hasAnyData = !!(data.name || data.jss || data.rate || data.tier || data.skillsArr.length);
+      if (!hasAnyData) {
+        if (attempt <= 3) {
+          setTimeout(() => init(attempt + 1), 2000 * attempt);
+          return;
+        }
+        // After 3 retries still nothing — save _readAt anyway so UI stops showing "Pending"
+        // Profile card will show empty fields; user can fill manually
+        const minimalProfile = {
+          ...matchedProfile,
+          _readAt: Date.now(),
+          _syncAttempted: true,
+          url: currentUrl,
+        };
+        const minReg = registered.map(p => p.url === originalStoredUrl ? minimalProfile : p);
+        chrome.storage.sync.set({ registeredProfiles: minReg });
         return;
       }
 
@@ -314,13 +431,18 @@
         ...matchedProfile,
         ...data,
         portfolios:   mergedPortfolios,
-        extra:        matchedProfile.extra || '',
+        extra:        matchedProfile.extra || autoExtra,
         syncEnabled:  true,
         _lastVisited: Date.now(),
       };
 
+      // Always update stored URL to the fully-resolved current URL
+      // This fixes custom-username → ~xxx redirect mismatches permanently
+      const resolvedUrl = currentUrl;
+      const updatedProfileWithUrl = { ...updatedProfile, url: resolvedUrl };
+
       const updatedRegistered = registered.map(p =>
-        (p.url === matchedProfile.url) ? updatedProfile : p
+        (p.url === originalStoredUrl || p.url === resolvedUrl) ? updatedProfileWithUrl : p
       );
 
       // Legacy `profile` key — keep for background.js compatibility
@@ -335,13 +457,13 @@
         employment: data.employment, education: data.education,
         languages: data.languages, certifications: data.certifications,
         portfolio: mergedPortfolios,
-        extra: matchedProfile.extra || '',
+        extra: updatedProfile.extra || autoExtra || '',
         _readAt: data._readAt, _autoRead: true,
       };
 
       chrome.storage.sync.set({
         registeredProfiles: updatedRegistered,
-        activeProfileId:    updatedProfile.id || matchedProfile.id,
+        activeProfileId:    updatedProfileWithUrl.id || matchedProfile.id,
         profile:            legacyProfile,
       }, () => {
         console.log('[SnagAI] ✓ Synced:', data.name, '| JSS:', data.jss, '| Skills:', data.skillsArr.length, '| Portfolios:', mergedPortfolios.length);
