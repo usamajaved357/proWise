@@ -34,7 +34,22 @@ async function getStatus() {
 }
 
 async function handleGenerate(payload) {
-  const stored = await chrome.storage.sync.get(['userEmail', 'anonId', 'profile', 'settings']);
+  const stored = await chrome.storage.sync.get(['userEmail', 'anonId', 'profile', 'settings', 'registeredProfiles', 'activeProfileId']);
+
+  // Use active registered profile data if available (more up to date than legacy profile)
+  const regProfiles = stored.registeredProfiles || [];
+  const activeId    = stored.activeProfileId;
+  const activeReg   = regProfiles.find(p => p.id === activeId) || regProfiles[0];
+  if (activeReg && (activeReg.name || activeReg.jss)) {
+    // Merge registered profile data into legacy profile for the request
+    stored.profile = {
+      ...(stored.profile || {}),
+      ...activeReg,
+      tier:     activeReg.tierKey || stored.profile?.tier,
+      skills:   activeReg.skillsArr ? activeReg.skillsArr.join(', ') : (activeReg.skills || stored.profile?.skills || ''),
+      portfolio: activeReg.portfolios || stored.profile?.portfolio || [],
+    };
+  }
 
   // Generate stable anon ID for free tier tracking
   let anonId = stored.anonId;

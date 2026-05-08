@@ -701,20 +701,24 @@
       // No profile URL registered in new system → always show setup prompt
       if (!hasRegisteredUrl) {
         document.getElementById('sn-body').innerHTML = `
-          <div style="padding:28px 24px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:14px">
-            <div style="font-size:28px">👤</div>
+          <div style="padding:32px 24px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:14px">
+            <div style="width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,rgba(201,168,76,.15),rgba(201,168,76,.05));border:1px solid rgba(201,168,76,.25);display:flex;align-items:center;justify-content:center;font-size:26px">👤</div>
             <div style="font-size:15px;font-weight:700;color:#f0eeea">Set up your profile first</div>
-            <div style="font-size:12px;color:rgba(240,238,234,.55);line-height:1.7;max-width:320px">
-              Go to Settings → Subscription → add your Upwork profile URL.<br>
-              Then visit that URL once and Snag AI reads everything automatically.
+            <div style="font-size:12px;color:rgba(240,238,234,.5);line-height:1.8;max-width:300px">
+              Go to <strong style="color:#c9a84c">Settings → Subscription</strong> and paste your Upwork profile URL.<br>
+              Then visit that URL — Snag AI reads your data automatically.
             </div>
-            <button id="sn-open-settings-btn" style="padding:10px 24px;background:#c9a84c;color:#0d1120;border-radius:9px;font-size:13px;font-weight:700;border:none;cursor:pointer;font-family:inherit">
-              → Open Settings
-            </button>
+            <div style="display:flex;flex-direction:column;gap:8px;width:100%;max-width:240px">
+              <button id="sn-open-settings-btn" style="padding:11px 24px;background:#c9a84c;color:#0d1120;border-radius:9px;font-size:13px;font-weight:700;border:none;cursor:pointer;font-family:inherit;width:100%">
+                Open Settings →
+              </button>
+            </div>
+            <div style="font-size:11px;color:rgba(240,238,234,.3)">Takes 30 seconds to set up</div>
           </div>
         `;
         document.getElementById('sn-open-settings-btn')?.addEventListener('click', () => {
-          chrome.runtime.openOptionsPage();
+          // Open options page directly on the Subscription tab
+          chrome.tabs.create({ url: chrome.runtime.getURL('options/options.html') + '?tab=subscription' });
         });
         return;
       }
@@ -723,14 +727,14 @@
       if (hasRegisteredUrl && !hasAutoReadData) {
         const firstUrl = regProfiles.find(p => p && p.url)?.url || 'https://www.upwork.com/freelancers/me';
         document.getElementById('sn-body').innerHTML = `
-          <div style="padding:28px 24px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:14px">
-            <div style="font-size:28px">🔄</div>
+          <div style="padding:32px 24px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:14px">
+            <div style="width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,rgba(52,211,153,.12),rgba(52,211,153,.04));border:1px solid rgba(52,211,153,.2);display:flex;align-items:center;justify-content:center;font-size:26px">🔄</div>
             <div style="font-size:15px;font-weight:700;color:#f0eeea">Visit your profile to sync</div>
-            <div style="font-size:12px;color:rgba(240,238,234,.55);line-height:1.7;max-width:320px">
-              Your profile URL is saved. Visit it once so Snag AI can read your skills, tier and data automatically.
+            <div style="font-size:12px;color:rgba(240,238,234,.5);line-height:1.8;max-width:300px">
+              Your profile URL is saved. <strong style="color:#f0eeea">Open it once</strong> and Snag AI will read your skills, tier, and stats automatically.
             </div>
-            <button id="sn-open-profile-btn" style="padding:10px 24px;background:#c9a84c;color:#0d1120;border-radius:9px;font-size:13px;font-weight:700;border:none;cursor:pointer;font-family:inherit">
-              → Open my Upwork profile
+            <button id="sn-open-profile-btn" style="padding:11px 24px;background:#c9a84c;color:#0d1120;border-radius:9px;font-size:13px;font-weight:700;border:none;cursor:pointer;font-family:inherit;width:100%;max-width:240px">
+              Open my Upwork profile →
             </button>
           </div>
         `;
