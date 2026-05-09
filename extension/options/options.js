@@ -176,15 +176,11 @@ async function renderProfileSlots() {
   for (let i = 0; i < limit; i++) {
     const p      = registeredProfiles[i];
     const hasUrl = p?.url;
-    const full   = p?.id ? fullData['profileFull_' + p.id] : null;
-    // Synced if metadata has data OR if the full profile exists with _readAt
-    const synced = !!(p?.name || p?.jss || p?._readAt || full?._readAt);
     const div = document.createElement('div');
     div.className = 'profile-slot';
     div.innerHTML = `
       <div class="slot-num">${i + 1}</div>
       <input class="slot-input" type="url" placeholder="https://www.upwork.com/freelancers/~..." value="${p?.url || ''}" data-slot="${i}">
-      ${hasUrl ? `<span class="slot-status-badge ${synced ? 'slot-synced' : 'slot-pending'}">${synced ? '✓ Synced' : '⏳ Pending'}</span>` : ''}
       ${hasUrl ? `<button class="btn-slot-open" data-slot="${i}">Open →</button>` : ''}
     `;
     slots.appendChild(div);
@@ -367,17 +363,6 @@ function renderProfileCard(container, profile, idx, allProfiles, primaryProfileI
         </div>
         <div class="profile-actions">
           ${!isPrimary && validProfiles.length > 1 ? `<button class="btn-set-primary" id="btn-primary-${idx}">Set primary</button>` : ''}
-          <button class="btn-resync" id="btn-resync-${idx}">
-            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>
-            Sync
-          </button>
-          <label class="sync-toggle-wrap">
-            <span style="font-size:11px;color:var(--white3)">Auto-sync</span>
-            <label class="toggle-switch">
-              <input type="checkbox" class="sync-check" ${syncChecked ? 'checked' : ''}>
-              <span class="toggle-slider"></span>
-            </label>
-          </label>
         </div>
       </div>
       <button class="btn-delete" title="Remove profile" style="margin-top:2px">×</button>
@@ -411,7 +396,13 @@ function renderProfileCard(container, profile, idx, allProfiles, primaryProfileI
       <div class="profile-section">
         <div class="portfolio-section-hdr">
           <span class="profile-section-title">Portfolio <span style="font-weight:400;opacity:.6">(${portfolios.length})</span></span>
-          <button class="btn-port-add" data-action="add-port">+ Add item</button>
+          <div style="display:flex;align-items:center;gap:8px">
+            ${profile._portfolioSyncedAt
+              ? `<span style="font-size:10px;color:var(--white3)">Synced ${new Date(profile._portfolioSyncedAt).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</span>`
+              : `<span style="font-size:10px;color:var(--yellow)">⚠ Not synced</span>`}
+            <button class="btn-sync-portfolios" id="sync-port-${idx}">⟳ Sync portfolios</button>
+            <button class="btn-port-add" data-action="add-port">+ Add</button>
+          </div>
         </div>
         <div class="port-list" id="port-list-${idx}"></div>
         ${!portfolios.length ? `<div class="port-empty-msg">No portfolio items yet. Add them manually or visit your Upwork profile page.</div>` : ''}
@@ -439,16 +430,18 @@ function renderProfileCard(container, profile, idx, allProfiles, primaryProfileI
     });
   });
 
-  // Resync button
-  card.querySelector(`#btn-resync-${idx}`)?.addEventListener('click', () => {
-    if (profile.url) chrome.tabs.create({ url: profile.url });
+  // Sync portfolios button — sets flag then opens profile URL
+  card.querySelector(`#sync-port-${idx}`)?.addEventListener('click', () => {
+    if (!profile.id || !profile.url) return;
+    const btn = card.querySelector(`#sync-port-${idx}`);
+    if (btn) { btn.textContent = 'Opening…'; btn.disabled = true; }
+    chrome.storage.local.set({ ['portfolioSync_' + profile.id]: true }, () => {
+      chrome.tabs.create({ url: profile.url });
+      setTimeout(() => { if (btn) { btn.textContent = '⟳ Sync portfolios'; btn.disabled = false; } }, 3000);
+    });
   });
 
-  // Sync toggle
-  card.querySelector('.sync-check')?.addEventListener('change', function() {
-    allProfiles[idx].syncEnabled = this.checked;
-    chrome.storage.local.set({ registeredProfiles: allProfiles });
-  });
+
 
   // Delete profile — also wipe local full data
   card.querySelector('.btn-delete')?.addEventListener('click', () => {
@@ -509,15 +502,32 @@ function renderSkillsExpand(wrap, skillsArr, expanded) {
 // ── Portfolio item renderer ───────────────────────────────────────────────────
 function renderPortfolioItem(list, p, pi, allProfiles, profileIdx, autoOpen) {
   const hasLinks = p.urls && p.urls.some(u => u.trim());
+  const skills   = Array.isArray(p.skills) ? p.skills : [];
   const item = document.createElement('div');
   item.className = 'port-item';
   item.dataset.pi = pi;
+  item.dataset.portSkills = JSON.stringify(p.skills || []);
+  item.dataset.portRole   = p.role || '';
 
   const urlsHtml = (p.urls && p.urls.length ? p.urls : ['']).map(u => `
     <div class="port-url-row">
       <input type="url" class="port-url-inp" value="${u}" placeholder="https://apps.apple.com/...">
       <button class="btn-url-del">×</button>
     </div>`).join('');
+
+  // Rich info display (role, desc, skills, clickable link chips)
+  const skillsHtml = skills.length
+    ? `<div class="port-skill-tags">${skills.slice(0,5).map(s=>`<span class="port-skill-tag">${s}</span>`).join('')}${skills.length>5?`<span class="port-skill-tag" style="opacity:.5">+${skills.length-5}</span>`:''}</div>`
+    : '';
+  const urlChipsHtml = hasLinks
+    ? `<div class="port-url-chips">${(p.urls||[]).filter(u=>u.trim()).map(u=>`<a href="${u.startsWith('http')?u:'https://'+u}" target="_blank" class="port-url-chip">${u.replace(/^https?:\/\//, '').slice(0,35)}</a>`).join('')}</div>`
+    : '';
+  const richMeta = (p.role||p.desc||skills.length||hasLinks)
+    ? `<div class="port-item-meta">
+        ${p.role ? `<div class="port-role">Role: ${p.role}</div>` : ''}
+        ${p.desc ? `<div class="port-desc-text">${p.desc}</div>` : ''}
+        ${skillsHtml}${urlChipsHtml}
+      </div>` : '';
 
   item.innerHTML = `
     <div class="port-item-row">
@@ -529,6 +539,7 @@ function renderPortfolioItem(list, p, pi, allProfiles, profileIdx, autoOpen) {
         <button class="btn-port-del">Remove</button>
       </div>
     </div>
+    ${richMeta}
     <div class="port-edit-body" style="display:none">
       <div class="field">
         <label>Project name</label>

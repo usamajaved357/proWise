@@ -10,6 +10,11 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     getStatus().then(sendResponse).catch(e => sendResponse({ error: e.message }));
     return true;
   }
+  if (msg.type === 'OPEN_OPTIONS_TAB') {
+    const tab = msg.tab || 'subscription';
+    chrome.tabs.create({ url: chrome.runtime.getURL('options/options.html') + '?tab=' + tab });
+    sendResponse({ ok: true }); return true;
+  }
   if (msg.type === 'OPEN_PRICING') {
     chrome.tabs.create({ url: 'https://snagai.netlify.app/#pricing' });
     sendResponse({ ok: true }); return true;

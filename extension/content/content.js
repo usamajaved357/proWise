@@ -692,11 +692,25 @@
   // ── Generate
   async function generate() {
     try {
-      const stored = await chrome.storage.sync.get(['profile', 'userEmail', 'anonId', 'settings', 'registeredProfiles']);
-      const prof = stored.profile || {};
-      const regProfiles = stored.registeredProfiles || [];
+      // profile + account data from sync; registeredProfiles from local (moved there to avoid 8KB limit)
+      const [syncStored, localStored] = await Promise.all([
+        chrome.storage.sync.get(['userEmail', 'anonId', 'settings']),
+        chrome.storage.local.get(['registeredProfiles', 'activeProfileId', 'primaryProfileId']),
+      ]);
+      const stored = { ...syncStored };
+
+      const regProfiles    = localStored.registeredProfiles || [];
+      const primaryId      = localStored.primaryProfileId || localStored.activeProfileId;
+      const primaryProfile = (primaryId && regProfiles.find(p => p && p.id === primaryId && (p.name || p.jss || p._readAt)))
+                          || regProfiles.find(p => p && (p.name || p.jss || p._readAt))
+                          || regProfiles[0];
+
+      // Load full profile data from local storage
+      const localKey = primaryProfile?.id ? 'profileFull_' + primaryProfile.id : null;
+      const localFull = localKey ? await new Promise(r => chrome.storage.local.get([localKey], r)) : {};
+      const prof = localFull[localKey] || primaryProfile || {};
       const hasRegisteredUrl = regProfiles.some(p => p && p.url);
-      const hasAutoReadData  = regProfiles.some(p => p && (p.name || p.jss)) || prof._autoRead;
+      const hasAutoReadData  = !!(prof.name || prof.jss || prof._readAt || regProfiles.some(p => p && (p.name || p.jss || p._readAt)));
 
       // No profile URL registered in new system → always show setup prompt
       if (!hasRegisteredUrl) {
@@ -718,7 +732,7 @@
         `;
         document.getElementById('sn-open-settings-btn')?.addEventListener('click', () => {
           // Open options page directly on the Subscription tab
-          chrome.tabs.create({ url: chrome.runtime.getURL('options/options.html') + '?tab=subscription' });
+          chrome.runtime.sendMessage({ type: 'OPEN_OPTIONS_TAB', tab: 'subscription' });
         });
         return;
       }
