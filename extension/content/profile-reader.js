@@ -182,10 +182,10 @@
       });
     }
 
-    updateOverlayDebug('Nav: ' + candidates.length + ' candidates for page ' + nextNum);
+    updateOverlayDebug('Navigating to page ' + nextNum + '…');
 
     for (const { el, name } of candidates) {
-      updateOverlayDebug('Clicking: ' + name);
+      updateOverlayDebug('Navigating to page ' + nextNum + '…');
       fireClick(el);
 
       for (let w = 0; w < 20; w++) {
@@ -193,13 +193,13 @@
         const fresh   = getShelfThumbs();
         const newText = fresh.map(t => t.innerText.trim().slice(0, 50)).join('|');
         if (fresh.length > 0 && newText !== prevThumbs) {
-          updateOverlayDebug('Page ' + nextNum + ' loaded ✓ (' + name + ')');
+          updateOverlayDebug('Page ' + nextNum + ' loaded');
           return true;
         }
       }
     }
 
-    updateOverlayDebug('No navigation worked — sync complete');
+    updateOverlayDebug('All pages read — saving data…');
     return false;
   }
 
@@ -326,27 +326,41 @@
     return !!(document.querySelector('.g-recaptcha,#captcha,[data-test*="captcha"],iframe[src*="captcha"],iframe[src*="recaptcha"]')||/prove you.re human|complete the captcha|unusual traffic/i.test(document.body.innerText.slice(0,2000)));
   }
 
-  // ── Portfolio sync banner (replaces full overlay — no pointerEvents blocking) ──
-  const OID = 'snagai-sync-banner';
+  // ── Dark blur overlay (pointer-events:none — clicks pass through to Upwork) ──
+  const OID = 'snagai-portfolio-overlay';
 
   function showSyncOverlay(msg) {
-    let el = document.getElementById(OID);
-    if (!el) {
-      el = document.createElement('div');
-      el.id = OID;
-      el.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:2147483647;background:#0d1525;border-top:2px solid #c9a84c;padding:11px 20px;display:flex;align-items:center;gap:12px;font-family:-apple-system,BlinkMacSystemFont,sans-serif;box-shadow:0 -4px 20px rgba(0,0,0,.5)';
-      document.body.appendChild(el);
+    let wrap = document.getElementById(OID);
+    if (!wrap) {
+      wrap = document.createElement('div');
+      wrap.id = OID;
+      wrap.style.cssText = [
+        'position:fixed','top:0','left:0','right:0','bottom:0',
+        'z-index:2147483646',
+        'pointer-events:none',
+        'background:rgba(0,0,0,.82)',
+        'backdrop-filter:blur(8px)',
+        '-webkit-backdrop-filter:blur(8px)',
+        'display:flex','align-items:center','justify-content:center',
+        'font-family:-apple-system,BlinkMacSystemFont,sans-serif',
+      ].join(';');
+      wrap.innerHTML =
+        '<style>@keyframes snagSpin{to{transform:rotate(360deg)}}</style>' +
+        '<div id="snagai-ov-card" style="background:#0d1525;border:1px solid rgba(201,168,76,.3);border-radius:18px;padding:30px 38px;text-align:center;min-width:320px;max-width:400px;box-shadow:0 24px 64px rgba(0,0,0,.8)">' +
+          '<div style="width:48px;height:48px;border-radius:50%;border:3px solid rgba(201,168,76,.1);border-top-color:#c9a84c;animation:snagSpin .85s linear infinite;margin:0 auto 20px"></div>' +
+          '<div style="font-weight:700;font-size:16px;color:#f0eeea;margin-bottom:10px;letter-spacing:-.01em">Syncing Portfolios</div>' +
+          '<div id="snagai-ov-status" style="font-size:12px;color:rgba(240,238,234,.55);margin-bottom:12px;min-height:20px;letter-spacing:.01em"></div>' +
+          '<div id="snagai-ov-detail" style="font-size:11px;color:rgba(240,238,234,.3);font-family:monospace;min-height:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:340px"></div>' +
+        '</div>';
+      document.body.appendChild(wrap);
     }
-    el.innerHTML = '<style>@keyframes snagSpin{to{transform:rotate(360deg)}}</style>' +
-      '<div style="width:18px;height:18px;flex-shrink:0;border-radius:50%;border:2.5px solid rgba(201,168,76,.15);border-top-color:#c9a84c;animation:snagSpin .8s linear infinite"></div>' +
-      '<span style="font-weight:700;font-size:13px;color:#f0eeea">Snag AI — Syncing Portfolios</span>' +
-      '<span id="snagai-ov-status" style="font-size:11px;color:rgba(240,238,234,.5);margin-left:4px">' + (msg || '') + '</span>' +
-      '<div id="snagai-ov-log" style="margin-left:auto;font-size:10px;color:rgba(240,238,234,.4);font-family:monospace;max-width:400px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div>';
+    const s = document.getElementById('snagai-ov-status');
+    if (s && msg) s.textContent = msg;
   }
 
   function updateOverlayDebug(line) {
-    const log = document.getElementById('snagai-ov-log');
-    if (log) log.textContent = line;
+    const d = document.getElementById('snagai-ov-detail');
+    if (d) d.textContent = line;
     console.log('[SnagAI]', line);
   }
 
@@ -360,7 +374,7 @@
 
     // Scroll to portfolio section first — Upwork lazy-renders thumbnails
     // When opened in a new tab, page starts at top and portfolio is off-screen
-    updateOverlayDebug('Scrolling to portfolio section…');
+    updateOverlayDebug('Locating portfolio section…');
     const scrollToPortfolio = () => {
       const sel = [
         '.portfolio-v2-editor-shelf',
@@ -385,11 +399,11 @@
     }
 
     if (!getShelfThumbs().length) {
-      updateOverlayDebug('Portfolio section not found — check your profile URL');
+      updateOverlayDebug('Portfolio section not found — make sure your profile URL is correct');
       removeSyncOverlay();
       return;
     }
-    updateOverlayDebug('Portfolio section loaded ✓');
+    showSyncOverlay('Page 1'); updateOverlayDebug('Portfolio section found — starting sync…');
 
     // Load existing portfolios with timeout fallback
     let current = {};
@@ -428,7 +442,7 @@
         break;
       }
 
-      updateOverlayDebug('Page ' + page + ': found ' + clickTargets.length + ' portfolios');
+      showSyncOverlay('Page ' + page + ' of ?'); updateOverlayDebug('Found ' + clickTargets.length + ' portfolios on page ' + page);
 
       // Track which items we have read on this page by button index
       // Re-query each iteration so we always click a fresh reference
@@ -447,13 +461,13 @@
         }
 
         if (targetIdx === -1) {
-          updateOverlayDebug('Page ' + page + ' complete — ' + totalItems + ' total read');
+          showSyncOverlay('Page ' + page + ' complete'); updateOverlayDebug('Page ' + page + ' done · ' + totalItems + ' portfolios read so far');
           break;
         }
 
         readIndices.add(targetIdx);
         const btn = fresh[targetIdx];
-        updateOverlayDebug('Page ' + page + ' · item ' + (targetIdx + 1) + '/' + fresh.length + ' (total: ' + totalItems + ')');
+        showSyncOverlay('Page ' + page + ' · ' + (targetIdx + 1) + ' of ' + fresh.length); updateOverlayDebug('Reading portfolio ' + (targetIdx + 1) + ' of ' + fresh.length + '…');
 
         // Click
         // Scroll into view so the element is visible
@@ -465,7 +479,7 @@
 
         const opened = await waitForModalOpen(4000);
         if (!opened) {
-          updateOverlayDebug('Modal did not open for item ' + (targetIdx + 1) + ' — dismissing menus');
+          updateOverlayDebug('Portfolio ' + (targetIdx + 1) + ' didn\'t open — retrying…');
           dismissMenus();
           await new Promise(r => setTimeout(r, 600));
           continue;
@@ -477,9 +491,9 @@
         if (d?.title) {
           mergePortfolioDetails(merged, [d]);
           totalItems++;
-          updateOverlayDebug('✓ ' + d.title.slice(0, 40) + (d.skills.length ? ' | ' + d.skills.length + ' skills' : ''));
+          showSyncOverlay('Page ' + page + ' · ' + (targetIdx + 1) + ' of ' + fresh.length); updateOverlayDebug('✓  ' + d.title.slice(0, 45) + (d.skills.length ? '  ·  ' + d.skills.length + ' skills' : ''));
         } else {
-          updateOverlayDebug('Read failed for item ' + (targetIdx + 1));
+          updateOverlayDebug('⚠ Could not read portfolio ' + (targetIdx + 1));
         }
 
         const closeBtn = document.querySelector('.air3-modal-close.floating-modal-close')
@@ -497,7 +511,7 @@
 
       if (page >= 15) break;
 
-      showSyncOverlay('Loading page ' + (page + 1) + '…');
+      showSyncOverlay('Moving to page ' + (page + 1) + '…'); updateOverlayDebug('Moving to page ' + (page + 1) + '…');
 
       // Try every navigation candidate and verify by thumbnail content change
       const navigated = await navigateToNextPage(page);
@@ -512,7 +526,7 @@
     }
 
     // Save whatever we collected
-    updateOverlayDebug('Saving ' + totalItems + ' portfolios…');
+    showSyncOverlay('Saving…'); updateOverlayDebug('Saving ' + totalItems + ' portfolio' + (totalItems!==1?'s':'') + ' to your profile…');
     await local.set({
       [localKey]: { ...current, portfolios: merged, _portfolioSyncedAt: totalItems > 0 ? Date.now() : current._portfolioSyncedAt }
     }).catch(e => console.error('[SnagAI] Portfolio save error:', e));
