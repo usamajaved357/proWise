@@ -101,13 +101,14 @@ a{text-decoration:none;color:inherit}
 /* ── Profile card ── */
 .profile-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:4px}
 .profile-card::before{content:'';display:block;height:2px;background:linear-gradient(90deg,var(--gold),var(--gold2),transparent)}
-.profile-card-hdr{display:flex;align-items:center;gap:12px;padding:16px 18px;border-bottom:1px solid var(--border)}
-.profile-avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,#8a5f10,var(--gold));display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#0a0e1a;flex-shrink:0;box-shadow:0 2px 8px rgba(201,168,76,.25)}
+.profile-card-hdr{display:flex;align-items:flex-start;gap:12px;padding:16px 18px 14px;border-bottom:1px solid var(--border)}
+.profile-avatar{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#8a5f10,var(--gold));display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;color:#0a0e1a;flex-shrink:0;margin-top:2px;box-shadow:0 2px 8px rgba(201,168,76,.25)}
 .profile-avatar-pending{background:var(--bg3);color:var(--white3);border:2px dashed var(--border2)}
 .profile-info{flex:1;min-width:0}
-.profile-name{font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.01em}
-.profile-meta{font-size:11px;color:var(--white3);margin-top:2px}
-.profile-actions{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.profile-name-row{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:3px}
+.profile-name{font-size:15px;font-weight:700;letter-spacing:-.01em;line-height:1.2}
+.profile-meta{font-size:11px;color:var(--white3);margin-bottom:8px}
+.profile-actions{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .btn-resync{padding:5px 11px;background:rgba(255,255,255,.05);border:1px solid var(--border2);border-radius:var(--radius-xs);font-size:11px;font-weight:600;color:var(--white3);cursor:pointer;font-family:inherit;transition:all .15s;display:flex;align-items:center;gap:4px}
 .btn-resync:hover{color:var(--gold);border-color:var(--gold-border);background:var(--gold-bg)}
 .sync-toggle-wrap{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--white3)}
@@ -138,9 +139,9 @@ a{text-decoration:none;color:inherit}
 .tier-new{display:none}
 
 /* Editable fields inside card */
-.edit-row{display:flex;align-items:flex-start;gap:8px;margin-bottom:8px}
-.edit-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--white3);min-width:68px;padding-top:8px;flex-shrink:0}
-.edit-val{flex:1;padding:7px 10px;background:rgba(255,255,255,.03);border:1px solid transparent;border-radius:var(--radius-sm);color:var(--white);font-size:12px;font-family:inherit;outline:none;resize:none;line-height:1.55;transition:all .15s;cursor:default}
+.edit-row{display:grid;grid-template-columns:90px 1fr;gap:8px 10px;margin-bottom:8px;align-items:start}
+.edit-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--white3);padding-top:9px;line-height:1.2}
+.edit-val{padding:7px 10px;background:rgba(255,255,255,.03);border:1px solid transparent;border-radius:var(--radius-sm);color:var(--white);font-size:12px;font-family:inherit;outline:none;resize:none;line-height:1.55;transition:all .15s;cursor:default}
 .edit-val:focus{background:rgba(255,255,255,.06);border-color:var(--gold);cursor:text}
 .edit-val::placeholder{color:var(--white3)}
 

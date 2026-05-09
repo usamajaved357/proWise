@@ -26,7 +26,7 @@ if (_tab) switchSection(_tab);
 // ── Storage change listener — live refresh when profile syncs ─────────────────
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area === 'local') {
-    const hasProfile = Object.keys(changes).some(k => k.startsWith('profileFull_') || k === 'primaryProfileId');
+    const hasProfile = Object.keys(changes).some(k => k.startsWith('profileFull_') || k === 'primaryProfileId' || k === 'registeredProfiles' || k === 'activeProfileId');
     if (hasProfile) { renderProfilesPage(); return; }
   }
   if (area !== 'sync') return;
@@ -158,15 +158,27 @@ document.getElementById('email-save').addEventListener('click', async () => {
 
 // ── Profile URL slots ─────────────────────────────────────────────────────────
 async function renderProfileSlots() {
-  const { userPlan = 'free', registeredProfiles = [] } = await chrome.storage.sync.get(['userPlan','registeredProfiles']);
+  const [_sp, _lp] = await Promise.all([
+    chrome.storage.sync.get(['userPlan']),
+    chrome.storage.local.get(['registeredProfiles'])
+  ]);
+  const userPlan           = _sp.userPlan || 'free';
+  const registeredProfiles = _lp.registeredProfiles || [];
   const limit = PLAN_LIMITS[userPlan] || 1;
+
+  // Also load full data keys to check sync status accurately
+  const fullKeys  = registeredProfiles.filter(p => p?.id).map(p => 'profileFull_' + p.id);
+  const fullData  = fullKeys.length ? await new Promise(r => chrome.storage.local.get(fullKeys, r)) : {};
+
   const slots = document.getElementById('profile-slots');
   slots.innerHTML = '';
 
   for (let i = 0; i < limit; i++) {
     const p      = registeredProfiles[i];
     const hasUrl = p?.url;
-    const synced = !!(p?.name || p?.jss || p?._readAt);
+    const full   = p?.id ? fullData['profileFull_' + p.id] : null;
+    // Synced if metadata has data OR if the full profile exists with _readAt
+    const synced = !!(p?.name || p?.jss || p?._readAt || full?._readAt);
     const div = document.createElement('div');
     div.className = 'profile-slot';
     div.innerHTML = `
@@ -185,7 +197,8 @@ async function renderProfileSlots() {
 }
 
 document.getElementById('save-profile-urls').addEventListener('click', async () => {
-  const { userPlan = 'free', registeredProfiles = [] } = await chrome.storage.sync.get(['userPlan','registeredProfiles']);
+  const { userPlan = 'free' } = await chrome.storage.sync.get(['userPlan']);
+  const { registeredProfiles = [] } = await chrome.storage.local.get(['registeredProfiles']);
   const inputs  = document.querySelectorAll('.slot-input');
   const updated = [...registeredProfiles];
   inputs.forEach((inp, i) => {
@@ -194,7 +207,7 @@ document.getElementById('save-profile-urls').addEventListener('click', async () 
     const existing = updated[i] || {};
     updated[i] = { ...existing, url, id: existing.id || ('profile_' + (i + 1)), syncEnabled: existing.syncEnabled !== false };
   });
-  await chrome.storage.sync.set({ registeredProfiles: updated });
+  await chrome.storage.local.set({ registeredProfiles: updated });
   showSaved('saved-urls-msg');
   await renderProfileSlots();
   await renderProfilesPage();
@@ -203,10 +216,11 @@ document.getElementById('save-profile-urls').addEventListener('click', async () 
 // ── Profiles page ──────────────────────────────────────────────────────────────
 async function renderProfilesPage() {
   const [syncStored, localStored] = await Promise.all([
-    chrome.storage.sync.get(['registeredProfiles','userPlan','activeProfileId']),
-    chrome.storage.local.get(['primaryProfileId'])
+    chrome.storage.sync.get(['userPlan']),
+    chrome.storage.local.get(['registeredProfiles','activeProfileId','primaryProfileId'])
   ]);
-  const { registeredProfiles = [], userPlan = 'free' } = syncStored;
+  const userPlan = syncStored.userPlan || 'free';
+  const registeredProfiles = localStored.registeredProfiles || [];
   const primaryProfileId = localStored.primaryProfileId || null;
 
   // Load full profile data from local storage for each registered profile
@@ -328,8 +342,10 @@ function renderProfileCard(container, profile, idx, allProfiles, primaryProfileI
     card.querySelector(`#open-pending-${idx}`)?.addEventListener('click', () => chrome.tabs.create({ url: profile.url }));
     card.querySelector('.btn-delete')?.addEventListener('click', () => {
       if (!confirm('Remove this profile?')) return;
+      const removedId = profile.id;
       allProfiles.splice(idx, 1);
-      chrome.storage.sync.set({ registeredProfiles: allProfiles });
+      chrome.storage.local.set({ registeredProfiles: allProfiles });
+      if (removedId) chrome.storage.local.remove('profileFull_' + removedId);
       renderProfilesPage();
     });
     container.appendChild(card);
@@ -341,31 +357,30 @@ function renderProfileCard(container, profile, idx, allProfiles, primaryProfileI
     <div class="profile-card-hdr">
       <div class="profile-avatar">${avatarLetter}</div>
       <div class="profile-info">
-        <div class="profile-name">${profile.name || 'Unknown'}</div>
+        <div class="profile-name-row">
+          <span class="profile-name">${profile.name || 'Unknown'}</span>
+          ${isPrimary && validProfiles.length > 1 ? '<span class="badge-primary">★ Primary</span>' : ''}
+        </div>
         <div class="profile-meta">
           ${[profile.tier || '', profile.jss ? profile.jss + ' JSS' : ''].filter(Boolean).join(' · ')}
           ${readAt ? `<span style="opacity:.5"> · Synced ${readAt}</span>` : ''}
         </div>
-      </div>
-      <div class="profile-actions">
-        ${allProfiles.filter(p=>p&&p.url).length > 1 ? (
-          isPrimary
-            ? '<span class="badge-primary">★ Primary</span>'
-            : `<button class="btn-set-primary" id="btn-primary-${idx}">Set primary</button>`
-        ) : ''}
-        <button class="btn-resync" id="btn-resync-${idx}">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>
-          Sync
-        </button>
-        <div class="sync-toggle-wrap">
-          <span>Auto-sync</span>
-          <label class="toggle-switch">
-            <input type="checkbox" class="sync-check" ${syncChecked ? 'checked' : ''}>
-            <span class="toggle-slider"></span>
+        <div class="profile-actions">
+          ${!isPrimary && validProfiles.length > 1 ? `<button class="btn-set-primary" id="btn-primary-${idx}">Set primary</button>` : ''}
+          <button class="btn-resync" id="btn-resync-${idx}">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg>
+            Sync
+          </button>
+          <label class="sync-toggle-wrap">
+            <span style="font-size:11px;color:var(--white3)">Auto-sync</span>
+            <label class="toggle-switch">
+              <input type="checkbox" class="sync-check" ${syncChecked ? 'checked' : ''}>
+              <span class="toggle-slider"></span>
+            </label>
           </label>
         </div>
-        <button class="btn-delete" title="Remove profile">×</button>
       </div>
+      <button class="btn-delete" title="Remove profile" style="margin-top:2px">×</button>
     </div>
 
     <div class="profile-body">
@@ -432,14 +447,16 @@ function renderProfileCard(container, profile, idx, allProfiles, primaryProfileI
   // Sync toggle
   card.querySelector('.sync-check')?.addEventListener('change', function() {
     allProfiles[idx].syncEnabled = this.checked;
-    chrome.storage.sync.set({ registeredProfiles: allProfiles });
+    chrome.storage.local.set({ registeredProfiles: allProfiles });
   });
 
-  // Delete profile
+  // Delete profile — also wipe local full data
   card.querySelector('.btn-delete')?.addEventListener('click', () => {
     if (!confirm('Remove this profile?')) return;
+    const removedId = profile.id;
     allProfiles.splice(idx, 1);
-    chrome.storage.sync.set({ registeredProfiles: allProfiles });
+    chrome.storage.local.set({ registeredProfiles: allProfiles });
+    if (removedId) chrome.storage.local.remove('profileFull_' + removedId);
     renderProfilesPage();
   });
 
@@ -595,12 +612,7 @@ function saveCard(card, idx, allProfiles) {
 
     chrome.storage.local.set({ [localKey]: updated }, () => {
       // Also update sync profile for legacy compat (background.js fallback)
-      chrome.storage.sync.set({ profile: {
-        ...updated,
-        skills:    getSkillsArr(updated).join(', '),
-        skillsArr: getSkillsArr(updated),
-        portfolio: portfolios,
-      }});
+      // profile data lives in local storage — no sync write needed
       showSaved('saved-card-' + idx);
     });
   });

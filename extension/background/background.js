@@ -40,13 +40,13 @@ async function getStatus() {
 
 async function handleGenerate(payload) {
   // Step 1: get sync data (metadata) + local primary choice
-  const [syncData, localMeta] = await Promise.all([
-    chrome.storage.sync.get(['userEmail', 'anonId', 'profile', 'settings', 'registeredProfiles', 'activeProfileId']),
-    chrome.storage.local.get(['primaryProfileId'])
+  const [syncData, localData] = await Promise.all([
+    chrome.storage.sync.get(['userEmail', 'anonId', 'settings']),
+    chrome.storage.local.get(['registeredProfiles', 'activeProfileId', 'primaryProfileId'])
   ]);
 
-  const regProfiles = syncData.registeredProfiles || [];
-  const primaryId   = localMeta.primaryProfileId;
+  const regProfiles = localData.registeredProfiles || [];
+  const primaryId   = localData.primaryProfileId;
 
   // Find the primary profile metadata
   const primaryMeta =

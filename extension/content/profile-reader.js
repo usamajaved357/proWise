@@ -182,19 +182,50 @@
     return certifications;
   }
 
-  // ── Portfolio titles from DOM ─────────────────────────────────────────────────
-  function extractPortfolioTitles() {
-    const titles = [];
-    for (const sel of ['.portfolio-v2-shelf-thumbnail', '[class*="portfolio-item"]', '[class*="portfolioItem"]', '[data-test*="portfolio-item"]']) {
+  // ── Portfolio items from DOM (title + description) ───────────────────────────
+  function extractPortfolioItems() {
+    const items = [];
+    const selectors = [
+      '.portfolio-v2-shelf-thumbnail',
+      '[class*="portfolio-item"]',
+      '[class*="portfolioItem"]',
+      '[data-test*="portfolio-item"]',
+      '[class*="air3-card"][class*="ortfolio"]',
+    ];
+    for (const sel of selectors) {
       try {
         document.querySelectorAll(sel).forEach(el => {
-          const lines = el.innerText.split('\n').map(l => l.trim()).filter(l => l && l !== 'More options' && l.length > 2);
-          if (lines[0]) titles.push(lines[0]);
+          const lines = el.innerText.split('\n')
+            .map(l => l.trim())
+            .filter(l => l && l !== 'More options' && l.length > 2 && !PORTFOLIO_NOISE.test(l));
+          if (!lines[0]) return;
+          const title = lines[0].slice(0, 120);
+          // Second non-empty line is often category or short desc
+          const descLine = lines[1] && lines[1].length < 150 && !lines[1].match(/^\$|\d+ hrs|delivery/i) ? lines[1] : '';
+          items.push({ title, desc: descLine });
         });
-        if (titles.length) break;
+        if (items.length > 0) break;
       } catch(e) {}
     }
-    return [...new Set(titles)];
+    // Deduplicate by title
+    const seen = new Set();
+    return items.filter(item => { if (seen.has(item.title)) return false; seen.add(item.title); return true; });
+  }
+
+  function findPortfolioNextButton() {
+    const selectors = [
+      '[aria-label="Next page"]', '[aria-label="Next"]',
+      'button[data-test*="next"]', '[class*="pagination"] button:last-child',
+      '[class*="next-page"]', '[class*="pagination-next"]',
+      'button[class*="next"][class*="arrow"]',
+    ];
+    for (const sel of selectors) {
+      try {
+        const el = document.querySelector(sel);
+        if (el && !el.disabled && el.offsetParent !== null) return el;
+      } catch(e) {}
+    }
+    return null;
   }
 
 
@@ -299,7 +330,6 @@
     const education      = readEducation(pt);
     const languages      = readLanguages(pt);
     const certifications = readCertifications(pt);
-    const portfolioTitles = extractPortfolioTitles();
 
     // Bio — read from actual Upwork "Overview" / "About Me" section
     const bio = readBio(pt);
@@ -321,7 +351,6 @@
       // CRITICAL FIX: save BOTH formats
       skills:    skills.join(', '),  // string — for backwards compat
       skillsArr: skills,             // array  — for options UI + skill matching
-      portfolioTitles,
       employment, education, languages, certifications,
       _readAt:    Date.now(),
       _autoRead:  true,
@@ -329,247 +358,321 @@
     };
   }
 
-  // ── Toast notification ────────────────────────────────────────────────────────
-  function showToast(data) {
-    const id = 'snagai-toast';
-    const old = document.getElementById(id);
-    if (old) old.remove();
+  // ── Toast system ─────────────────────────────────────────────────────────────
+  const T_ID  = 'snagai-toast';
+  const T_CSS = [
+    'position:fixed','bottom:28px','right:28px','z-index:2147483647',
+    'width:288px','background:#0d1525',
+    'border:1px solid rgba(201,168,76,.22)',
+    'border-radius:16px','overflow:hidden',
+    'box-shadow:0 24px 64px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.04)',
+    'font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',sans-serif',
+    'font-size:13px','color:#f0eeea','transition:opacity .35s',
+  ].join(';');
 
-    const el = document.createElement('div');
-    el.id = id;
-    el.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:99999;background:#131829;border:1px solid rgba(201,168,76,.4);border-radius:12px;padding:14px 18px;max-width:300px;font-family:-apple-system,sans-serif;font-size:13px;color:#f0eeea;box-shadow:0 8px 32px rgba(0,0,0,.6)';
+  const T_ANIMS = `<style>
+    @keyframes snag-spin{to{transform:rotate(360deg)}}
+    @keyframes snag-up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+    #${T_ID}{animation:snag-up .3s cubic-bezier(.34,1.56,.64,1)}
+    #snagai-next-btn:hover{filter:brightness(1.1)}
+  </style>`;
 
-    const skillPreview = data.skillsArr && data.skillsArr.length
-      ? data.skillsArr.slice(0, 4).join(', ') + (data.skillsArr.length > 4 ? ` +${data.skillsArr.length - 4} more` : '')
-      : 'No skills found — check your profile page is fully loaded';
+  function getToast() {
+    let el = document.getElementById(T_ID);
+    if (!el) {
+      el = document.createElement('div');
+      el.id = T_ID;
+      el.setAttribute('style', T_CSS);
+      document.body.appendChild(el);
+    }
+    return el;
+  }
 
-    el.innerHTML = `
-      <div style="font-weight:700;color:#c9a84c;margin-bottom:6px;display:flex;align-items:center;gap:6px">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#c9a84c" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-        Snag AI — Profile Synced
-      </div>
-      <div style="font-size:11px;color:rgba(240,238,234,.65);line-height:1.7">
-        <strong style="color:#f0eeea">${data.name || 'Profile'}</strong>
-        ${data.tier ? ' · ' + data.tier : ''}
-        ${data.jss  ? ' · ' + data.jss + ' JSS' : ''}<br>
-        ${skillPreview}
-      </div>
-    `;
-    document.body.appendChild(el);
-
+  function dismissToast(delay) {
     setTimeout(() => {
-      el.style.transition = 'opacity .5s';
-      el.style.opacity    = '0';
-      setTimeout(() => el.remove(), 500);
-    }, 4500);
+      const el = document.getElementById(T_ID);
+      if (!el) return;
+      el.style.opacity = '0';
+      setTimeout(() => el.remove(), 380);
+    }, delay || 0);
+  }
+
+  // Phase 1 — Syncing in progress (spinning ring)
+  function showSyncingToast() {
+    getToast().innerHTML = T_ANIMS + `
+      <div style="height:2px;background:linear-gradient(90deg,#c9a84c,#e8c878,transparent)"></div>
+      <div style="padding:18px 20px;display:flex;align-items:center;gap:14px">
+        <div style="width:36px;height:36px;flex-shrink:0;border-radius:50%;
+          border:2.5px solid rgba(201,168,76,.12);border-top-color:#c9a84c;
+          animation:snag-spin .85s linear infinite"></div>
+        <div>
+          <div style="font-weight:700;letter-spacing:-.01em;color:#f0eeea">Syncing profile</div>
+          <div style="font-size:11px;color:rgba(240,238,234,.42);margin-top:3px;letter-spacing:.01em">
+            Reading your Upwork data…
+          </div>
+        </div>
+      </div>`;
+  }
+
+  // Phase 2 — Portfolio page N done, more pages exist
+  function showPageDoneToast(page, itemCount, hasNext, onNextClick) {
+    const label = itemCount === 1 ? '1 project' : itemCount + ' projects';
+    getToast().innerHTML = T_ANIMS + `
+      <div style="height:2px;background:linear-gradient(90deg,#34d399,transparent)"></div>
+      <div style="padding:16px 20px">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:${hasNext ? 14 : 0}px">
+          <div style="width:32px;height:32px;flex-shrink:0;border-radius:50%;
+            background:rgba(52,211,153,.12);display:flex;align-items:center;justify-content:center">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2.5">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+          </div>
+          <div>
+            <div style="font-weight:700;letter-spacing:-.01em">Page ${page} synced — ${label}</div>
+            <div style="font-size:11px;color:rgba(240,238,234,.42);margin-top:2px">
+              ${hasNext ? 'Navigate to portfolio page ' + (page+1) + ' to sync more' : 'All portfolio pages covered'}
+            </div>
+          </div>
+        </div>
+        ${hasNext ? `
+        <button id="snagai-next-btn" style="
+          display:block;width:100%;padding:10px 16px;
+          background:linear-gradient(135deg,#c9a84c 0%,#e8c878 100%);
+          color:#0a0e1a;border:none;border-radius:10px;
+          font-size:12px;font-weight:700;cursor:pointer;
+          font-family:inherit;letter-spacing:.01em;
+          box-shadow:0 4px 14px rgba(201,168,76,.25);
+          transition:filter .15s">
+          Go to page ${page+1} →
+        </button>` : ''}
+      </div>`;
+    if (hasNext) {
+      document.getElementById('snagai-next-btn')?.addEventListener('click', () => {
+        showSyncingToast(); // show syncing while next page loads
+        onNextClick?.();
+      });
+    }
+  }
+
+  // Phase 3 — All done
+  function showDoneToast() {
+    getToast().innerHTML = T_ANIMS + `
+      <div style="height:2px;background:linear-gradient(90deg,#34d399,transparent)"></div>
+      <div style="padding:18px 20px;display:flex;align-items:center;gap:14px">
+        <div style="width:36px;height:36px;flex-shrink:0;border-radius:50%;
+          background:rgba(52,211,153,.12);display:flex;align-items:center;justify-content:center">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2.5">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </div>
+        <div>
+          <div style="font-weight:700;letter-spacing:-.01em;color:#f0eeea">Profile synced</div>
+          <div style="font-size:11px;color:rgba(240,238,234,.42);margin-top:3px">
+            All data saved successfully
+          </div>
+        </div>
+      </div>`;
+    dismissToast(2800);
   }
 
 
-  // Trim profile to stay under chrome.storage.sync 8 KB per-item limit
-  // Two full profiles with bio/employment can exceed it and fail silently
-  function trimForStorage(profile) {
-    const skills = Array.isArray(profile.skillsArr) ? profile.skillsArr : [];
-    return {
-      // identity + sync meta
-      id:          profile.id,
-      url:         profile.url,
-      syncEnabled: profile.syncEnabled,
-      _readAt:     profile._readAt,
-      _lastVisited: profile._lastVisited,
-      _syncAttempted: profile._syncAttempted,
-      // core stats (small)
-      name:        profile.name        || '',
-      title:       (profile.title      || '').slice(0, 120),
-      country:     profile.country     || '',
-      jss:         profile.jss         || '',
-      rate:        profile.rate        || '',
-      hourlyRate:  profile.hourlyRate  || '',
-      tier:        profile.tier        || '',
-      tierKey:     profile.tierKey     || '',
-      earnings:    profile.earnings    || '',
-      jobs:        profile.jobs        || '',
-      hours:       profile.hours       || '',
-      extra:       (profile.extra      || '').slice(0, 200),
-      bio:         (profile.bio        || '').slice(0, 200), // cap bio
-      // skills — cap at 25 to save space
-      skillsArr:   skills.slice(0, 25),
-      skills:      skills.slice(0, 25).join(', '),
-      // employment — 3 entries, each capped
-      employment:  (profile.employment || []).slice(0, 3).map(e =>
-        (typeof e === 'string' ? e : JSON.stringify(e)).slice(0, 120)
-      ),
-      education:   (profile.education  || []).slice(0, 3).map(e =>
-        (typeof e === 'string' ? e : JSON.stringify(e)).slice(0, 80)
-      ),
-      languages:   (profile.languages  || []).slice(0, 5),
-      certifications: [], // skip — not used in proposals, too large
-      // portfolios — keep all (user-entered, important)
-      portfolios:  (profile.portfolios || []).map(p => ({
-        title: (p.title || '').slice(0, 80),
-        urls:  (p.urls  || []).slice(0, 5),
-        desc:  (p.desc  || '').slice(0, 100),
-      })),
-    };
+  // ── Storage helpers ────────────────────────────────────────────────────────
+  const local = {
+    get: keys => new Promise(r => chrome.storage.local.get(keys, r)),
+    set: data => new Promise((res, rej) => chrome.storage.local.set(data, () =>
+      chrome.runtime.lastError ? rej(new Error(chrome.runtime.lastError.message)) : res()
+    )),
+    remove: keys => new Promise(r => chrome.storage.local.remove(keys, r)),
+  };
+
+  // ── CAPTCHA detection ────────────────────────────────────────────────────────
+  function hasCaptcha() {
+    return !!(
+      document.querySelector('.g-recaptcha, #captcha, [data-test*="captcha"], iframe[src*="captcha"], iframe[src*="recaptcha"]') ||
+      /prove you.re human|complete the captcha|unusual traffic/i.test(document.body.innerText.slice(0, 2000))
+    );
   }
 
-  // ── Init ──────────────────────────────────────────────────────────────────────
-  function init(attempt) {
+  function showCaptchaToast() {
+    getToast().innerHTML = T_ANIMS + `
+      <div style="height:2px;background:linear-gradient(90deg,#fbbf24,transparent)"></div>
+      <div style="padding:18px 20px;display:flex;align-items:center;gap:14px">
+        <div style="width:36px;height:36px;flex-shrink:0;border-radius:50%;
+          background:rgba(251,191,36,.12);display:flex;align-items:center;justify-content:center;font-size:18px">🔒</div>
+        <div>
+          <div style="font-weight:700;color:#f0eeea">Captcha detected</div>
+          <div style="font-size:11px;color:rgba(240,238,234,.42);margin-top:3px">Complete it, then visit your profile again</div>
+        </div>
+      </div>`;
+    dismissToast(6000);
+  }
+
+  // ── Read next portfolio page (delay-then-read — no fragile DOM observer) ────
+  async function readNextPortfolioPage(profileId, localKey, page) {
+    showSyncingToast();
+
+    // Wait for Upwork React to render the new page content
+    await new Promise(r => setTimeout(r, 2500));
+
+    if (hasCaptcha()) { showCaptchaToast(); return; }
+
+    const items = extractPortfolioItems();
+    if (!items.length) { showDoneToast(); return; }
+
+    const stored  = await local.get([localKey]);
+    const current = stored[localKey] || {};
+    const merged  = [...(current.portfolios || [])];
+    items.forEach(item => {
+      const match = merged.find(p => p.title === item.title);
+      if (!match) merged.push({ title: item.title, desc: item.desc || '', urls: [], _autoRead: true });
+      else if (!match.desc && item.desc) match.desc = item.desc;
+    });
+
+    try { await local.set({ [localKey]: { ...current, portfolios: merged } }); }
+    catch(e) { console.error('[SnagAI] Portfolio page save failed:', e.message); }
+
+    const nextBtn = findPortfolioNextButton();
+    if (nextBtn) {
+      showPageDoneToast(page, items.length, true, () => {
+        nextBtn.click();
+        readNextPortfolioPage(profileId, localKey, page + 1);
+      });
+    } else {
+      showDoneToast();
+    }
+  }
+
+  // ── Init (async — toast always resolves) ────────────────────────────────────
+  async function init(attempt) {
     attempt = attempt || 1;
 
-    chrome.storage.sync.get(['registeredProfiles'], (stored) => {
-      const registered = stored.registeredProfiles || [];
+    const { registeredProfiles: registered = [] } = await local.get(['registeredProfiles']);
+    if (!registered.length) return;
 
-      // GUARD 1: no registered profiles at all — do nothing
-      if (!registered.length) return;
+    const currentUrl = location.href.split('?')[0];
+    const curSlug    = currentUrl.split('/freelancers/')[1]?.split('/')[0]?.split('?')[0] || '';
+    if (!curSlug) return;
 
-      const currentUrl = location.href.split('?')[0];
-      const curSlug = currentUrl.split('/freelancers/')[1]?.split('/')[0]?.split('?')[0] || '';
-
-      // GUARD 2: not on a profile slug URL
-      if (!curSlug) return;
-
-      // ── Primary match: slug-for-slug ────────────────────────────────────────
-      let targetProfile = registered.find(p => {
-        if (!p || !p.url) return false;
-        const regSlug = p.url.split('/freelancers/')[1]?.split('/')[0]?.split('?')[0] || '';
-        return regSlug && regSlug === curSlug;
-      });
-
-      // ── Fallback: custom username registered (no ~), Upwork redirected to ~xxx
-      // Only fires when we detect this is the user's OWN profile page (edit controls visible)
-      if (!targetProfile && curSlug.startsWith('~')) {
-        const ownProfile = !!(
-          document.querySelector('[data-test="pib-edit-button"]') ||
-          document.querySelector('[class*="edit-profile"]') ||
-          document.querySelector('[aria-label*="Edit profile"]') ||
-          document.querySelector('a[href*="/profile/edit"]')
-        );
-        if (ownProfile) {
-          // Find a registered profile whose URL uses a custom username (no ~)
-          targetProfile = registered.find(p => {
-            if (!p || !p.url) return false;
-            const regSlug = p.url.split('/freelancers/')[1]?.split('/')[0]?.split('?')[0] || '';
-            return regSlug && !regSlug.startsWith('~');
-          });
-        }
-      }
-
-      // GUARD 3: user hasn't registered this page — do nothing
-      if (!targetProfile) return;
-
-      // Keep original URL for array lookup; we'll update it to the resolved ~xxx URL
-      const originalStoredUrl = targetProfile.url;
-      const matchedProfile    = targetProfile;
-
-      // Sync disabled — only update last visited timestamp
-      if (matchedProfile.syncEnabled === false) {
-        const updReg = registered.map(p => (p.url === matchedProfile.url) ? { ...p, _lastVisited: Date.now() } : p);
-        chrome.storage.sync.set({ registeredProfiles: updReg });
-        return;
-      }
-
-      const data = readProfileData();
-
-      // Auto-populate 'extra' with availability on first sync (only if user hasn't set it)
-      const availability = readAvailability(document.body.innerText);
-      const autoExtra = matchedProfile.extra
-        ? matchedProfile.extra  // preserve user-edited value
-        : [availability, data.country].filter(Boolean).join(' · ');
-
-      // If page not yet loaded (truly nothing detected), retry up to 3 times
-      const hasAnyData = !!(data.name || data.jss || data.rate || data.tier || data.skillsArr.length);
-      if (!hasAnyData) {
-        if (attempt <= 3) {
-          setTimeout(() => init(attempt + 1), 2000 * attempt);
-          return;
-        }
-        // After 3 retries still nothing — save _readAt anyway so UI stops showing "Pending"
-        // Profile card will show empty fields; user can fill manually
-        const minimalMeta = {
-          id:             matchedProfile.id || ('profile_' + Date.now()),
-          url:            currentUrl,
-          syncEnabled:    matchedProfile.syncEnabled,
-          _readAt:        Date.now(),
-          _syncAttempted: true,
-          name:           matchedProfile.name || '',
-          jss:            matchedProfile.jss  || '',
-        };
-        const minReg = registered.map(p => p.url === originalStoredUrl ? minimalMeta : p);
-        chrome.storage.sync.set({ registeredProfiles: minReg }, () => {
-          if (chrome.runtime.lastError) console.error('[SnagAI] Minimal save failed:', chrome.runtime.lastError.message);
-        });
-        return;
-      }
-
-      // ── Merge portfolio list ────────────────────────────────────────────────
-      const existingPortfolios = matchedProfile.portfolios || [];
-      const mergedPortfolios   = [...existingPortfolios];
-      (data.portfolioTitles || []).forEach(title => {
-        if (!mergedPortfolios.find(p => p.title === title)) {
-          mergedPortfolios.push({ title, urls: [], desc: '', _autoRead: true });
-        }
-      });
-
-      const profileId = matchedProfile.id || ('profile_' + Date.now());
-
-      // ── SYNC: metadata only (~200 bytes per profile, well under 8 KB limit) ─
-      const profileMeta = {
-        id:          profileId,
-        url:         currentUrl,          // update to resolved URL
-        syncEnabled: true,
-        _readAt:     data._readAt,
-        _lastVisited: Date.now(),
-        // Just enough for slot status display + card header
-        name:        data.name,
-        jss:         data.jss,
-        tier:        data.tier,
-        tierKey:     data.tierKey || matchedProfile.tierKey || 'new',
-        rate:        data.rate,
-        earnings:    data.earnings,
-        jobs:        data.jobs,
-        country:     data.country,
-      };
-
-      const updatedRegistered = registered.map(p =>
-        (p.url === originalStoredUrl || p.url === currentUrl) ? profileMeta : p
-      );
-
-      // ── LOCAL: full profile data (no per-item limit in local storage) ───────
-      const profileFull = {
-        ...profileMeta,
-        hourlyRate:  data.hourlyRate,
-        hours:       data.hours,
-        title:       data.title,
-        bio:         data.bio,
-        extra:       matchedProfile.extra || autoExtra,
-        skills:      data.skills,
-        skillsArr:   data.skillsArr,
-        employment:  data.employment,
-        education:   data.education,
-        languages:   data.languages,
-        portfolios:  mergedPortfolios,
-        _autoRead:   true,
-      };
-      const localKey = 'profileFull_' + profileId;
-
-      // Save sync metadata first (tiny), then save full data to local
-      chrome.storage.sync.set({
-        registeredProfiles: updatedRegistered,
-        activeProfileId:    profileId,
-        profile:            profileFull, // legacy compat — also keep in sync for background.js
-      }, () => {
-        if (chrome.runtime.lastError) {
-          console.error('[SnagAI] Sync metadata save failed:', chrome.runtime.lastError.message);
-          // Even if sync fails, still save to local
-        }
-        chrome.storage.local.set({ [localKey]: profileFull }, () => {
-          console.log('[SnagAI] ✓ Synced:', data.name, '| JSS:', data.jss, '| Skills:', data.skillsArr.length, '| localKey:', localKey);
-          showToast(data);
-        });
-      });
+    // Primary match
+    let target = registered.find(p => {
+      if (!p?.url) return false;
+      const s = p.url.split('/freelancers/')[1]?.split('/')[0]?.split('?')[0] || '';
+      return s && s === curSlug;
     });
+
+    // Fallback: custom username → ~xxx redirect (own profile only)
+    if (!target && curSlug.startsWith('~')) {
+      const isOwn = !!(
+        document.querySelector('[data-test="pib-edit-button"]') ||
+        document.querySelector('[class*="edit-profile"]') ||
+        document.querySelector('[aria-label*="Edit profile"]') ||
+        document.querySelector('a[href*="/profile/edit"]')
+      );
+      if (isOwn) target = registered.find(p => {
+        if (!p?.url) return false;
+        const s = p.url.split('/freelancers/')[1]?.split('/')[0]?.split('?')[0] || '';
+        return s && !s.startsWith('~');
+      });
+    }
+
+    if (!target) return;
+
+    // Sync disabled → just update lastVisited
+    if (target.syncEnabled === false) {
+      await local.set({ registeredProfiles: registered.map(p =>
+        p.url === target.url ? { ...p, _lastVisited: Date.now() } : p
+      )}).catch(() => {});
+      return;
+    }
+
+    const profileId  = target.id || ('profile_' + Date.now());
+    const localKey   = 'profileFull_' + profileId;
+    const originUrl  = target.url;
+
+    // Show syncing toast immediately
+    showSyncingToast();
+
+    // Load existing full data (preserve user portfolios)
+    const existing     = await local.get([localKey]);
+    const existingFull = existing[localKey] || {};
+
+    const data       = readProfileData();
+    const hasAnyData = !!(data.name || data.jss || data.rate || data.tier || data.skillsArr.length);
+
+    if (!hasAnyData) {
+      if (hasCaptcha()) { showCaptchaToast(); return; }
+      if (attempt <= 3) {
+        dismissToast(0);
+        await new Promise(r => setTimeout(r, 2000 * attempt));
+        return init(attempt + 1);
+      }
+      // After 3 retries: mark as attempted so slot shows synced
+      await local.set({ registeredProfiles: registered.map(p =>
+        p.url === originUrl ? { ...p, _readAt: Date.now(), _syncAttempted: true, url: currentUrl } : p
+      )}).catch(() => {});
+      showDoneToast();
+      return;
+    }
+
+    // Merge portfolios — never lose user-added entries
+    const pageItems = extractPortfolioItems();
+    const merged    = [...(existingFull.portfolios || [])];
+    pageItems.forEach(item => {
+      const match = merged.find(p => p.title === item.title);
+      if (!match) merged.push({ title: item.title, desc: item.desc || '', urls: [], _autoRead: true });
+      else if (!match.desc && item.desc) match.desc = item.desc;
+    });
+
+    const availability = readAvailability(document.body.innerText);
+    const autoExtra    = target.extra || existingFull.extra ||
+      [availability, data.country].filter(Boolean).join(' · ');
+
+    const profileMeta = {
+      id: profileId, url: currentUrl, syncEnabled: true,
+      _readAt: data._readAt, _lastVisited: Date.now(),
+      name: data.name, jss: data.jss, tier: data.tier,
+      tierKey: data.tierKey || 'new', rate: data.rate,
+      earnings: data.earnings, jobs: data.jobs, country: data.country,
+    };
+
+    const profileFull = {
+      ...profileMeta,
+      hourlyRate: data.hourlyRate, hours: data.hours,
+      title: data.title, bio: data.bio, extra: autoExtra,
+      skills: data.skills, skillsArr: data.skillsArr,
+      employment: data.employment, education: data.education,
+      languages: data.languages, portfolios: merged, _autoRead: true,
+    };
+
+    // Save — try/catch so toast ALWAYS advances regardless
+    try {
+      await local.set({
+        registeredProfiles: registered.map(p =>
+          (p.url === originUrl || p.url === currentUrl) ? profileMeta : p
+        ),
+        activeProfileId: profileId,
+        [localKey]:      profileFull,
+      });
+    } catch (err) {
+      console.error('[SnagAI] Save error:', err.message);
+    }
+
+    // Profile is saved — show done toast
+    showDoneToast();
+
+    // If portfolio has more pages, show hint after done toast auto-dismisses
+    const nextBtn = findPortfolioNextButton();
+    if (nextBtn && pageItems.length > 0) {
+      setTimeout(() => {
+        showPageDoneToast(1, pageItems.length, true, () => {
+          nextBtn.click();
+          readNextPortfolioPage(profileId, localKey, 2);
+        });
+      }, 3200);
+    }
   }
 
   if (document.readyState === 'complete') setTimeout(() => init(1), 1500);
   else window.addEventListener('load', () => setTimeout(() => init(1), 1500));
+
 })();
