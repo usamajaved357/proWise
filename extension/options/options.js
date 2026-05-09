@@ -25,9 +25,9 @@ if (_tab) switchSection(_tab);
 
 // ── Storage change listener — live refresh when profile syncs ─────────────────
 chrome.storage.onChanged.addListener((changes, area) => {
-  if (area === 'local' && changes.primaryProfileId) {
-    renderProfilesPage(); // re-render to show updated primary badge
-    return;
+  if (area === 'local') {
+    const hasProfile = Object.keys(changes).some(k => k.startsWith('profileFull_') || k === 'primaryProfileId');
+    if (hasProfile) { renderProfilesPage(); return; }
   }
   if (area !== 'sync') return;
   if (changes.registeredProfiles || changes.profile) {
@@ -208,34 +208,45 @@ async function renderProfilesPage() {
   ]);
   const { registeredProfiles = [], userPlan = 'free' } = syncStored;
   const primaryProfileId = localStored.primaryProfileId || null;
+
+  // Load full profile data from local storage for each registered profile
+  const registered = registeredProfiles.filter(p => p && p.url);
+  const localKeys  = registered.map(p => p.id ? 'profileFull_' + p.id : null).filter(Boolean);
+  const localFull  = localKeys.length
+    ? await new Promise(resolve => chrome.storage.local.get(localKeys, resolve))
+    : {};
+
+  // Merge: local full data overrides sync metadata (sync just has id/url/name/jss for slot display)
+  const mergedProfiles = registered.map(p => {
+    const full = p.id ? localFull['profileFull_' + p.id] : null;
+    return full ? { ...p, ...full } : p; // local takes priority
+  });
   const limit     = PLAN_LIMITS[userPlan] || 1;
   const container = document.getElementById('profiles-container');
   const noMsg     = document.getElementById('no-profiles-msg');
   const addBtn    = document.getElementById('add-profile-btn');
   container.innerHTML = '';
 
-  const registered = registeredProfiles.filter(p => p && p.url);
-
-  if (!registered.length) {
+  if (!mergedProfiles.length) {
     noMsg.style.display = 'block';
     addBtn.style.display = 'none';
     return;
   }
   noMsg.style.display  = 'none';
-  addBtn.style.display = registered.length < limit ? 'flex' : 'none';
+  addBtn.style.display = mergedProfiles.length < limit ? 'flex' : 'none';
 
-  if (registered.length === 1) {
-    renderProfileCard(container, registered[0], 0, registered, primaryProfileId);
+  if (mergedProfiles.length === 1) {
+    renderProfileCard(container, mergedProfiles[0], 0, mergedProfiles, primaryProfileId);
   } else {
     const wrap   = document.createElement('div');
     wrap.className = 'profile-slider-wrap';
     const slides = document.createElement('div');
     slides.className = 'profile-slides';
-    registered.forEach((p, i) => {
+    mergedProfiles.forEach((p, i) => {
       const slide = document.createElement('div');
       slide.className = 'profile-slide' + (i === currentSlide ? ' active' : '');
       slide.id = 'slide-' + i;
-      renderProfileCard(slide, p, i, registered, primaryProfileId);
+      renderProfileCard(slide, p, i, mergedProfiles, primaryProfileId);
       slides.appendChild(slide);
     });
     wrap.appendChild(slides);
@@ -244,7 +255,7 @@ async function renderProfilesPage() {
     const ctrl = document.createElement('div');
     ctrl.className = 'slider-controls';
     ctrl.innerHTML = `<button class="slider-arr" id="sl-prev">‹</button>`;
-    registered.forEach((_, i) => {
+    mergedProfiles.forEach((_, i) => {
       const dot = document.createElement('div');
       dot.className = 'slider-dot' + (i === currentSlide ? ' active' : '');
       dot.addEventListener('click', () => goToSlide(i));
@@ -562,37 +573,34 @@ function renderPortfolioItem(list, p, pi, allProfiles, profileIdx, autoOpen) {
 
 // ── Save card ─────────────────────────────────────────────────────────────────
 function saveCard(card, idx, allProfiles) {
-  chrome.storage.sync.get(['registeredProfiles'], (stored) => {
-    const profiles = stored.registeredProfiles || [];
-    if (!profiles[idx]) return;
+  const profile = allProfiles[idx];
+  if (!profile?.id) return;
 
-    profiles[idx].title   = card.querySelector('[data-field="title"]')?.value?.trim()   || profiles[idx].title;
-    profiles[idx].bio     = card.querySelector('[data-field="bio"]')?.value?.trim()     || profiles[idx].bio;
-    profiles[idx].country = card.querySelector('[data-field="country"]')?.value?.trim() || profiles[idx].country;
-    profiles[idx].extra   = card.querySelector('[data-field="extra"]')?.value?.trim()   || profiles[idx].extra;
+  const title      = card.querySelector('[data-field="title"]')?.value?.trim()   || '';
+  const bio        = card.querySelector('[data-field="bio"]')?.value?.trim()     || '';
+  const country    = card.querySelector('[data-field="country"]')?.value?.trim() || '';
+  const extra      = card.querySelector('[data-field="extra"]')?.value?.trim()   || '';
+  const portfolios = [...card.querySelectorAll('.port-item')].map(el => ({
+    title: el.querySelector('.port-title-inp')?.value?.trim()  || '',
+    urls:  [...el.querySelectorAll('.port-url-inp')].map(i => i.value.trim()).filter(Boolean),
+    desc:  el.querySelector('.port-desc-inp')?.value?.trim()   || '',
+  })).filter(p => p.title || p.urls.length);
 
-    profiles[idx].portfolios = [...card.querySelectorAll('.port-item')].map(el => ({
-      title: el.querySelector('.port-title-inp')?.value?.trim()  || '',
-      urls:  [...el.querySelectorAll('.port-url-inp')].map(i => i.value.trim()).filter(Boolean),
-      desc:  el.querySelector('.port-desc-inp')?.value?.trim()   || '',
-    })).filter(p => p.title || p.urls.length);
+  const localKey = 'profileFull_' + profile.id;
 
-    // Keep legacy profile key in sync for background.js
-    if (idx === 0) {
-      chrome.storage.sync.get(['profile'], (s) => {
-        const p = profiles[0];
-        const merged = { ...(s.profile || {}), ...p,
-          tier:      p.tierKey || s.profile?.tier,
-          skills:    typeof p.skills === 'string' ? p.skills : getSkillsArr(p).join(', '),
-          skillsArr: getSkillsArr(p),
-          portfolio: p.portfolios || s.profile?.portfolio || [],
-          extra:     p.extra || s.profile?.extra || '',
-        };
-        chrome.storage.sync.set({ profile: merged });
-      });
-    }
+  // Load existing full data, merge edits, save back to local
+  chrome.storage.local.get([localKey], (localData) => {
+    const existing = localData[localKey] || profile;
+    const updated  = { ...existing, title, bio, country, extra, portfolios };
 
-    chrome.storage.sync.set({ registeredProfiles: profiles }, () => {
+    chrome.storage.local.set({ [localKey]: updated }, () => {
+      // Also update sync profile for legacy compat (background.js fallback)
+      chrome.storage.sync.set({ profile: {
+        ...updated,
+        skills:    getSkillsArr(updated).join(', '),
+        skillsArr: getSkillsArr(updated),
+        portfolio: portfolios,
+      }});
       showSaved('saved-card-' + idx);
     });
   });

@@ -251,10 +251,11 @@ a{text-decoration:none;color:inherit}
 .plan-btn-current{background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);cursor:default;opacity:.95}
 .plan-btn-current:hover{background:var(--green-bg)!important;transform:none!important;box-shadow:none!important}
 /* sidebar legal links */
-.sb-legal{padding:0 14px 14px;display:flex;flex-wrap:wrap;gap:4px 8px;margin-top:4px}
-.sb-legal a{font-size:10px;color:var(--white3);transition:color .15s}
-.sb-legal a:hover{color:var(--white2)}
-.sb-legal-sep{font-size:10px;color:var(--border2)}
+.sb-legal{padding:8px 10px 14px;display:flex;flex-direction:column;gap:1px}
+.sb-legal-title{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--white4);padding:0 10px 6px;margin-top:4px}
+.sb-legal a{display:flex;align-items:center;gap:8px;padding:7px 10px;font-size:11px;font-weight:500;color:var(--white3);border-radius:var(--radius-xs);transition:all .15s}
+.sb-legal a:hover{color:var(--white2);background:rgba(255,255,255,.04)}
+.sb-legal-icon{font-size:12px;width:14px;text-align:center;flex-shrink:0;opacity:.7}
 /* Edit-val resize handle */
 textarea.edit-val{min-height:38px}
 .audit-feature-card{background:rgba(167,139,250,.05);border:1px solid rgba(167,139,250,.12);border-radius:var(--radius-sm);padding:12px 14px}
@@ -312,11 +313,16 @@ textarea.edit-val{min-height:38px}
       <div class="sb-plan-count" id="sb-count">— / — used</div>
     </div>
     <div class="sb-legal">
-      <a href="https://snagai.netlify.app/terms.html" target="_blank">Terms</a>
-      <span class="sb-legal-sep">·</span>
-      <a href="https://snagai.netlify.app/privacy.html" target="_blank">Privacy</a>
-      <span class="sb-legal-sep">·</span>
-      <a href="https://snagai.netlify.app/refund.html" target="_blank">Refund</a>
+      <div class="sb-legal-title">Legal</div>
+      <a href="https://snagai.netlify.app/terms.html" target="_blank">
+        <span class="sb-legal-icon">📄</span>Terms of Service
+      </a>
+      <a href="https://snagai.netlify.app/privacy.html" target="_blank">
+        <span class="sb-legal-icon">🔒</span>Privacy Policy
+      </a>
+      <a href="https://snagai.netlify.app/refund.html" target="_blank">
+        <span class="sb-legal-icon">↩</span>Refund Policy
+      </a>
     </div>
   </div><!-- /sidebar -->
 

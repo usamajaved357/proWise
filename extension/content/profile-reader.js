@@ -48,12 +48,36 @@
   }
 
 
-  // Upwork "Top Traits" / Attributes section words — never real technical skills
+  // Upwork "Top Traits" / Attributes — never technical skills
   const UPWORK_TRAITS = /^(Committed to|Clear Communicator|Accountable for|Detail Oriented|Solution Oriented|Collaborative$|Reliable$|Deadline|Self-Motivated|Highly Organized|Effective Communicator|Client Focused|Results Driven|Independent|Interpersonal)/i;
+
+  // Portfolio catalog noise — prices, pagination, nav buttons, delivery times
+  const PORTFOLIO_NOISE = /^(From \$|\$\d|Your project|Manage project|View project|Add project|Pagination|Current page|go to page|\d+ days delivery|\d+ hrs|of \d+$)/i;
+
+  // General invalid-skill guard — applies to ALL extraction methods
+  function isValidSkill(s) {
+    if (!s || s.length < 2 || s.length > 60) return false;
+    if (UPWORK_TRAITS.test(s))   return false;
+    if (PORTFOLIO_NOISE.test(s)) return false;
+    if (/^\d+$/.test(s))        return false; // pure numbers
+    if (/\$\d/.test(s))         return false; // prices anywhere in string
+    if (/\bdelivery\b|\bdays\b.*\bdelivery\b/i.test(s)) return false;
+    if (/\bpaginat|\bcurrent page|\bgo to page/i.test(s)) return false;
+    if (s.split(' ').length > 6) return false; // more than 6 words = not a skill
+    return true;
+  }
 
   // ── Skills extraction — comprehensive with multiple fallbacks ─────────────────
   function readSkills() {
-    // DOM selectors: try each until we get results
+    // Try to scope to the skills section container to avoid picking up portfolio noise
+    const sectionRoots = [
+      document.querySelector('[data-test="skills-section"]'),
+      document.querySelector('[class*="skills-section"]'),
+      document.querySelector('[aria-label*="kills"]'),
+      document.querySelector('section[class*="kill"]'),
+      document,  // fallback: whole page
+    ].filter(Boolean);
+
     const selectors = [
       '.up-skill-badge',
       '[data-test="FreelancerCard-skill"]',
@@ -64,17 +88,23 @@
       '[class*="skillBadge"]',
       '[class*="skill_badge"]',
     ];
-    for (const sel of selectors) {
-      try {
-        const els = document.querySelectorAll(sel);
-        if (els.length > 0) {
-          const extracted = filterTraits([...new Set([...els]
-            .map(e => e.innerText.trim().split('\n')[0].trim())
-            .filter(s => s && s.length >= 2 && s.length <= 60)
-          )]);
-          if (extracted.length >= 1) return extracted;
-        }
-      } catch(e) {}
+
+    for (const root of sectionRoots) {
+      for (const sel of selectors) {
+        try {
+          const els = root.querySelectorAll(sel);
+          if (els.length > 0) {
+            const extracted = [...new Set([...els]
+              .map(e => e.innerText.trim().split('\n')[0].trim())
+              .filter(s => isValidSkill(s))
+            )];
+            // Only trust DOM result if it has 2+ items OR we scoped to skills section
+            if (extracted.length >= 2 || root !== document) return extracted;
+          }
+        } catch(e) {}
+      }
+      if (root === sectionRoots[0] && sectionRoots.length > 1) continue; // try next root
+      break; // if we reached document fallback, stop root loop
     }
 
     // Text-based fallback: extract between "Skills" and next section heading
@@ -334,6 +364,54 @@
     }, 4500);
   }
 
+
+  // Trim profile to stay under chrome.storage.sync 8 KB per-item limit
+  // Two full profiles with bio/employment can exceed it and fail silently
+  function trimForStorage(profile) {
+    const skills = Array.isArray(profile.skillsArr) ? profile.skillsArr : [];
+    return {
+      // identity + sync meta
+      id:          profile.id,
+      url:         profile.url,
+      syncEnabled: profile.syncEnabled,
+      _readAt:     profile._readAt,
+      _lastVisited: profile._lastVisited,
+      _syncAttempted: profile._syncAttempted,
+      // core stats (small)
+      name:        profile.name        || '',
+      title:       (profile.title      || '').slice(0, 120),
+      country:     profile.country     || '',
+      jss:         profile.jss         || '',
+      rate:        profile.rate        || '',
+      hourlyRate:  profile.hourlyRate  || '',
+      tier:        profile.tier        || '',
+      tierKey:     profile.tierKey     || '',
+      earnings:    profile.earnings    || '',
+      jobs:        profile.jobs        || '',
+      hours:       profile.hours       || '',
+      extra:       (profile.extra      || '').slice(0, 200),
+      bio:         (profile.bio        || '').slice(0, 200), // cap bio
+      // skills — cap at 25 to save space
+      skillsArr:   skills.slice(0, 25),
+      skills:      skills.slice(0, 25).join(', '),
+      // employment — 3 entries, each capped
+      employment:  (profile.employment || []).slice(0, 3).map(e =>
+        (typeof e === 'string' ? e : JSON.stringify(e)).slice(0, 120)
+      ),
+      education:   (profile.education  || []).slice(0, 3).map(e =>
+        (typeof e === 'string' ? e : JSON.stringify(e)).slice(0, 80)
+      ),
+      languages:   (profile.languages  || []).slice(0, 5),
+      certifications: [], // skip — not used in proposals, too large
+      // portfolios — keep all (user-entered, important)
+      portfolios:  (profile.portfolios || []).map(p => ({
+        title: (p.title || '').slice(0, 80),
+        urls:  (p.urls  || []).slice(0, 5),
+        desc:  (p.desc  || '').slice(0, 100),
+      })),
+    };
+  }
+
   // ── Init ──────────────────────────────────────────────────────────────────────
   function init(attempt) {
     attempt = attempt || 1;
@@ -407,67 +485,87 @@
         }
         // After 3 retries still nothing — save _readAt anyway so UI stops showing "Pending"
         // Profile card will show empty fields; user can fill manually
-        const minimalProfile = {
-          ...matchedProfile,
-          _readAt: Date.now(),
+        const minimalMeta = {
+          id:             matchedProfile.id || ('profile_' + Date.now()),
+          url:            currentUrl,
+          syncEnabled:    matchedProfile.syncEnabled,
+          _readAt:        Date.now(),
           _syncAttempted: true,
-          url: currentUrl,
+          name:           matchedProfile.name || '',
+          jss:            matchedProfile.jss  || '',
         };
-        const minReg = registered.map(p => p.url === originalStoredUrl ? minimalProfile : p);
-        chrome.storage.sync.set({ registeredProfiles: minReg });
+        const minReg = registered.map(p => p.url === originalStoredUrl ? minimalMeta : p);
+        chrome.storage.sync.set({ registeredProfiles: minReg }, () => {
+          if (chrome.runtime.lastError) console.error('[SnagAI] Minimal save failed:', chrome.runtime.lastError.message);
+        });
         return;
       }
 
-      // Merge: preserve existing portfolio URLs and user-edited fields
+      // ── Merge portfolio list ────────────────────────────────────────────────
       const existingPortfolios = matchedProfile.portfolios || [];
       const mergedPortfolios   = [...existingPortfolios];
       (data.portfolioTitles || []).forEach(title => {
         if (!mergedPortfolios.find(p => p.title === title)) {
-          mergedPortfolios.push({ title, urls: [], desc: '', skills: '', _autoRead: true });
+          mergedPortfolios.push({ title, urls: [], desc: '', _autoRead: true });
         }
       });
 
-      const updatedProfile = {
-        ...matchedProfile,
-        ...data,
-        portfolios:   mergedPortfolios,
-        extra:        matchedProfile.extra || autoExtra,
-        syncEnabled:  true,
-        _lastVisited: Date.now(),
-      };
+      const profileId = matchedProfile.id || ('profile_' + Date.now());
 
-      // Always update stored URL to the fully-resolved current URL
-      // This fixes custom-username → ~xxx redirect mismatches permanently
-      const resolvedUrl = currentUrl;
-      const updatedProfileWithUrl = { ...updatedProfile, url: resolvedUrl };
+      // ── SYNC: metadata only (~200 bytes per profile, well under 8 KB limit) ─
+      const profileMeta = {
+        id:          profileId,
+        url:         currentUrl,          // update to resolved URL
+        syncEnabled: true,
+        _readAt:     data._readAt,
+        _lastVisited: Date.now(),
+        // Just enough for slot status display + card header
+        name:        data.name,
+        jss:         data.jss,
+        tier:        data.tier,
+        tierKey:     data.tierKey || matchedProfile.tierKey || 'new',
+        rate:        data.rate,
+        earnings:    data.earnings,
+        jobs:        data.jobs,
+        country:     data.country,
+      };
 
       const updatedRegistered = registered.map(p =>
-        (p.url === originalStoredUrl || p.url === resolvedUrl) ? updatedProfileWithUrl : p
+        (p.url === originalStoredUrl || p.url === currentUrl) ? profileMeta : p
       );
 
-      // Legacy `profile` key — keep for background.js compatibility
-      const legacyProfile = {
-        name: data.name, title: data.title, jss: data.jss,
-        hourlyRate: data.hourlyRate, rate: data.rate,
-        tier: updatedProfile.tierKey,
-        skills: data.skills,      // string
-        skillsArr: data.skillsArr, // array
-        bio: data.bio, country: data.country,
-        earnings: data.earnings, jobs: data.jobs, hours: data.hours,
-        employment: data.employment, education: data.education,
-        languages: data.languages, certifications: data.certifications,
-        portfolio: mergedPortfolios,
-        extra: updatedProfile.extra || autoExtra || '',
-        _readAt: data._readAt, _autoRead: true,
+      // ── LOCAL: full profile data (no per-item limit in local storage) ───────
+      const profileFull = {
+        ...profileMeta,
+        hourlyRate:  data.hourlyRate,
+        hours:       data.hours,
+        title:       data.title,
+        bio:         data.bio,
+        extra:       matchedProfile.extra || autoExtra,
+        skills:      data.skills,
+        skillsArr:   data.skillsArr,
+        employment:  data.employment,
+        education:   data.education,
+        languages:   data.languages,
+        portfolios:  mergedPortfolios,
+        _autoRead:   true,
       };
+      const localKey = 'profileFull_' + profileId;
 
+      // Save sync metadata first (tiny), then save full data to local
       chrome.storage.sync.set({
         registeredProfiles: updatedRegistered,
-        activeProfileId:    updatedProfileWithUrl.id || matchedProfile.id,
-        profile:            legacyProfile,
+        activeProfileId:    profileId,
+        profile:            profileFull, // legacy compat — also keep in sync for background.js
       }, () => {
-        console.log('[SnagAI] ✓ Synced:', data.name, '| JSS:', data.jss, '| Skills:', data.skillsArr.length, '| Portfolios:', mergedPortfolios.length);
-        showToast(data);
+        if (chrome.runtime.lastError) {
+          console.error('[SnagAI] Sync metadata save failed:', chrome.runtime.lastError.message);
+          // Even if sync fails, still save to local
+        }
+        chrome.storage.local.set({ [localKey]: profileFull }, () => {
+          console.log('[SnagAI] ✓ Synced:', data.name, '| JSS:', data.jss, '| Skills:', data.skillsArr.length, '| localKey:', localKey);
+          showToast(data);
+        });
       });
     });
   }
