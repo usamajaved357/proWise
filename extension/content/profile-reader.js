@@ -97,9 +97,127 @@
   }
 
   // ── Portfolio helpers ────────────────────────────────────────────────────────
-  function findPortfolioNextButton() {
-    const el = document.querySelector('.next-page:not([disabled]):not(.disabled)');
-    return (el && el.offsetParent !== null) ? el : null;
+  // ── Shelf thumbnails — exclude carousel items inside modal ──────────────────
+  function getShelfThumbs() {
+    return Array.from(document.querySelectorAll('.portfolio-v2-shelf-thumbnail'))
+      .filter(el => !el.classList.contains('carousel-item'));
+  }
+
+  // Dismiss open menus/dropdowns with Escape key
+  function dismissMenus() {
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
+    document.dispatchEvent(new KeyboardEvent('keyup',   { key: 'Escape', bubbles: true, cancelable: true }));
+  }
+
+  // Wait until portfolio modal viewer appears in DOM
+  async function waitForModalOpen(timeoutMs) {
+    const deadline = Date.now() + (timeoutMs || 4000);
+    while (Date.now() < deadline) {
+      if (document.querySelector('.portfolio-v2-viewer')) return true;
+      await new Promise(r => setTimeout(r, 150));
+    }
+    return false;
+  }
+
+  // Wait until portfolio modal is fully closed (checks visibility, not just DOM presence)
+  async function waitForModalClose(timeoutMs) {
+    const deadline = Date.now() + (timeoutMs || 4000);
+    while (Date.now() < deadline) {
+      const modal  = document.querySelector('.air3-modal-portfolio-v2-viewer-modal');
+      const viewer = document.querySelector('.portfolio-v2-viewer');
+      if (!modal || !viewer) return true;
+      if (modal.getAttribute('aria-hidden') === 'true') return true;
+      try {
+        if (getComputedStyle(modal).display === 'none') return true;
+        if (getComputedStyle(modal).visibility === 'hidden') return true;
+      } catch(e) { return true; }
+      await new Promise(r => setTimeout(r, 150));
+    }
+    return false; // timed out — proceed anyway
+  }
+
+  // Navigate to next page — the pagination is a DIV.pagination container
+  // Query confirmed: only DIV.pagination exists, no .pagination-nr or .next-page children
+  // Strategy: get ALL children of the FIRST .pagination div, find the one with nextNum text
+  async function navigateToNextPage(currentPage) {
+    const prevThumbs = getShelfThumbs().map(t => t.innerText.trim().slice(0, 50)).join('|');
+    const nextNum    = String(currentPage + 1);
+
+    // Scroll portfolio section bottom into view so pagination renders
+    const portfolioEl = document.querySelector('.portfolio-v2-editor-shelf, [class*="portfolio-v2-shelf"]');
+    if (portfolioEl) portfolioEl.scrollIntoView({ behavior: 'instant', block: 'end' });
+    await new Promise(r => setTimeout(r, 400));
+
+    const candidates = [];
+
+    // The FIRST .pagination div is the portfolio one (confirmed: has 3 pages)
+    // The second is work history
+    const firstPagination = document.querySelector('.pagination');
+    if (firstPagination) {
+      // Query EVERY descendant element — page buttons are children of .pagination
+      firstPagination.querySelectorAll('*').forEach(el => {
+        const text = el.innerText?.trim().replace(/\s+/g, ' ') || '';
+        // Match if text is exactly the page number, or ends with it
+        if (text === nextNum ||
+            text === 'go to page ' + nextNum ||
+            text.match(new RegExp('\\b' + nextNum + '$'))) {
+          if (!candidates.find(c => c.el === el))
+            candidates.push({ el, name: 'pagination-child-"' + text.slice(0,20) + '"' });
+        }
+      });
+
+      // Also add any element with class containing "next" inside pagination
+      firstPagination.querySelectorAll('[class*="next"]').forEach(el => {
+        if (!el.disabled && !candidates.find(c => c.el === el))
+          candidates.push({ el, name: 'next-class-btn' });
+      });
+    }
+
+    // Fallback: any button/link on page whose ONLY text is the next page number
+    if (!candidates.length) {
+      document.querySelectorAll('button, a, li').forEach(el => {
+        const text = el.innerText?.trim();
+        if (text === nextNum && !candidates.find(c => c.el === el))
+          candidates.push({ el, name: 'fallback-text-' + nextNum });
+      });
+    }
+
+    updateOverlayDebug('Nav: ' + candidates.length + ' candidates for page ' + nextNum);
+
+    for (const { el, name } of candidates) {
+      updateOverlayDebug('Clicking: ' + name);
+      fireClick(el);
+
+      for (let w = 0; w < 20; w++) {
+        await new Promise(r => setTimeout(r, 200));
+        const fresh   = getShelfThumbs();
+        const newText = fresh.map(t => t.innerText.trim().slice(0, 50)).join('|');
+        if (fresh.length > 0 && newText !== prevThumbs) {
+          updateOverlayDebug('Page ' + nextNum + ' loaded ✓ (' + name + ')');
+          return true;
+        }
+      }
+    }
+
+    updateOverlayDebug('No navigation worked — sync complete');
+    return false;
+  }
+
+  // Click an element with scroll-into-view + full mouse event sequence
+  function fireClick(el) {
+    if (!el) return;
+    el.scrollIntoView({ behavior: 'instant', block: 'center' });
+    const rect = el.getBoundingClientRect();
+    const cx   = rect.left + rect.width / 2;
+    const cy   = rect.top  + rect.height / 2;
+    ['pointerdown','mousedown','pointerup','mouseup','click'].forEach(type => {
+      el.dispatchEvent(new MouseEvent(type, {
+        bubbles: true, cancelable: true, view: window,
+        clientX: cx, clientY: cy,
+      }));
+    });
+    // Also try native .click() as fallback
+    el.click();
   }
 
   // Read full data from an open portfolio modal
@@ -208,103 +326,98 @@
     return !!(document.querySelector('.g-recaptcha,#captcha,[data-test*="captcha"],iframe[src*="captcha"],iframe[src*="recaptcha"]')||/prove you.re human|complete the captcha|unusual traffic/i.test(document.body.innerText.slice(0,2000)));
   }
 
-  // ── Portfolio sync overlay ────────────────────────────────────────────────────
-  const OID = 'snagai-portfolio-sync-overlay';
+  // ── Portfolio sync banner (replaces full overlay — no pointerEvents blocking) ──
+  const OID = 'snagai-sync-banner';
+
   function showSyncOverlay(msg) {
     let el = document.getElementById(OID);
     if (!el) {
       el = document.createElement('div');
       el.id = OID;
-      el.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;z-index:2147483646;background:rgba(0,0,0,.93);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);display:flex;align-items:center;justify-content:center;font-family:-apple-system,BlinkMacSystemFont,sans-serif;';
-      document.body.style.overflow = 'hidden';
-      document.body.style.pointerEvents = 'none';
-      el.style.pointerEvents = 'auto';
+      el.style.cssText = 'position:fixed;bottom:0;left:0;right:0;z-index:2147483647;background:#0d1525;border-top:2px solid #c9a84c;padding:11px 20px;display:flex;align-items:center;gap:12px;font-family:-apple-system,BlinkMacSystemFont,sans-serif;box-shadow:0 -4px 20px rgba(0,0,0,.5)';
       document.body.appendChild(el);
-      el.innerHTML = '<style>@keyframes snagSpin{to{transform:rotate(360deg)}}</style>' +
-        '<div style="background:#0d1525;border:1px solid rgba(201,168,76,.3);border-radius:16px;padding:24px 28px;text-align:center;min-width:300px;max-width:380px;box-shadow:0 24px 64px rgba(0,0,0,.7)">' +
-        '<div style="width:40px;height:40px;border-radius:50%;border:3px solid rgba(201,168,76,.1);border-top-color:#c9a84c;animation:snagSpin .85s linear infinite;margin:0 auto 16px"></div>' +
-        '<div style="font-weight:700;font-size:14px;color:#f0eeea;margin-bottom:4px">Syncing Portfolios</div>' +
-        '<div id="snagai-ov-status" style="font-size:11px;color:rgba(240,238,234,.45);margin-bottom:10px"></div>' +
-        '<div id="snagai-ov-log" style="font-size:10px;color:rgba(240,238,234,.35);text-align:left;background:rgba(255,255,255,.04);border-radius:6px;padding:8px;max-height:130px;overflow-y:auto;font-family:monospace;line-height:1.7"></div>' +
-        '</div>';
     }
-    const s = document.getElementById('snagai-ov-status');
-    if (s) s.textContent = msg || '';
+    el.innerHTML = '<style>@keyframes snagSpin{to{transform:rotate(360deg)}}</style>' +
+      '<div style="width:18px;height:18px;flex-shrink:0;border-radius:50%;border:2.5px solid rgba(201,168,76,.15);border-top-color:#c9a84c;animation:snagSpin .8s linear infinite"></div>' +
+      '<span style="font-weight:700;font-size:13px;color:#f0eeea">Snag AI — Syncing Portfolios</span>' +
+      '<span id="snagai-ov-status" style="font-size:11px;color:rgba(240,238,234,.5);margin-left:4px">' + (msg || '') + '</span>' +
+      '<div id="snagai-ov-log" style="margin-left:auto;font-size:10px;color:rgba(240,238,234,.4);font-family:monospace;max-width:400px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div>';
   }
 
   function updateOverlayDebug(line) {
     const log = document.getElementById('snagai-ov-log');
-    if (log) {
-      log.innerHTML += '<div>' + line + '</div>';
-      log.scrollTop = log.scrollHeight;
-    }
+    if (log) log.textContent = line;
     console.log('[SnagAI]', line);
   }
 
-
   function removeSyncOverlay() {
     document.getElementById(OID)?.remove();
-    document.body.style.overflow = '';
-    document.body.style.pointerEvents = '';
   }
-
-  // ── Shelf thumbnails — click the div directly (confirmed working for items 1 & 2) ──
-  function getShelfThumbs() {
-    return Array.from(document.querySelectorAll('.portfolio-v2-shelf-thumbnail'))
-      .filter(el => !el.classList.contains('carousel-item'));
-  }
-
-  // Dismiss any open dropdown menus (e.g. "More options") by pressing Escape
-  function dismissMenus() {
-    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
-    document.dispatchEvent(new KeyboardEvent('keyup',   { key: 'Escape', bubbles: true }));
-  }
-
-  // Wait until modal viewer appears in DOM
-  async function waitForModalOpen(timeoutMs) {
-    timeoutMs = timeoutMs || 4000;
-    const deadline = Date.now() + timeoutMs;
-    while (Date.now() < deadline) {
-      if (document.querySelector('.portfolio-v2-viewer')) return true;
-      await new Promise(r => setTimeout(r, 150));
-    }
-    return false;
-  }
-
-  // Wait until modal is fully closed (checks visibility + aria, not just DOM presence)
-  async function waitForModalClose(timeoutMs) {
-    const deadline = Date.now() + (timeoutMs || 4000);
-    while (Date.now() < deadline) {
-      const modal  = document.querySelector('.air3-modal-portfolio-v2-viewer-modal');
-      const viewer = document.querySelector('.portfolio-v2-viewer');
-      // Consider closed if gone, hidden, or aria-hidden
-      if (!modal || !viewer) return true;
-      if (modal.getAttribute('aria-hidden') === 'true') return true;
-      if (getComputedStyle(modal).display === 'none') return true;
-      if (getComputedStyle(modal).visibility === 'hidden') return true;
-      await new Promise(r => setTimeout(r, 150));
-    }
-    return false; // timed out — proceed anyway
-  }
-
   // ── Portfolio sync: click each shelf thumbnail, all pages ────────────────────
   async function runPortfolioSync(profileId, localKey) {
     showSyncOverlay('Preparing…');
-    await new Promise(r => setTimeout(r, 800));
-    updateOverlayDebug('Starting portfolio sync…');
+    updateOverlayDebug('Loading portfolio section…');
 
-    const stored  = await local.get([localKey]);
-    const current = stored[localKey] || {};
-    const merged  = [...(current.portfolios || [])];
+    // Scroll to portfolio section first — Upwork lazy-renders thumbnails
+    // When opened in a new tab, page starts at top and portfolio is off-screen
+    updateOverlayDebug('Scrolling to portfolio section…');
+    const scrollToPortfolio = () => {
+      const sel = [
+        '.portfolio-v2-editor-shelf',
+        '[class*="portfolio-v2-shelf"]',
+        '[class*="Portfolio"]',
+      ];
+      for (const s of sel) {
+        const el = document.querySelector(s);
+        if (el) { el.scrollIntoView({ behavior: 'instant', block: 'center' }); return true; }
+      }
+      // Fallback: scroll halfway down the page to trigger lazy load
+      window.scrollTo(0, document.body.scrollHeight / 2);
+      return false;
+    };
 
+    // Try scrolling a few times until thumbnails appear in DOM
+    let waitCount = 0;
+    while (waitCount++ < 25) {
+      scrollToPortfolio();
+      await new Promise(r => setTimeout(r, 400));
+      if (getShelfThumbs().length > 0) break;
+    }
+
+    if (!getShelfThumbs().length) {
+      updateOverlayDebug('Portfolio section not found — check your profile URL');
+      removeSyncOverlay();
+      return;
+    }
+    updateOverlayDebug('Portfolio section loaded ✓');
+
+    // Load existing portfolios with timeout fallback
+    let current = {};
+    try {
+      const result = await Promise.race([
+        local.get([localKey]),
+        new Promise(r => setTimeout(() => r({}), 3000))
+      ]);
+      current = result[localKey] || {};
+    } catch(e) { console.error('[SnagAI] Storage load error:', e); }
+
+    const merged = [...(current.portfolios || [])];
     let page = 1, totalItems = 0;
 
+    try {
     while (true) {
       if (hasCaptcha()) {
-        removeSyncOverlay();
-        getT().innerHTML = TANIM + '<div style="height:2px;background:linear-gradient(90deg,#fbbf24,transparent)"></div><div style="padding:11px 13px;display:flex;align-items:center;gap:8px"><span>🔒</span><div><div style="font-weight:600;font-size:12px">Captcha detected</div><div style="font-size:10px;color:rgba(240,238,234,.42)">Solve it, then sync again</div></div></div>';
-        hideT(6000);
-        return;
+        // Don't stop — show overlay, wait for user to solve, then resume
+        showSyncOverlay('Captcha detected');
+        updateOverlayDebug('Solve the captcha to continue sync…');
+        await new Promise(resolve => {
+          const poll = setInterval(() => {
+            if (!hasCaptcha()) { clearInterval(poll); resolve(); }
+          }, 2000);
+        });
+        updateOverlayDebug('Captcha solved — resuming in 2s…');
+        await new Promise(r => setTimeout(r, 2000));
+        continue; // resume from current page
       }
 
       // Portfolio shelf thumbnails — only filter carousel-item class
@@ -348,9 +461,7 @@
         await new Promise(r => setTimeout(r, 200));
 
         // Temporarily restore pointer events so React handles the click normally
-        document.body.style.pointerEvents = '';
         btn.click();
-        document.body.style.pointerEvents = 'none';
 
         const opened = await waitForModalOpen(4000);
         if (!opened) {
@@ -380,30 +491,36 @@
         await new Promise(r => setTimeout(r, 800)); // fixed buffer — ensures modal fully gone
       }
 
-      // Dismiss any open menus before checking pagination
+      // Dismiss any open menus before navigating
       dismissMenus();
-      await new Promise(r => setTimeout(r, 400));
+      await new Promise(r => setTimeout(r, 500));
 
-      // Navigate to next shelf page
-      const nextBtn = findPortfolioNextButton();
-      if (!nextBtn) { console.log('[SnagAI] No more shelf pages'); break; }
-      nextBtn.click();
+      if (page >= 15) break;
+
+      showSyncOverlay('Loading page ' + (page + 1) + '…');
+
+      // Try every navigation candidate and verify by thumbnail content change
+      const navigated = await navigateToNextPage(page);
+      if (!navigated) break;
+
       page++;
-      if (page > 15) break;
-
-      // Wait for new shelf to render
-      showSyncOverlay('Loading page ' + page + '…');
-      updateOverlayDebug('Navigating to page ' + page + '…');
-      await new Promise(r => setTimeout(r, 2500));
     }
 
+    } catch(syncErr) {
+      updateOverlayDebug('Error: ' + syncErr.message);
+      console.error('[SnagAI] Sync error:', syncErr);
+    }
+
+    // Save whatever we collected
+    updateOverlayDebug('Saving ' + totalItems + ' portfolios…');
     await local.set({
-      [localKey]: { ...current, portfolios: merged, _portfolioSyncedAt: Date.now() }
+      [localKey]: { ...current, portfolios: merged, _portfolioSyncedAt: totalItems > 0 ? Date.now() : current._portfolioSyncedAt }
     }).catch(e => console.error('[SnagAI] Portfolio save error:', e));
 
     chrome.storage.local.remove('portfolioSync_' + profileId);
     removeSyncOverlay();
-    showDoneToast();
+    if (totalItems > 0) showDoneToast();
+    else getT().innerHTML = TANIM + '<div style="padding:11px 13px;font-size:12px;color:rgba(240,238,234,.6)">⚠ No portfolios found — visit your profile page and try again</div>';
   }
 
   // ── Storage helpers ───────────────────────────────────────────────────────────
