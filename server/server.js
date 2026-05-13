@@ -429,7 +429,20 @@ app.post('/proposal', async (req, res) => {
 
     // Build message using prompt.js
     const refineInstruction = req.body.refineInstruction || '';
+
+    // ── DEBUG: log portfolio data so we can see what arrives ──────────────────
+    const rawPortfolios = profile.portfolio || [];
+    console.log('[DEBUG] portfolios received:', rawPortfolios.length);
+    rawPortfolios.forEach((p, i) => {
+      console.log(`  [${i}] title="${p.title||p.name||'?'}" urls=${JSON.stringify(p.urls||[p.url||''])} skills=${JSON.stringify(p.skills||[])} desc="${(p.desc||'').slice(0,40)}"`);
+    });
+
     const userMsg = buildUserMessage({ job, profile, settings, refineInstruction });
+
+    // ── DEBUG: log what portfolioText was built ────────────────────────────────
+    const ptStart = userMsg.indexOf('PORTFOLIO (match');
+    const ptEnd   = userMsg.indexOf('\n\n', ptStart);
+    if (ptStart > -1) console.log('[DEBUG] portfolioText in prompt:\n' + userMsg.slice(ptStart, ptEnd > -1 ? ptEnd : ptStart + 400));
     const result  = await callClaude(SYSTEM, userMsg);
 
     // Convert **bold** markers to Unicode bold (Upwork-compatible)

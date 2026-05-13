@@ -609,9 +609,12 @@ function saveCard(card, idx, allProfiles) {
   const country    = card.querySelector('[data-field="country"]')?.value?.trim() || '';
   const extra      = card.querySelector('[data-field="extra"]')?.value?.trim()   || '';
   const portfolios = [...card.querySelectorAll('.port-item')].map(el => ({
-    title: el.querySelector('.port-title-inp')?.value?.trim()  || '',
-    urls:  [...el.querySelectorAll('.port-url-inp')].map(i => i.value.trim()).filter(Boolean),
-    desc:  el.querySelector('.port-desc-inp')?.value?.trim()   || '',
+    title:  el.querySelector('.port-title-inp')?.value?.trim()  || '',
+    urls:   [...el.querySelectorAll('.port-url-inp')].map(i => i.value.trim()).filter(Boolean),
+    desc:   el.querySelector('.port-desc-inp')?.value?.trim()   || '',
+    // Preserve auto-read fields stored as data attributes (never wipe on manual save)
+    skills: JSON.parse(el.dataset.portSkills || '[]'),
+    role:   el.dataset.portRole || '',
   })).filter(p => p.title || p.urls.length);
 
   const localKey = 'profileFull_' + profile.id;
