@@ -28,6 +28,15 @@
         "content/content.css"
       ],
       "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://www.upwork.com/freelancers/*"
+      ],
+      "js": [
+        "content/profile-reader.js"
+      ],
+      "run_at": "document_idle"
     }
   ],
   "action": {

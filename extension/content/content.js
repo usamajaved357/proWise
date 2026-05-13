@@ -457,21 +457,14 @@
     return { title, description, skills, budget, location, clientName: finalClientName, questions, reviewText, type: jobType, jobStats };
   }
 
-  // ── Pre-generation probability alert ────────────────────────────────────────
-  // ── Gauge using gauge-chart library ─────────────────────────────────────────
-  // Gauge: LEFT=Match(green) → RIGHT=Critical(red)
-  // Segments ordered left to right: Match, Medium, Neutral, High, Critical
-  const GAUGE_COLORS = ['#22c55e','#84cc16','#eab308','#f97316','#ef4444'];
-  const GAUGE_LABELS = ['Match','Medium','Neutral','High','Critical'];
-
-  // score = combined score (high=good). We INVERT for needle: 0→right(Critical), 100→left(Match)
+  // ── Gauge — pure SVG (no library), matches Upwork speedometer style ──────────
   function getGaugeLabel(score) {
     const s = Math.max(0, Math.min(100, score));
-    if (s >= 80) return 'Match';
-    if (s >= 60) return 'Medium';
-    if (s >= 40) return 'Neutral';
-    if (s >= 20) return 'High';
-    return 'Critical';
+    if (s >= 80) return 'Excellent';
+    if (s >= 60) return 'Good';
+    if (s >= 40) return 'Fair';
+    if (s >= 20) return 'Low';
+    return 'Poor';
   }
   function getGaugeColor(score) {
     const s = Math.max(0, Math.min(100, score));
@@ -484,90 +477,60 @@
 
   function buildGauge(score, size, id) {
     id = id || ('sg' + Math.random().toString(36).slice(2,6));
-    return '<div id="' + id + '" data-gauge-score="' + score + '" data-gauge-size="' + (size||120) + '" style="width:' + (size||120) + 'px;height:' + Math.round((size||120)*0.6) + 'px"></div>';
+    const w = size || 160, h = Math.round(w * 0.58);
+    return '<div id="' + id + '" data-gauge-score="' + score + '" data-gauge-size="' + w + '" style="width:' + w + 'px"></div>';
   }
 
   function drawGauge(id, score, size) {
-    requestAnimationFrame(() => {
-      const el = document.getElementById(id);
-      if (!el || !window.GaugeChart) return;
-      el.innerHTML = '';
-      score = Math.max(0, Math.min(100, score || 0));
-      size = size || 120;
-      const col = getGaugeColor(score);
-      const needlePos = 100 - score;
+    const el = document.getElementById(id);
+    if (!el) return;
+    score = Math.max(0, Math.min(100, score || 0));
+    size = size || 160;
+    const w = size, h = Math.round(size * 0.58);
+    const cx = w / 2, cy = h * 0.94;
+    const outerR = w * 0.445, innerR = w * 0.30, G = 0.005; // tiny gap between segments
+    const COLORS = ['#22c55e','#84cc16','#eab308','#f97316','#ef4444'];
+    const N = 5, seg = Math.PI / N;
 
-      try {
-        // 9 delimiters so labels land at segment CENTERS (10,30,50,70,90)
-        window.GaugeChart.gaugeChart(el, size, {
-          hasNeedle: true,
-          needleColor: '#transparent',
-          needleStartValue: needlePos,
-          needleUpdateSpeed: 0,
-          arcColors: ['#22c55e','#22c55e','#84cc16','#84cc16','#eab308','#eab308','#f97316','#f97316','#ef4444','#ef4444'],
-          arcDelimiters: [10, 20, 30, 40, 50, 60, 70, 80, 90],
-          arcLabels: ['Match', '', 'Medium', '', 'Neutral', '', 'High', '', 'Critical'],
-          arcPadding: 1,
-          arcPaddingColor: '#0d1120',
-          rangeLabel: ['', ''],
-          centralLabel: '',
-          labelsFont: '-apple-system,BlinkMacSystemFont,sans-serif',
-        });
+    function donutArc(r1, r2, a1, a2, fill) {
+      const ox1=cx+r2*Math.cos(a1), oy1=cy-r2*Math.sin(a1);
+      const ox2=cx+r2*Math.cos(a2), oy2=cy-r2*Math.sin(a2);
+      const ix2=cx+r1*Math.cos(a2), iy2=cy-r1*Math.sin(a2);
+      const ix1=cx+r1*Math.cos(a1), iy1=cy-r1*Math.sin(a1);
+      const laf = (a2-a1>Math.PI)?1:0;
+      return '<path d="M'+ox1+' '+oy1+' A'+r2+' '+r2+' 0 '+laf+' 0 '+ox2+' '+oy2+
+             ' L'+ix2+' '+iy2+' A'+r1+' '+r1+' 0 '+laf+' 1 '+ix1+' '+iy1+' Z" fill="'+fill+'"/>';
+    }
 
-        setTimeout(() => {
-          const svg = el.querySelector('svg');
-          if (!svg) return;
+    let paths = '';
+    for (let i = 0; i < N; i++) {
+      // i=0 → leftmost (green/good), i=4 → rightmost (red/poor)
+      const a1 = (N-1-i)*seg + G, a2 = (N-i)*seg - G;
+      paths += donutArc(innerR, outerR, a1, a2, COLORS[i]);
+    }
 
-          // Find hub center from gauge-chart's needle transform
-          let cx = size / 2, cy = size * 0.42; // fallback
-          svg.querySelectorAll('path').forEach(p => {
-            const t = p.getAttribute('transform') || '';
-            const m = t.match(/translate\(([^,]+),\s*([^)]+)\)/);
-            if (m) { cx = parseFloat(m[1]); cy = parseFloat(m[2]); }
-          });
+    // Needle: score=100→left(π), score=0→right(0)
+    const na = (score/100)*Math.PI;
+    const nLen = outerR * 0.74, nBase = outerR * 0.055; // thin needle like Upwork
+    const nx = cx+nLen*Math.cos(na), ny = cy-nLen*Math.sin(na);
+    const pa = na+Math.PI/2;
+    const bx1=cx+nBase*Math.cos(pa), by1=cy-nBase*Math.sin(pa);
+    const bx2=cx-nBase*Math.cos(pa), by2=cy+nBase*Math.sin(pa);
 
-          // Remove gauge-chart needle (it's the path with needleColor)
-          svg.querySelectorAll('path').forEach(p => {
-            const f = p.getAttribute('fill') || '';
-            const s = p.getAttribute('stroke') || '';
-            if (f === 'transparent' || f === '#transparent' || s === 'transparent')
-              p.remove();
-          });
+    const nc = getGaugeColor(score), lbl = getGaugeLabel(score);
+    const fs = Math.round(size*0.085);
 
-          // Draw our fat triangular needle
-          const angle = (needlePos / 100 - 0.5) * Math.PI;
-          const nLen = cx * 0.82;
-          const nx = cx + Math.sin(angle) * nLen;
-          const ny = cy - Math.cos(angle) * nLen;
-          const bw = cx * 0.046;
-          const pa = angle + Math.PI / 2;
-          const b1x = cx + bw * Math.cos(pa), b1y = cy - bw * Math.sin(pa);
-          const b2x = cx - bw * Math.cos(pa), b2y = cy + bw * Math.sin(pa);
-
-          const ns = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-          ns.setAttribute('points', nx+','+ny+' '+b1x+','+b1y+' '+b2x+','+b2y);
-          ns.setAttribute('fill', col);
-          svg.appendChild(ns);
-
-          // Hub
-          const hub = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-          hub.setAttribute('cx', cx); hub.setAttribute('cy', cy);
-          hub.setAttribute('r', cx * 0.05);
-          hub.setAttribute('fill', '#131829');
-          hub.setAttribute('stroke', col);
-          hub.setAttribute('stroke-width', cx * 0.027);
-          svg.appendChild(hub);
-
-          // White text labels
-          svg.querySelectorAll('text').forEach(t => {
-            if (!t.getAttribute('fill') || t.getAttribute('fill') === 'black')
-              t.setAttribute('fill', '#f0eeea');
-          });
-        }, 100);
-      } catch(e) { console.error('[SnagAI] Gauge error:', e); }
-    });
+    const hubR = Math.max(4, outerR * 0.072);
+    const hubSW = Math.max(2, outerR * 0.030);
+    el.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:10px';
+    el.innerHTML =
+      '<svg width="'+w+'" height="'+h+'" style="display:block">'+
+        paths+
+        '<polygon points="'+nx+','+ny+' '+bx1+','+by1+' '+bx2+','+by2+'" fill="'+nc+'"/>'+
+        '<circle cx="'+cx+'" cy="'+cy+'" r="'+hubR+'" fill="#0d1120" stroke="'+nc+'" stroke-width="'+hubSW+'"/>'+
+      '</svg>'+
+      '<div style="font-size:'+fs+'px;font-weight:700;color:'+nc+';background:'+nc+'1a;border:1px solid '+nc+'40;border-radius:999px;padding:4px '+(fs*1.4)+'px;letter-spacing:.03em;margin-top:2px">'+lbl+'</div>';
   }
-
 
   function drawAllGauges() {
     document.querySelectorAll('[data-gauge-score]').forEach(el => {
@@ -642,16 +605,17 @@
       ];
 
       function factorPill(f) {
-        const col  = f.isRisk ? '#f87171' : f.delta > 0 ? '#34d399' : f.delta < 0 ? '#f87171' : '#f59e0b';
-        const bg   = f.isRisk ? 'rgba(248,113,113,.08)' : f.delta > 0 ? 'rgba(52,211,153,.08)' : f.delta < 0 ? 'rgba(248,113,113,.08)' : 'rgba(245,158,11,.08)';
-        const border = f.isRisk ? 'rgba(248,113,113,.2)' : f.delta > 0 ? 'rgba(52,211,153,.2)' : f.delta < 0 ? 'rgba(248,113,113,.2)' : 'rgba(245,158,11,.2)';
-        const text = f.isRisk
+        const col = f.isRisk ? '#f87171' : f.delta > 0 ? '#34d399' : f.delta < 0 ? '#f87171' : '#f59e0b';
+        const label = f.isRisk
           ? f.label
-          : '<strong>' + f.label + (f.value ? ': ' + f.value : '') + '</strong>' + (f.note ? ' · ' + f.note : '');
-        return '<div class="sn-af-pill" style="background:' + bg + ';border-color:' + border + '">'
-          + '<div class="sn-af-dot" style="background:' + col + '"></div>'
-          + '<div class="sn-af-text">' + text + '</div>'
-          + '</div>';
+          : f.label + (f.value ? ': ' + f.value : '');
+        const note = (!f.isRisk && f.note) ? f.note : '';
+        return '<div class="sn-af-item" style="border-left-color:' + col + '">'
+          + '<span class="sn-af-indicator" style="background:' + col + '"></span>'
+          + '<div class="sn-af-content">'
+          + '<span class="sn-af-label">' + label + '</span>'
+          + (note ? '<span class="sn-af-note">' + note + '</span>' : '')
+          + '</div></div>';
       }
 
       document.getElementById('sn-body').innerHTML = `
@@ -661,9 +625,10 @@
           <!-- Gauge + label + summary -->
           <div class="sn-alv2-gauge-block">
             ${buildGauge(combined, 220, "sn-alert-gauge")}
-            <div class="sn-alv2-gauge-label" style="color:${nc}">${getGaugeLabel(combined)} &mdash; ${combined}%</div>
-            <div class="sn-alv2-summary">${summary}</div>
-            <div class="sn-alv2-cta">Your Connects are real money.</div>
+            <div class="sn-alv2-summary-card">
+              <div class="sn-alv2-summary">${summary}</div>
+              ${!isHired ? '<div class="sn-alv2-cta">Your Connects are real money.</div>' : ''}
+            </div>
           </div>
           <!-- Factors -->
           <div class="sn-alv2-factors">
@@ -673,14 +638,13 @@
           <!-- Buttons -->
           <div class="sn-alv2-footer">
             <button class="sn-alv2-cancel" id="sn-alert-cancel">Skip this job</button>
-            ${isHired ? '' : '<button class="sn-alv2-anyway" id="sn-alert-anyway">Write anyway →</button>'}
+            ${isHired ? '' : '<button class="sn-alv2-anyway" id="sn-alert-anyway">Write proposal →</button>'}
           </div>
 
         </div>
       `;
 
-      // Draw gauge after DOM settles
-      setTimeout(() => drawGauge('sn-alert-gauge', combined, 220), 0);
+      drawGauge('sn-alert-gauge', combined, 220);
 
       document.getElementById('sn-alert-cancel').addEventListener('click', () => { closePanel(); resolve(true); });
       const ab = document.getElementById('sn-alert-anyway');
@@ -692,10 +656,74 @@
   // ── Generate
   async function generate() {
     try {
-      const stored = await chrome.storage.sync.get(['profile', 'userEmail', 'anonId', 'settings']);
-      if (!stored.profile?.name) {
-        showError('Fill in your profile first — click the Snag AI icon in the Chrome toolbar → Settings.');
+      // profile + account data from sync; registeredProfiles from local (moved there to avoid 8KB limit)
+      const [syncStored, localStored] = await Promise.all([
+        chrome.storage.sync.get(['userEmail', 'anonId', 'settings']),
+        chrome.storage.local.get(['registeredProfiles', 'activeProfileId', 'primaryProfileId']),
+      ]);
+      const stored = { ...syncStored };
+
+      const regProfiles    = localStored.registeredProfiles || [];
+      const primaryId      = localStored.primaryProfileId || localStored.activeProfileId;
+      const primaryProfile = (primaryId && regProfiles.find(p => p && p.id === primaryId && (p.name || p.jss || p._readAt)))
+                          || regProfiles.find(p => p && (p.name || p.jss || p._readAt))
+                          || regProfiles[0];
+
+      // Load full profile data from local storage
+      const localKey = primaryProfile?.id ? 'profileFull_' + primaryProfile.id : null;
+      const localFull = localKey ? await new Promise(r => chrome.storage.local.get([localKey], r)) : {};
+      const prof = localFull[localKey] || primaryProfile || {};
+      const hasRegisteredUrl = regProfiles.some(p => p && p.url);
+      const hasAutoReadData  = !!(prof.name || prof.jss || prof._readAt || regProfiles.some(p => p && (p.name || p.jss || p._readAt)));
+
+      // No profile URL registered in new system → always show setup prompt
+      if (!hasRegisteredUrl) {
+        document.getElementById('sn-body').innerHTML = `
+          <div style="padding:32px 24px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:14px">
+            <div style="width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,rgba(201,168,76,.15),rgba(201,168,76,.05));border:1px solid rgba(201,168,76,.25);display:flex;align-items:center;justify-content:center;font-size:26px">👤</div>
+            <div style="font-size:15px;font-weight:700;color:#f0eeea">Set up your profile first</div>
+            <div style="font-size:12px;color:rgba(240,238,234,.5);line-height:1.8;max-width:300px">
+              Go to <strong style="color:#c9a84c">Settings → Subscription</strong> and paste your Upwork profile URL.<br>
+              Then visit that URL — Snag AI reads your data automatically.
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px;width:100%;max-width:240px">
+              <button id="sn-open-settings-btn" style="padding:11px 24px;background:#c9a84c;color:#0d1120;border-radius:9px;font-size:13px;font-weight:700;border:none;cursor:pointer;font-family:inherit;width:100%">
+                Open Settings →
+              </button>
+            </div>
+            <div style="font-size:11px;color:rgba(240,238,234,.3)">Takes 30 seconds to set up</div>
+          </div>
+        `;
+        document.getElementById('sn-open-settings-btn')?.addEventListener('click', () => {
+          // Open options page directly on the Subscription tab
+          chrome.runtime.sendMessage({ type: 'OPEN_OPTIONS_TAB', tab: 'subscription' });
+        });
         return;
+      }
+
+      // URL registered but not yet visited — no auto-read data
+      if (hasRegisteredUrl && !hasAutoReadData) {
+        const firstUrl = regProfiles.find(p => p && p.url)?.url || 'https://www.upwork.com/freelancers/me';
+        document.getElementById('sn-body').innerHTML = `
+          <div style="padding:32px 24px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:14px">
+            <div style="width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,rgba(52,211,153,.12),rgba(52,211,153,.04));border:1px solid rgba(52,211,153,.2);display:flex;align-items:center;justify-content:center;font-size:26px">🔄</div>
+            <div style="font-size:15px;font-weight:700;color:#f0eeea">Visit your profile to sync</div>
+            <div style="font-size:12px;color:rgba(240,238,234,.5);line-height:1.8;max-width:300px">
+              Your profile URL is saved. <strong style="color:#f0eeea">Open it once</strong> and Snag AI will read your skills, tier, and stats automatically.
+            </div>
+            <button id="sn-open-profile-btn" style="padding:11px 24px;background:#c9a84c;color:#0d1120;border-radius:9px;font-size:13px;font-weight:700;border:none;cursor:pointer;font-family:inherit;width:100%;max-width:240px">
+              Open my Upwork profile →
+            </button>
+          </div>
+        `;
+        document.getElementById('sn-open-profile-btn')?.addEventListener('click', () => {
+          window.open(firstUrl, '_blank');
+        });
+        return;
+      }
+      // Use skillsArr from auto-read if available (more accurate)
+      if (prof.skillsArr && prof.skillsArr.length) {
+        prof._skillsForMatching = prof.skillsArr;
       }
 
       // Ensure anonId exists
@@ -902,7 +930,11 @@
     // ── Skill matching — compare job skills vs profile ─────────────────────────
     const rawJobSkills = Array.isArray(jobStats.jobSkills) ? jobStats.jobSkills : [];
     const jobSkillsNorm = rawJobSkills.map(s => s.toLowerCase().replace(/[^a-z0-9+#.\s]/gi,'').trim()).filter(Boolean);
-    const profileSkillsStr = ((profile.skills || '') + ' ' + (profile.title || '')).toLowerCase();
+    // Use skillsArr from Upwork profile if available (more accurate than manual entry)
+    const profileSkillsList = profile._skillsForMatching || profile.skillsArr || [];
+    const profileSkillsStr = (profileSkillsList.length
+      ? profileSkillsList.join(' ')
+      : (profile.skills || '')) + ' ' + (profile.title || '');
 
     if (jobSkillsNorm.length > 0 && profileSkillsStr.trim().length > 0) {
       const matched  = jobSkillsNorm.filter(s => profileSkillsStr.includes(s));
@@ -984,20 +1016,20 @@
         <!-- LEFT: Cover letter -->
         <div class="sn-col-letter">
           <div class="sn-letter" id="sn-letter" contenteditable="true">${esc(letter)}</div>
+          <div class="sn-letter-bar">
+            <textarea class="sn-refine-inp" id="sn-refine-inp" placeholder="Request changes… e.g. shorter, add GitHub link, change tone" rows="2"></textarea>
+            <button class="sn-regen-inline-btn" id="sn-regen">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+              Regenerate
+            </button>
+          </div>
           <div class="sn-letter-actions">
             <button class="sn-copy-top-btn" id="sn-copy">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-              Copy letter
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2 2v1"/></svg>
+              Copy Proposal
             </button>
           </div>
-          <div class="sn-letter-bar">
-            <textarea class="sn-refine-inp" id="sn-refine-inp" placeholder="Request changes… e.g. change hook to guarantee, add GitHub link below portfolio, make it shorter" rows="2"></textarea>
-            <button class="sn-regen-inline-btn" id="sn-regen">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-              Generate
-            </button>
-          </div>
-          ${questions ? '<div class="sn-qa-section"><div class="sn-qa-head"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg> Client questions &amp; answers <button class="sn-qa-copy-btn" id="sn-copy-q">Copy Q&amp;A</button></div><div class="sn-qa-body" id="sn-questions-text">' + esc(questions) + '</div></div>' : ''}
+
         </div>
 
         <!-- RIGHT: Intel panel -->
@@ -1008,7 +1040,7 @@
             <div class="sn-ic-card-title">Win Probability</div>
             <div class="sn-ic-gauge-wrap">${buildGauge(wp.probScore, 160, "sn-prob-gauge")}</div>
             <div class="sn-ic-factors">
-              ${(wp.topProb||[]).slice(0,3).map(f=>'<div class="sn-icf-row"><div class="sn-icf-dot" style="background:'+(f.delta>0?'#34d399':f.delta<0?'#f87171':'#f59e0b')+'"></div><span class="sn-icf-lbl">'+esc(f.label)+':</span> <span class="sn-icf-val">'+esc(f.value)+'</span></div>').join('')}
+              ${(wp.topProb||[]).slice(0,4).map(f=>'<div class="sn-icf-row"><span class="sn-icf-dot" style="background:'+(f.delta>0?'#22c55e':f.delta<0?'#f87171':'#f59e0b')+'"></span><div class="sn-icf-body"><span class="sn-icf-lbl">'+esc(f.label)+'</span>'+(f.value?'<span class="sn-icf-val">'+esc(f.value)+'</span>':'')+'</div></div>').join('')}
             </div>
           </div>
 
@@ -1017,7 +1049,7 @@
             <div class="sn-ic-card-title">Profile Match</div>
             <div class="sn-ic-gauge-wrap">${buildGauge(wp.matchScore, 160, "sn-match-gauge")}</div>
             <div class="sn-ic-factors">
-              ${(wp.topMatch||[]).slice(0,3).map(f=>'<div class="sn-icf-row"><div class="sn-icf-dot" style="background:'+(f.delta>0?'#34d399':f.warn||f.delta<0?'#f87171':'#f59e0b')+'"></div><span class="sn-icf-lbl">'+esc(f.label)+':</span> <span class="sn-icf-val">'+esc(f.value)+'</span></div>').join('')}
+              ${(wp.topMatch||[]).slice(0,4).map(f=>'<div class="sn-icf-row"><span class="sn-icf-dot" style="background:'+(f.delta>0?'#22c55e':f.warn||f.delta<0?'#f87171':'#f59e0b')+'"></span><div class="sn-icf-body"><span class="sn-icf-lbl">'+esc(f.label)+'</span>'+(f.value?'<span class="sn-icf-val">'+esc(f.value)+'</span>':'')+'</div></div>').join('')}
             </div>
           </div>
 
@@ -1028,7 +1060,7 @@
           ${tips&&tips.length?'<div class="sn-ic-card"><div class="sn-ic-card-title">Tips</div>'+tips.slice(0,3).map(t=>'<div class="sn-ic-tip">'+esc(t.length>72?t.slice(0,72)+'…':t)+'</div>').join('')+'</div>':''}
 
           <!-- Q&A -->
-          ${questions?'<div class="sn-ic-card sn-ic-qa"><div class="sn-ic-card-title" style="color:#a78bfa;display:flex;align-items:center;justify-content:space-between">Q&amp;A <button class="sn-qa-copy-btn" id="sn-copy-q" style="font-size:10px;color:var(--sn-gold);background:none;border:none;cursor:pointer;font-family:inherit">Copy</button></div><div class="sn-ic-qa-body" id="sn-questions-text">'+esc(questions)+'</div></div>':''}
+
 
           ${remaining!==null&&remaining<=10?'<div class="sn-low-bar"><span>'+(remaining===0?'🚫 No proposals left':'⚡ '+remaining+' left')+'</span><button class="sn-low-upgrade" id="sn-low-upgrade">Upgrade</button></div>':''}
 
@@ -1036,11 +1068,8 @@
       </div>
     `;
 
-    // Draw gauges after DOM settles
-    setTimeout(() => {
-      drawGauge('sn-prob-gauge', wp.probScore, 160);
-      drawGauge('sn-match-gauge', wp.matchScore, 160);
-    }, 0);
+    drawGauge('sn-prob-gauge', wp.probScore, 160);
+    drawGauge('sn-match-gauge', wp.matchScore, 160);
 
     // Auto-expand textarea
     const refineInp = document.getElementById('sn-refine-inp');

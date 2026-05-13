@@ -171,11 +171,19 @@ function buildUserMessage({ job, profile, settings, refineInstruction = '' }) {
   const pricingType = isHourly ? 'HOURLY' : isFixed ? 'FIXED' : 'UNKNOWN';
 
   // Portfolio — rich format with name, description, skills
-  const portfolio = (profile.portfolio || []).filter(p => p.url || p.name);
+  // Supports both old schema (name/url/skills:string) and new schema (title/urls[]/skills:[])
+  const portfolio = (profile.portfolio || []).filter(p =>
+    p.title || p.name || (p.urls && p.urls.length) || p.url
+  );
   const portfolioText = portfolio.length
-    ? portfolio.slice(0, 4).map(p =>
-        `- ${p.name || 'Project'}${p.url ? ' ('+p.url+')' : ''}${p.desc ? ': '+p.desc : ''}${p.skills ? ' ['+p.skills+']' : ''}`
-      ).join('\n')
+    ? portfolio.slice(0, 4).map(p => {
+        const name     = p.title || p.name || 'Project';
+        const firstUrl = (p.urls && p.urls.find(u => u && u.trim())) || p.url || '';
+        const skillsStr = Array.isArray(p.skills)
+          ? p.skills.slice(0, 6).join(', ')
+          : (typeof p.skills === 'string' ? p.skills : '');
+        return `- ${name}${firstUrl ? ' ('+firstUrl+')' : ''}${p.desc ? ': '+p.desc : ''}${skillsStr ? ' ['+skillsStr+']' : ''}`;
+      }).join('\n')
     : (profile.portfolioLinks||[]).filter(Boolean).slice(0,3).map(l => `- ${l}`).join('\n') || 'none provided';
 
   // Word limit from settings
