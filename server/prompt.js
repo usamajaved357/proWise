@@ -47,6 +47,7 @@ STRUCTURE (follow this exact order, no exceptions)
    The 7 hook templates:
 
    HOOK 1 — PROOF: "I [specific result I achieved] for a past client. I'd like to do the same for you."
+   HOOK 1 ENDING IS FIXED: always end with "for you." — never "for your X" or "for your project"
    HOOK 2 — RELATABILITY: "I've [done this exact thing before — specific]. This is how I'd approach [their project]:"
    HOOK 3 — GUARANTEE: "I can [deliver X outcome] in [timeframe], and I'm willing to back that up — [short proof point]."
    HOOK 4 — EXTRA VALUE: "I'll not only [solve their main problem] — I'll also [one bonus thing they didn't ask for]."
@@ -60,7 +61,8 @@ STRUCTURE (follow this exact order, no exceptions)
    - 2-3 short paragraphs maximum. No padding. No fluff. Total body under 80 words.
    - LEAD WITH OUTCOME, not process. What the client GETS, not what you'll DO step by step.
    - Every sentence must answer: what does the client GET? Be a problem solver, not a spec writer.
-   - Short sentences. 10-15 words MAX. If a sentence has more than 1 comma, split it into two.
+   - Short sentences. 10-15 words MAX. One comma maximum per sentence — if you have two commas, it's two sentences.
+   - BEFORE writing each sentence count the commas. More than one? Split it. No exceptions.
    - Never list more than 3 deliverables. Group them into one outcome sentence instead.
 
    SENTENCE LENGTH — MANDATORY EXAMPLES:
@@ -147,6 +149,8 @@ RULES — NEVER BREAK THESE
 ✓ One idea per sentence. One outcome per paragraph.
 ✓ If user set a word limit, respect it strictly
 ✗ NEVER: "passionate", "extensive experience", "great fit", "excited about", "leverage", "seamlessly", "I am writing to", "I hope this finds you"
+✗ NEVER use parentheses () in the letter — "(Flutter)", "(Swift)", "(iOS)" all read robotic and AI-generated
+✗ NEVER paraphrase hook templates — use the EXACT ending words. Hook 1 ends with "for you." not "for your project" or "for your app"
 ✗ NEVER mention two portfolio names together anywhere in the body — "Canzy and FansMunch" is wrong, pick one
 ✗ NEVER list deliverables like a spec — group into outcomes instead
 ✗ NEVER use emojis anywhere in the letter
@@ -315,15 +319,15 @@ Pricing instruction: ${pricingType === 'HOURLY' ? `Mention rate "${profile.hourl
 YOUR ASSIGNED HOOK: ${assignedHook}
 TEMPLATE FOR YOUR OPENING SENTENCE:
 ${({
-  '1': 'HOOK 1: Write — I [specific measurable result for a past client]. I would like to do the same for you.',
-  '2': 'HOOK 2: Write — I have [exact matching experience]. This is how I would approach [their specific project]:',
-  '3': 'HOOK 3: Write — I can [deliver specific outcome] in [timeframe], and I am willing to back that up — [one proof point].',
-  '4': 'HOOK 4: Write — I will not only [solve their main problem] — I will also [one genuinely useful extra].',
-  '5': 'HOOK 5: Write — Let us jump on a quick call today — I can walk you through my approach in 15 minutes. No strings attached.',
-  '6': 'HOOK 6: Write — Here are my numbers: [relevant stat 1], [relevant stat 2], [relevant stat 3].',
-  '7': 'HOOK 7: Write — My understanding: you need [restate their core problem more precisely than they wrote it].'
+  '1': 'HOOK 1 EXACT FORMAT: "I [specific result] for [past client name or type]. I\'d like to do the same for you." — The ending is ALWAYS "for you." NEVER "for your app" or "for your project". Exactly: for you.',
+  '2': 'HOOK 2 EXACT FORMAT: "I\'ve [done this exact thing — be specific]. This is how I\'d approach [restate their project in 3-4 words]:" — ends with a colon, body follows.',
+  '3': 'HOOK 3 EXACT FORMAT: "I can [deliver X outcome] in [timeframe], and I\'m willing to back that up — [one short proof point]." — bold the timeframe.',
+  '4': 'HOOK 4 EXACT FORMAT: "I\'ll not only [their main need] — I\'ll also [one bonus they didn\'t ask for]." — the bonus must be genuinely useful.',
+  '5': 'HOOK 5 EXACT FORMAT: "Let\'s jump on a quick call today — I can walk you through my exact approach in 15 minutes." — use exactly this wording.',
+  '6': 'HOOK 6 EXACT FORMAT: "Here are my numbers: [stat 1], [stat 2], [stat 3] — all relevant to what you need." — stats must be real from the profile.',
+  '7': 'HOOK 7 EXACT FORMAT: "My understanding: you need [restate their core problem better than they wrote it]." — make them feel understood.'
 })[assignedHook.match(/\d/)?.[0]] || 'Use the assigned hook format above.'}
-MANDATORY: Your first sentence after the greeting must follow this exact structure. Bold the key claim.
+MANDATORY: Copy the exact hook structure above. Fill in the [brackets] only. Do not change the ending words. Do not use parentheses (). Bold one key term.
 ${refineInstruction ? "REFINEMENT REQUEST from user: " + refineInstruction : ""}
 Write the cover letter now. Bold key terms using **word** syntax. End with Regards + ${profile.name}.
 If there are additional client questions, answer them in the questions field.`.trim();
