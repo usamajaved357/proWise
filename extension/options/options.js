@@ -409,9 +409,7 @@ function renderProfileCard(container, profile, idx, allProfiles, primaryProfileI
       </div>
     </div>
 
-    <div class="profile-save-bar">
-      <button class="btn-primary" style="font-size:12px;padding:8px 18px" data-action="save-card">Save changes</button>
-    </div>
+
   `;
 
   // Attach skills expand/collapse
@@ -691,9 +689,8 @@ async function init() {
   renderProfileSlots();
   renderProfilesPage();
 
-  const { settings = {} } = await chrome.storage.sync.get(['settings']);
-  document.getElementById('tone').value   = settings.tone   || 'professional';
-  document.getElementById('length').value = settings.length || 'medium';
+  // Settings UI removed — tone/length dropdowns no longer in HTML
+  // Defaults used server-side: professional tone, medium length
 }
 
 init();

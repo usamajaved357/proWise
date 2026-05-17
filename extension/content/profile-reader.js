@@ -233,17 +233,54 @@
     const dStart = text.indexOf('Project description.');
     const dEnd   = text.search(/Skills and deliverables|Report an issue/);
     const desc   = dStart > -1 ? text.slice(dStart + 20, dEnd > dStart ? dEnd : dStart + 800).replace(/\n+/g,' ').replace(/\s+/g,' ').trim().slice(0, 500) : '';
-    // Scroll viewer to ensure "Skills and deliverables" section is loaded
-    try { viewer.scrollTop = viewer.scrollHeight; } catch(e) {}
-    // Try multiple selectors — Upwork uses different class names across versions
-    const skillEls = [
-      ...viewer.querySelectorAll('.skill-name'),
-      ...viewer.querySelectorAll('.up-skill-badge'),
-      ...viewer.querySelectorAll('[data-test="FreelancerCard-skill"]'),
-      ...viewer.querySelectorAll('[class*="skillBadge"]'),
-      ...viewer.querySelectorAll('[class*="skill-badge"]'),
-    ].filter((el, i, arr) => arr.indexOf(el) === i); // deduplicate
-    const skills = skillEls.map(el => el.innerText.trim().split('\n')[0]).filter(s => isValidSkill(s));
+    // Scroll all possible containers to trigger lazy-load of skills section
+    try {
+      viewer.scrollTop = viewer.scrollHeight;
+      const scrollCandidates = [
+        '.air3-modal-body', '.air3-slider-body', '.floating-modal-body',
+        '.portfolio-v2-viewer', '.air3-modal-content'
+      ];
+      scrollCandidates.forEach(sel => {
+        const el = document.querySelector(sel);
+        if (el) el.scrollTop = el.scrollHeight;
+      });
+    } catch(e) {}
+
+    // PRIMARY: Parse skills from innerText — stable regardless of class name changes
+    // The portfolio modal text always contains "Skills and deliverables" section
+    const fullText = viewer.innerText || '';
+    const skillsMarkers = ['Skills and deliverables', 'Skills & deliverables', 'Skills\n'];
+    let textSkills = [];
+    for (const marker of skillsMarkers) {
+      const markerIdx = fullText.indexOf(marker);
+      if (markerIdx > -1) {
+        const afterMarker = fullText.slice(markerIdx + marker.length, markerIdx + marker.length + 600);
+        const stopMarkers = ['Report an issue', 'Project details', 'See more', 'Share\n', 'Like\n'];
+        let endIdx = afterMarker.length;
+        for (const stop of stopMarkers) {
+          const si = afterMarker.indexOf(stop);
+          if (si > -1 && si < endIdx) endIdx = si;
+        }
+        const skillLines = afterMarker.slice(0, endIdx)
+          .split('\n')
+          .map(l => l.replace(/^[•·\-\*\d\.]+\s*/, '').trim())
+          .filter(l => l.length >= 2 && l.length <= 50 && isValidSkill(l));
+        textSkills = [...new Set(skillLines)].slice(0, 15);
+        break;
+      }
+    }
+
+    // FALLBACK: DOM selectors if text parsing found nothing
+    let domSkills = [];
+    if (!textSkills.length) {
+      const SKILL_SELS = ['.skill-name','.up-skill-badge','[data-test="skill"]','[class*="skillBadge"]','[class*="skill-badge"]'];
+      const skillEls = SKILL_SELS.flatMap(sel => [...viewer.querySelectorAll(sel)])
+        .filter((el, i, arr) => arr.indexOf(el) === i);
+      domSkills = skillEls.map(el => el.innerText.trim().split('\n')[0]).filter(s => isValidSkill(s));
+    }
+
+    const skills = textSkills.length ? textSkills : domSkills;
+    console.log('[SnagAI Portfolio] skills found:', skills.length, '| method:', textSkills.length ? 'text' : 'dom', '| skills:', skills.slice(0,5));
     const urls   = [];
     viewer.querySelectorAll('.portfolio-v2-viewer-media-block-link').forEach(el => {
       const href = el.getAttribute('href') || el.querySelector('a')?.getAttribute('href');

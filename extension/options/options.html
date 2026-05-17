@@ -25,22 +25,24 @@ a{text-decoration:none;color:inherit}
 .section{display:none}.section.active{display:block}
 
 /* ── Sidebar ── */
-.sidebar{width:224px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto}
-.sb-logo-link{display:flex;align-items:center;gap:10px;padding:22px 20px 20px;border-bottom:1px solid var(--border);transition:opacity .15s}
-.sb-logo-link:hover{opacity:.8}
-.sb-icon{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#8a5f10,#c9a84c,#e8c878);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 8px rgba(201,168,76,.3)}
+.sidebar{width:220px;background:linear-gradient(180deg,#0c1220 0%,#090f1e 100%);border-right:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto}
+.sb-logo-link{display:flex;align-items:center;gap:11px;padding:20px 18px 18px;border-bottom:1px solid rgba(255,255,255,.05);transition:opacity .15s}
+.sb-logo-link:hover{opacity:.85}
+.sb-icon{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#7a5010,#c9a84c,#f0d080);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:#0a0e1a;flex-shrink:0;box-shadow:0 2px 12px rgba(201,168,76,.4)}
 .sb-brand{display:flex;flex-direction:column}
-.sb-name{font-size:15px;font-weight:700;letter-spacing:-.01em}
-.sb-ver{font-size:10px;color:var(--white3);margin-top:1px}
-.sb-nav{padding:14px 10px;flex:1}
-.sb-item{display:flex;align-items:center;gap:9px;padding:9px 10px;font-size:13px;font-weight:500;color:var(--white3);cursor:pointer;border-radius:var(--radius-sm);transition:all .15s;margin-bottom:2px}
-.sb-item:hover{color:var(--white);background:rgba(255,255,255,.05)}
-.sb-item.active{color:var(--white);background:rgba(201,168,76,.1);font-weight:600}
-.sb-item.active .sb-dot{background:var(--gold)}
-.sb-dot{width:5px;height:5px;border-radius:50%;background:transparent;transition:.15s;flex-shrink:0}
-.sb-divider{height:1px;background:var(--border);margin:8px 0}
+.sb-name{font-size:14.5px;font-weight:800;letter-spacing:-.02em;color:var(--white)}
+.sb-ver{font-size:10px;color:rgba(240,238,234,.3);margin-top:1px;letter-spacing:.02em}
+.sb-nav{padding:12px 10px;flex:1}
+.sb-section-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(240,238,234,.25);padding:10px 10px 5px}
+.sb-item{display:flex;align-items:center;gap:10px;padding:9px 11px;font-size:12.5px;font-weight:500;color:rgba(240,238,234,.5);cursor:pointer;border-radius:9px;transition:all .15s;margin-bottom:1px;position:relative}
+.sb-item:hover{color:rgba(240,238,234,.85);background:rgba(255,255,255,.05)}
+.sb-item.active{color:var(--white);background:rgba(201,168,76,.12);font-weight:700}
+.sb-item.active::before{content:'';position:absolute;left:0;top:50%;transform:translateY(-50%);width:3px;height:60%;background:linear-gradient(180deg,var(--gold),var(--gold2));border-radius:0 2px 2px 0}
+.sb-item-icon{width:16px;text-align:center;flex-shrink:0;font-size:13px}
+.sb-dot{display:none}
+.sb-divider{height:1px;background:rgba(255,255,255,.05);margin:6px 0}
 /* Sidebar plan widget */
-.sb-plan{margin:auto 12px 16px;padding:14px;background:rgba(255,255,255,.03);border:1px solid var(--border2);border-radius:var(--radius)}
+.sb-plan{margin:auto 10px 14px;padding:14px;background:linear-gradient(135deg,rgba(201,168,76,.08),rgba(255,255,255,.02));border:1px solid rgba(201,168,76,.18);border-radius:var(--radius)}
 .sb-plan-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
 .sb-plan-badge{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:3px 9px;border-radius:20px;background:rgba(251,191,36,.12);color:var(--yellow);border:1px solid rgba(251,191,36,.2)}
 .sb-plan-badge.badge-starter{background:rgba(96,165,250,.1);color:var(--blue);border-color:rgba(96,165,250,.2)}
@@ -53,9 +55,9 @@ a{text-decoration:none;color:inherit}
 
 /* ── Section headers ── */
 .section-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px;gap:16px}
-.section-header-left .section-title{font-size:22px;font-weight:700;letter-spacing:-.025em;margin-bottom:3px}
+.section-header-left .section-title{font-size:24px;font-weight:800;letter-spacing:-.03em;margin-bottom:3px}
 .section-header-left .section-sub{font-size:13px;color:var(--white3)}
-.section-title-solo{font-size:22px;font-weight:700;letter-spacing:-.025em;margin-bottom:4px}
+.section-title-solo{font-size:24px;font-weight:800;letter-spacing:-.03em;margin-bottom:4px}
 .section-sub-solo{font-size:13px;color:var(--white3);margin-bottom:28px}
 
 /* ── Buttons ── */
@@ -69,7 +71,7 @@ a{text-decoration:none;color:inherit}
 .saved-msg.show{opacity:1}
 
 /* ── Cards ── */
-.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:22px;margin-bottom:14px;transition:border-color .2s}
+.card{background:rgba(17,24,39,.8);border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:22px;margin-bottom:14px;transition:border-color .2s}
 .card-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--white3);margin-bottom:16px;display:flex;align-items:center;gap:8px}
 .card-title svg{flex-shrink:0;opacity:.7}
 
@@ -327,23 +329,19 @@ textarea.edit-val{min-height:38px}
     </a>
 
     <nav class="sb-nav">
-      <div class="sb-item active" data-section="profiles">
-        <div class="sb-dot"></div>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-        Profiles
-      </div>
-      <div class="sb-item" data-section="subscription">
-        <div class="sb-dot"></div>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-        Subscription
-      </div>
-      <div class="sb-divider"></div>
-      <div class="sb-item" data-section="howto">
-        <div class="sb-dot"></div>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-        How to use
-      </div>
-    </nav>
+        <div class="sb-section-label">Workspace</div>
+        <div class="sb-item active" data-section="profiles">
+          <span class="sb-item-icon">👤</span>My Profiles
+        </div>
+        <div class="sb-item" data-section="subscription">
+          <span class="sb-item-icon">💳</span>Subscription
+        </div>
+        <div class="sb-divider"></div>
+        <div class="sb-section-label">Help</div>
+        <div class="sb-item" data-section="howto">
+          <span class="sb-item-icon">📖</span>How to use
+        </div>
+      </nav>
 
     <div class="sb-plan">
       <div class="sb-plan-row">
@@ -396,6 +394,14 @@ textarea.edit-val{min-height:38px}
     <div class="section" id="section-subscription">
       <div class="section-title-solo">Subscription</div>
       <div class="section-sub-solo">Manage your plan and Upwork profile URLs.</div>
+      <!-- Subscription hero banner -->
+      <div style="background:linear-gradient(135deg,rgba(201,168,76,.12) 0%,rgba(232,200,120,.06) 50%,rgba(255,255,255,.02) 100%);border:1px solid rgba(201,168,76,.2);border-radius:16px;padding:22px 24px;margin-bottom:18px;display:flex;align-items:center;gap:16px">
+        <div style="font-size:36px">⚡</div>
+        <div>
+          <div style="font-size:15px;font-weight:800;letter-spacing:-.02em;margin-bottom:3px">Win more jobs on Upwork</div>
+          <div style="font-size:12px;color:rgba(240,238,234,.55);line-height:1.6">AI-powered proposals tuned to your profile. Every proposal reads your actual skills, JSS, and portfolio — not a generic template.</div>
+        </div>
+      </div>
 
       <!-- Email -->
       <div class="card">
@@ -457,23 +463,38 @@ textarea.edit-val{min-height:38px}
           <div class="plan-card" id="plan-starter">
             <div class="plan-tier">Starter</div>
             <div class="plan-price">$19<span>/mo</span></div>
-            <div class="plan-limit">150 proposals/mo</div>
+            <div class="plan-limit">150 proposals / mo</div>
             <div class="plan-profiles">1 Upwork profile</div>
+            <div style="margin:10px 0;border-top:1px solid rgba(255,255,255,.06);padding-top:10px">
+              <div style="font-size:10px;color:rgba(240,238,234,.45);text-align:left;line-height:1.8">
+                ✓ AI proposals<br>✓ Job analysis<br>✓ Risk alerts
+              </div>
+            </div>
             <button class="plan-btn plan-btn-outline" data-plan="starter">Get Starter →</button>
           </div>
           <div class="plan-card featured" id="plan-pro">
-            <div class="plan-badge-pop">BEST VALUE</div>
-            <div class="plan-tier">Pro</div>
-            <div class="plan-price">$39<span>/mo</span></div>
-            <div class="plan-limit">400 proposals/mo</div>
+            <div class="plan-badge-pop">⭐ BEST VALUE</div>
+            <div class="plan-tier" style="color:var(--gold)">Pro</div>
+            <div class="plan-price" style="color:var(--gold2)">$39<span>/mo</span></div>
+            <div class="plan-limit">400 proposals / mo</div>
             <div class="plan-profiles">3 Upwork profiles</div>
+            <div style="margin:10px 0;border-top:1px solid rgba(201,168,76,.15);padding-top:10px">
+              <div style="font-size:10px;color:rgba(240,238,234,.55);text-align:left;line-height:1.8">
+                ✓ Everything in Starter<br>✓ 3 profiles<br>✓ Priority generation
+              </div>
+            </div>
             <button class="plan-btn plan-btn-gold" data-plan="pro">Get Pro →</button>
           </div>
           <div class="plan-card" id="plan-agency">
             <div class="plan-tier">Agency</div>
             <div class="plan-price">$69<span>/mo</span></div>
-            <div class="plan-limit">900 proposals/mo</div>
+            <div class="plan-limit">900 proposals / mo</div>
             <div class="plan-profiles">5 Upwork profiles</div>
+            <div style="margin:10px 0;border-top:1px solid rgba(255,255,255,.06);padding-top:10px">
+              <div style="font-size:10px;color:rgba(240,238,234,.45);text-align:left;line-height:1.8">
+                ✓ Everything in Pro<br>✓ 5 profiles<br>✓ Team use
+              </div>
+            </div>
             <button class="plan-btn plan-btn-outline" data-plan="agency">Get Agency →</button>
           </div>
         </div>
