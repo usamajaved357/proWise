@@ -233,7 +233,17 @@
     const dStart = text.indexOf('Project description.');
     const dEnd   = text.search(/Skills and deliverables|Report an issue/);
     const desc   = dStart > -1 ? text.slice(dStart + 20, dEnd > dStart ? dEnd : dStart + 800).replace(/\n+/g,' ').replace(/\s+/g,' ').trim().slice(0, 500) : '';
-    const skills = [...viewer.querySelectorAll('.skill-name')].map(el => el.innerText.trim().split('\n')[0]).filter(s => isValidSkill(s));
+    // Scroll viewer to ensure "Skills and deliverables" section is loaded
+    try { viewer.scrollTop = viewer.scrollHeight; } catch(e) {}
+    // Try multiple selectors — Upwork uses different class names across versions
+    const skillEls = [
+      ...viewer.querySelectorAll('.skill-name'),
+      ...viewer.querySelectorAll('.up-skill-badge'),
+      ...viewer.querySelectorAll('[data-test="FreelancerCard-skill"]'),
+      ...viewer.querySelectorAll('[class*="skillBadge"]'),
+      ...viewer.querySelectorAll('[class*="skill-badge"]'),
+    ].filter((el, i, arr) => arr.indexOf(el) === i); // deduplicate
+    const skills = skillEls.map(el => el.innerText.trim().split('\n')[0]).filter(s => isValidSkill(s));
     const urls   = [];
     viewer.querySelectorAll('.portfolio-v2-viewer-media-block-link').forEach(el => {
       const href = el.getAttribute('href') || el.querySelector('a')?.getAttribute('href');
@@ -485,7 +495,15 @@
           continue;
         }
 
-        await new Promise(r => setTimeout(r, 500));
+        // Wait for modal content to fully render — skills load async
+        await new Promise(r => setTimeout(r, 800));
+
+        // Scroll inside viewer to trigger lazy-load of skills section
+        const viewerEl = document.querySelector('.portfolio-v2-viewer');
+        if (viewerEl) {
+          viewerEl.scrollTop = viewerEl.scrollHeight;
+          await new Promise(r => setTimeout(r, 400));
+        }
 
         const d = readPortfolioModal();
         if (d?.title) {

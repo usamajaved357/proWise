@@ -319,7 +319,7 @@
     let clientNameFromReview = '';
 
     // Try job description self-intro first (fast)
-    const descNameMatch = fullDesc.match(/(?:I'm|I am|My name is|This is)\s+([A-Z][a-z]{2,})(?:\s|,|\.)/);
+    const descNameMatch = fullDesc.match(/(?:I'm|I am|My name is|This is|Hi,? I'm|Hello,? I'm)\s+([A-Z][a-z]{2,})(?:\s|,|\.)/i);
     if (descNameMatch) clientName = descNameMatch[1];
 
     // Extract review text from "Client's recent history" section
@@ -331,10 +331,20 @@
         reviewText = pt.slice(histIdx, histIdx + 2000);
         // Extract name from patterns like "Abduljalil is an exceptional client"
         const namePatterns = [
-          /([A-Z][a-z]{2,}(?:\s[A-Z][a-z]{2,})?)\s+is\s+(?:an?\s+)?(?:exceptional|great|wonderful|amazing|fantastic|excellent|outstanding|awesome)\s+client/,
-          /([A-Z][a-z]{2,}(?:\s[A-Z][a-z]{2,})?)\s+(?:was|is)\s+(?:a\s+)?great\s+(?:client|person|partner)/,
-          /working\s+with\s+([A-Z][a-z]{2,}(?:\s[A-Z][a-z]{2,})?)\s+(?:was|is|has)/i,
+          // "Tim is a great/exceptional client"
+          /([A-Z][a-z]{2,})\s+is\s+(?:an?\s+)?(?:exceptional|great|wonderful|amazing|fantastic|excellent|outstanding|awesome|pleasure|joy)\s+(?:client|person|employer|to work)/,
+          // "great/working with Tim"
+          /(?:working|worked)\s+with\s+([A-Z][a-z]{2,})\s+(?:was|is|has|were)/i,
+          /(?:great|pleasure|honor|privilege)\s+(?:working|to work)\s+with\s+([A-Z][a-z]{2,})/i,
+          // "Thanks Tim", "Thank you Tim"
+          /[Tt]hank(?:s|\s+you)[,!]?\s+([A-Z][a-z]{2,})/,
           /[Tt]hanks?\s+(?:to\s+)?([A-Z][a-z]{2,})\s+for/,
+          // "Tim was very responsive / professional / clear"
+          /([A-Z][a-z]{2,})\s+(?:was|is)\s+(?:very|super|so|extremely|incredibly)?\s*(?:responsive|professional|clear|communicative|organized|easy|helpful|kind)/,
+          // "Highly recommend Tim"
+          /(?:recommend|recommending)\s+([A-Z][a-z]{2,})/i,
+          // "Tim provided clear / great"
+          /([A-Z][a-z]{2,})\s+provided\s+(?:clear|great|excellent|good|detailed)/,
         ];
         for (const pat of namePatterns) {
           const m = reviewText.match(pat);

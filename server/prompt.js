@@ -29,8 +29,10 @@ LETTER STRUCTURE — EXACT ORDER, NO EXCEPTIONS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 1. GREETING
-   - Scan CLIENT REVIEWS TEXT for client first name (freelancers write "Thanks Ahmed", "Working with Sara was great")
-   - Found name → "Hi [Name],"  |  No name → "Hi,"
+   - Check CLIENT NAME FROM REGEX first — if it shows a real name (not "not found"), use it: "Hi [Name],"
+   - If no regex name, scan CLIENT REVIEWS TEXT for first name patterns like "Thanks Ahmed", "Working with Sara", "Ahmed is a great client"
+   - Found any name → ALWAYS use "Hi [Name]," — this is important for personalisation
+   - No name found anywhere → "Hi,"
    - Never: Dear, Hello there, full name
 
 2. HOOK (first 1-2 sentences — THE most important part of the entire letter)
@@ -186,31 +188,33 @@ function buildUserMessage({ job, profile, settings, refineInstruction = '' }) {
   const isDetailedJob = (job.description || '').length > 1000;
   const hasSpecificMetric = /\d+%|\d+ (users|customers|clients|downloads|apps|projects)/i.test(jobTextLower);
 
-  // Determine hook — use title hash as primary rotator, then refine by job type
-  // This ensures variety across jobs while still picking smart hooks
+  // Hook selection — smart rotation based on job signals
+  // HOOK 6 (Numbers) only used when profile has real stats to fill in
   const titleHash = (job.title || '').split('').reduce((a, c) => a + c.charCodeAt(0), 0);
-  const allHooks = [
-    'HOOK 1 — PROOF OF SUCCESS',
+  const hasStats = !!(profile.jss || profile.hourlyRate || profile.jobs);
+
+  // Rotatable hooks — excludes HOOK 6 unless profile has stats
+  const rotatableHooks = [
+    'HOOK 1 — PROOF',
     'HOOK 2 — RELATABILITY',
     'HOOK 3 — GUARANTEE',
     'HOOK 4 — EXTRA VALUE',
-    'HOOK 5 — GROWTH-ORIENTED (CALL)',
-    'HOOK 6 — QUICK PROOF (NUMBERS)',
-    'HOOK 7 — CLIENT-CENTERED'
+    'HOOK 7 — CLIENT-CENTERED',
+    'HOOK 1 — PROOF',       // weighted: HOOK 1 and 2 are most reliable
+    'HOOK 2 — RELATABILITY',
   ];
-  // Start with rotation-based hook
-  let assignedHook = allHooks[titleHash % 7];
+  let assignedHook = rotatableHooks[titleHash % rotatableHooks.length];
 
-  // Override only for very strong signals
+  // Signal-based overrides
   if (hasBurnedClient) {
     assignedHook = 'HOOK 3 — GUARANTEE';
-  } else if (isLargeBudget && budget >= 10000) {
-    // Big budget jobs: alternate between 6 and 7
-    assignedHook = titleHash % 2 === 0 ? 'HOOK 6 — QUICK PROOF (NUMBERS)' : 'HOOK 7 — CLIENT-CENTERED';
   } else if (hasTimeline && !isDetailedJob) {
     assignedHook = 'HOOK 4 — EXTRA VALUE';
+  } else if (isLargeBudget && budget >= 10000) {
+    assignedHook = 'HOOK 7 — CLIENT-CENTERED';
+  } else if (hasStats && isLargeBudget) {
+    assignedHook = 'HOOK 6 — NUMBERS';
   }
-  // No more fallback to 1 or 2 by default — rotation handles it
 
   const msg = `
 JOB TITLE: ${job.title}

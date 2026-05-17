@@ -404,13 +404,12 @@ function renderProfileCard(container, profile, idx, allProfiles, primaryProfileI
             <button class="btn-port-add" data-action="add-port">+ Add</button>
           </div>
         </div>
-        <div class="port-list" id="port-list-${idx}"></div>
+        <div class="port-grid" id="port-list-${idx}"></div>
         ${!portfolios.length ? `<div class="port-empty-msg">No portfolio items yet. Add them manually or visit your Upwork profile page.</div>` : ''}
       </div>
     </div>
 
     <div class="profile-save-bar">
-      <span class="saved-msg" id="saved-card-${idx}">✓ Saved</span>
       <button class="btn-primary" style="font-size:12px;padding:8px 18px" data-action="save-card">Save changes</button>
     </div>
   `;
@@ -465,7 +464,10 @@ function renderProfileCard(container, profile, idx, allProfiles, primaryProfileI
   });
 
   // Save card
-  card.querySelector('[data-action="save-card"]')?.addEventListener('click', () => saveCard(card, idx, allProfiles));
+  // Auto-save on blur for any editable field in the card
+  card.querySelectorAll('.edit-val').forEach(el => {
+    el.addEventListener('blur', () => saveCard(card, idx, allProfiles));
+  });
 
   container.appendChild(card);
 }
@@ -512,70 +514,102 @@ function renderPortfolioItem(list, p, pi, allProfiles, profileIdx, autoOpen) {
   const urlsHtml = (p.urls && p.urls.length ? p.urls : ['']).map(u => `
     <div class="port-url-row">
       <input type="url" class="port-url-inp" value="${u}" placeholder="https://apps.apple.com/...">
-      <button class="btn-url-del">×</button>
+      <button class="btn-url-del" title="Remove">×</button>
     </div>`).join('');
 
-  // Rich info display (role, desc, skills, clickable link chips)
+  // Compact view — skills only, no description
   const skillsHtml = skills.length
-    ? `<div class="port-skill-tags">${skills.slice(0,5).map(s=>`<span class="port-skill-tag">${s}</span>`).join('')}${skills.length>5?`<span class="port-skill-tag" style="opacity:.5">+${skills.length-5}</span>`:''}</div>`
-    : '';
-  const urlChipsHtml = hasLinks
-    ? `<div class="port-url-chips">${(p.urls||[]).filter(u=>u.trim()).map(u=>`<a href="${u.startsWith('http')?u:'https://'+u}" target="_blank" class="port-url-chip">${u.replace(/^https?:\/\//, '').slice(0,35)}</a>`).join('')}</div>`
-    : '';
-  const richMeta = (p.role||p.desc||skills.length||hasLinks)
-    ? `<div class="port-item-meta">
-        ${p.role ? `<div class="port-role">Role: ${p.role}</div>` : ''}
-        ${p.desc ? `<div class="port-desc-text">${p.desc}</div>` : ''}
-        ${skillsHtml}${urlChipsHtml}
-      </div>` : '';
+    ? skills.slice(0,4).map(s => `<span class="port-skill-tag">${s}</span>`).join('') +
+      (skills.length > 4 ? `<span class="port-skill-tag port-skill-more">+${skills.length-4}</span>` : '')
+    : '<span class="port-no-skills">No skills synced</span>';
+
+  const firstUrl = hasLinks ? (p.urls||[]).find(u=>u.trim()) : null;
+  const urlDisplay = firstUrl ? firstUrl.replace(/^https?:\/\//, '').split('/')[0] : '';
 
   item.innerHTML = `
-    <div class="port-item-row">
-      <span class="port-item-icon">${hasLinks ? '📁' : '📂'}</span>
-      <span class="port-item-name">${p.title || 'New project'}</span>
-      ${hasLinks ? '' : '<span class="port-badge-warn">⚠ No link</span>'}
-      <div class="port-item-actions">
-        <button class="btn-port-edit">Edit</button>
-        <button class="btn-port-del">Remove</button>
+    <div class="port-card-top">
+      <div class="port-card-status ${hasLinks ? 'ok' : 'warn'}"></div>
+      <div class="port-card-body">
+        <div class="port-card-title">${p.title || 'Untitled project'}</div>
+        <div class="port-card-skills">${skillsHtml}</div>
+        ${urlDisplay ? `<div class="port-card-url">🔗 ${urlDisplay}</div>` : '<div class="port-card-url muted">No link added</div>'}
+      </div>
+      <div class="port-card-actions">
+        <button class="btn-port-edit" title="Edit">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </button>
+        <button class="btn-port-del" title="Remove">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+        </button>
       </div>
     </div>
-    ${richMeta}
     <div class="port-edit-body" style="display:none">
-      <div class="field">
-        <label>Project name</label>
-        <input type="text" class="port-title-inp" value="${p.title || ''}" placeholder="e.g. TollBugata iOS App">
+      <div class="port-edit-grid">
+        <div class="port-edit-col">
+          <div class="field">
+            <label>Project name</label>
+            <input type="text" class="port-title-inp" value="${p.title || ''}" placeholder="e.g. Canzy E-Commerce App">
+          </div>
+          <div class="field">
+            <label>Links <span style="font-weight:400;opacity:.6;text-transform:none;letter-spacing:0">(App Store, Play Store, GitHub…)</span></label>
+            <div class="port-urls-list">${urlsHtml}</div>
+            <button class="btn-url-add">+ Add link</button>
+          </div>
+        </div>
+        <div class="port-edit-col">
+          <div class="field">
+            <label>Skills <span style="font-weight:400;opacity:.6;text-transform:none;letter-spacing:0">(auto-synced from Upwork)</span></label>
+            <div class="port-skills-readonly">${skills.length
+              ? skills.map(s=>`<span class="port-skill-tag">${s}</span>`).join('')
+              : '<span style="font-size:11px;color:var(--white3)">Sync portfolios from your profile to populate skills automatically.</span>'
+            }</div>
+          </div>
+        </div>
       </div>
-      <div class="field">
-        <label>Links <span style="font-size:10px;font-weight:400;color:var(--white3)">(App Store, Play Store, GitHub, website…)</span></label>
-        <div class="port-urls-list">${urlsHtml}</div>
-        <button class="btn-url-add">+ Add another link</button>
-      </div>
-      <div class="field">
-        <label>Short description</label>
-        <input type="text" class="port-desc-inp" value="${p.desc || ''}" placeholder="e.g. Live app, 10k+ downloads">
+      <div class="port-edit-footer">
+        <button class="btn-port-done">✓ Done</button>
       </div>
     </div>
   `;
 
   const editBody = item.querySelector('.port-edit-body');
   const editBtn  = item.querySelector('.btn-port-edit');
+  const doneBtn  = item.querySelector('.btn-port-done');
 
-  editBtn.addEventListener('click', () => {
-    const open = editBody.style.display !== 'none' && editBody.style.display !== '';
-    editBody.style.display = open ? 'none' : 'block';
-    editBtn.textContent    = open ? 'Edit' : 'Done';
-  });
+  const openEdit = () => {
+    // Close other open edits in this list
+    list.querySelectorAll('.port-item.expanded').forEach(el => {
+      if (el !== item) {
+        el.classList.remove('expanded');
+        el.querySelector('.port-edit-body').style.display = 'none';
+      }
+    });
+    item.classList.add('expanded');
+    editBody.style.display = 'block';
+    item.querySelector('.port-title-inp')?.focus();
+  };
 
-  item.querySelector('.btn-port-del').addEventListener('click', () => {
+  const closeEdit = () => {
+    item.classList.remove('expanded');
+    editBody.style.display = 'none';
+    saveCard(item.closest('[id^="section"]')?.querySelector('.profile-card') || item.closest('.profile-card'), profileIdx, allProfiles);
+  };
+
+  editBtn.addEventListener('click', e => { e.stopPropagation(); openEdit(); });
+  doneBtn.addEventListener('click', closeEdit);
+
+  item.querySelector('.btn-port-del').addEventListener('click', e => {
+    e.stopPropagation();
     allProfiles[profileIdx]?.portfolios?.splice(pi, 1);
     item.remove();
+    saveCard(document.querySelector('.profile-card'), profileIdx, allProfiles);
   });
 
   item.querySelector('.btn-url-add').addEventListener('click', () => {
     const urlList = item.querySelector('.port-urls-list');
     const row = document.createElement('div');
     row.className = 'port-url-row';
-    row.innerHTML = '<input type="url" class="port-url-inp" placeholder="https://..."><button class="btn-url-del">×</button>';
+    row.innerHTML = '<input type="url" class="port-url-inp" placeholder="https://..."><button class="btn-url-del" title="Remove">×</button>';
     row.querySelector('.btn-url-del').addEventListener('click', () => {
       if (urlList.querySelectorAll('.port-url-row').length > 1) row.remove();
     });
@@ -592,17 +626,14 @@ function renderPortfolioItem(list, p, pi, allProfiles, profileIdx, autoOpen) {
 
   list.appendChild(item);
 
-  if (autoOpen) {
-    editBody.style.display = 'block';
-    editBtn.textContent    = 'Done';
-    item.querySelector('.port-title-inp')?.focus();
-  }
+  if (autoOpen) { openEdit(); }
 }
 
 // ── Save card ─────────────────────────────────────────────────────────────────
 function saveCard(card, idx, allProfiles) {
   const profile = allProfiles[idx];
   if (!profile?.id) return;
+  if (!card) return; // auto-save guard
 
   const title      = card.querySelector('[data-field="title"]')?.value?.trim()   || '';
   const bio        = card.querySelector('[data-field="bio"]')?.value?.trim()     || '';
@@ -627,7 +658,7 @@ function saveCard(card, idx, allProfiles) {
     chrome.storage.local.set({ [localKey]: updated }, () => {
       // Also update sync profile for legacy compat (background.js fallback)
       // profile data lives in local storage — no sync write needed
-      showSaved('saved-card-' + idx);
+      if (document.getElementById('saved-card-' + idx)) showSaved('saved-card-' + idx);
     });
   });
 }
@@ -641,11 +672,13 @@ document.querySelectorAll('.plan-btn[data-plan]').forEach(btn => {
   btn.addEventListener('click', e => { e.stopPropagation(); openCheckout(btn.dataset.plan); });
 });
 
-// ── Settings (now in Subscription section) ────────────────────────────────────
-document.getElementById('save-settings').addEventListener('click', async () => {
+// ── Settings — UI removed, defaults used ──────────────────────────────────────
+// Proposal settings card removed from UI; defaults (professional/medium) are used.
+// Guard in case element exists in older installs.
+document.getElementById('save-settings')?.addEventListener('click', async () => {
   await chrome.storage.sync.set({ settings: {
-    tone:   document.getElementById('tone').value,
-    length: document.getElementById('length').value,
+    tone:   document.getElementById('tone')?.value   || 'professional',
+    length: document.getElementById('length')?.value || 'medium',
   }});
   showSaved('saved-settings-msg');
 });
