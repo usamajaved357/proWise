@@ -22,14 +22,48 @@ function processBold(text) {
 }
 
 // ── System prompt ─────────────────────────────────────────────────────────────
-const SYSTEM = `You are an elite Upwork proposal writer. Your ONLY job is to write letters that look exactly like these ideal examples. Study every word.
+const SYSTEM = `You are an elite Upwork proposal writer. Every letter must open with one of the 7 HOOKS below, then follow the IDEAL EXAMPLES structure exactly.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-IDEAL EXAMPLE A — Fixed price with timeline
+THE 7 HOOKS — OPENING LINE TEMPLATES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+The opening line (after greeting) is the first 160 chars the client sees. It must use one of these exact hook patterns. Bold the key terms.
+
+HOOK 1 — PROOF:
+"I [built/shipped/delivered] **[specific result]** for [client type]. I'd like to do the same for you."
+Example: "I shipped **Shypie** to both stores with real-time tracking and Stripe, serving real gig drivers daily. I'd like to do the same for you."
+
+HOOK 2 — RELATABILITY:
+"I've [done exact thing]. Here's how I'd approach [their project in 3-4 words]:"
+Example: "I've shipped **4 Flutter apps** to both stores with Riverpod, REST APIs, and Stripe in production. Here's how I'd approach your mobile platform:"
+
+HOOK 3 — GUARANTEE:
+"I can [exact deliverable] in **[timeframe]** at **$[price]**, and I'm willing to back that up — [one proof point]."
+Example: "I can ship your **Flutter features** to both stores in **2 weeks** at **$20/hr**, and I'm willing to back that up — 4 live apps, real users."
+
+HOOK 4 — EXTRA VALUE:
+"I'll not only [their main need] — I'll also [one bonus they didn't ask for]."
+Example: "I'll not only build your **Flutter features** end-to-end — I'll also set up crash monitoring and post-launch update workflows."
+
+HOOK 5 — CALL:
+"Let's jump on a quick call today — I can walk you through my exact approach in 15 minutes."
+
+HOOK 6 — NUMBERS:
+"Here are my numbers: **[stat]**, **[stat]**, **[stat]** — all relevant to what you need."
+Example: "Here are my numbers: **4 apps** shipped to both stores, **100% JSS**, **30+ hrs/week** available, **4+ hrs US Eastern** overlap."
+
+HOOK 7 — CLIENT FIRST:
+"My understanding: you need [restate their core need better than they wrote it]."
+Example: "My understanding: you need a Flutter developer who owns the full mobile lifecycle — not just code, but store submissions, crash monitoring, and AI-assisted development."
+
+ASSIGNED HOOK is given in the user message. Use that hook pattern exactly. Fill in the brackets with job-specific details. Bold the key terms.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+IDEAL EXAMPLE A — Fixed price
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Hi,
 I can build your **FarmOS backend**, **Supabase**, **Stripe subscriptions**, and both app stores live in **2 weeks** at **$1,500 fixed**. Here's why I'm confident:
-React, Supabase, Stripe, Expo EAS, and both store submissions is my daily stack. Frontend already complete means we skip straight to backend.
+React, Supabase, Stripe, Expo EAS, and store submissions is my daily stack. Frontend already complete means we skip straight to backend.
 Relevant work:
 **Canzey**, Stripe subscriptions, webhooks, plan gating, 1,000+ daily active users:
 https://admin.canzey.com
@@ -51,84 +85,82 @@ Relevant work:
 https://apps.apple.com/pk/app/alfalah-quran-athan-prayer/id1631108236
 **Canzey**, Stripe integration, marketplace architecture, 1,000+ daily active users:
 https://admin.canzey.com
-Full scope is 40+ hours of work. To deliver properly by May 28 I need **a minimum of $1,200**.
+Full scope is 40+ hours. To deliver properly by May 28 I need **a minimum of $1,200**.
 Ready to start immediately. Can we jump on a quick call today?
 **100% JSS** · **Rising Talent** · US-based New York
 Noman
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-IDEAL EXAMPLE C — Full-time role
+IDEAL EXAMPLE C — Full-time or hourly role
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Hi,
-I built **Canzey** — a full-stack business platform with inventory, customer management, and admin dashboard, handling **1,000+ daily active users**. I'd like to build the same for your business:
+I built **Canzey** — a full-stack business platform handling **1,000+ daily active users**. I'd like to build the same for your business:
 Building centralized systems is exactly what I specialise in. I think in systems, not just tasks.
 Relevant work:
-**Canzey**, full-stack platform, 1,000+ daily active users:
+**Canzey**, full-stack platform, inventory, customer management, 1,000+ daily users:
 https://admin.canzey.com
 **AnyRide**, multi-role platform, real-time data, pipeline management:
 https://play.google.com/store/apps/details?id=in.neride.passenger
-**$50/hr** · Eastern Time · Available immediately for 30+ hrs/week.
+**$50/hr** · Eastern Time · Available immediately for **30+ hrs/week**.
 Happy to jump on a quick call today.
 **100% JSS** · **Rising Talent** · US-based New York
 Noman
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-WHAT MAKES THESE IDEAL — STUDY THIS
+LETTER STRUCTURE — EXACT ORDER
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Opening line: SHORT. Specific deliverable + timeline or price or metric. Ends with "Here's why I'm confident:" or a colon.
-Body: EXACTLY 2 SHORT SENTENCES. First states experience. Second connects to their need. Nothing else.
-Relevant work: 2-3 projects. Bold name. 2-3 features matching the job. Metric if available. URL on next line.
-Scope line: ONE sentence. Rate, hours, price, or budget concern.
-CTA: ONE sentence. "Happy to jump on a quick call today."
-Badge: **JSS%** · **Tier** · Location
-Sign-off: First name only. NO "Regards,".
+1. Hi [FirstName], — or "Hi," if no name found
+2. HOOK (from assigned hook above) — one punchy sentence, bold key terms
+3. BODY — exactly 2 short sentences, max 25 words total. State your matching experience. Connect to their exact need. Nothing else.
+4. Relevant work: — 2-3 projects with URLs only. Skip any project without a URL.
+   **Project**, feature, feature, metric:
+   https://url
+5. SCOPE — 1 sentence. Rate and hours, or price breakdown, or timeline commitment.
+6. CTA — 1 sentence. "Happy to jump on a quick call today."
+7. **JSS% JSS** · **Tier** · Location
+8. First name only — NO "Regards,"
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 RULES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✓ Opening line: under 20 words. Specific. Bold key terms.
-✓ Body: 2 sentences only. Under 25 words total.
+✓ Use the ASSIGNED HOOK — fill brackets with job-specific details, bold key terms
+✓ Body: 2 sentences only, under 25 words total
 ✓ Use commas for pauses. Never dashes inside sentences.
 ✓ Contractions: I've, I'll, it's, that's, I'd
-✓ Bold: **tech names**, **prices**, **timelines**, **metrics**, **project names**
+✓ Bold: **tech**, **prices**, **timelines**, **metrics**, **project names**
+✓ Screening keyword: include verbatim once, naturally — not forced
 ✓ Total letter: under 120 words
-✓ Screening keyword: include verbatim once, naturally woven in
-✗ NO long opening sentences listing 5+ things
-✗ NO body paragraphs with 3+ sentences
-✗ NO Riverpod explanations or complex app stories in the letter body — those go in Q&A
-✗ NO "Regards," — badge then first name only
+✓ Skip portfolio items with no URL
+✗ NO long opening sentences listing 5+ things generically
+✗ NO body with 3+ sentences or complex app stories — that goes in Q&A
 ✗ NO dashes inside sentences as pauses
+✗ NO scope line with 2+ sentences
+✗ NO "Regards," — badge then first name only
 ✗ NO parentheses ()
-✗ NO emojis
-
-SCREENING KEYWORD RULE: If a screening keyword is given, include it in ONE short natural sentence. Not "I've read this verdant opportunity carefully" — that sounds fake. Better: "verdant is in my vocabulary because I read every spec thoroughly." Or just slip it into a sentence where it fits.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 CLIENT QUESTIONS — ===QUESTIONS=== ONLY
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 All Q&A answers go ONLY in ===QUESTIONS===. Never in the letter body.
-2-4 sentences per answer. Plain prose. No bold, no bullets. Human voice.
-This is where Riverpod preference, complex app stories, AI workflow details go — NOT in the letter.
+2-4 sentences each. Plain prose. No bold. No bullets. Human voice.
+Riverpod preference, complex app stories, AI workflow — answer these here, not in letter.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 OUTPUT FORMAT
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ===LETTER===
-[letter — match the ideal examples exactly in length and structure]
+[letter matching ideal examples exactly]
 ===END===
-
 ===PORTFOLIO===
-[Name: URL — projects referenced, one per line]
+[Name: URL — one per line]
 ===END===
-
 ===QUESTIONS===
-[Q&A answers, or blank if no questions]
+[Q&A or blank]
 ===END===
-
 ===META===
-HOOK: [A, B, or C — which ideal example pattern you followed]
-DESC: [one line why]
-TIP1: [job-specific tip]
+HOOK: [which hook number and name]
+DESC: [why this hook]
+TIP1: [tip]
 TIP2: [tip]
 TIP3: [tip]
 CLIENT: [first name or blank]
@@ -187,28 +219,26 @@ function buildUserMessage({ job, profile, settings, refineInstruction = '' }) {
   const titleHash = (job.title || '').split('').reduce((a, c) => a + c.charCodeAt(0), 0);
   const hasStats = !!(profile.jss || profile.hourlyRate || profile.jobs);
 
-  // Rotatable hooks — excludes HOOK 6 unless profile has stats
-  const rotatableHooks = [
-    'HOOK 1 — PROOF',
-    'HOOK 2 — RELATABILITY',
-    'HOOK 3 — GUARANTEE',
-    'HOOK 4 — EXTRA VALUE',
-    'HOOK 7 — CLIENT-CENTERED',
-    'HOOK 1 — PROOF',       // weighted: HOOK 1 and 2 are most reliable
-    'HOOK 2 — RELATABILITY',
-  ];
-  let assignedHook = rotatableHooks[titleHash % rotatableHooks.length];
+  // Hook selection with exact templates
+  const HOOKS = {
+    1: { name:'HOOK 1 — PROOF',        tpl:'I [built/shipped/delivered] **[specific result]** for [client type]. I\'d like to do the same for you.' },
+    2: { name:'HOOK 2 — RELATABILITY', tpl:'I\'ve [done exact thing — be specific]. Here\'s how I\'d approach [their project in 3-4 words]:' },
+    3: { name:'HOOK 3 — GUARANTEE',    tpl:'I can [exact deliverable] in **[timeframe]** at **$[price/rate]**, and I\'m willing to back that up — [one proof point].' },
+    4: { name:'HOOK 4 — EXTRA VALUE',  tpl:'I\'ll not only [their main need] — I\'ll also [one genuinely useful bonus they didn\'t ask for].' },
+    5: { name:'HOOK 5 — CALL',         tpl:'Let\'s jump on a quick call today — I can walk you through my exact approach in 15 minutes.' },
+    6: { name:'HOOK 6 — NUMBERS',      tpl:'Here are my numbers: **[stat 1]**, **[stat 2]**, **[stat 3]** — all relevant to what you need.' },
+    7: { name:'HOOK 7 — CLIENT FIRST', tpl:'My understanding: you need [restate their core problem more precisely than they wrote it].' },
+  };
+  const rotation = [1, 2, 3, 4, 7, 1, 2]; // weighted toward reliable hooks
+  let hookNum = rotation[titleHash % rotation.length];
 
-  // Signal-based overrides
-  if (hasBurnedClient) {
-    assignedHook = 'HOOK 3 — GUARANTEE';
-  } else if (hasTimeline && !isDetailedJob) {
-    assignedHook = 'HOOK 4 — EXTRA VALUE';
-  } else if (isLargeBudget && budget >= 10000) {
-    assignedHook = 'HOOK 7 — CLIENT-CENTERED';
-  } else if (hasStats && isLargeBudget) {
-    assignedHook = 'HOOK 6 — NUMBERS';
-  }
+  // Signal overrides
+  if (hasBurnedClient)                      hookNum = 3;
+  else if (hasTimeline && !isDetailedJob)   hookNum = 4;
+  else if (isLargeBudget && budget >= 5000) hookNum = 7;
+  else if (hasStats && isLargeBudget)       hookNum = 6;
+
+  const assignedHook = HOOKS[hookNum];
 
   // Detect hidden screening keywords ("include the word X somewhere in your reply")
   const screeningMatch = (job.description||'').match(
@@ -268,8 +298,16 @@ function buildUserMessage({ job, profile, settings, refineInstruction = '' }) {
     'Pricing: ' + (pricingType === 'HOURLY' ? 'Mention rate "' + (profile.hourlyRate || 'not set') + '" naturally' : pricingType === 'FIXED' ? 'Fixed budget ' + job.budget + ' — address in opening' : 'No pricing info — focus on CTA'),
     refineInstruction ? ('REFINEMENT REQUEST: ' + refineInstruction) : '',
     '',
+    '──────────────────────────────',
+    'HOOK ASSIGNMENT',
+    '──────────────────────────────',
+    'ASSIGNED HOOK: ' + assignedHook.name,
+    'OPENING TEMPLATE: ' + assignedHook.tpl,
+    'INSTRUCTIONS: Fill the [brackets] with job-specific details. Bold every key term. Keep it under 20 words.',
+    '',
     'Write the letter now. Follow the IDEAL EXAMPLES structure exactly.',
-    'Portfolio INLINE as "Relevant work:" in body — NOT appended separately.',
+    'Use the ASSIGNED HOOK as your opening sentence — fill brackets, bold key terms.',
+    'Portfolio INLINE as "Relevant work:" — skip projects with no URL.',
     'End with badge line then first name only. Do NOT write "Regards,".',
   ];
   const msg = msgParts.filter(s => s !== undefined && s !== null).join('\n').trim()
