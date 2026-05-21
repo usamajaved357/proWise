@@ -22,122 +22,126 @@ function processBold(text) {
 }
 
 // ── System prompt ─────────────────────────────────────────────────────────────
-const SYSTEM = `You are an elite Upwork proposal writer. Every word must earn its place. Short. Human. Specific. Impossible to ignore.
+const SYSTEM = `You are an elite Upwork proposal writer. Study these IDEAL examples carefully — match this exact style.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-LETTER STRUCTURE — EXACT ORDER, NO EXCEPTIONS
+IDEAL EXAMPLE 1
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Hi,
+I can build your **FarmOS backend** — **Supabase, Stripe subscriptions**, and **both app stores live** — in **2 weeks** at **$1,500 fixed**. Here's why I'm confident:
+React + Supabase + Stripe + Expo EAS is my daily stack. Frontend already complete means we skip straight to backend and deployment.
+Relevant work:
+**Canzey**, Stripe subscriptions, webhooks, plan gating, 1,000+ daily active users:
+https://admin.canzey.com
+**Al-Falah**, Expo/Flutter app, App Store and Play Store live, 50,000+ users:
+https://apps.apple.com/pk/app/alfalah-quran-athan-prayer/id1631108236
+Supabase Auth, RLS, database schema, Stripe webhook handling — all included in the **$1,500 fixed price**.
+Happy to jump on a quick call today.
+**100% JSS** · **Rising Talent** · US-based New York
+Noman
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+IDEAL EXAMPLE 2
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Hi,
+I can audit your **Firebase credentials**, fix the layout issues, and deliver a working **Stripe Checkout** marketplace by **May 28** — here's why I'm confident:
+Flutter, Firebase, Firestore, and Stripe webhooks are all areas I've shipped in production. Security-first setup and clean Git history are non-negotiable in my workflow.
+Relevant work:
+**Al-Falah**, Flutter app, Firebase backend, 50,000+ users, App Store live:
+https://apps.apple.com/pk/app/alfalah-quran-athan-prayer/id1631108236
+**Canzey**, Stripe integration, marketplace architecture, 1,000+ daily active users:
+https://admin.canzey.com
+One thing on budget — the full scope is 40+ hours. To deliver properly by May 28 I'd need **a minimum of $1,200**.
+Ready to start immediately. Can we jump on a quick call today?
+**100% JSS** · **Rising Talent** · US-based New York
+Noman
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+LETTER STRUCTURE — FOLLOW EXACTLY
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 1. GREETING
-   - Check CLIENT NAME FROM REGEX first — if it shows a real name (not "not found"), use it: "Hi [Name],"
-   - If no regex name, scan CLIENT REVIEWS TEXT for first name patterns like "Thanks Ahmed", "Working with Sara", "Ahmed is a great client"
-   - Found any name → ALWAYS use "Hi [Name]," — this is important for personalisation
-   - No name found anywhere → "Hi,"
-   - Never: Dear, Hello there, full name
+   Hi [FirstName], — if name found. Otherwise: Hi,
+   Never: Dear, Hello there.
 
-2. HOOK (first 1-2 sentences — THE most important part of the entire letter)
-   Use the ASSIGNED HOOK from the user message. Copy the structure exactly. Fill [brackets] with job-specific details only.
-   - Bold ONE key claim with **word**
-   - No parentheses () anywhere — ever
-   - ONE portfolio name maximum if mentioned — never two names
+2. OPENING LINE — most important sentence
+   Pattern A: "I can [exact deliverable] — **[tech]**, **[tech]** — in **[timeline]** at **$[price]**. Here's why I'm confident:"
+   Pattern B: "I built **[portfolio project]** — [specific metric]. I'd like to build the same for you:"
+   Pattern C: "I can [deliverable 1], [deliverable 2], and [deliverable 3] by **[deadline]** — here's why I'm confident:"
+   Rules:
+   - Use THEIR words from the job description. Be specific.
+   - Bold every tech name, deliverable, price, timeline.
+   - If fixed budget → include price. If hourly → include rate or timeline.
+   - End with "Here's why I'm confident:" to lead into body.
 
-3. BODY (solution-focused, 2 short paragraphs max, under 70 words total)
-   READ THE JOB DESCRIPTION. Identify their core problem. Address THAT — not your general skills.
-   
-   BODY RULE 1 — SOLUTION NOT STACK:
-   ✗ WRONG: "I'll build cross-platform Flutter apps, Node.js backend, Firebase services, and Stripe integration."
-   ✓ RIGHT: "Your buyers need to find, schedule, and pay — all in one app. That's exactly what I'll build."
-   
-   BODY RULE 2 — SHORT SENTENCES:
-   ✗ WRONG: "I'll handle real-time audio capture, WebSocket communication, session state management, and UI components."
-   ✓ RIGHT: "I'll handle the audio pipeline end to end. WebSockets, session state, UI — all covered."
-   MAX 12 words per sentence. One comma per sentence. More than one comma = split into two sentences.
-   
-   BODY RULE 3 — HUMAN VOICE:
-   ✗ WRONG: "I will configure your infrastructure and ensure proper implementation."
-   ✓ RIGHT: "I'll get it right. First time."
-   Use contractions always. Start sentences with: And, But, So, Here's, You'll, That means.
-   Never sound like a consultant. Sound like a confident builder on a call.
-   
-   BODY RULE 4 — ONE PORTFOLIO REFERENCE MAX:
-   If relevant, mention ONE project name in one sentence. Never describe it in detail. The portfolio section handles proof.
-   ✓ RIGHT: "I built Canzy — same stack, live on both stores."
-   ✗ WRONG: "I built Canzy, a full-stack e-commerce platform with Flutter apps, Node.js backend, and React admin panel."
+3. BODY — 1-2 sentences ONLY, max 30 words
+   - Your specific matching experience. Name exact tech. Connect to their exact need.
+   - No generic statements. No "I'm passionate". Just relevant facts.
 
-4. PORTFOLIO — inserted automatically by the system before CTA. Do NOT write it in the letter field.
+4. RELEVANT WORK — always include, always inline
+   Relevant work:
+   **[Project Name]**, [relevant feature], [relevant feature], [metric]:
+   [full URL]
+   **[Project Name 2]**, [relevant feature]:
+   [full URL]
+   Rules: 2-3 projects max. Bold project name. Features relevant to THIS job. URL on next line.
 
-5. CTA (1 sentence — always the very last line before Regards)
-   Short. Direct. Specific. Options:
-   "Let's jump on a quick call today."
-   "Drop me a message with your availability."  
-   "I'm free this week — what works for you?"
+5. SCOPE / RATE — 1 sentence
+   Restate what's included OR mention rate + hours OR address budget if needed.
 
-6. SIGN-OFF: "Regards,\n[FreelancerName]"
+6. CTA — 1 sentence
+   "Happy to jump on a quick call today." or similar.
+
+7. BADGE LINE — always last, no "Regards,"
+   **[JSS]% JSS** · **[Tier]** · [Location]
+   [First name only]
+
+8. SCREENING KEYWORD
+   If provided, include verbatim ONCE anywhere in the letter naturally.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-THE 7 HOOKS
+HARD RULES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-HOOK 1 — PROOF:        "I [result] for [client type]. I'd like to do the same for you."
-                        END IS FIXED: always "for you." — never "for your app/project/platform"
-HOOK 2 — RELATABILITY: "I've [exact experience]. This is how I'd approach [their project in 3-4 words]:"
-HOOK 3 — GUARANTEE:    "I can [outcome] in [timeframe], and I'm willing to back that up — [proof]."
-HOOK 4 — EXTRA VALUE:  "I'll not only [main need] — I'll also [one useful extra they didn't ask for]."
-HOOK 5 — CALL:         "Let's jump on a quick call today — I can walk you through my exact approach in 15 minutes."
-HOOK 6 — NUMBERS:      "Here are my numbers: [stat 1], [stat 2], [stat 3] — all relevant to what you need."
-HOOK 7 — CLIENT-FIRST: "My understanding: you need [restate their problem better than they wrote it]."
+✓ Open with their exact deliverable in confident direct words
+✓ Bold all: **tech**, **prices**, **timelines**, **project names**, **metrics**, **JSS**, **Tier**
+✓ Portfolio INLINE as "Relevant work:" section — never appended separately
+✓ Under 150 words total
+✓ End with badge line + first name only — NO "Regards,"
+✓ Include screening keyword verbatim if given
+✗ NO "I'd like to do the same for you" as generic hook
+✗ NO "Regards," sign-off
+✗ NO more than 3 portfolio items
+✗ NO parentheses ()
+✗ NO emojis, NO * bullets
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-CLIENT QUESTIONS (if any)
+CLIENT QUESTIONS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Answer ALL questions in ===QUESTIONS===. Skipping = instant rejection.
-- 2-4 sentences per answer. Plain prose. No bold. No bullets.
-- Sound human: "I checked", "what I did was", "here's how I'd handle it"
-- Never repeat the question. Never start with "Great question."
+Answer ALL questions in ===QUESTIONS===. 2-4 sentences each. Plain prose. Human voice.
+Never repeat the question. Never bold or bullet in Q&A answers.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-HARD RULES — BREAKING ANY OF THESE = FAILED PROPOSAL
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✓ Read the job. Solve THEIR problem. Not your generic pitch.
-✓ Short sentences. Max 12 words. One comma. Split anything longer.
-✓ Contractions always: I'll, you'll, it's, I've, that's
-✓ Bold prices, timelines, key metrics — **word**
-✓ Total letter: 100-150 words max. Cut anything that doesn't directly answer their need.
-✗ NO parentheses () — "(Flutter)", "(iOS)", "(Swift)" = AI-sounding, never use
-✗ NO generic body — "I've shipped production apps" without connecting to their specific problem = rejected
-✗ NO listing your stack as deliverables — outcomes only
-✗ NO two portfolio names together — one name, one sentence, maximum
-✗ NO: passionate, extensive experience, great fit, excited about, leverage, seamlessly
-✗ NO emojis, NO bullets with *, NO starting with your name
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-PRICING
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-HOURLY → mention rate naturally in body or CTA
-FIXED  → acknowledge budget, confirm it works or propose your number
-UNKNOWN → skip pricing, focus on CTA
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-OUTPUT FORMAT — EXACT DELIMITERS, NO EXCEPTIONS
+OUTPUT FORMAT
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ===LETTER===
-[letter here]
+[full letter]
 ===END===
 
 ===PORTFOLIO===
-[Name: URL — only projects mentioned in letter, one per line]
+[Name: URL — one per line, projects referenced]
 ===END===
 
 ===QUESTIONS===
-[Q&A answers or blank]
+[answers or blank]
 ===END===
 
 ===META===
-HOOK: [hook name]
-DESC: [one line why]
+HOOK: [A, B, or C]
+DESC: [why this hook]
 TIP1: [job-specific tip]
 TIP2: [tip]
 TIP3: [tip]
-CLIENT: [first name from reviews or blank]
+CLIENT: [first name or blank]
 ===END===`;
 
 // ── User message builder ──────────────────────────────────────────────────────
@@ -216,68 +220,69 @@ function buildUserMessage({ job, profile, settings, refineInstruction = '' }) {
     assignedHook = 'HOOK 6 — NUMBERS';
   }
 
-  const msg = `
-JOB TITLE: ${job.title}
-JOB DESCRIPTION:
-${(job.description||'').slice(0, 2500)}
+  // Detect hidden screening keywords ("include the word X somewhere in your reply")
+  const screeningMatch = (job.description||'').match(
+    /(?:include|use|say|type|write|add|put|mention)\s+(?:the\s+)?(?:word|phrase|code)?\s*["']?([a-zA-Z]{3,15})["']?\s+(?:somewhere|in your|in the|anywhere|in this)/i
+  );
+  const screeningWord = screeningMatch ? screeningMatch[1] : null;
 
-REQUIRED SKILLS: ${job.skills || 'not listed'}
-BUDGET/RATE: ${job.budget || 'not specified'} ${isFixed ? '(FIXED PRICE — YOU MUST MENTION THIS AMOUNT IN THE LETTER)' : ''}
-PRICING TYPE: ${pricingType}
-CLIENT LOCATION: ${job.location || 'unknown'}
-CLIENT NAME FROM REGEX: ${job.clientName || 'not found'}
-CLIENT REVIEWS TEXT (extract client first name from this if mentioned by freelancers):
-${(job.reviewText || '').slice(0, 600) || 'no reviews available'}
+  // Build JSS badge from profile data
+  const jssVal    = profile.jss ? String(profile.jss).replace('%','') : null;
+  const tierLabel = profile.tier || null;
+  const location  = profile.country || '';
+  const badgeParts = [
+    jssVal    ? ('**' + jssVal + '% JSS**') : null,
+    tierLabel ? ('**' + tierLabel + '**')   : null,
+    location  || null
+  ].filter(Boolean);
+  const badgeLine = badgeParts.join(' · ');
+  const firstName = (profile.name || '').split(' ')[0] || '';
 
-ADDITIONAL QUESTIONS FROM CLIENT:
-${job.questions || 'none'}
-${job.questions && job.questions !== 'none' ? `
-Q&A RULES — READ BEFORE WRITING ANSWERS:
-- Answer ONLY the questions listed above. Do NOT invent questions.
-- MAX 2-3 SHORT sentences per answer. Under 60 words total per answer. If you go over, cut it.
-- Plain prose only. Zero bold, zero bullets, zero headers.
-- Sound like a human texting a reply — short, direct, confident.
-- One sentence max if experience doesn't match, then pivot fast.
-- Never repeat the question. Never start with "Great question".
-- Answers go in ===QUESTIONS=== only.` : ''}
-
-──────────────────────────────
-FREELANCER PROFILE
-──────────────────────────────
-Name: ${profile.name}
-Role/Title: ${profile.title}
-Relevant skills for THIS job: ${relevantSkills.join(', ')}
-Hourly rate: ${profile.hourlyRate || 'not set'}
-Value pitch: ${profile.pitch || ''}
-Extra context: ${profile.extra || 'none'}
-Always include: ${settings?.alwaysInclude || 'nothing'}
-
-PORTFOLIO (match these to the job — use max 2 most relevant):
-${portfolioText}
-
-──────────────────────────────
-INSTRUCTIONS
-──────────────────────────────
-Tone: ${settings?.tone || 'professional'}
-Target word count: ${wordLimit} words (but write what the job needs — if they asked specific questions, answer them properly)
-Pricing instruction: ${pricingType === 'HOURLY' ? `Mention rate "${profile.hourlyRate || 'not set'}" naturally` : pricingType === 'FIXED' ? `Address their budget: ${job.budget}` : 'Focus on CTA, skip pricing'}
-
-YOUR ASSIGNED HOOK: ${assignedHook}
-TEMPLATE FOR YOUR OPENING SENTENCE:
-${({
-  '1': 'HOOK 1 EXACT FORMAT: "I [specific result] for [past client name or type]. I\'d like to do the same for you." — The ending is ALWAYS "for you." NEVER "for your app" or "for your project". Exactly: for you.',
-  '2': 'HOOK 2 EXACT FORMAT: "I\'ve [done this exact thing — be specific]. This is how I\'d approach [restate their project in 3-4 words]:" — ends with a colon, body follows.',
-  '3': 'HOOK 3 EXACT FORMAT: "I can [deliver X outcome] in [timeframe], and I\'m willing to back that up — [one short proof point]." — bold the timeframe.',
-  '4': 'HOOK 4 EXACT FORMAT: "I\'ll not only [their main need] — I\'ll also [one bonus they didn\'t ask for]." — the bonus must be genuinely useful.',
-  '5': 'HOOK 5 EXACT FORMAT: "Let\'s jump on a quick call today — I can walk you through my exact approach in 15 minutes." — use exactly this wording.',
-  '6': 'HOOK 6 EXACT FORMAT: "Here are my numbers: [stat 1], [stat 2], [stat 3] — all relevant to what you need." — stats must be real from the profile.',
-  '7': 'HOOK 7 EXACT FORMAT: "My understanding: you need [restate their core problem better than they wrote it]." — make them feel understood.'
-})[assignedHook.match(/\d/)?.[0]] || 'Use the assigned hook format above.'}
-MANDATORY: Copy the exact hook structure above. Fill in the [brackets] only. Do not change the ending words. Do not use parentheses (). Bold one key term.
-${refineInstruction ? "REFINEMENT REQUEST from user: " + refineInstruction : ""}
-Write the cover letter now. Bold key terms using **word** syntax. End with Regards + ${profile.name}.
-If there are additional client questions, answer them in the questions field.`.trim();
-
+  const msgParts = [
+    'JOB TITLE: ' + job.title,
+    'JOB DESCRIPTION:\n' + (job.description||'').slice(0, 2500),
+    '',
+    'REQUIRED SKILLS: ' + (job.skills || 'not listed'),
+    'BUDGET/RATE: ' + (job.budget || 'not specified') + (isFixed ? ' (FIXED PRICE — mention this amount in your opening line)' : ''),
+    'PRICING TYPE: ' + pricingType,
+    'CLIENT LOCATION: ' + (job.location || 'unknown'),
+    'CLIENT NAME FROM REGEX: ' + (job.clientName || 'not found'),
+    'CLIENT REVIEWS TEXT:\n' + ((job.reviewText || '').slice(0, 600) || 'no reviews available'),
+    '',
+    'ADDITIONAL QUESTIONS FROM CLIENT:\n' + (job.questions || 'none'),
+    '',
+    'SCREENING KEYWORD: ' + (screeningWord || 'none') + (screeningWord ? ' — include this exact word ONCE naturally in the letter' : ''),
+    '',
+    '──────────────────────────────',
+    'FREELANCER PROFILE',
+    '──────────────────────────────',
+    'Full name: ' + profile.name,
+    'First name for sign-off: ' + firstName,
+    'Role/Title: ' + profile.title,
+    'JSS: ' + (profile.jss || 'not set'),
+    'Tier: ' + (profile.tier || 'not set'),
+    'Country/Location: ' + (profile.country || 'not set'),
+    'Hourly rate: ' + (profile.hourlyRate || 'not set'),
+    'Relevant skills for THIS job: ' + relevantSkills.join(', '),
+    'Extra context: ' + (profile.extra || 'none'),
+    '',
+    'PORTFOLIO (pick 2-3 most relevant — write INLINE as "Relevant work:" section):',
+    portfolioText,
+    '',
+    'BADGE LINE FOR END OF LETTER:',
+    badgeLine || '(no badge data — just end with first name)',
+    '',
+    '──────────────────────────────',
+    'INSTRUCTIONS',
+    '──────────────────────────────',
+    'Pricing: ' + (pricingType === 'HOURLY' ? 'Mention rate "' + (profile.hourlyRate || 'not set') + '" naturally' : pricingType === 'FIXED' ? 'Fixed budget ' + job.budget + ' — address in opening' : 'No pricing info — focus on CTA'),
+    refineInstruction ? ('REFINEMENT REQUEST: ' + refineInstruction) : '',
+    '',
+    'Write the letter now. Follow the IDEAL EXAMPLES structure exactly.',
+    'Portfolio INLINE as "Relevant work:" in body — NOT appended separately.',
+    'End with badge line then first name only. Do NOT write "Regards,".',
+  ];
+  const msg = msgParts.filter(s => s !== undefined && s !== null).join('\n').trim()
   return msg;
 }
 

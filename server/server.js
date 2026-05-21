@@ -463,28 +463,8 @@ app.post('/proposal', async (req, res) => {
           })
           .trimEnd();
 
-        // Build portfolio section and insert BEFORE the CTA (last paragraph before Regards)
-        // Order must be: Body → Portfolio → CTA → Regards
-        const portSection = processBold(
-          '\n\n**Portfolio:**\n' + validLinks.map(p => '- **' + p.name + '**: ' + p.url).join('\n')
-        );
-        const regardsIdx = result.letter.lastIndexOf('Regards');
-        if (regardsIdx > -1) {
-          const beforeRegards = result.letter.slice(0, regardsIdx).trimEnd();
-          // Last \n\n marks the CTA paragraph — insert portfolio before it
-          const lastBreak = beforeRegards.lastIndexOf('\n\n');
-          if (lastBreak > -1) {
-            result.letter =
-              beforeRegards.slice(0, lastBreak).trimEnd() +
-              portSection + '\n\n' +
-              beforeRegards.slice(lastBreak).trimStart() +
-              '\n\n' + result.letter.slice(regardsIdx);
-          } else {
-            result.letter = beforeRegards + portSection + '\n\n' + result.letter.slice(regardsIdx);
-          }
-        } else {
-          result.letter = result.letter + portSection;
-        }
+        // Portfolio is now written INLINE by Claude as "Relevant work:" section
+        // No server-side injection needed — Claude handles placement and formatting
       }
     }
 

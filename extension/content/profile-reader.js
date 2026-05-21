@@ -261,10 +261,29 @@
           const si = afterMarker.indexOf(stop);
           if (si > -1 && si < endIdx) endIdx = si;
         }
-        const skillLines = afterMarker.slice(0, endIdx)
+        // Stop at first non-skill line so review/rating text doesn't bleed in
+        const lines = afterMarker.slice(0, endIdx)
           .split('\n')
-          .map(l => l.replace(/^[•·\-\*\d\.]+\s*/, '').trim())
-          .filter(l => l.length >= 2 && l.length <= 50 && isValidSkill(l));
+          .map(l => l.replace(/^[•·\-\*\d\.]+\s*/, '').trim());
+
+        const skillLines = [];
+        for (const l of lines) {
+          if (!l) continue;
+          // Hard stop triggers — everything after these is not a skill
+          const isStop =
+            /\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\b/i.test(l) || // dates
+            /^Published/i.test(l) ||                           // "Published on..."
+            /Rating\s+is/i.test(l) ||                         // "Rating is 5.0..."
+            /out of \d/i.test(l) ||                           // "out of 5"
+            /^[\d]+\.?[\d]*\s*(out|star|★)/i.test(l) ||    // "5.0 out..."
+            /recommended|wouldn'|would not/i.test(l) ||        // review text
+            /[.!?]$/.test(l) ||                                // ends with punctuation = sentence
+            /\b(my|your|our|their|his|her|me|we)\b/i.test(l) || // personal pronouns = job title/review
+            /\b(help|finish|build|create|fix|hire|need|want|looking)\b/i.test(l) || // verbs
+            l.split(' ').length > 4;                           // >4 words = likely prose
+          if (isStop) break; // stop collecting — don't just skip, stop entirely
+          if (l.length >= 2 && l.length <= 50 && isValidSkill(l)) skillLines.push(l);
+        }
         textSkills = [...new Set(skillLines)].slice(0, 15);
         break;
       }
