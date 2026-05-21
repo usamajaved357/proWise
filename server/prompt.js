@@ -251,12 +251,19 @@ function buildUserMessage({ job, profile, settings, refineInstruction = '' }) {
   // Hook selection — pick best hook based on job characteristics
   // Rotate through hooks so not always the same one
   const jobTextLower = jobText.toLowerCase();
+  // Include ALL job metadata in signal detection — not just description text
+  const fullJobContext = [
+    job.description, job.title, job.budget, job.duration, job.type, job.skills
+  ].filter(Boolean).join(' ').toLowerCase();
+
   const budget = parseInt((job.budget || '0').replace(/[^0-9]/g, '')) || 0;
-  const hasTimeline = /week|day|month|deadline|urgent|asap|quickly|fast/i.test(jobTextLower);
-  const hasBurnedClient = /left mid|abandoned|previous developer|fired|failed|took over|inherit/i.test(jobTextLower);
+  const hasTimeline = /week|day|month|deadline|urgent|asap|quickly|fast|hours?|\d+\s*(week|day|month)/i.test(fullJobContext);
+  const hasBurnedClient = /left mid|abandoned|previous developer|fired|failed|took over|inherit/i.test(fullJobContext);
   const isLargeBudget = budget >= 5000;
   const isDetailedJob = (job.description || '').length > 1000;
   const hasSpecificMetric = /\d+%|\d+ (users|customers|clients|downloads|apps|projects)/i.test(jobTextLower);
+  const isLongTerm = /long.term|ongoing|full.time|contract.to.hire|\d+ month/i.test(fullJobContext);
+  const isSmallFixedJob = isFixed && budget > 0 && budget < 2000;
 
   // Hook selection — smart rotation based on job signals
   // HOOK 6 (Numbers) only used when profile has real stats to fill in
@@ -276,13 +283,13 @@ function buildUserMessage({ job, profile, settings, refineInstruction = '' }) {
   const rotation = [1, 2, 3, 4, 7, 1, 2]; // weighted toward reliable hooks
   let hookNum = rotation[titleHash % rotation.length];
 
-  // Signal overrides — order matters: most specific first
-  if (hasBurnedClient)                        hookNum = 3; // burned client → guarantee
-  else if (isFixed && hasTimeline)            hookNum = 3; // fixed price + timeline → guarantee with price+days
-  else if (isFixed && budget > 0)             hookNum = 3; // any fixed price → guarantee
-  else if (hasTimeline && !isDetailedJob)     hookNum = 4; // tight timeline → extra value
-  else if (isLargeBudget && budget >= 5000)   hookNum = 7; // big budget → client-first
-  else if (hasStats && isLargeBudget)         hookNum = 6; // stats available → numbers
+  // Signal overrides — most specific first
+  if (hasBurnedClient)                          hookNum = 3; // burned client → guarantee
+  else if (isFixed && (hasTimeline || budget>0)) hookNum = 3; // any fixed price → guarantee with price+timeline
+  else if (isLongTerm)                          hookNum = 2; // long-term role → relatability (I've done this)
+  else if (hasTimeline && isSmallFixedJob)       hookNum = 3; // tight timeline + small fixed → guarantee
+  else if (isLargeBudget && budget >= 5000)     hookNum = 7; // big budget → client-first understanding
+  else if (hasStats && isLargeBudget)           hookNum = 6; // stats available → numbers hook
 
   const assignedHook = HOOKS[hookNum];
 
@@ -337,6 +344,18 @@ function buildUserMessage({ job, profile, settings, refineInstruction = '' }) {
     '',
     'BADGE LINE FOR END OF LETTER:',
     badgeLine || '(no badge data — just end with first name)',
+    '',
+    'TOP MATCHING PROJECT FOR YOUR HOOK:',
+    rankedPortfolios.length
+      ? (() => {
+          const top = rankedPortfolios[0];
+          const name = top.title || top.name || 'Project';
+          const url  = (top.urls && top.urls.find(u => u && u.trim())) || top.url || '';
+          const skills = Array.isArray(top.skills) ? top.skills.slice(0,4).join(', ') : (top.skills || '');
+          return name + (url ? ' — ' + url : '') + (skills ? ' [' + skills + ']' : '') + (top.desc ? ' — ' + top.desc.slice(0,80) : '');
+        })()
+      : 'none',
+    'RULE: When your hook mentions a specific portfolio project, use TOP MATCHING PROJECT above — not a different project that happens to be in your memory.',
     '',
     '──────────────────────────────',
     'INSTRUCTIONS',
