@@ -186,20 +186,61 @@ function buildUserMessage({ job, profile, settings, refineInstruction = '' }) {
   const isFixed   = /fixed/.test(descLower) || /fixed/.test(budgetLower) || /fixed/.test(typeField) || !!job.budget;
   const pricingType = isHourly ? 'HOURLY' : isFixed ? 'FIXED' : 'UNKNOWN';
 
-  // Portfolio — rich format with name, description, skills
-  // Supports both old schema (name/url/skills:string) and new schema (title/urls[]/skills:[])
-  const portfolio = (profile.portfolio || []).filter(p =>
+  // Portfolio — score each project against the job, pass top 3 most relevant
+  const allPortfolios = (profile.portfolio || []).filter(p =>
     p.title || p.name || (p.urls && p.urls.length) || p.url
   );
-  const portfolioText = portfolio.length
-    ? portfolio.slice(0, 4).map(p => {
-        const name     = p.title || p.name || 'Project';
-        const firstUrl = (p.urls && p.urls.find(u => u && u.trim())) || p.url || '';
+
+  function scoreProject(p) {
+    let score = 0;
+    const pText = [p.title, p.desc, p.role, (p.skills||[]).join(' ')].join(' ').toLowerCase();
+    const pSkillsArr = Array.isArray(p.skills) ? p.skills : (typeof p.skills === 'string' ? p.skills.split(',') : []);
+
+    // Skill overlap — strongest signal
+    pSkillsArr.forEach(skill => {
+      const s = (skill || '').trim().toLowerCase();
+      if (s && jobText.includes(s)) score += 4;
+    });
+
+    // Description/title keyword overlap with job
+    const jobWords = jobText.split(/\W+/).filter(w => w.length > 4);
+    jobWords.forEach(w => { if (pText.includes(w)) score += 1; });
+
+    // Has a real URL — strongly prefer projects with links
+    const firstUrl = (p.urls && p.urls.find(u => u && u.trim())) || p.url || '';
+    if (firstUrl) score += 3;
+
+    // App store URL for mobile jobs
+    if (/apps\.apple\.com|play\.google\.com/.test(firstUrl)) score += 2;
+
+    // Figma/design links are weak for non-design jobs
+    if (/figma\.com/.test(firstUrl) && !/design|ui|ux|figma/.test(jobText)) score -= 2;
+
+    return score;
+  }
+
+  const rankedPortfolios = allPortfolios
+    .map(p => ({ p, score: scoreProject(p) }))
+    .sort((a, b) => b.score - a.score)
+    .map(x => x.p);
+
+  const portfolioText = rankedPortfolios.length
+    ? rankedPortfolios.slice(0, 3).map(p => {
+        const name      = p.title || p.name || 'Project';
+        const firstUrl  = (p.urls && p.urls.find(u => u && u.trim())) || p.url || '';
         const skillsStr = Array.isArray(p.skills)
-          ? p.skills.slice(0, 6).join(', ')
+          ? p.skills.slice(0, 8).join(', ')
           : (typeof p.skills === 'string' ? p.skills : '');
-        return `- ${name}${firstUrl ? ' ('+firstUrl+')' : ''}${p.desc ? ': '+p.desc : ''}${skillsStr ? ' ['+skillsStr+']' : ''}`;
-      }).join('\n')
+        const relevanceScore = scoreProject(p);
+        return [
+          `Project: ${name}`,
+          firstUrl ? `URL: ${firstUrl}` : 'URL: none',
+          p.desc ? `Description: ${p.desc}` : '',
+          skillsStr ? `Skills: ${skillsStr}` : '',
+          p.role ? `Role: ${p.role}` : '',
+          `Relevance score: ${relevanceScore} (higher = better match for this job)`,
+        ].filter(Boolean).join('\n');
+      }).join('\n\n')
     : (profile.portfolioLinks||[]).filter(Boolean).slice(0,3).map(l => `- ${l}`).join('\n') || 'none provided';
 
   // Word limit from settings
@@ -235,11 +276,13 @@ function buildUserMessage({ job, profile, settings, refineInstruction = '' }) {
   const rotation = [1, 2, 3, 4, 7, 1, 2]; // weighted toward reliable hooks
   let hookNum = rotation[titleHash % rotation.length];
 
-  // Signal overrides
-  if (hasBurnedClient)                      hookNum = 3;
-  else if (hasTimeline && !isDetailedJob)   hookNum = 4;
-  else if (isLargeBudget && budget >= 5000) hookNum = 7;
-  else if (hasStats && isLargeBudget)       hookNum = 6;
+  // Signal overrides — order matters: most specific first
+  if (hasBurnedClient)                        hookNum = 3; // burned client → guarantee
+  else if (isFixed && hasTimeline)            hookNum = 3; // fixed price + timeline → guarantee with price+days
+  else if (isFixed && budget > 0)             hookNum = 3; // any fixed price → guarantee
+  else if (hasTimeline && !isDetailedJob)     hookNum = 4; // tight timeline → extra value
+  else if (isLargeBudget && budget >= 5000)   hookNum = 7; // big budget → client-first
+  else if (hasStats && isLargeBudget)         hookNum = 6; // stats available → numbers
 
   const assignedHook = HOOKS[hookNum];
 
@@ -289,7 +332,7 @@ function buildUserMessage({ job, profile, settings, refineInstruction = '' }) {
     'Relevant skills for THIS job: ' + relevantSkills.join(', '),
     'Extra context: ' + (profile.extra || 'none'),
     '',
-    'PORTFOLIO (pick 2-3 most relevant — write INLINE as "Relevant work:" section):',
+    'PORTFOLIO (already ranked by relevance to this job — use top 2-3, skip any with URL: none):',
     portfolioText,
     '',
     'BADGE LINE FOR END OF LETTER:',
@@ -310,7 +353,7 @@ function buildUserMessage({ job, profile, settings, refineInstruction = '' }) {
     '',
     'Write the letter now. Follow the IDEAL EXAMPLES structure exactly.',
     'Use the ASSIGNED HOOK as your opening sentence — fill brackets, bold key terms.',
-    'Portfolio INLINE as "Relevant work:" — skip projects with no URL.',
+    'Portfolio: use projects with highest relevance score. Skip any with URL: none. Write as "Relevant work:" inline.',
     'End with badge line then first name only. Do NOT write "Regards,".',
   ];
   const msg = msgParts.filter(s => s !== undefined && s !== null).join('\n').trim()
