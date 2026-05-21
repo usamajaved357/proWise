@@ -65,9 +65,9 @@ Hi,
 I can build your **FarmOS backend**, **Supabase**, **Stripe subscriptions**, and both app stores live in **2 weeks** at **$1,500 fixed**. Here's why I'm confident:
 React, Supabase, Stripe, Expo EAS, and store submissions is my daily stack. Frontend already complete means we skip straight to backend.
 Relevant work:
-**Canzey**, Stripe subscriptions, webhooks, plan gating, 1,000+ daily active users:
+- **Canzey**, Stripe subscriptions, webhooks, plan gating, 1,000+ daily active users:
 https://admin.canzey.com
-**Al-Falah**, Expo/Flutter, App Store and Play Store live, 50,000+ users:
+- **Al-Falah**, Expo/Flutter, App Store and Play Store live, 50,000+ users:
 https://apps.apple.com/pk/app/alfalah-quran-athan-prayer/id1631108236
 Supabase Auth, RLS, Stripe webhook handling — all included in the **$1,500 fixed price**.
 Happy to jump on a quick call today.
@@ -81,9 +81,9 @@ Hi,
 I can audit your **Firebase credentials**, fix the layout issues, and deliver a working **Stripe Checkout** by **May 28**. Here's why I'm confident:
 Flutter, Firebase, Firestore, and Stripe webhooks shipped in production. Security-first setup is non-negotiable in my workflow.
 Relevant work:
-**Al-Falah**, Flutter, Firebase backend, 50,000+ users, App Store live:
+- **Al-Falah**, Flutter, Firebase backend, 50,000+ users, App Store live:
 https://apps.apple.com/pk/app/alfalah-quran-athan-prayer/id1631108236
-**Canzey**, Stripe integration, marketplace architecture, 1,000+ daily active users:
+- **Canzey**, Stripe integration, marketplace architecture, 1,000+ daily active users:
 https://admin.canzey.com
 Full scope is 40+ hours. To deliver properly by May 28 I need **a minimum of $1,200**.
 Ready to start immediately. Can we jump on a quick call today?
@@ -97,9 +97,9 @@ Hi,
 I built **Canzey** — a full-stack business platform handling **1,000+ daily active users**. I'd like to build the same for your business:
 Building centralized systems is exactly what I specialise in. I think in systems, not just tasks.
 Relevant work:
-**Canzey**, full-stack platform, inventory, customer management, 1,000+ daily users:
+- **Canzey**, full-stack platform, inventory, customer management, 1,000+ daily users:
 https://admin.canzey.com
-**AnyRide**, multi-role platform, real-time data, pipeline management:
+- **AnyRide**, multi-role platform, real-time data, pipeline management:
 https://play.google.com/store/apps/details?id=in.neride.passenger
 **$50/hr** · Eastern Time · Available immediately for **30+ hrs/week**.
 Happy to jump on a quick call today.
@@ -113,10 +113,12 @@ LETTER STRUCTURE — EXACT ORDER
 2. HOOK (from assigned hook above) — one punchy sentence, bold key terms
 3. BODY — exactly 2 short sentences, max 25 words total. State your matching experience. Connect to their exact need. Nothing else.
 4. Relevant work: — 2-3 projects with URLs only. Skip any project without a URL.
-   **Project**, feature, feature, metric:
+   - **Project**, feature, feature, metric:
+   https://url
+   - **Project 2**, feature:
    https://url
 5. SCOPE — 1 sentence. Rate and hours, or price breakdown, or timeline commitment.
-6. CTA — 1 sentence. "Happy to jump on a quick call today."
+6. CTA — MANDATORY. Always include. "Happy to jump on a quick call today." or "Ready to start. Can we jump on a quick call today?"
 7. **JSS% JSS** · **Tier** · Location
 8. First name only — NO "Regards,"
 
@@ -129,6 +131,7 @@ RULES
 ✓ Contractions: I've, I'll, it's, that's, I'd
 ✓ Bold: **tech**, **prices**, **timelines**, **metrics**, **project names**
 ✓ Screening keyword: include verbatim once, naturally — not forced
+✓ CTA is MANDATORY — always the line before the badge
 ✓ Total letter: under 120 words
 ✓ Skip portfolio items with no URL
 ✗ NO long opening sentences listing 5+ things generically
