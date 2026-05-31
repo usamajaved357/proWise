@@ -1111,59 +1111,146 @@
       badge.textContent = remaining + ' left';
     }
 
+    // Build actionable callouts from factor data
+    function buildCallouts(wp, jobStats, profile) {
+      const out = [];
+      const loc = (jobStats.location || '').toLowerCase();
+      const myRate = parseInt((profile.hourlyRate || '0').replace(/[^0-9]/g,'')) || 0;
+      const budget = parseInt((jobStats.budget || '0').replace(/[^0-9]/g,'')) || 0;
+
+      // Location-based timezone tip
+      if (/miami|florida|atlanta|eastern|charlotte|boston|new york|nyc/.test(loc))
+        out.push({ type:'tip', text:'Client is in Eastern time — mention your US Eastern overlap directly.' });
+      else if (/los angeles|san francisco|seattle|pacific|california/.test(loc))
+        out.push({ type:'tip', text:'Client is Pacific time — note your availability overlap hours.' });
+      else if (/london|uk|europe|berlin|amsterdam|paris/.test(loc))
+        out.push({ type:'tip', text:'Client is in Europe — mention any overlap with their working hours.' });
+
+      // Budget vs rate
+      if (budget > 0 && myRate > 0) {
+        if (budget < myRate * 0.8)
+          out.push({ type:'warn', text:'Budget $'+budget+'/hr is below your $'+myRate+'/hr rate — address this directly.' });
+        else if (budget >= myRate)
+          out.push({ type:'ok', text:'Budget $'+budget+'/hr matches your rate — state your price confidently in the letter.' });
+      }
+
+      // Competition from prob factors
+      const compFactor = (wp.topProb||[]).find(f => /proposal/i.test(f.label));
+      if (compFactor && compFactor.delta < 0)
+        out.push({ type:'warn', text:'High competition — your first 160 chars must open with a specific result, not a generic intro.' });
+      else if (compFactor && compFactor.delta > 0)
+        out.push({ type:'ok', text:'Low competition — apply now while the field is small.' });
+
+      // Skill match
+      const skillFactor = (wp.topMatch||[]).find(f => f.skillMatch);
+      if (skillFactor && skillFactor.delta < 0)
+        out.push({ type:'warn', text:'Skill gap detected — acknowledge it early and pivot to transferable experience.' });
+
+      // Hire rate
+      const hireFactor = (wp.topProb||[]).find(f => /hire rate/i.test(f.label));
+      if (hireFactor) {
+        if (hireFactor.delta < 0)
+          out.push({ type:'warn', text:'Low hire rate — end your letter with a direct CTA asking for a 10-minute call.' });
+        else if (hireFactor.delta > 0)
+          out.push({ type:'ok', text:'Active hiring client — strong CTA works well here.' });
+      }
+
+      // Risk items → callout
+      (wp.riskItems||[]).slice(0,1).forEach(r => {
+        out.push({ type:'risk', text: r });
+      });
+
+      return out.slice(0, 4);
+    }
+
+    const callouts = buildCallouts(wp, jobStats, profile);
+
+    // Word count helper
+    function countWords(el) {
+      return (el?.innerText||'').trim().split(/\s+/).filter(w=>w).length;
+    }
+
     document.getElementById('sn-body').innerHTML = `
       <div class="sn-two-col">
 
-        <!-- LEFT: Cover letter -->
+        <!-- LEFT: letter area -->
         <div class="sn-col-letter">
+
+          <!-- Letter header: word count -->
+          <div class="sn-letter-header">
+            <span class="sn-letter-label">Cover Letter</span>
+            <span class="sn-word-count" id="sn-word-count">0 words</span>
+          </div>
+
           <div class="sn-letter" id="sn-letter" contenteditable="true">${esc(letter)}</div>
+
+          <!-- Quick refinement chips -->
+          <div class="sn-refine-chips">
+            <button class="sn-chip" data-refine="Make it shorter — under 100 words. Keep hook and portfolio, cut the rest.">Shorter</button>
+            <button class="sn-chip" data-refine="Make the tone more direct and confident. No hedging, no filler.">More confident</button>
+            <button class="sn-chip" data-refine="Add my hourly rate naturally in the scope or CTA line.">Add my rate</button>
+            <button class="sn-chip" data-refine="Address the client's budget directly — explain how my rate fits or propose a number.">Adjust for budget</button>
+          </div>
+
+          <!-- Refine bar -->
           <div class="sn-letter-bar">
-            <textarea class="sn-refine-inp" id="sn-refine-inp" placeholder="Request changes… e.g. shorter, add GitHub link, change tone" rows="2"></textarea>
+            <textarea class="sn-refine-inp" id="sn-refine-inp" placeholder="Custom refinement — e.g. add GitHub link, change tone, mention React…" rows="2"></textarea>
             <button class="sn-regen-inline-btn" id="sn-regen">
               <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
               Regenerate
             </button>
           </div>
+
+          <!-- Copy button -->
           <div class="sn-letter-actions">
             <button class="sn-copy-top-btn" id="sn-copy">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2 2v1"/></svg>
-              Copy Proposal
+              <span id="sn-copy-label">Copy proposal</span>
             </button>
           </div>
 
         </div>
 
-        <!-- RIGHT: Intel panel -->
+        <!-- RIGHT: intel panel -->
         <div class="sn-col-intel">
 
-          <!-- Win Probability -->
-          <div class="sn-ic-card">
-            <div class="sn-ic-card-title">Win Probability</div>
-            <div class="sn-ic-gauge-wrap">${buildGauge(wp.probScore, 160, "sn-prob-gauge")}</div>
-            <div class="sn-ic-factors">
-              ${(wp.topProb||[]).slice(0,4).map(f=>'<div class="sn-icf-row"><span class="sn-icf-dot" style="background:'+(f.delta>0?'#22c55e':f.delta<0?'#f87171':'#f59e0b')+'"></span><div class="sn-icf-body"><span class="sn-icf-lbl">'+esc(f.label)+'</span>'+(f.value?'<span class="sn-icf-val">'+esc(f.value)+'</span>':'')+'</div></div>').join('')}
+          <!-- Actionable callouts -->
+          ${callouts.length ? `
+          <div class="sn-ic-card sn-callouts-card">
+            <div class="sn-ic-card-title">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c0 0 .7 5.8 2.1 7.2C15.5 10.6 21 12 21 12s-5.5 1.4-6.9 2.8C12.7 16.2 12 22 12 22s-.7-5.8-2.1-7.2C8.5 13.4 3 12 3 12s5.5-1.4 6.9-2.8C11.3 7.8 12 2 12 2z"/></svg>
+              Writing tips
+            </div>
+            ${callouts.map(c => {
+              const col = c.type==='ok' ? '#4ade80' : c.type==='warn' ? '#facc15' : '#f87171';
+              const bg  = c.type==='ok' ? 'rgba(74,222,128,.07)' : c.type==='warn' ? 'rgba(250,204,21,.07)' : 'rgba(248,113,113,.07)';
+              return '<div class="sn-callout" style="background:'+bg+';border-left-color:'+col+'">'+esc(c.text)+'</div>';
+            }).join('')}
+          </div>` : ''}
+
+          <!-- Scores — compact side by side -->
+          <div class="sn-ic-scores-row">
+            <div class="sn-ic-score-card">
+              <div class="sn-ic-score-label">Win Probability</div>
+              <div class="sn-ic-gauge-wrap">${buildGauge(wp.probScore, 130, "sn-prob-gauge")}</div>
+            </div>
+            <div class="sn-ic-score-card">
+              <div class="sn-ic-score-label">Profile Match</div>
+              <div class="sn-ic-gauge-wrap">${buildGauge(wp.matchScore, 130, "sn-match-gauge")}</div>
             </div>
           </div>
-
-          <!-- Profile Match -->
-          <div class="sn-ic-card">
-            <div class="sn-ic-card-title">Profile Match</div>
-            <div class="sn-ic-gauge-wrap">${buildGauge(wp.matchScore, 160, "sn-match-gauge")}</div>
-            <div class="sn-ic-factors">
-              ${(wp.topMatch||[]).slice(0,4).map(f=>'<div class="sn-icf-row"><span class="sn-icf-dot" style="background:'+(f.delta>0?'#22c55e':f.warn||f.delta<0?'#f87171':'#f59e0b')+'"></span><div class="sn-icf-body"><span class="sn-icf-lbl">'+esc(f.label)+'</span>'+(f.value?'<span class="sn-icf-val">'+esc(f.value)+'</span>':'')+'</div></div>').join('')}
-            </div>
-          </div>
-
-          <!-- Client Risk (only if exists) -->
-          ${(wp.riskItems||[]).length ? '<div class="sn-ic-card sn-ic-risk"><div class="sn-ic-card-title" style="color:#f59e0b">⚠ Risk Flags</div>'+(wp.riskItems||[]).map(r=>'<div class="sn-icf-row"><div class="sn-icf-dot" style="background:#f87171"></div><span class="sn-icf-val sn-icf-risk">'+esc(r)+'</span></div>').join('')+'</div>' : ''}
 
           <!-- Tips -->
-          ${tips&&tips.length?'<div class="sn-ic-card"><div class="sn-ic-card-title">Tips</div>'+tips.slice(0,3).map(t=>'<div class="sn-ic-tip">'+esc(t.length>72?t.slice(0,72)+'…':t)+'</div>').join('')+'</div>':''}
+          ${tips&&tips.length ? `
+          <div class="sn-ic-card">
+            <div class="sn-ic-card-title">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              Job signals
+            </div>
+            ${tips.slice(0,3).map(t=>'<div class="sn-ic-tip">'+esc(t.length>80?t.slice(0,80)+'…':t)+'</div>').join('')}
+          </div>` : ''}
 
-          <!-- Q&A -->
-
-
-          ${remaining!==null&&remaining<=10?'<div class="sn-low-bar"><span>'+(remaining===0?'🚫 No proposals left':'⚡ '+remaining+' left')+'</span><button class="sn-low-upgrade" id="sn-low-upgrade">Upgrade</button></div>':''}
+          ${remaining!==null&&remaining<=10 ? '<div class="sn-low-bar"><span>'+(remaining===0?'No proposals left':remaining+' left')+'</span><button class="sn-low-upgrade" id="sn-low-upgrade">Upgrade</button></div>' : ''}
 
         </div>
       </div>
@@ -1181,15 +1268,39 @@
       });
     }
 
+    // Word count — live update
+    const letterEl = document.getElementById('sn-letter');
+    const wcEl = document.getElementById('sn-word-count');
+    function updateWordCount() {
+      const n = countWords(letterEl);
+      if (wcEl) wcEl.textContent = n + ' words';
+      if (wcEl) wcEl.className = 'sn-word-count' + (n > 160 ? ' sn-wc-over' : n > 120 ? ' sn-wc-warn' : '');
+    }
+    updateWordCount();
+    letterEl?.addEventListener('input', updateWordCount);
+
+    // Quick refinement chips
+    document.querySelectorAll('.sn-chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        window._snagRefineInstruction = chip.dataset.refine;
+        document.querySelectorAll('.sn-chip').forEach(c => c.classList.remove('active'));
+        chip.classList.add('active');
+        showLoading(); generate();
+      });
+    });
+
     document.getElementById('sn-copy').addEventListener('click', () => {
       navigator.clipboard.writeText(document.getElementById('sn-letter').innerText).then(() => {
-        const btn = document.getElementById('sn-copy');
-        btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Copied!';
-        btn.style.background = 'var(--sn-green)';
+        const btn   = document.getElementById('sn-copy');
+        const label = document.getElementById('sn-copy-label');
+        if (!btn || !label) return;
+        // Pulse animation
+        label.textContent = 'Copied ✓';
+        btn.classList.add('sn-copy-success');
         setTimeout(() => {
-          btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg> Copy';
-          btn.style.background = '';
-        }, 2500);
+          label.textContent = 'Copy proposal';
+          btn.classList.remove('sn-copy-success');
+        }, 1500);
       });
     });
 
