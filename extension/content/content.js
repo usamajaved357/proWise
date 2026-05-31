@@ -679,7 +679,7 @@
           <!-- Action buttons -->
           <div class="sn-alv2-footer" id="sn-alert-footer">
             <button class="sn-alv2-cancel" id="sn-alert-cancel">Skip this job</button>
-            ${isHired ? '' : '<button class="sn-alv2-anyway" id="sn-alert-anyway">Write proposal →</button>'}
+            ${isHired ? '' : '<button class="sn-alv2-anyway" id="sn-alert-anyway"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c0 0 .7 5.8 2.1 7.2C15.5 10.6 21 12 21 12s-5.5 1.4-6.9 2.8C12.7 16.2 12 22 12 22s-.7-5.8-2.1-7.2C8.5 13.4 3 12 3 12s5.5-1.4 6.9-2.8C11.3 7.8 12 2 12 2z"/></svg>Write proposal</button>'}
           </div>
 
 

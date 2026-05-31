@@ -810,10 +810,10 @@
 
 /* Factor rows — clean signal design */
 .sn-alv2-factors {
-  padding: 2px 12px 4px;
+  padding: 2px 12px 6px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 5px;
 }
 .sn-af-item {
   display: flex;
@@ -863,7 +863,7 @@
   padding: 9px 8px;
   background: transparent;
   border: 1px solid rgba(255,255,255,.1);
-  border-radius: 10px;
+  border-radius: 999px;
   color: rgba(240,238,234,.4);
   font-size: 11.5px;
   font-weight: 600;
@@ -880,9 +880,9 @@
 .sn-alv2-anyway {
   flex: 1.7;
   padding: 9px 8px;
-  background: linear-gradient(135deg, #c9a84c, #e8c878);
+  background: linear-gradient(135deg, #e8a020, #f5c842);
   border: none;
-  border-radius: 10px;
+  border-radius: 999px;
   color: #0a0e1a;
   font-size: 11.5px;
   font-weight: 800;
@@ -890,8 +890,12 @@
   font-family: inherit;
   transition: filter .15s;
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
 }
-.sn-alv2-anyway:hover { filter: brightness(1.08); }
+.sn-alv2-anyway:hover { filter: brightness(1.12); }
 
 /* ════════════════════════════════════════════════════════════════
    SKIP OVERLAY
