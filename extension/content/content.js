@@ -522,14 +522,17 @@
 
     const hubR = Math.max(4, outerR * 0.072);
     const hubSW = Math.max(2, outerR * 0.030);
-    el.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:10px';
+    el.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:8px';
     el.innerHTML =
       '<svg width="'+w+'" height="'+h+'" style="display:block">'+
         paths+
         '<polygon points="'+nx+','+ny+' '+bx1+','+by1+' '+bx2+','+by2+'" fill="'+nc+'"/>'+
         '<circle cx="'+cx+'" cy="'+cy+'" r="'+hubR+'" fill="#0d1120" stroke="'+nc+'" stroke-width="'+hubSW+'"/>'+
       '</svg>'+
-      '<div style="font-size:'+fs+'px;font-weight:700;color:'+nc+';background:'+nc+'1a;border:1px solid '+nc+'40;border-radius:999px;padding:4px '+(fs*1.4)+'px;letter-spacing:.03em;margin-top:2px">'+lbl+'</div>';
+      '<div style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;background:'+nc+'18;border:1px solid '+nc+'38;border-radius:999px;margin-top:2px">'+
+        '<span style="width:5px;height:5px;border-radius:50%;background:'+nc+';flex-shrink:0;display:inline-block"></span>'+
+        '<span style="font-size:11px;font-weight:700;color:'+nc+';letter-spacing:.03em">'+lbl+'</span>'+
+      '</div>';
   }
 
   function drawAllGauges() {
@@ -605,14 +608,13 @@
       ];
 
       function factorPill(f) {
-        const col = f.isRisk ? '#f87171' : f.delta > 0 ? '#34d399' : f.delta < 0 ? '#f87171' : '#f59e0b';
-        const label = f.isRisk
-          ? f.label
-          : f.label + (f.value ? ': ' + f.value : '');
-        const note = (!f.isRisk && f.note) ? f.note : '';
-        return '<div class="sn-af-item" style="border-left-color:' + col + '">'
-          + '<span class="sn-af-indicator" style="background:' + col + '"></span>'
-          + '<div class="sn-af-content">'
+        const col = f.isRisk ? '#f87171' : f.delta > 0 ? '#4ade80' : f.delta < 0 ? '#f87171' : '#facc15';
+        const bg  = f.isRisk ? 'rgba(248,113,113,.11)' : f.delta > 0 ? 'rgba(74,222,128,.09)' : f.delta < 0 ? 'rgba(248,113,113,.11)' : 'rgba(250,204,21,.09)';
+        const label = f.isRisk ? f.label : f.label + (f.value ? ': ' + f.value : '');
+        const note  = (!f.isRisk && f.note) ? f.note : '';
+        return '<div class="sn-af-item" style="background:' + bg + '">'
+          + '<span class="sn-af-dot" style="background:' + col + '"></span>'
+          + '<div class="sn-af-body">'
           + '<span class="sn-af-label">' + label + '</span>'
           + (note ? '<span class="sn-af-note">' + note + '</span>' : '')
           + '</div></div>';
@@ -659,7 +661,7 @@
             <div class="sn-alv2-summary">${summary}</div>
             ${!isHired ? '<div class="sn-alv2-cta">Your Connects are real money.</div>' : ''}
             <button class="sn-why-toggle" id="sn-why-toggle">
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 1 7 7c0 2.5-1.3 4.7-3.3 6l-.7.5V18H9v-2.5l-.7-.5A7 7 0 0 1 12 2z"/></svg>
               What should I do?
               <svg class="sn-why-chevron" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
             </button>
@@ -668,7 +670,8 @@
             </div>
           </div>
 
-          <!-- Factors -->
+          <!-- Signals section -->
+          <div class="sn-signals-divider"><div class="sn-signals-line"></div><span class="sn-signals-label">Signals</span><div class="sn-signals-line"></div></div>
           <div class="sn-alv2-factors">
             ${allFactors.length ? allFactors.map(f => factorPill(f)).join('') : '<div class="sn-af-empty">No major issues detected</div>'}
           </div>
@@ -679,17 +682,7 @@
             ${isHired ? '' : '<button class="sn-alv2-anyway" id="sn-alert-anyway">Write proposal →</button>'}
           </div>
 
-          <!-- Skip friction (replaces footer) -->
-          <div class="sn-skip-reasons" id="sn-skip-reasons" style="display:none">
-            <div class="sn-skip-prompt">Why are you skipping?</div>
-            <div class="sn-skip-chips">
-              <button class="sn-skip-chip" data-reason="too_competitive">Too competitive</button>
-              <button class="sn-skip-chip" data-reason="wrong_budget">Wrong budget</button>
-              <button class="sn-skip-chip" data-reason="not_my_niche">Not my niche</button>
-              <button class="sn-skip-chip" data-reason="bad_client">Bad client signals</button>
-            </div>
-            <button class="sn-skip-dismiss" id="sn-skip-dismiss">Just skip, no reason →</button>
-          </div>
+
 
         </div>
       `;
@@ -707,27 +700,51 @@
       });
 
       // Skip → show reason chips (NO immediate resolve — wait for chip click)
+      // Skip → replace entire panel with clean overlay
       document.getElementById('sn-alert-cancel')?.addEventListener('click', () => {
-        document.getElementById('sn-alert-footer').style.display = 'none';
-        document.getElementById('sn-skip-reasons').style.display = 'block';
-      });
+        const REASONS = [
+          { v: 'too_competitive', l: 'Too competitive' },
+          { v: 'wrong_budget',    l: 'Wrong budget'    },
+          { v: 'not_my_niche',    l: 'Not my niche'    },
+          { v: 'bad_client',      l: 'Bad client'      },
+        ];
+        document.getElementById('sn-body').innerHTML =
+          '<div class="sn-skip-overlay">' +
+            '<div class="sn-skip-title">Why are you skipping?</div>' +
+            '<div class="sn-skip-subtitle">Helps tune your scoring over time</div>' +
+            '<div class="sn-skip-options">' +
+              REASONS.map(r =>
+                '<label class="sn-skip-option">' +
+                  '<input type="radio" name="sr" value="' + r.v + '">' +
+                  '<div class="sn-skip-check"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg></div>' +
+                  '<span>' + r.l + '</span>' +
+                '</label>'
+              ).join('') +
+            '</div>' +
+            '<button class="sn-skip-confirm" id="sn-skip-confirm" disabled>Skip this job</button>' +
+            '<button class="sn-skip-noreason" id="sn-skip-noreason">Skip without reason</button>' +
+          '</div>';
 
-      // Chip selected → log reason + close
-      document.querySelectorAll('.sn-skip-chip').forEach(btn => {
-        btn.addEventListener('click', () => {
+        document.querySelectorAll('.sn-skip-option input').forEach(radio => {
+          radio.addEventListener('change', () => {
+            document.querySelectorAll('.sn-skip-option').forEach(o => o.classList.remove('sn-opt-on'));
+            radio.closest('.sn-skip-option').classList.add('sn-opt-on');
+            document.getElementById('sn-skip-confirm').removeAttribute('disabled');
+          });
+        });
+        document.getElementById('sn-skip-confirm')?.addEventListener('click', () => {
+          const reason = document.querySelector('.sn-skip-option input:checked')?.value || 'other';
           chrome.storage.local.get(['skipReasons'], r => {
             const arr = r.skipReasons || [];
-            arr.push({ reason: btn.dataset.reason, ts: Date.now() });
+            arr.push({ reason, ts: Date.now() });
             if (arr.length > 200) arr.shift();
             chrome.storage.local.set({ skipReasons: arr });
           });
           closePanel(); resolve(true);
         });
-      });
-
-      // "Just skip" dismiss — no reason needed
-      document.getElementById('sn-skip-dismiss')?.addEventListener('click', () => {
-        closePanel(); resolve(true);
+        document.getElementById('sn-skip-noreason')?.addEventListener('click', () => {
+          closePanel(); resolve(true);
+        });
       });
 
       // Write proposal
