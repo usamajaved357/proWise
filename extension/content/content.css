@@ -1200,3 +1200,146 @@
   cursor:pointer; font-family:inherit; transition:filter .15s;
 }
 .sn-alv2-anyway:hover { filter:brightness(1.08) !important; }
+
+
+
+/* ══ Alert — overall sizing ══════════════════════════════════════════════════ */
+.sn-alv2-gauge-block {
+  padding: 14px 20px 4px !important;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ══ Summary card with inline "What should I do?" ════════════════════════════ */
+.sn-alv2-summary-card {
+  background: rgba(255,255,255,.03);
+  border: 1px solid rgba(255,255,255,.07);
+  border-radius: 10px;
+  padding: 10px 14px 8px;
+  margin: 4px 14px 6px;
+  text-align: center;
+}
+.sn-alv2-summary {
+  font-size: 11.5px;
+  color: rgba(240,238,234,.65);
+  line-height: 1.55;
+  margin: 0 0 4px;
+}
+.sn-alv2-cta {
+  font-size: 10.5px;
+  font-weight: 700;
+  color: #c9a84c;
+  letter-spacing: .03em;
+  margin-bottom: 8px;
+}
+
+/* "What should I do?" — subtle inline button inside summary card */
+.sn-why-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 999px;
+  color: rgba(240,238,234,.4);
+  font-size: 10.5px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all .15s;
+  letter-spacing: .01em;
+  margin-top: 2px;
+}
+.sn-why-toggle:hover {
+  background: rgba(255,255,255,.05);
+  color: rgba(240,238,234,.7);
+  border-color: rgba(255,255,255,.15);
+}
+.sn-why-toggle.sn-why-active {
+  color: #c9a84c;
+  border-color: rgba(201,168,76,.3);
+  background: rgba(201,168,76,.07);
+}
+.sn-why-chevron {
+  transition: transform .2s;
+  flex-shrink: 0;
+  opacity: .6;
+}
+.sn-why-body {
+  text-align: left;
+  margin-top: 8px;
+  padding: 9px 11px;
+  background: rgba(201,168,76,.07);
+  border: 1px solid rgba(201,168,76,.2);
+  border-radius: 8px;
+  animation: snWhyIn .15s ease;
+}
+.sn-why-tip {
+  font-size: 11.5px;
+  color: rgba(240,238,234,.85);
+  line-height: 1.6;
+  font-weight: 500;
+}
+@keyframes snWhyIn {
+  from { opacity: 0; transform: translateY(-3px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* ══ Skip friction ════════════════════════════════════════════════════════════ */
+.sn-skip-reasons {
+  padding: 10px 14px 4px;
+  animation: snWhyIn .15s ease;
+}
+.sn-skip-prompt {
+  font-size: 10px;
+  font-weight: 700;
+  color: rgba(240,238,234,.4);
+  text-transform: uppercase;
+  letter-spacing: .09em;
+  margin-bottom: 8px;
+  text-align: center;
+}
+.sn-skip-chips {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
+  margin-bottom: 8px;
+}
+.sn-skip-chip {
+  padding: 7px 10px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.09);
+  border-radius: 8px;
+  color: rgba(240,238,234,.6);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all .15s;
+  text-align: center;
+}
+.sn-skip-chip:hover {
+  background: rgba(248,113,113,.1);
+  border-color: rgba(248,113,113,.28);
+  color: #fca5a5;
+}
+.sn-skip-dismiss {
+  display: block;
+  width: 100%;
+  padding: 6px;
+  background: transparent;
+  border: none;
+  color: rgba(240,238,234,.28);
+  font-size: 10.5px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: color .15s;
+  text-align: center;
+  margin-bottom: 6px;
+}
+.sn-skip-dismiss:hover {
+  color: rgba(240,238,234,.55);
+}

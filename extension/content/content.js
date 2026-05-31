@@ -319,7 +319,7 @@
     let clientNameFromReview = '';
 
     // Try job description self-intro first (fast)
-    const descNameMatch = fullDesc.match(/(?:I'm|I am|My name is|This is|Hi,? I'm|Hello,? I'm)\s+([A-Z][a-z]{2,})(?:\s|,|\.)/i);
+    const descNameMatch = fullDesc.match(/(?:I'm|I am|My name is|This is)\s+([A-Z][a-z]{2,})(?:\s|,|\.)/);
     if (descNameMatch) clientName = descNameMatch[1];
 
     // Extract review text from "Client's recent history" section
@@ -331,20 +331,10 @@
         reviewText = pt.slice(histIdx, histIdx + 2000);
         // Extract name from patterns like "Abduljalil is an exceptional client"
         const namePatterns = [
-          // "Tim is a great/exceptional client"
-          /([A-Z][a-z]{2,})\s+is\s+(?:an?\s+)?(?:exceptional|great|wonderful|amazing|fantastic|excellent|outstanding|awesome|pleasure|joy)\s+(?:client|person|employer|to work)/,
-          // "great/working with Tim"
-          /(?:working|worked)\s+with\s+([A-Z][a-z]{2,})\s+(?:was|is|has|were)/i,
-          /(?:great|pleasure|honor|privilege)\s+(?:working|to work)\s+with\s+([A-Z][a-z]{2,})/i,
-          // "Thanks Tim", "Thank you Tim"
-          /[Tt]hank(?:s|\s+you)[,!]?\s+([A-Z][a-z]{2,})/,
+          /([A-Z][a-z]{2,}(?:\s[A-Z][a-z]{2,})?)\s+is\s+(?:an?\s+)?(?:exceptional|great|wonderful|amazing|fantastic|excellent|outstanding|awesome)\s+client/,
+          /([A-Z][a-z]{2,}(?:\s[A-Z][a-z]{2,})?)\s+(?:was|is)\s+(?:a\s+)?great\s+(?:client|person|partner)/,
+          /working\s+with\s+([A-Z][a-z]{2,}(?:\s[A-Z][a-z]{2,})?)\s+(?:was|is|has)/i,
           /[Tt]hanks?\s+(?:to\s+)?([A-Z][a-z]{2,})\s+for/,
-          // "Tim was very responsive / professional / clear"
-          /([A-Z][a-z]{2,})\s+(?:was|is)\s+(?:very|super|so|extremely|incredibly)?\s*(?:responsive|professional|clear|communicative|organized|easy|helpful|kind)/,
-          // "Highly recommend Tim"
-          /(?:recommend|recommending)\s+([A-Z][a-z]{2,})/i,
-          // "Tim provided clear / great"
-          /([A-Z][a-z]{2,})\s+provided\s+(?:clear|great|excellent|good|detailed)/,
         ];
         for (const pat of namePatterns) {
           const m = reviewText.match(pat);
@@ -628,35 +618,119 @@
           + '</div></div>';
       }
 
+      // Generate "why this score" actionable tip from the worst factor
+      const topFactor = allFactors[0];
+      const topLabel  = topFactor ? (topFactor.label || '').toLowerCase() : '';
+      let actionTip = '';
+      if (isHired) {
+        actionTip = 'Someone is already hired. Skip to save your Connects.';
+      } else if (topLabel.includes('50+') || topLabel.includes('proposal')) {
+        actionTip = '50+ proposals — your first 160 chars are everything. Use a hook with a specific result.';
+      } else if (topLabel.includes('skill') || topLabel.includes('match')) {
+        actionTip = 'Skill gap detected. Acknowledge it early and pivot to what you can deliver.';
+      } else if (topLabel.includes('interview') || topLabel.includes('already')) {
+        actionTip = 'Someone is interviewing. Speed and specificity in your hook are your only edge.';
+      } else if (topLabel.includes('budget') || topLabel.includes('rate')) {
+        actionTip = "Budget mismatch. Address your rate directly in the letter — don't leave it unspoken.";
+      } else if (topLabel.includes('hire rate') || topLabel.includes('rarely')) {
+        actionTip = "Client rarely hires from proposals. A direct CTA asking for a quick call works best.";
+      } else if (topLabel.includes('invite') || topLabel.includes('prefer')) {
+        actionTip = 'Client prefers invited freelancers. Open by referencing their specific requirements exactly.';
+      } else if (combined >= 70) {
+        actionTip = 'Strong opportunity. Lead with your most relevant portfolio result in the opening line.';
+      } else if (combined >= 55) {
+        actionTip = 'Worth applying. Stand out by opening with a specific result, not a generic intro.';
+      } else if (combined >= 35) {
+        actionTip = 'Tough odds. Your only chance is an exceptional hook in the first 160 chars.';
+      } else {
+        actionTip = 'Very low odds. If you apply anyway, focus everything on the opening sentence.';
+      }
+
       document.getElementById('sn-body').innerHTML = `
         <div class="sn-alv2-wrap">
 
-          <!-- Gauge + score + summary -->
-          <!-- Gauge + label + summary -->
+          <!-- Gauge — compact -->
           <div class="sn-alv2-gauge-block">
-            ${buildGauge(combined, 220, "sn-alert-gauge")}
-            <div class="sn-alv2-summary-card">
-              <div class="sn-alv2-summary">${summary}</div>
-              ${!isHired ? '<div class="sn-alv2-cta">Your Connects are real money.</div>' : ''}
+            ${buildGauge(combined, 160, "sn-alert-gauge")}
+          </div>
+
+          <!-- Summary + action tip inline -->
+          <div class="sn-alv2-summary-card">
+            <div class="sn-alv2-summary">${summary}</div>
+            ${!isHired ? '<div class="sn-alv2-cta">Your Connects are real money.</div>' : ''}
+            <button class="sn-why-toggle" id="sn-why-toggle">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              What should I do?
+              <svg class="sn-why-chevron" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+            <div class="sn-why-body" id="sn-why-body" style="display:none">
+              <div class="sn-why-tip">${actionTip}</div>
             </div>
           </div>
+
           <!-- Factors -->
           <div class="sn-alv2-factors">
             ${allFactors.length ? allFactors.map(f => factorPill(f)).join('') : '<div class="sn-af-empty">No major issues detected</div>'}
           </div>
 
-          <!-- Buttons -->
-          <div class="sn-alv2-footer">
+          <!-- Action buttons -->
+          <div class="sn-alv2-footer" id="sn-alert-footer">
             <button class="sn-alv2-cancel" id="sn-alert-cancel">Skip this job</button>
             ${isHired ? '' : '<button class="sn-alv2-anyway" id="sn-alert-anyway">Write proposal →</button>'}
+          </div>
+
+          <!-- Skip friction (replaces footer) -->
+          <div class="sn-skip-reasons" id="sn-skip-reasons" style="display:none">
+            <div class="sn-skip-prompt">Why are you skipping?</div>
+            <div class="sn-skip-chips">
+              <button class="sn-skip-chip" data-reason="too_competitive">Too competitive</button>
+              <button class="sn-skip-chip" data-reason="wrong_budget">Wrong budget</button>
+              <button class="sn-skip-chip" data-reason="not_my_niche">Not my niche</button>
+              <button class="sn-skip-chip" data-reason="bad_client">Bad client signals</button>
+            </div>
+            <button class="sn-skip-dismiss" id="sn-skip-dismiss">Just skip, no reason →</button>
           </div>
 
         </div>
       `;
 
-      drawGauge('sn-alert-gauge', combined, 220);
+      drawGauge('sn-alert-gauge', combined, 160);
 
-      document.getElementById('sn-alert-cancel').addEventListener('click', () => { closePanel(); resolve(true); });
+      // "What should I do?" toggle — inside summary card
+      document.getElementById('sn-why-toggle')?.addEventListener('click', () => {
+        const body    = document.getElementById('sn-why-body');
+        const chevron = document.querySelector('.sn-why-chevron');
+        const open    = body.style.display !== 'none';
+        body.style.display = open ? 'none' : 'block';
+        if (chevron) chevron.style.transform = open ? '' : 'rotate(180deg)';
+        document.getElementById('sn-why-toggle').classList.toggle('sn-why-active', !open);
+      });
+
+      // Skip → show reason chips (NO immediate resolve — wait for chip click)
+      document.getElementById('sn-alert-cancel')?.addEventListener('click', () => {
+        document.getElementById('sn-alert-footer').style.display = 'none';
+        document.getElementById('sn-skip-reasons').style.display = 'block';
+      });
+
+      // Chip selected → log reason + close
+      document.querySelectorAll('.sn-skip-chip').forEach(btn => {
+        btn.addEventListener('click', () => {
+          chrome.storage.local.get(['skipReasons'], r => {
+            const arr = r.skipReasons || [];
+            arr.push({ reason: btn.dataset.reason, ts: Date.now() });
+            if (arr.length > 200) arr.shift();
+            chrome.storage.local.set({ skipReasons: arr });
+          });
+          closePanel(); resolve(true);
+        });
+      });
+
+      // "Just skip" dismiss — no reason needed
+      document.getElementById('sn-skip-dismiss')?.addEventListener('click', () => {
+        closePanel(); resolve(true);
+      });
+
+      // Write proposal
       const ab = document.getElementById('sn-alert-anyway');
       if (ab) ab.addEventListener('click', () => { showLoading(); resolve(false); });
     });
