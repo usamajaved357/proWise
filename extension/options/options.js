@@ -83,6 +83,15 @@ function updatePlanUI(plan, used, quota) {
   document.getElementById('ud-used').textContent  = used;
   document.getElementById('ud-limit').textContent = quota + ' total';
   document.getElementById('ud-bar').style.width   = pct + '%';
+  const _ue = document.getElementById('ud-urgency');
+  if (_ue) {
+    let msg='', cls='ud-urgency';
+    if (pct>=100)     { msg='Out of proposals — upgrade to keep applying.'; cls+=' ud-danger'; }
+    else if(pct>=90)  { msg='Only '+rem+' proposals left this month.';      cls+=' ud-danger'; }
+    else if(pct>=70)  { msg="You've used "+used+' of '+quota+' proposals — '+rem+' remaining.'; cls+=' ud-warn'; }
+    else if(pct>=40)  { msg=used+' proposals used this month · '+rem+' left.'; cls+=' ud-ok'; }
+    _ue.textContent=msg; _ue.className=cls;
+  }
 
   // Highlight active plan card
   // Reset all plan cards and buttons
@@ -348,6 +357,43 @@ function renderProfileCard(container, profile, idx, allProfiles, primaryProfileI
     return;
   }
 
+  // ── Profile Strength ────────────────────────────────────────────────────────
+  (function() {
+    let sc = 0, reasons = [], gaps = [];
+    const bioL    = (profile.bio||'').trim().length;
+    const jssN    = parseInt(String(profile.jss||'0').replace(/[^0-9]/g,'')) || 0;
+    const portsOk = (portfolios||[]).filter(p => p.urls && p.urls.some(u => u && u.trim())).length;
+    if (bioL > 150)         { sc += 20; reasons.push('Detailed bio ('+bioL+' chars)'); }
+    else if (bioL > 50)     { sc += 10; gaps.push('Expand bio to 150+ chars'); }
+    else                    {           gaps.push('Add a bio to your profile'); }
+    if (skillsArr.length >= 8) { sc += 20; reasons.push(skillsArr.length + ' skills synced'); }
+    else if (skillsArr.length > 0) { sc += 10; gaps.push('Sync more skills from Upwork'); }
+    else                    {           gaps.push('Visit Upwork profile to sync skills'); }
+    if (portsOk >= 3)       { sc += 30; reasons.push(portsOk + ' portfolio links'); }
+    else if (portsOk > 0)   { sc += portsOk * 10; gaps.push('Add ' + (3-portsOk) + ' more portfolio links'); }
+    else                    {           gaps.push('Add portfolio links'); }
+    if (jssN >= 90)         { sc += 15; reasons.push(jssN + '% JSS'); }
+    else if (jssN > 0)      { sc += 8;  gaps.push('Improve JSS above 90%'); }
+    if ((profile.title||'').trim().length > 5) { sc += 10; reasons.push('Title set'); }
+    else                    {           gaps.push('Add your professional title'); }
+    if (profile.hourlyRate) { sc += 5; }
+    sc = Math.min(100, sc);
+    const col = sc >= 80 ? '#4ade80' : sc >= 55 ? '#e8a020' : '#f87171';
+    const lbl = sc >= 80 ? 'Strong' : sc >= 55 ? 'Good' : 'Needs work';
+    const reasonsHtml = reasons.length
+      ? '<div class="ps-reasons">' + reasons.map(r => '<span class="ps-reason">✓ ' + r + '</span>').join('') + '</div>'
+      : '';
+    const gapsHtml = gaps.length
+      ? '<div class="ps-gaps">' + gaps.slice(0,2).map(g => '<span class="ps-gap">↗ ' + g + '</span>').join('') + '</div>'
+      : '';
+    card._psHtml = '<div class="ps-wrap">'
+      + '<div class="ps-header"><span class="ps-title">Profile Strength</span>'
+      + '<span class="ps-score" style="color:' + col + '">' + sc + '% · ' + lbl + '</span></div>'
+      + '<div class="ps-track"><div class="ps-fill" style="width:' + sc + '%;background:' + col + '"></div></div>'
+      + reasonsHtml + gapsHtml + '</div>';
+  })();
+  const psHtml = card._psHtml || '';
+
   // ── Synced profile card ────────────────────────────────────────────────────
   card.innerHTML = `
     <div class="profile-card-hdr">
@@ -368,6 +414,7 @@ function renderProfileCard(container, profile, idx, allProfiles, primaryProfileI
       <button class="btn-delete" title="Remove profile" style="margin-top:2px">×</button>
     </div>
 
+    ${psHtml}
     <div class="profile-body">
       <div class="stats-row">
         <div class="stat-box"><div class="stat-val">${profile.jss || '—'}</div><div class="stat-lbl">JSS</div></div>
@@ -404,15 +451,11 @@ function renderProfileCard(container, profile, idx, allProfiles, primaryProfileI
             <button class="btn-port-add" data-action="add-port">+ Add</button>
           </div>
         </div>
-        <div class="port-list" id="port-list-${idx}"></div>
+        <div class="port-grid" id="port-list-${idx}"></div>
         ${!portfolios.length ? `<div class="port-empty-msg">No portfolio items yet. Add them manually or visit your Upwork profile page.</div>` : ''}
       </div>
     </div>
 
-    <div class="profile-save-bar">
-      <span class="saved-msg" id="saved-card-${idx}">✓ Saved</span>
-      <button class="btn-primary" style="font-size:12px;padding:8px 18px" data-action="save-card">Save changes</button>
-    </div>
   `;
 
   // Attach skills expand/collapse
@@ -465,7 +508,8 @@ function renderProfileCard(container, profile, idx, allProfiles, primaryProfileI
   });
 
   // Save card
-  card.querySelector('[data-action="save-card"]')?.addEventListener('click', () => saveCard(card, idx, allProfiles));
+  // Auto-save on blur of any editable field
+  card.querySelectorAll('.edit-val').forEach(el => el.addEventListener('blur', () => saveCard(card, idx, allProfiles)));
 
   container.appendChild(card);
 }
@@ -499,72 +543,95 @@ function renderSkillsExpand(wrap, skillsArr, expanded) {
   }
 }
 
-// ── Portfolio item renderer ───────────────────────────────────────────────────
+// ── Portfolio item renderer — compact 3-per-row + expandable edit ────────────
 function renderPortfolioItem(list, p, pi, allProfiles, profileIdx, autoOpen) {
   const hasLinks = p.urls && p.urls.some(u => u.trim());
   const skills   = Array.isArray(p.skills) ? p.skills : [];
-  const item = document.createElement('div');
+  const item     = document.createElement('div');
   item.className = 'port-item';
-  item.dataset.pi = pi;
+  item.dataset.pi         = pi;
   item.dataset.portSkills = JSON.stringify(p.skills || []);
   item.dataset.portRole   = p.role || '';
 
-  const urlsHtml = (p.urls && p.urls.length ? p.urls : ['']).map(u => `
-    <div class="port-url-row">
-      <input type="url" class="port-url-inp" value="${u}" placeholder="https://apps.apple.com/...">
-      <button class="btn-url-del">×</button>
-    </div>`).join('');
-
-  // Rich info display (role, desc, skills, clickable link chips)
-  const skillsHtml = skills.length
-    ? `<div class="port-skill-tags">${skills.slice(0,5).map(s=>`<span class="port-skill-tag">${s}</span>`).join('')}${skills.length>5?`<span class="port-skill-tag" style="opacity:.5">+${skills.length-5}</span>`:''}</div>`
+  // Freshness
+  const syncTs   = (allProfiles[profileIdx]?._portfolioSyncedAt) || 0;
+  const syncAge  = syncTs ? Math.floor((Date.now() - syncTs) / 86400000) : null;
+  const freshBdg = p._autoRead && syncAge !== null
+    ? (syncAge > 30 ? '<span class="port-stale-badge">⚠ Re-sync</span>' : '<span class="port-fresh-badge">✓ Synced</span>')
     : '';
-  const urlChipsHtml = hasLinks
-    ? `<div class="port-url-chips">${(p.urls||[]).filter(u=>u.trim()).map(u=>`<a href="${u.startsWith('http')?u:'https://'+u}" target="_blank" class="port-url-chip">${u.replace(/^https?:\/\//, '').slice(0,35)}</a>`).join('')}</div>`
-    : '';
-  const richMeta = (p.role||p.desc||skills.length||hasLinks)
-    ? `<div class="port-item-meta">
-        ${p.role ? `<div class="port-role">Role: ${p.role}</div>` : ''}
-        ${p.desc ? `<div class="port-desc-text">${p.desc}</div>` : ''}
-        ${skillsHtml}${urlChipsHtml}
-      </div>` : '';
 
-  item.innerHTML = `
-    <div class="port-item-row">
-      <span class="port-item-icon">${hasLinks ? '📁' : '📂'}</span>
-      <span class="port-item-name">${p.title || 'New project'}</span>
-      ${hasLinks ? '' : '<span class="port-badge-warn">⚠ No link</span>'}
-      <div class="port-item-actions">
-        <button class="btn-port-edit">Edit</button>
-        <button class="btn-port-del">Remove</button>
-      </div>
-    </div>
-    ${richMeta}
-    <div class="port-edit-body" style="display:none">
-      <div class="field">
-        <label>Project name</label>
-        <input type="text" class="port-title-inp" value="${p.title || ''}" placeholder="e.g. TollBugata iOS App">
-      </div>
-      <div class="field">
-        <label>Links <span style="font-size:10px;font-weight:400;color:var(--white3)">(App Store, Play Store, GitHub, website…)</span></label>
-        <div class="port-urls-list">${urlsHtml}</div>
-        <button class="btn-url-add">+ Add another link</button>
-      </div>
-      <div class="field">
-        <label>Short description</label>
-        <input type="text" class="port-desc-inp" value="${p.desc || ''}" placeholder="e.g. Live app, 10k+ downloads">
-      </div>
-    </div>
-  `;
+  const urlsHtml = (p.urls && p.urls.length ? p.urls : ['']).map(u =>
+    '<div class="port-url-row"><input type="url" class="port-url-inp" value="' + u + '" placeholder="https://apps.apple.com/..."><button class="btn-url-del">×</button></div>'
+  ).join('');
+
+  const firstUrl  = hasLinks ? (p.urls||[]).find(u=>u.trim()) : null;
+  const urlDomain = firstUrl ? firstUrl.replace(/^https?:\/\//, '').split('/')[0] : '';
+
+  const skillsChips = skills.length
+    ? skills.slice(0,4).map(s=>'<span class="port-skill-tag">'+s+'</span>').join('') + (skills.length>4?'<span class="port-skill-tag port-skill-more">+' + (skills.length-4) + '</span>':'')
+    : '<span class="port-no-skills">No skills</span>';
+
+  const urlChips = hasLinks
+    ? '<div class="port-url-chips">' + (p.urls||[]).filter(u=>u.trim()).map(u=>'<a href="' + (u.startsWith('http')?u:'https://'+u) + '" target="_blank" class="port-url-chip">' + u.replace(/^https?:\/\//, '').slice(0,30) + '</a>').join('') + '</div>'
+    : '';
+
+  const skillsReadonly = skills.length
+    ? skills.map(s=>'<span class="port-skill-tag">'+s+'</span>').join('')
+    : '<span style="font-size:11px;color:var(--white3)">Sync from Upwork profile.</span>';
+
+  item.innerHTML =
+    '<div class="port-compact">' +
+      '<div class="port-compact-head">' +
+        '<span class="port-compact-dot ' + (hasLinks?'ok':'warn') + '"></span>' +
+        '<span class="port-compact-name">' + (p.title || 'Untitled') + '</span>' +
+        freshBdg +
+        '<button class="btn-port-edit">Edit</button>' +
+        '<button class="btn-port-del">×</button>' +
+      '</div>' +
+      '<div class="port-compact-meta">' +
+        '<div class="port-skill-tags">' + skillsChips + '</div>' +
+        (p.desc ? '<div class="port-compact-desc">' + p.desc + '</div>' : '') +
+        (urlDomain ? '<div class="port-compact-url">🔗 ' + urlDomain + '</div>' : '<div class="port-compact-url muted">No link</div>') +
+        urlChips +
+      '</div>' +
+    '</div>' +
+    '<div class="port-edit-body" style="display:none">' +
+      '<div class="field"><label>Project name</label>' +
+        '<input type="text" class="port-title-inp" value="' + (p.title||'') + '" placeholder="e.g. Shypie iOS App"></div>' +
+      '<div class="field"><label>Links</label>' +
+        '<div class="port-urls-list">' + urlsHtml + '</div>' +
+        '<button class="btn-url-add">+ Add link</button></div>' +
+      '<div class="field"><label>Description</label>' +
+        '<input type="text" class="port-desc-inp" value="' + (p.desc||'') + '" placeholder="e.g. Live, 10k+ downloads"></div>' +
+      '<div class="field"><label>Skills <span style="font-size:10px;font-weight:400;opacity:.5">(auto-synced)</span></label>' +
+        '<div class="port-skills-readonly">' + skillsReadonly + '</div></div>' +
+      '<div class="port-edit-footer"><button class="btn-port-done">✓ Done</button></div>' +
+    '</div>';
 
   const editBody = item.querySelector('.port-edit-body');
   const editBtn  = item.querySelector('.btn-port-edit');
 
-  editBtn.addEventListener('click', () => {
-    const open = editBody.style.display !== 'none' && editBody.style.display !== '';
-    editBody.style.display = open ? 'none' : 'block';
-    editBtn.textContent    = open ? 'Edit' : 'Done';
-  });
+  const openEdit = () => {
+    list.querySelectorAll('.port-item.expanded').forEach(el => {
+      if (el !== item) {
+        el.classList.remove('expanded');
+        el.querySelector('.port-edit-body').style.display = 'none';
+        el.querySelector('.btn-port-edit').textContent = 'Edit';
+      }
+    });
+    item.classList.add('expanded');
+    editBody.style.display = 'block';
+    editBtn.textContent = 'Close';
+    item.querySelector('.port-title-inp')?.focus();
+  };
+  const closeEdit = () => {
+    item.classList.remove('expanded');
+    editBody.style.display = 'none';
+    editBtn.textContent = 'Edit';
+  };
+
+  editBtn.addEventListener('click', () => editBody.style.display !== 'none' ? closeEdit() : openEdit());
+  item.querySelector('.btn-port-done').addEventListener('click', closeEdit);
 
   item.querySelector('.btn-port-del').addEventListener('click', () => {
     allProfiles[profileIdx]?.portfolios?.splice(pi, 1);
@@ -572,31 +639,21 @@ function renderPortfolioItem(list, p, pi, allProfiles, profileIdx, autoOpen) {
   });
 
   item.querySelector('.btn-url-add').addEventListener('click', () => {
-    const urlList = item.querySelector('.port-urls-list');
-    const row = document.createElement('div');
-    row.className = 'port-url-row';
+    const ul = item.querySelector('.port-urls-list');
+    const row = document.createElement('div'); row.className = 'port-url-row';
     row.innerHTML = '<input type="url" class="port-url-inp" placeholder="https://..."><button class="btn-url-del">×</button>';
     row.querySelector('.btn-url-del').addEventListener('click', () => {
-      if (urlList.querySelectorAll('.port-url-row').length > 1) row.remove();
+      if (ul.querySelectorAll('.port-url-row').length > 1) row.remove();
     });
-    urlList.appendChild(row);
-    row.querySelector('input')?.focus();
+    ul.appendChild(row); row.querySelector('input')?.focus();
   });
-
-  item.querySelectorAll('.btn-url-del').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const urlList = item.querySelector('.port-urls-list');
-      if (urlList.querySelectorAll('.port-url-row').length > 1) btn.closest('.port-url-row')?.remove();
-    });
-  });
+  item.querySelectorAll('.btn-url-del').forEach(btn => btn.addEventListener('click', () => {
+    const ul = item.querySelector('.port-urls-list');
+    if (ul.querySelectorAll('.port-url-row').length > 1) btn.closest('.port-url-row')?.remove();
+  }));
 
   list.appendChild(item);
-
-  if (autoOpen) {
-    editBody.style.display = 'block';
-    editBtn.textContent    = 'Done';
-    item.querySelector('.port-title-inp')?.focus();
-  }
+  if (autoOpen) openEdit();
 }
 
 // ── Save card ─────────────────────────────────────────────────────────────────
@@ -609,9 +666,11 @@ function saveCard(card, idx, allProfiles) {
   const country    = card.querySelector('[data-field="country"]')?.value?.trim() || '';
   const extra      = card.querySelector('[data-field="extra"]')?.value?.trim()   || '';
   const portfolios = [...card.querySelectorAll('.port-item')].map(el => ({
-    title: el.querySelector('.port-title-inp')?.value?.trim()  || '',
-    urls:  [...el.querySelectorAll('.port-url-inp')].map(i => i.value.trim()).filter(Boolean),
-    desc:  el.querySelector('.port-desc-inp')?.value?.trim()   || '',
+    title:  el.querySelector('.port-title-inp')?.value?.trim() || '',
+    urls:   [...el.querySelectorAll('.port-url-inp')].map(i=>i.value.trim()).filter(Boolean),
+    desc:   el.querySelector('.port-desc-inp')?.value?.trim()  || '',
+    skills: JSON.parse(el.dataset.portSkills||'[]'),
+    role:   el.dataset.portRole||'',
   })).filter(p => p.title || p.urls.length);
 
   const localKey = 'profileFull_' + profile.id;
@@ -630,7 +689,19 @@ function saveCard(card, idx, allProfiles) {
 }
 
 // ── Navigation shortcuts ──────────────────────────────────────────────────────
-document.getElementById('add-profile-btn')?.addEventListener('click', () => switchSection('subscription'));
+document.getElementById('add-profile-btn')?.addEventListener('click', () => {
+  const panel = document.getElementById('apd-panel');
+  if (panel) {
+    const open = panel.style.display !== 'none';
+    panel.style.display = open ? 'none' : 'block';
+    document.getElementById('add-profile-btn').textContent = open ? '+ Add Profile' : '✕ Close';
+  }
+});
+document.getElementById('apd-done')?.addEventListener('click', () => {
+  const panel = document.getElementById('apd-panel');
+  if (panel) panel.style.display = 'none';
+  document.getElementById('add-profile-btn').textContent = '+ Add Profile';
+});
 document.getElementById('goto-sub-btn')?.addEventListener('click',    () => switchSection('subscription'));
 
 // ── Plan buttons ──────────────────────────────────────────────────────────────
@@ -639,10 +710,10 @@ document.querySelectorAll('.plan-btn[data-plan]').forEach(btn => {
 });
 
 // ── Settings (now in Subscription section) ────────────────────────────────────
-document.getElementById('save-settings').addEventListener('click', async () => {
+document.getElementById('save-settings')?.addEventListener('click', async () => {
   await chrome.storage.sync.set({ settings: {
-    tone:   document.getElementById('tone').value,
-    length: document.getElementById('length').value,
+    tone:   document.getElementById('tone')?.value   || 'professional',
+    length: document.getElementById('length')?.value || 'medium',
   }});
   showSaved('saved-settings-msg');
 });
@@ -656,8 +727,8 @@ async function init() {
   renderProfilesPage();
 
   const { settings = {} } = await chrome.storage.sync.get(['settings']);
-  document.getElementById('tone').value   = settings.tone   || 'professional';
-  document.getElementById('length').value = settings.length || 'medium';
+  if(document.getElementById('tone'))   document.getElementById('tone').value   = settings.tone   || 'professional';
+  if(document.getElementById('length')) document.getElementById('length').value = settings.length || 'medium';
 }
 
 init();

@@ -277,6 +277,84 @@ textarea.edit-val{min-height:38px}
 .btn-sync-portfolios{padding:4px 10px;background:var(--gold-bg);border:1px solid var(--gold-border);border-radius:var(--radius-xs);font-size:10px;font-weight:700;color:var(--gold);cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap}
 .btn-sync-portfolios:hover{background:rgba(201,168,76,.18);border-color:var(--gold)}
 .btn-sync-portfolios:disabled{opacity:.5;cursor:default}
+
+/* ── Add Profile Dropdown ──────────────────────────────────────────────── */
+.apd-panel{background:rgba(255,255,255,.03);border:1px solid rgba(232,160,32,.25);border-radius:12px;padding:16px 18px;margin-bottom:20px;animation:snFadeUp .15s ease}
+@keyframes snFadeUp{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+.apd-title{font-size:13px;font-weight:700;color:rgba(240,238,234,.9);margin-bottom:5px}
+.apd-desc{font-size:11.5px;color:rgba(240,238,234,.45);line-height:1.6;margin-bottom:12px}
+.apd-footer{display:flex;align-items:center;gap:10px;margin-top:12px}
+.apd-done{padding:8px 16px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:rgba(240,238,234,.6);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s}
+.apd-done:hover{background:rgba(255,255,255,.1);color:rgba(240,238,234,.9)}
+/* ── Profile Strength bar ─────────────────────────────────────────────── */
+.ps-wrap{padding:14px 18px 10px;border-bottom:1px solid rgba(255,255,255,.05);background:rgba(255,255,255,.015)}
+.ps-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px}
+.ps-title{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:rgba(240,238,234,.3)}
+.ps-score{font-size:12px;font-weight:800;letter-spacing:-.01em}
+.ps-track{height:5px;background:rgba(255,255,255,.07);border-radius:999px;overflow:hidden;margin-bottom:8px}
+.ps-fill{height:100%;border-radius:999px;transition:width .6s cubic-bezier(.4,0,.2,1)}
+.ps-reasons{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:5px}
+.ps-reason{font-size:10px;font-weight:600;color:#4ade80;padding:2px 8px;background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.18);border-radius:999px}
+.ps-gaps{display:flex;flex-wrap:wrap;gap:5px}
+.ps-gap{font-size:10px;font-weight:600;color:rgba(240,238,234,.42);padding:2px 8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:999px}
+/* ── Subscription urgency ─────────────────────────────────────────────── */
+.ud-urgency{font-size:11px;font-weight:600;margin-top:8px;padding:5px 10px;border-radius:7px;display:none}
+.ud-urgency:not(:empty){display:block}
+.ud-ok{background:rgba(74,222,128,.07);color:#4ade80;border:1px solid rgba(74,222,128,.18)}
+.ud-warn{background:rgba(250,204,21,.07);color:#facc15;border:1px solid rgba(250,204,21,.2)}
+.ud-danger{background:rgba(248,113,113,.08);color:#f87171;border:1px solid rgba(248,113,113,.22)}
+/* ── Input focus animations (matches cover letter) ────────────────────── */
+.edit-val:focus,.slot-input:focus,.port-title-inp:focus,.port-url-inp:focus,.port-desc-inp:focus{border-color:rgba(232,160,32,.4)!important;box-shadow:0 0 0 3px rgba(232,160,32,.06)!important;outline:none!important;transition:border-color .2s,box-shadow .2s!important}
+
+/* ── Portfolio 3-per-row compact cards ──────────────────────────────────── */
+.port-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.port-item{background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.07);border-radius:11px;overflow:hidden;transition:border-color .15s,background .15s}
+.port-item:hover{border-color:rgba(255,255,255,.12)}
+.port-item.expanded{grid-column:1/-1;border-color:rgba(232,160,32,.25);background:rgba(232,160,32,.02)}
+.port-compact{padding:9px 11px}
+.port-compact-head{display:flex;align-items:center;gap:7px;margin-bottom:6px}
+.port-compact-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.port-compact-dot.ok{background:#4ade80}
+.port-compact-dot.warn{background:#facc15}
+.port-compact-name{flex:1;font-size:11.5px;font-weight:700;color:rgba(240,238,234,.9);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.port-stale-badge{font-size:9px;font-weight:700;padding:2px 6px;border-radius:999px;background:rgba(250,204,21,.08);color:#facc15;border:1px solid rgba(250,204,21,.2);white-space:nowrap}
+.port-fresh-badge{font-size:9px;font-weight:700;padding:2px 6px;border-radius:999px;background:rgba(74,222,128,.08);color:#4ade80;border:1px solid rgba(74,222,128,.18);white-space:nowrap}
+.btn-port-edit{font-size:10px;padding:2px 8px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:5px;color:rgba(240,238,234,.5);cursor:pointer;font-family:inherit;transition:all .12s;flex-shrink:0}
+.btn-port-edit:hover{background:rgba(232,160,32,.1);border-color:rgba(232,160,32,.3);color:#e8a020}
+.btn-port-del{font-size:13px;line-height:1;padding:2px 6px;background:rgba(248,113,113,.07);border:1px solid rgba(248,113,113,.15);border-radius:5px;color:var(--red);cursor:pointer;font-family:inherit;transition:all .12s;flex-shrink:0}
+.btn-port-del:hover{background:rgba(248,113,113,.15)}
+.port-compact-meta{display:flex;flex-direction:column;gap:4px}
+.port-skill-tags{display:flex;flex-wrap:wrap;gap:3px}
+.port-skill-tag{font-size:9px;padding:2px 6px;background:rgba(74,222,128,.08);color:#4ade80;border:1px solid rgba(74,222,128,.18);border-radius:20px;font-weight:500}
+.port-skill-more{background:rgba(255,255,255,.05)!important;color:rgba(240,238,234,.4)!important;border-color:rgba(255,255,255,.08)!important}
+.port-no-skills{font-size:9.5px;color:rgba(240,238,234,.3);font-style:italic}
+.port-compact-desc{font-size:10.5px;color:rgba(240,238,234,.5);line-height:1.45;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.port-compact-url{font-size:10px;color:rgba(240,238,234,.4)}
+.port-compact-url.muted{color:rgba(240,238,234,.22)}
+.port-url-chips{display:flex;flex-wrap:wrap;gap:3px}
+.port-url-chip{font-size:9px;padding:2px 6px;background:rgba(96,165,250,.08);color:#60a5fa;border:1px solid rgba(96,165,250,.18);border-radius:20px;text-decoration:none;max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* Expanded edit form */
+.port-edit-body{padding:12px;border-top:1px solid rgba(232,160,32,.15);background:rgba(0,0,0,.12)}
+.port-edit-body .field{margin-bottom:10px}
+.port-edit-body .field label{font-size:10.5px;font-weight:700;color:rgba(240,238,234,.5);display:block;margin-bottom:4px}
+.port-edit-body .field input{width:100%;padding:7px 10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:7px;color:var(--white);font-size:12px;font-family:inherit;outline:none;transition:border-color .15s,box-shadow .15s;box-sizing:border-box}
+.port-edit-body .field input:focus{border-color:rgba(232,160,32,.35);box-shadow:0 0 0 3px rgba(232,160,32,.06)}
+.port-skills-readonly{display:flex;flex-wrap:wrap;gap:4px;padding:8px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:7px;min-height:32px}
+.port-edit-footer{display:flex;justify-content:flex-end;padding-top:8px;margin-top:4px;border-top:1px solid rgba(255,255,255,.05)}
+.btn-port-done{padding:7px 18px;background:linear-gradient(135deg,#e8a020,#f5c842);border:none;border-radius:8px;color:#0a0e1a;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;transition:filter .15s}
+.btn-port-done:hover{filter:brightness(1.08)}
+.port-url-row{display:flex;gap:6px;margin-bottom:6px}
+.port-url-row input{flex:1;padding:7px 10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:7px;color:var(--white);font-size:12px;font-family:inherit;outline:none;transition:border-color .15s}
+.port-url-row input:focus{border-color:rgba(232,160,32,.35);box-shadow:0 0 0 3px rgba(232,160,32,.06)}
+.btn-url-del{width:30px;height:32px;background:rgba(248,113,113,.07);border:1px solid rgba(248,113,113,.15);border-radius:7px;color:var(--red);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.btn-url-del:hover{background:rgba(248,113,113,.15)}
+.btn-url-add{font-size:11px;color:#e8a020;background:rgba(232,160,32,.06);border:1px dashed rgba(232,160,32,.25);border-radius:7px;padding:5px 10px;cursor:pointer;width:100%;font-family:inherit;transition:all .15s;text-align:left;margin-top:2px;display:block}
+.btn-url-add:hover{border-color:rgba(232,160,32,.5);background:rgba(232,160,32,.1)}
+.port-empty-msg{font-size:12px;color:rgba(240,238,234,.35);text-align:center;padding:20px;border:1px dashed rgba(255,255,255,.07);border-radius:10px;grid-column:1/-1}
+/* Dropdown save+close button */
+.apd-save-close{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;background:linear-gradient(135deg,#e8a020,#f5c842);border:none;border-radius:8px;color:#0a0e1a;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;transition:filter .15s}
+.apd-save-close:hover{filter:brightness(1.08)}
+
 </style>
 </head>
 <body>
@@ -348,7 +426,19 @@ textarea.edit-val{min-height:38px}
           <div class="section-title">Your Profiles</div>
           <div class="section-sub">Auto-synced from Upwork. Portfolio links added manually.</div>
         </div>
-        <button class="btn-add-profile" id="add-profile-btn" style="display:none">+ Add Profile</button>
+        <button class="btn-add-profile" id="add-profile-btn">+ Add Profile</button>
+      </div>
+
+      <!-- Add Profile dropdown (hidden by default) -->
+      <div class="apd-panel" id="apd-panel" style="display:none">
+        <div class="apd-title">Add Upwork Profile URL</div>
+        <p class="apd-desc">Paste your Upwork profile URL below. Snag AI will sync your data automatically when you visit it.</p>
+        <div class="profile-slots" id="profile-slots"></div>
+        <div class="apd-footer">
+          <button class="btn-primary" id="save-profile-urls" style="font-size:12px;padding:8px 18px">Save URL</button>
+          <span class="saved-msg" id="saved-urls-msg">✓ Saved</span>
+          <button class="apd-done" id="apd-done">Done</button>
+        </div>
       </div>
 
       <div id="profiles-container"></div>
@@ -416,6 +506,7 @@ textarea.edit-val{min-height:38px}
           <span><strong id="ud-used">0</strong> used</span>
           <span id="ud-limit">2 total</span>
         </div>
+        <div class="ud-urgency" id="ud-urgency"></div>
       </div>
 
       <!-- Plans -->
