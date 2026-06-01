@@ -656,45 +656,46 @@
       document.getElementById('sn-body').innerHTML = `
         <div class="sn-alv2-wrap">
 
-          <!-- Score section — replaces gauge -->
-          <div class="sn-alert-scores">
-            <div class="sn-alert-score-header">
-              <span class="sn-alert-label">Job Match</span>
-              <span class="sn-alert-status-badge" style="color:${barColor};background:${barColor}18;border-color:${barColor}38">
-                <span style="width:5px;height:5px;border-radius:50%;background:${barColor};display:inline-block;flex-shrink:0"></span>
-                ${label}
-              </span>
-            </div>
-            <div class="sn-alert-bars">
-              <div class="sn-alert-bar-row">
-                <span class="sn-alert-bar-label">Win probability</span>
-                <span class="sn-alert-bar-pct" style="color:${probColor}">${wp.probScore}%</span>
-              </div>
-              <div class="sn-bar-track" style="margin-bottom:8px">
-                <div class="sn-bar-fill" style="width:${wp.probScore}%;background:${probColor}"></div>
-              </div>
-              <div class="sn-alert-bar-row">
-                <span class="sn-alert-bar-label">Profile match</span>
-                <span class="sn-alert-bar-pct" style="color:${matchColor}">${wp.matchScore}%</span>
-              </div>
-              <div class="sn-bar-track">
-                <div class="sn-bar-fill" style="width:${wp.matchScore}%;background:${matchColor}"></div>
-              </div>
-            </div>
-          </div>
+          <!-- Top section: summary left + score bars right (mirrors cover letter layout) -->
+          <div class="sn-alert-top">
 
-          <!-- Summary card + What should I do -->
-          <div class="sn-alv2-summary-card">
-            <div class="sn-alv2-summary">${summary}</div>
-            ${!isHired ? '<div class="sn-alv2-cta">Your Connects are real money.</div>' : ''}
-            <button class="sn-why-toggle" id="sn-why-toggle">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 1 7 7c0 2.5-1.3 4.7-3.3 6l-.7.5V18H9v-2.5l-.7-.5A7 7 0 0 1 12 2z"/></svg>
-              What should I do?
-              <svg class="sn-why-chevron" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-            </button>
-            <div class="sn-why-body" id="sn-why-body" style="display:none">
-              <div class="sn-why-tip">${actionTip}</div>
+            <!-- LEFT: status badge + summary + cta + why -->
+            <div class="sn-alert-summary-col">
+              <div class="sn-alert-status-badge" style="color:${barColor};background:${barColor}14;border-color:${barColor}30">
+                <span class="sn-alert-status-dot" style="background:${barColor}"></span>
+                ${label}
+              </div>
+              <p class="sn-alv2-summary">${summary}</p>
+              ${!isHired ? '<div class="sn-alv2-cta">Your Connects are real money.</div>' : ''}
+              <button class="sn-why-toggle" id="sn-why-toggle">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 1 7 7c0 2.5-1.3 4.7-3.3 6l-.7.5V18H9v-2.5l-.7-.5A7 7 0 0 1 12 2z"/></svg>
+                What should I do?
+                <svg class="sn-why-chevron" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="sn-why-body" id="sn-why-body" style="display:none">
+                <div class="sn-why-tip">${actionTip}</div>
+              </div>
             </div>
+
+            <!-- RIGHT: compact score bars (same as cover letter panel) -->
+            <div class="sn-alert-scores-col">
+              <div class="sn-alert-scores-label">Scores</div>
+              <div class="sn-score-item">
+                <div class="sn-score-row">
+                  <span class="sn-score-name">Win probability</span>
+                  <span class="sn-score-pct" style="color:${probColor}">${wp.probScore}%</span>
+                </div>
+                <div class="sn-bar-track"><div class="sn-bar-fill" style="width:${wp.probScore}%;background:${probColor}"></div></div>
+              </div>
+              <div class="sn-score-item" style="margin-bottom:0">
+                <div class="sn-score-row">
+                  <span class="sn-score-name">Profile match</span>
+                  <span class="sn-score-pct" style="color:${matchColor}">${wp.matchScore}%</span>
+                </div>
+                <div class="sn-bar-track"><div class="sn-bar-fill" style="width:${wp.matchScore}%;background:${matchColor}"></div></div>
+              </div>
+            </div>
+
           </div>
 
           <!-- Signals -->
