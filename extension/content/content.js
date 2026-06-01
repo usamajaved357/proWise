@@ -648,20 +648,47 @@
         actionTip = 'Very low odds. If you apply anyway, focus everything on the opening sentence.';
       }
 
+      // Score bar colors
+      const barColor = combined >= 70 ? '#4ade80' : combined >= 45 ? '#facc15' : '#f87171';
+      const probColor  = wp.probScore  >= 70 ? '#4ade80' : wp.probScore  >= 45 ? '#facc15' : '#f87171';
+      const matchColor = wp.matchScore >= 70 ? '#4ade80' : wp.matchScore >= 45 ? '#e8a020' : '#f87171';
+
       document.getElementById('sn-body').innerHTML = `
         <div class="sn-alv2-wrap">
 
-          <!-- Gauge — compact -->
-          <div class="sn-alv2-gauge-block">
-            ${buildGauge(combined, 160, "sn-alert-gauge")}
+          <!-- Score section — replaces gauge -->
+          <div class="sn-alert-scores">
+            <div class="sn-alert-score-header">
+              <span class="sn-alert-label">Job Match</span>
+              <span class="sn-alert-status-badge" style="color:${barColor};background:${barColor}18;border-color:${barColor}38">
+                <span style="width:5px;height:5px;border-radius:50%;background:${barColor};display:inline-block;flex-shrink:0"></span>
+                ${label}
+              </span>
+            </div>
+            <div class="sn-alert-bars">
+              <div class="sn-alert-bar-row">
+                <span class="sn-alert-bar-label">Win probability</span>
+                <span class="sn-alert-bar-pct" style="color:${probColor}">${wp.probScore}%</span>
+              </div>
+              <div class="sn-bar-track" style="margin-bottom:8px">
+                <div class="sn-bar-fill" style="width:${wp.probScore}%;background:${probColor}"></div>
+              </div>
+              <div class="sn-alert-bar-row">
+                <span class="sn-alert-bar-label">Profile match</span>
+                <span class="sn-alert-bar-pct" style="color:${matchColor}">${wp.matchScore}%</span>
+              </div>
+              <div class="sn-bar-track">
+                <div class="sn-bar-fill" style="width:${wp.matchScore}%;background:${matchColor}"></div>
+              </div>
+            </div>
           </div>
 
-          <!-- Summary + action tip inline -->
+          <!-- Summary card + What should I do -->
           <div class="sn-alv2-summary-card">
             <div class="sn-alv2-summary">${summary}</div>
             ${!isHired ? '<div class="sn-alv2-cta">Your Connects are real money.</div>' : ''}
             <button class="sn-why-toggle" id="sn-why-toggle">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 1 7 7c0 2.5-1.3 4.7-3.3 6l-.7.5V18H9v-2.5l-.7-.5A7 7 0 0 1 12 2z"/></svg>
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 1 7 7c0 2.5-1.3 4.7-3.3 6l-.7.5V18H9v-2.5l-.7-.5A7 7 0 0 1 12 2z"/></svg>
               What should I do?
               <svg class="sn-why-chevron" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
             </button>
@@ -670,24 +697,20 @@
             </div>
           </div>
 
-          <!-- Signals section -->
+          <!-- Signals -->
           <div class="sn-signals-divider"><div class="sn-signals-line"></div><span class="sn-signals-label">Signals</span><div class="sn-signals-line"></div></div>
           <div class="sn-alv2-factors">
             ${allFactors.length ? allFactors.map(f => factorPill(f)).join('') : '<div class="sn-af-empty">No major issues detected</div>'}
           </div>
 
-          <!-- Action buttons -->
+          <!-- Buttons -->
           <div class="sn-alv2-footer" id="sn-alert-footer">
             <button class="sn-alv2-cancel" id="sn-alert-cancel">Skip this job</button>
             ${isHired ? '' : '<button class="sn-alv2-anyway" id="sn-alert-anyway"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c0 0 .7 5.8 2.1 7.2C15.5 10.6 21 12 21 12s-5.5 1.4-6.9 2.8C12.7 16.2 12 22 12 22s-.7-5.8-2.1-7.2C8.5 13.4 3 12 3 12s5.5-1.4 6.9-2.8C11.3 7.8 12 2 12 2z"/></svg>Write proposal</button>'}
           </div>
 
-
-
         </div>
       `;
-
-      drawGauge('sn-alert-gauge', combined, 160);
 
       // "What should I do?" toggle — inside summary card
       document.getElementById('sn-why-toggle')?.addEventListener('click', () => {
@@ -1171,83 +1194,93 @@
     }
 
     document.getElementById('sn-body').innerHTML = `
-      <div class="sn-two-col">
+      <div class="sn-cl-wrap">
 
-        <!-- LEFT: letter area -->
-        <div class="sn-col-letter">
+        <!-- LEFT: Letter + controls -->
+        <div class="sn-cl-left">
 
-          <!-- Letter header: word count -->
-          <div class="sn-letter-header">
-            <span class="sn-letter-label">Cover Letter</span>
-            <span class="sn-word-count" id="sn-word-count">0 words</span>
+          <div class="sn-cl-header">
+            <span class="sn-cl-title">Your Proposal</span>
+            <div class="sn-cl-header-right">
+              <span class="sn-word-count" id="sn-word-count">0 words</span>
+              <button class="sn-copy-btn" id="sn-copy">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                <span id="sn-copy-label">Copy</span>
+              </button>
+            </div>
           </div>
 
           <div class="sn-letter" id="sn-letter" contenteditable="true">${esc(letter)}</div>
 
-          <!-- Quick refinement chips -->
-          <div class="sn-refine-chips">
-            <button class="sn-chip" data-refine="Make it shorter — under 100 words. Keep hook and portfolio, cut the rest.">Shorter</button>
-            <button class="sn-chip" data-refine="Make the tone more direct and confident. No hedging, no filler.">More confident</button>
-            <button class="sn-chip" data-refine="Add my hourly rate naturally in the scope or CTA line.">Add my rate</button>
-            <button class="sn-chip" data-refine="Address the client's budget directly — explain how my rate fits or propose a number.">Adjust for budget</button>
-          </div>
+          <div class="sn-cl-bottom">
+            <div class="sn-refine-chips">
+              <button class="sn-chip" data-refine="Make it shorter — under 100 words. Keep hook and portfolio, cut the rest.">Shorter</button>
+              <button class="sn-chip" data-refine="Make the tone more direct and confident. No hedging, no filler.">More confident</button>
+              <button class="sn-chip" data-refine="Add my hourly rate naturally in the scope or CTA line.">Add my rate</button>
+              <button class="sn-chip" data-refine="Address the client budget directly — explain how my rate fits or propose a number.">Adjust for budget</button>
+            </div>
 
-          <!-- Refine bar -->
-          <div class="sn-letter-bar">
-            <textarea class="sn-refine-inp" id="sn-refine-inp" placeholder="Custom refinement — e.g. add GitHub link, change tone, mention React…" rows="2"></textarea>
-            <button class="sn-regen-inline-btn" id="sn-regen">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-              Regenerate
-            </button>
-          </div>
-
-          <!-- Copy button -->
-          <div class="sn-letter-actions">
-            <button class="sn-copy-top-btn" id="sn-copy">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2 2v1"/></svg>
-              <span id="sn-copy-label">Copy proposal</span>
-            </button>
+            <div class="sn-input-area">
+              <div class="sn-input-wrap" id="sn-input-wrap">
+                <textarea class="sn-refine-inp" id="sn-refine-inp"
+                  placeholder="Describe your changes — shorter, add GitHub, more confident, mention React…"
+                  rows="2"></textarea>
+                <div class="sn-input-footer">
+                  <span class="sn-input-hint">Tip: pick a chip above or type your own</span>
+                  <button class="sn-regen-btn" id="sn-regen">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                    Regenerate
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
 
         </div>
 
-        <!-- RIGHT: intel panel -->
-        <div class="sn-col-intel">
+        <!-- RIGHT: Intel panel -->
+        <div class="sn-cl-right">
 
-          <!-- Actionable callouts -->
+          <!-- Score bars (replaces gauges) -->
+          <div class="sn-intel-card">
+            <div class="sn-intel-label">
+              <svg width="9" height="9" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c0 0 .7 5.8 2.1 7.2C15.5 10.6 21 12 21 12s-5.5 1.4-6.9 2.8C12.7 16.2 12 22 12 22s-.7-5.8-2.1-7.2C8.5 13.4 3 12 3 12s5.5-1.4 6.9-2.8C11.3 7.8 12 2 12 2z"/></svg>
+              Match scores
+            </div>
+            <div class="sn-score-item">
+              <div class="sn-score-row">
+                <span class="sn-score-name">Win probability</span>
+                <span class="sn-score-pct" style="color:${wp.probScore>=70?'#4ade80':wp.probScore>=45?'#facc15':'#f87171'}">${wp.probScore}%</span>
+              </div>
+              <div class="sn-bar-track"><div class="sn-bar-fill" style="width:${wp.probScore}%;background:${wp.probScore>=70?'#4ade80':wp.probScore>=45?'#facc15':'#f87171'}"></div></div>
+            </div>
+            <div class="sn-score-item" style="margin-bottom:0">
+              <div class="sn-score-row">
+                <span class="sn-score-name">Profile match</span>
+                <span class="sn-score-pct" style="color:${wp.matchScore>=70?'#4ade80':wp.matchScore>=45?'#e8a020':'#f87171'}">${wp.matchScore}%</span>
+              </div>
+              <div class="sn-bar-track"><div class="sn-bar-fill" style="width:${wp.matchScore}%;background:${wp.matchScore>=70?'#4ade80':wp.matchScore>=45?'#e8a020':'#f87171'}"></div></div>
+            </div>
+          </div>
+
+          <!-- Writing tips (actionable callouts) -->
           ${callouts.length ? `
-          <div class="sn-ic-card sn-callouts-card">
-            <div class="sn-ic-card-title">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c0 0 .7 5.8 2.1 7.2C15.5 10.6 21 12 21 12s-5.5 1.4-6.9 2.8C12.7 16.2 12 22 12 22s-.7-5.8-2.1-7.2C8.5 13.4 3 12 3 12s5.5-1.4 6.9-2.8C11.3 7.8 12 2 12 2z"/></svg>
+          <div class="sn-intel-card">
+            <div class="sn-intel-label">
+              <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 1 7 7c0 2.5-1.3 4.7-3.3 6l-.7.5V18H9v-2.5l-.7-.5A7 7 0 0 1 12 2z"/></svg>
               Writing tips
             </div>
             ${callouts.map(c => {
               const col = c.type==='ok' ? '#4ade80' : c.type==='warn' ? '#facc15' : '#f87171';
-              const bg  = c.type==='ok' ? 'rgba(74,222,128,.07)' : c.type==='warn' ? 'rgba(250,204,21,.07)' : 'rgba(248,113,113,.07)';
-              return '<div class="sn-callout" style="background:'+bg+';border-left-color:'+col+'">'+esc(c.text)+'</div>';
+              return '<div class="sn-callout-row"><span class="sn-callout-dot" style="background:'+col+'"></span><span class="sn-callout-txt">'+esc(c.text)+'</span></div>';
             }).join('')}
           </div>` : ''}
 
-          <!-- Scores — compact side by side -->
-          <div class="sn-ic-scores-row">
-            <div class="sn-ic-score-card">
-              <div class="sn-ic-score-label">Win Probability</div>
-              <div class="sn-ic-gauge-wrap">${buildGauge(wp.probScore, 130, "sn-prob-gauge")}</div>
-            </div>
-            <div class="sn-ic-score-card">
-              <div class="sn-ic-score-label">Profile Match</div>
-              <div class="sn-ic-gauge-wrap">${buildGauge(wp.matchScore, 130, "sn-match-gauge")}</div>
-            </div>
-          </div>
-
-          <!-- Tips -->
-          ${tips&&tips.length ? `
-          <div class="sn-ic-card">
-            <div class="sn-ic-card-title">
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-              Job signals
-            </div>
-            ${tips.slice(0,3).map(t=>'<div class="sn-ic-tip">'+esc(t.length>80?t.slice(0,80)+'…':t)+'</div>').join('')}
+          <!-- Job signals (tips) -->
+          ${tips && tips.length ? `
+          <div class="sn-intel-card">
+            <div class="sn-intel-label">Job signals</div>
+            ${tips.slice(0,3).map(t => '<div class="sn-signal-row">'+esc(t.length>90?t.slice(0,90)+'…':t)+'</div>').join('')}
           </div>` : ''}
 
           ${remaining!==null&&remaining<=10 ? '<div class="sn-low-bar"><span>'+(remaining===0?'No proposals left':remaining+' left')+'</span><button class="sn-low-upgrade" id="sn-low-upgrade">Upgrade</button></div>' : ''}
@@ -1256,21 +1289,28 @@
       </div>
     `;
 
-    drawGauge('sn-prob-gauge', wp.probScore, 160);
-    drawGauge('sn-match-gauge', wp.matchScore, 160);
+    // Gauges replaced by score bars — skip drawGauge calls
 
     // Auto-expand textarea
     const refineInp = document.getElementById('sn-refine-inp');
     if (refineInp) {
       refineInp.addEventListener('input', () => {
         refineInp.style.height = 'auto';
-        refineInp.style.height = refineInp.scrollHeight + 'px';
+        refineInp.style.height = Math.min(refineInp.scrollHeight, 120) + 'px';
+      });
+      // Cmd+Enter or Ctrl+Enter to regenerate
+      refineInp.addEventListener('keydown', e => {
+        if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+          e.preventDefault();
+          window._snagRefineInstruction = refineInp.value.trim();
+          showLoading(); generate();
+        }
       });
     }
 
     // Word count — live update
     const letterEl = document.getElementById('sn-letter');
-    const wcEl = document.getElementById('sn-word-count');
+    const wcEl     = document.getElementById('sn-word-count');
     function updateWordCount() {
       const n = countWords(letterEl);
       if (wcEl) wcEl.textContent = n + ' words';
@@ -1293,6 +1333,7 @@
       navigator.clipboard.writeText(document.getElementById('sn-letter').innerText).then(() => {
         const btn   = document.getElementById('sn-copy');
         const label = document.getElementById('sn-copy-label');
+        if (!btn) return;
         if (!btn || !label) return;
         // Pulse animation
         label.textContent = 'Copied ✓';
