@@ -64,8 +64,23 @@ function getSkillsArr(profile) {
   return [];
 }
 
+// ── Billing date helpers ──────────────────────────────────────────────────────
+function fmtDate(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  if (isNaN(d)) return '—';
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function daysUntil(iso) {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (isNaN(d)) return null;
+  return Math.ceil((d.getTime() - Date.now()) / 86400000);
+}
+
 // ── Status / plan UI ──────────────────────────────────────────────────────────
-function updatePlanUI(plan, used, quota) {
+function updatePlanUI(plan, used, quota, billing = {}) {
   const rem = Math.max(0, quota - used);
   const pct = Math.min(100, (used / quota) * 100);
   const label = PLAN_LABELS[plan] || 'Free';
@@ -97,7 +112,7 @@ function updatePlanUI(plan, used, quota) {
     let msg='', cls='ud-urgency';
     if (pct>=100)    { msg='Out of proposals — upgrade to keep applying.'; cls+=' ud-danger'; }
     else if(pct>=90) { msg='Only '+rem+' left this month.'; cls+=' ud-danger'; }
-    else if(pct>=70) { msg=used+' used · '+rem+' remaining this month.'; cls+=' ud-warn'; }
+    else if(pct>=70) { msg=used+' used · '+rem+' remaining.'; cls+=' ud-warn'; }
     _ue.textContent=msg; _ue.className=cls;
   }
 
@@ -127,7 +142,7 @@ function updatePlanUI(plan, used, quota) {
       btn.className   = 'pcv2-btn ' + (p === 'pro' ? 'pcv2-btn-gold' : 'pcv2-btn-outline');
     }
   });
-  // Mark active plan
+  // Mark active plan card
   const activeCard = document.getElementById('plan-' + plan);
   if (activeCard && plan !== 'free') {
     activeCard.classList.add('current');
@@ -138,15 +153,95 @@ function updatePlanUI(plan, used, quota) {
       btn.className   = 'pcv2-btn pcv2-btn-current';
     }
   }
+
+  // Billing card — only for paid plans
+  renderBillingCard(plan, used, quota, billing);
+}
+
+// ── Billing card ──────────────────────────────────────────────────────────────
+function renderBillingCard(plan, used, quota, billing) {
+  const wrap = document.getElementById('billing-card-wrap');
+  if (!wrap) return;
+
+  // Only show for active paid plans
+  if (plan === 'free' || !billing.nextBilledAt) {
+    wrap.innerHTML = '';
+    return;
+  }
+
+  const planPrices  = { starter: '$19', pro: '$39', agency: '$69' };
+  const planLabel   = PLAN_LABELS[plan] || plan;
+  const price       = planPrices[plan]  || '';
+  const isActive    = billing.active !== false;
+
+  const periodStart = fmtDate(billing.currentPeriodStart);
+  const periodEnd   = fmtDate(billing.nextBilledAt);
+  const days        = daysUntil(billing.nextBilledAt);
+
+  const daysHtml = days !== null
+    ? (days <= 0
+        ? '<span class="bc-days bc-days-due">Due today</span>'
+        : days <= 7
+          ? `<span class="bc-days bc-days-soon">${days} day${days===1?'':'s'} left</span>`
+          : `<span class="bc-days">${days} days left</span>`)
+    : '';
+
+  const statusHtml = isActive
+    ? '<span class="bc-status bc-active"><span class="bc-status-dot"></span>Active</span>'
+    : '<span class="bc-status bc-canceled"><span class="bc-status-dot"></span>Canceled</span>';
+
+  wrap.innerHTML = `
+    <div class="billing-card">
+      <div class="bc-top">
+        <div class="bc-plan-col">
+          <div class="bc-plan-row">
+            <span class="bc-plan-badge badge-${plan}">${planLabel}</span>
+            ${statusHtml}
+          </div>
+          <div class="bc-plan-name">${planLabel} Plan <span class="bc-price">${price}/mo</span></div>
+          <div class="bc-plan-quota">${quota.toLocaleString()} proposals / month</div>
+        </div>
+        <div class="bc-action-col">
+          <a class="bc-manage-btn" href="https://customer.paddle.com" target="_blank">
+            Manage billing
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          </a>
+        </div>
+      </div>
+      <div class="bc-divider"></div>
+      <div class="bc-dates-row">
+        <div class="bc-date-block">
+          <div class="bc-date-label">Period started</div>
+          <div class="bc-date-val">${periodStart}</div>
+        </div>
+        <div class="bc-date-arrow">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </div>
+        <div class="bc-date-block">
+          <div class="bc-date-label">Resets &amp; renews</div>
+          <div class="bc-date-val bc-date-next">${periodEnd}</div>
+        </div>
+        <div class="bc-date-sep"></div>
+        <div class="bc-days-block">
+          ${daysHtml}
+          <div class="bc-days-sub">until next charge</div>
+        </div>
+      </div>
+    </div>
+  `;
 }
 
 async function loadStatus() {
   // 1. Show cached data immediately — no blank screen
-  const cached = await chrome.storage.sync.get(['userPlan','usageCount','usageLimit']);
+  const cached = await chrome.storage.sync.get(['userPlan','usageCount','usageLimit','userActive','nextBilledAt','currentPeriodStart']);
   const cPlan  = cached.userPlan  || 'free';
   const cUsed  = cached.usageCount || 0;
   const cQuota = cached.usageLimit || PLAN_QUOTAS[cPlan] || 2;
-  updatePlanUI(cPlan, cUsed, cQuota);
+  updatePlanUI(cPlan, cUsed, cQuota, {
+    active:             cached.userActive,
+    nextBilledAt:       cached.nextBilledAt       || null,
+    currentPeriodStart: cached.currentPeriodStart || null,
+  });
 
   // 2. Fetch fresh from server in background
   try {
@@ -155,8 +250,19 @@ async function loadStatus() {
       const plan  = status.plan  || 'free';
       const used  = status.used  || 0;
       const quota = status.limit || PLAN_QUOTAS[plan] || 2;
-      await chrome.storage.sync.set({ userPlan: plan, usageCount: used, usageLimit: quota });
-      updatePlanUI(plan, used, quota);
+      await chrome.storage.sync.set({
+        userPlan:           plan,
+        usageCount:         used,
+        usageLimit:         quota,
+        userActive:         status.active !== false,
+        nextBilledAt:       status.nextBilledAt       || null,
+        currentPeriodStart: status.currentPeriodStart || null,
+      });
+      updatePlanUI(plan, used, quota, {
+        active:             status.active !== false,
+        nextBilledAt:       status.nextBilledAt       || null,
+        currentPeriodStart: status.currentPeriodStart || null,
+      });
     }
   } catch(e) { /* use cached */ }
 }

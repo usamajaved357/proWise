@@ -87,14 +87,37 @@ async function getUserStatus(email) {
   const plan  = u.plan || 'free';
   const limit = PLANS[plan]?.limit ?? 2;
 
-  // Reset usage if new billing month
   let used = u.used || 0;
-  if (u.billing_month !== currentMonth()) {
-    used = 0;
-    await updateUser(email, { used: 0, billing_month: currentMonth() });
+
+  if (u.next_billed_at) {
+    // Anniversary-based reset: reset when the billing period has rolled over
+    const nextBilledMs = new Date(u.next_billed_at).getTime();
+    if (!isNaN(nextBilledMs) && Date.now() >= nextBilledMs) {
+      // Period has lapsed — reset usage (webhook may not have fired yet)
+      // Use billing_month as a guard so we only reset once per period
+      const newMonth = currentMonth();
+      if (u.billing_month !== newMonth) {
+        used = 0;
+        await updateUser(email, { used: 0, billing_month: newMonth });
+      }
+    }
+  } else {
+    // Fallback for users without next_billed_at yet: calendar-month reset
+    if (u.billing_month !== currentMonth()) {
+      used = 0;
+      await updateUser(email, { used: 0, billing_month: currentMonth() });
+    }
   }
 
-  return { plan, limit, used, remaining: Math.max(0, limit - used) };
+  return {
+    plan,
+    limit,
+    used,
+    remaining:           Math.max(0, limit - used),
+    active:              u.active !== false,
+    nextBilledAt:        u.next_billed_at        || null,
+    currentPeriodStart:  u.current_period_start  || null,
+  };
 }
 
 async function canGenerate(email) {
@@ -519,6 +542,15 @@ app.post('/webhook/paddle', async (req, res) => {
     const subId   = data.subscription_id || data.id;
     const custId  = data.customer_id;
 
+    // Extract billing period dates from Paddle payload
+    const nextBilledAt       = data.next_billed_at
+                             || data.current_billing_period?.ends_at
+                             || data.billing_period?.ends_at
+                             || null;
+    const currentPeriodStart = data.current_billing_period?.starts_at
+                             || data.billing_period?.starts_at
+                             || new Date().toISOString();
+
     // No email in transaction.completed — fetch from Paddle API
     if (!email && custId && process.env.PADDLE_API_KEY) {
       try {
@@ -536,19 +568,21 @@ app.post('/webhook/paddle', async (req, res) => {
 
     const existingUser = await getUser(email);
     if (existingUser) {
-      await updateUser(email, { plan, active: true, sub_id: subId, billing_month: currentMonth() });
+      await updateUser(email, { plan, active: true, sub_id: subId, billing_month: currentMonth(), next_billed_at: nextBilledAt, current_period_start: currentPeriodStart });
     } else {
-      await upsertUser(email, { plan, active: true, sub_id: subId, used: 0, billing_month: currentMonth() });
+      await upsertUser(email, { plan, active: true, sub_id: subId, used: 0, billing_month: currentMonth(), next_billed_at: nextBilledAt, current_period_start: currentPeriodStart });
     }
-    console.log('DB updated:', email, '→', plan);
+    console.log('DB updated:', email, '→', plan, '| next_billed_at:', nextBilledAt);
     await sendWelcomeEmail(email, plan);
   }
 
   if (type === 'subscription.renewed') {
-    const email = event.data?.customer?.email;
+    const email              = event.data?.customer?.email;
+    const nextBilledAt       = event.data?.next_billed_at || null;
+    const currentPeriodStart = event.data?.current_billing_period?.starts_at || new Date().toISOString();
     if (email) {
-      await updateUser(email, { used: 0, billing_month: currentMonth() });
-      console.log(`Renewed + reset: ${email}`);
+      await updateUser(email, { used: 0, billing_month: currentMonth(), next_billed_at: nextBilledAt, current_period_start: currentPeriodStart });
+      console.log(`Renewed + reset: ${email} | next_billed_at: ${nextBilledAt}`);
     }
   }
 

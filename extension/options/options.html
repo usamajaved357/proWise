@@ -431,6 +431,45 @@ textarea.edit-val{min-height:38px}
 @keyframes pcv2-pulse{0%{box-shadow:0 0 0 0 rgba(201,168,76,.55)}65%{box-shadow:0 0 0 10px rgba(201,168,76,0)}100%{box-shadow:0 0 0 0 rgba(201,168,76,0)}}
 .pcv2-card.plan-selecting{animation:pcv2-pulse .55s ease-out}
 
+/* ── Billing card ─────────────────────────────────────────────── */
+.billing-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:14px;box-shadow:0 2px 16px rgba(0,0,0,.2)}
+.billing-card::before{content:'';display:block;height:3px;background:linear-gradient(90deg,var(--gold),var(--gold2),rgba(232,200,120,.3),transparent)}
+
+.bc-top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:18px 20px 16px}
+.bc-plan-col{display:flex;flex-direction:column;gap:5px}
+.bc-plan-row{display:flex;align-items:center;gap:8px;margin-bottom:2px}
+.bc-plan-badge{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;padding:3px 10px;border-radius:20px}
+.bc-plan-badge.badge-starter{background:rgba(96,165,250,.12);color:var(--blue);border:1px solid rgba(96,165,250,.25)}
+.bc-plan-badge.badge-pro{background:rgba(201,168,76,.14);color:var(--gold);border:1px solid var(--gold-border)}
+.bc-plan-badge.badge-agency{background:rgba(167,139,250,.12);color:var(--purple);border:1px solid rgba(167,139,250,.25)}
+.bc-status{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600}
+.bc-status-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.bc-active{color:#4ade80}.bc-active .bc-status-dot{background:#4ade80;box-shadow:0 0 6px rgba(74,222,128,.6)}
+.bc-canceled{color:var(--red)}.bc-canceled .bc-status-dot{background:var(--red)}
+.bc-plan-name{font-size:15px;font-weight:700;letter-spacing:-.02em;color:var(--white)}
+.bc-price{font-size:13px;font-weight:500;color:var(--white3)}
+.bc-plan-quota{font-size:11.5px;color:rgba(240,238,234,.4)}
+
+.bc-action-col{display:flex;align-items:flex-start;flex-shrink:0}
+.bc-manage-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:rgba(240,238,234,.7);font-size:12px;font-weight:600;text-decoration:none;transition:all .15s;font-family:inherit}
+.bc-manage-btn:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);color:var(--white)}
+
+.bc-divider{height:1px;background:var(--border);margin:0 20px}
+
+.bc-dates-row{display:flex;align-items:center;gap:0;padding:16px 20px}
+.bc-date-block{display:flex;flex-direction:column;gap:4px}
+.bc-date-label{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:rgba(240,238,234,.28)}
+.bc-date-val{font-size:14px;font-weight:700;color:var(--white);letter-spacing:-.02em}
+.bc-date-next{color:var(--gold)}
+.bc-date-arrow{padding:0 16px;color:rgba(240,238,234,.2)}
+.bc-date-sep{width:1px;height:36px;background:var(--border);margin:0 20px;flex-shrink:0}
+.bc-days-block{display:flex;flex-direction:column;gap:3px}
+.bc-days{font-size:18px;font-weight:800;letter-spacing:-.04em;line-height:1}
+.bc-days-soon{color:var(--yellow)}
+.bc-days-due{color:var(--red)}
+.bc-days:not(.bc-days-soon):not(.bc-days-due){color:var(--white)}
+.bc-days-sub{font-size:10px;color:rgba(240,238,234,.3);font-weight:600;text-transform:uppercase;letter-spacing:.07em}
+
 /* ── Settings page ────────────────────────────────────────────── */
 .st-group{margin-bottom:28px}
 .st-group:last-of-type{margin-bottom:0}
@@ -607,6 +646,9 @@ textarea.edit-val{min-height:38px}
           <div class="us-footnote" style="color:var(--purple)">Coming in next update</div>
         </div>
       </div>
+
+      <!-- Billing card — rendered by JS for paid users -->
+      <div id="billing-card-wrap"></div>
 
       <!-- Plans -->
       <div class="card" style="overflow:visible">
