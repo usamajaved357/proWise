@@ -577,7 +577,7 @@ function renderPortfolioItem(list, p, pi, allProfiles, profileIdx, autoOpen) {
       ? p.skills.split(',').map(s => s.trim()).filter(Boolean)
       : [];
   const item     = document.createElement('div');
-  item.className = 'port-item';
+  item.className = 'port-item ' + (hasLinks ? 'has-url' : 'no-url');
   item.dataset.pi         = pi;
   item.dataset.portSkills = JSON.stringify(skills); // always array, even if stored as string
   item.dataset.portRole   = p.role || '';
