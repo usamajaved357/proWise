@@ -193,8 +193,9 @@ function updatePlanUI(plan, used, quota, billing = {}) {
       btn.className   = 'pcv2-btn ' + (p === 'pro' ? 'pcv2-btn-gold' : 'pcv2-btn-outline');
     }
   });
-  // Track active plan globally so plan button clicks know to upgrade vs checkout
-  _activePlan = plan;
+  // Track plan + subscription status so plan buttons route to upgrade vs checkout correctly
+  _activePlan         = plan;
+  _subscriptionStatus = billing.subscriptionStatus || 'active';
 
   // Mark active plan card
   const activeCard = document.getElementById('plan-' + plan);
@@ -1026,9 +1027,11 @@ document.querySelectorAll('.pcv2-btn[data-plan]').forEach(btn => {
   btn.addEventListener('click', e => {
     e.stopPropagation();
     const targetPlan = btn.dataset.plan;
-    // If the user already has a paid plan → upgrade/downgrade the existing subscription
-    // If the user is free → open a new checkout
-    if (_activePlan !== 'free') {
+    // Only upgrade/downgrade if the subscription is genuinely active (not canceling or canceled).
+    // Canceling users have no patchable Paddle subscription — send them through fresh checkout.
+    // When they complete it, subscription.created clears cancels_at and sets the new plan.
+    const canUpgrade = _activePlan !== 'free' && _subscriptionStatus === 'active';
+    if (canUpgrade) {
       upgradePlan(targetPlan);
     } else {
       openCheckout(targetPlan);
