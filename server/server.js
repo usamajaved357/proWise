@@ -637,7 +637,19 @@ app.post('/webhook/paddle', async (req, res) => {
 
   // Subscription canceled — keep paid plan active until cancels_at, getUserStatus() handles the downgrade
   if (['subscription.canceled','subscription.paused'].includes(type)) {
-    const email = event.data?.customer?.email;
+    let email    = event.data?.customer?.email;
+    const custId = event.data?.customer_id;
+
+    // Paddle rarely embeds email on cancel events — fetch from API using customer_id
+    if (!email && custId && process.env.PADDLE_API_KEY) {
+      try {
+        const custData = await getPaddleCustomer(custId);
+        email = custData?.email;
+      } catch(e) {
+        console.error('Could not fetch customer email for cancellation:', e.message);
+      }
+    }
+
     if (email) {
       const cancelsAt = event.data?.current_billing_period?.ends_at
                       || event.data?.scheduled_change?.effective_at
@@ -646,6 +658,8 @@ app.post('/webhook/paddle', async (req, res) => {
       // Keep plan intact — never downgrade here. getUserStatus() downgrades when cancels_at passes.
       await updateUser(email, { active: false, sub_id: '', cancels_at: cancelsAt });
       console.log(`Cancelled: ${email} | access until: ${cancelsAt || 'now'}`);
+    } else {
+      console.error('subscription.canceled: could not resolve email, customer_id:', custId);
     }
   }
 
