@@ -578,7 +578,7 @@ function renderPortfolioItem(list, p, pi, allProfiles, profileIdx, autoOpen) {
   const urlDomain = firstUrl ? firstUrl.replace(/^https?:\/\//, '').split('/')[0] : '';
 
   const skillsChips = skills.length
-    ? skills.slice(0,4).map(s=>'<span class="port-skill-tag">'+_esc(s)+'</span>').join('') + (skills.length>4?'<span class="port-skill-tag port-skill-more">+' + (skills.length-4) + '</span>':'')
+    ? skills.slice(0,3).map(s=>'<span class="port-skill-tag">'+_esc(s)+'</span>').join('') + (skills.length>3?'<span class="port-skill-more-badge">+' + (skills.length-3) + ' more</span>':'')
     : '<span class="port-no-skills">No skills</span>';
 
   const urlChips = hasLinks
@@ -586,7 +586,7 @@ function renderPortfolioItem(list, p, pi, allProfiles, profileIdx, autoOpen) {
     : '';
 
   const skillsReadonly = skills.length
-    ? skills.map(s=>'<span class="port-skill-tag">'+_esc(s)+'</span>').join('')
+    ? skills.map(s=>'<span class="port-skill-tag-all">'+_esc(s)+'</span>').join('')
     : '<span style="font-size:11px;color:var(--white3)">Sync from Upwork profile.</span>';
 
   item.innerHTML =

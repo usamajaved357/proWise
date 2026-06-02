@@ -355,6 +355,49 @@ textarea.edit-val{min-height:38px}
 .apd-save-close{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;background:linear-gradient(135deg,#e8a020,#f5c842);border:none;border-radius:8px;color:#0a0e1a;font-size:12px;font-weight:800;cursor:pointer;font-family:inherit;transition:filter .15s}
 .apd-save-close:hover{filter:brightness(1.08)}
 
+
+/* ── Portfolio skill colors — blue/violet (different from profile green) ── */
+.port-skill-tag {
+  font-size: 9px;
+  padding: 2px 7px;
+  background: rgba(96,165,250,.1);
+  color: #60a5fa;
+  border: 1px solid rgba(96,165,250,.2);
+  border-radius: 20px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+/* "+N more" badge in compact card */
+.port-skill-more-badge {
+  font-size: 9px;
+  padding: 2px 7px;
+  background: rgba(255,255,255,.05);
+  color: rgba(240,238,234,.4);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 20px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+/* All skills in expanded edit form — same blue, slightly different shade */
+.port-skill-tag-all {
+  font-size: 9.5px;
+  padding: 3px 8px;
+  background: rgba(96,165,250,.08);
+  color: #93c5fd;
+  border: 1px solid rgba(96,165,250,.18);
+  border-radius: 20px;
+  font-weight: 600;
+  white-space: nowrap;
+  display: inline-block;
+  margin: 2px;
+}
+/* When card is expanded — hide skills from compact preview (shown in edit form instead) */
+.port-item.expanded .port-skill-tags {
+  display: none;
+}
+.port-item.expanded .port-compact-desc {
+  display: none;
+}
 </style>
 </head>
 <body>
