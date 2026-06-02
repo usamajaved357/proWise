@@ -743,7 +743,7 @@ app.post('/upgrade', async (req, res) => {
     const result = await new Promise((resolve, reject) => {
       const body = JSON.stringify({
         items: [{ price_id: priceId, quantity: 1 }],
-        proration_behavior: 'proportionally',
+        proration_billing_mode: 'prorated_immediately',
       });
       const request = https.request({
         hostname: host,
