@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "Snag AI \u2014 Upwork Proposal Writer",
+  "name": "Snag AI — Upwork Proposal Writer",
   "version": "6.0.0",
   "description": "Snag the job before anyone else. Write winning Upwork proposals in 10 seconds.",
   "permissions": [
@@ -12,7 +12,8 @@
     "https://www.upwork.com/*"
   ],
   "background": {
-    "service_worker": "background/background.js"
+    "service_worker": "background/background.js",
+    "type": "module"
   },
   "content_scripts": [
     {
@@ -22,6 +23,13 @@
       ],
       "js": [
         "gauge.min.js",
+        "content/modules/utils.js",
+        "content/modules/job-reader.js",
+        "content/modules/probability.js",
+        "content/modules/panel.js",
+        "content/modules/page-paywall.js",
+        "content/modules/page-alert.js",
+        "content/modules/page-proposal.js",
         "content/content.js"
       ],
       "css": [
