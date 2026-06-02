@@ -802,6 +802,16 @@ app.post('/upgrade', async (req, res) => {
 
     if (result.error) {
       console.error('Paddle upgrade error:', JSON.stringify(result.error));
+      const detail = (result.error.detail || result.error.message || '').toLowerCase();
+      // Paddle rejected because the subscription is already canceled — send client to fresh checkout
+      if (detail.includes('cancel') || detail.includes('inactive') || detail.includes('not active')) {
+        // Also clean up DB so the state is consistent going forward
+        await updateUser(email, { active: false, sub_id: '' }).catch(() => {});
+        return res.status(400).json({
+          error: 'Your subscription has been canceled. Please subscribe again.',
+          needsCheckout: true,
+        });
+      }
       return res.status(400).json({ error: result.error.detail || 'Paddle could not update the subscription.' });
     }
 
