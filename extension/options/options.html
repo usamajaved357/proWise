@@ -87,6 +87,12 @@ a{text-decoration:none;color:inherit}
 .empty-icon{font-size:46px;margin-bottom:20px;display:block}
 .empty-title{font-size:17px;font-weight:700;margin-bottom:10px;letter-spacing:-.025em;color:var(--white)}
 .empty-desc{font-size:13px;color:var(--white3);line-height:1.75;margin-bottom:24px;max-width:340px;margin-left:auto;margin-right:auto}
+.empty-url-form{display:flex;gap:8px;max-width:420px;margin:0 auto 14px}
+.empty-url-input{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:10px 14px;font-size:12px;color:var(--white);font-family:inherit;outline:none;transition:border-color .15s,box-shadow .15s}
+.empty-url-input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,168,76,.12)}
+.empty-url-input::placeholder{color:var(--white4)}
+.empty-url-hint{font-size:11px;color:var(--white4);line-height:1.6;max-width:360px;margin:0 auto}
+.empty-url-hint strong{color:var(--white3)}
 
 /* ── Profile slider ── */
 .profile-slider-wrap{position:relative}
@@ -675,9 +681,20 @@ textarea.edit-val{min-height:38px}
       <div id="no-profiles-msg" style="display:none">
         <div class="empty-state">
           <div class="empty-icon">👤</div>
-          <div class="empty-title">No profiles added yet</div>
-          <div class="empty-desc">Go to <strong style="color:var(--white)">Subscription</strong> and paste your Upwork profile URL. Snag AI will read your data automatically when you visit that page.</div>
-          <button class="btn-primary" id="goto-sub-btn">Go to Subscription →</button>
+          <div class="empty-title">Add your Upwork profile</div>
+          <div class="empty-desc">Paste your Upwork profile URL below. Snag AI will automatically read your skills, tier, and portfolio when you visit that page once.</div>
+          <div class="empty-url-form">
+            <input
+              id="empty-profile-url-inp"
+              class="empty-url-input"
+              type="url"
+              placeholder="https://www.upwork.com/freelancers/~..."
+              autocomplete="off"
+              spellcheck="false"
+            />
+            <button class="btn-primary" id="empty-save-profile-btn">Save &amp; Sync →</button>
+          </div>
+          <div class="empty-url-hint">After saving, click <strong>Open profile</strong> to let Snag AI read your data — takes about 10 seconds.</div>
         </div>
       </div>
     </div><!-- /profiles -->

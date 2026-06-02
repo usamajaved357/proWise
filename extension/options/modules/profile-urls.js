@@ -38,6 +38,25 @@ export async function renderProfileSlots() {
 }
 
 export function initProfileUrls() {
+  // Empty-state inline form on Profiles page
+  document.getElementById('empty-save-profile-btn')?.addEventListener('click', async () => {
+    const inp = document.getElementById('empty-profile-url-inp');
+    const url = inp?.value?.trim();
+    if (!url || !url.includes('upwork.com/freelancers/')) {
+      if (inp) { inp.style.borderColor = 'var(--red)'; setTimeout(() => inp.style.borderColor = '', 2000); }
+      return;
+    }
+    const { registeredProfiles = [] } = await chrome.storage.local.get(['registeredProfiles']);
+    const id = 'profile_1';
+    const existing = registeredProfiles[0] || {};
+    registeredProfiles[0] = { ...existing, url, id, syncEnabled: true };
+    await chrome.storage.local.set({ registeredProfiles });
+    await renderProfileSlots();
+    await renderProfilesPage();
+    // Open the profile URL so auto-sync can run
+    chrome.tabs.create({ url });
+  });
+
   document.getElementById('save-profile-urls').addEventListener('click', async () => {
     const { userPlan = 'free' } = await chrome.storage.sync.get(['userPlan']);
     const { registeredProfiles = [] } = await chrome.storage.local.get(['registeredProfiles']);
