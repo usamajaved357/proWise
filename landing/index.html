@@ -4,397 +4,821 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Snag AI — Win More Upwork Jobs in 10 Seconds</title>
-<meta name="description" content="Snag AI — Snag the job before anyone else. AI-powered Upwork proposal writer. One click. Ten seconds. Winning proposal.">
+<meta name="description" content="Snag AI reads the Upwork job, picks the perfect hook, and writes a personalised winning proposal in 10 seconds. One click. Start free.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Cormorant+Garamond:ital,wght@0,300;0,600;0,700;1,400&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#080b14;--bg2:#0d1120;--bg3:#131829;--surface:#1a2035;--border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.12);--gold:#c9a84c;--gold2:#e8c878;--gold-dim:rgba(201,168,76,.15);--white:#f0eeea;--white2:rgba(240,238,234,.65);--white3:rgba(240,238,234,.35);--green:#22c55e;--r:12px;--ff-d:'Cormorant Garamond',serif;--ff-b:'Outfit',sans-serif}
+:root{
+  --bg:#060a14;--bg2:#0c1120;--bg3:#111827;--bg4:#1a2235;
+  --border:rgba(255,255,255,.07);--border2:rgba(255,255,255,.12);
+  --gold:#c9a84c;--gold2:#e8c878;--gold3:#f5d98a;
+  --gold-bg:rgba(201,168,76,.1);--gold-border:rgba(201,168,76,.25);
+  --green:#22c55e;--green2:#4ade80;--red:#f87171;--blue:#60a5fa;--purple:#a78bfa;
+  --white:#f0eeea;--white2:rgba(240,238,234,.65);--white3:rgba(240,238,234,.38);--white4:rgba(240,238,234,.18);
+  --r:14px;--serif:'Cormorant Garamond',serif;--sans:'Inter',sans-serif;
+}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
-body{font-family:var(--ff-b);background:var(--bg);color:var(--white);line-height:1.6;overflow-x:hidden}
-nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:18px 56px;display:flex;align-items:center;justify-content:space-between;background:rgba(8,11,20,.88);backdrop-filter:blur(24px);border-bottom:1px solid var(--border)}
-.nl{display:flex;align-items:center;gap:10px;text-decoration:none}
-.nm{width:32px;height:32px;background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:8px;display:flex;align-items:center;justify-content:center;font-family:var(--ff-d);font-size:18px;font-weight:700;color:var(--bg)}
-.nn{font-family:var(--ff-d);font-size:20px;font-weight:600;color:var(--white)}
-.nlinks{display:flex;align-items:center;gap:36px;list-style:none}
-.nlinks a{font-size:14px;color:var(--white2);text-decoration:none;transition:color .2s}
-.nlinks a:hover{color:var(--white)}
-.ncta{background:var(--gold)!important;color:var(--bg)!important;padding:9px 22px;border-radius:50px;font-weight:600!important;font-size:13px!important}
-.ncta:hover{background:var(--gold2)!important}
-.hero{padding:140px 56px 80px;max-width:1180px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center}
-.htag{display:inline-flex;align-items:center;gap:8px;background:var(--gold-dim);border:1px solid rgba(201,168,76,.3);border-radius:50px;padding:6px 16px;font-size:12px;font-weight:500;color:var(--gold);letter-spacing:.08em;text-transform:uppercase;margin-bottom:28px}
-.htag::before{content:'';width:6px;height:6px;background:var(--green);border-radius:50%}
-h1{font-family:var(--ff-d);font-size:clamp(48px,6vw,80px);font-weight:300;line-height:1.04;letter-spacing:-.02em;margin-bottom:24px}
-h1 em{font-style:italic;color:var(--gold)}
-h1 strong{font-weight:700}
-.hsub{font-size:17px;font-weight:300;color:var(--white2);line-height:1.75;margin-bottom:44px;max-width:460px}
-.hbtns{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:44px}
-.bp{background:var(--gold);color:var(--bg);padding:15px 30px;border-radius:50px;font-size:15px;font-weight:600;text-decoration:none;display:inline-flex;align-items:center;gap:8px;transition:all .2s;box-shadow:0 0 40px rgba(201,168,76,.2)}
-.bp:hover{background:var(--gold2);transform:translateY(-2px);box-shadow:0 8px 40px rgba(201,168,76,.3)}
-.bg{color:var(--white2);font-size:14px;text-decoration:none;display:inline-flex;align-items:center;gap:6px;transition:color .2s}
-.bg:hover{color:var(--white)}
-.hpf{display:flex;align-items:center;gap:12px;font-size:13px;color:var(--white3)}
-.avs{display:flex}
-.av{width:28px;height:28px;border-radius:50%;border:2px solid var(--bg);margin-left:-8px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--bg)}
-.av:first-child{margin-left:0}
-.mbr{background:var(--bg2);border:1px solid var(--border2);border-radius:14px;overflow:hidden;box-shadow:0 40px 100px rgba(0,0,0,.6)}
-.mbar{background:var(--bg3);padding:10px 16px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border)}
-.mdots{display:flex;gap:6px}
-.mdot{width:10px;height:10px;border-radius:50%}
-.mdot:nth-child(1){background:#ff5f56}.mdot:nth-child(2){background:#febc2e}.mdot:nth-child(3){background:#28c840}
-.murl{background:rgba(255,255,255,.06);border-radius:6px;padding:4px 12px;font-size:11px;color:var(--white3);flex:1}
-.mbody{padding:20px}
-.pc{background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,.3)}
-.pch{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid #f0f0f0}
-.pcb{display:flex;align-items:center;gap:8px}
-.pcl{width:26px;height:26px;background:linear-gradient(135deg,#6366f1,#a78bfa);border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:var(--ff-d);font-size:14px;font-weight:700;color:#fff}
-.pct{font-size:13px;font-weight:700;color:#1a1a2e;font-family:var(--ff-b)}
-.pcs{font-size:11px;color:#9ca3af;font-family:var(--ff-b)}
-.pchk{background:linear-gradient(135deg,#1a1a2e,#2d2b55);padding:10px 16px}
-.pckl{font-size:10px;font-weight:700;color:#c9a84c;text-transform:uppercase;letter-spacing:.08em;font-family:var(--ff-b)}
-.pckd{font-size:11px;color:rgba(255,255,255,.55);font-family:var(--ff-b)}
-.pclt{padding:14px 16px}
-.ln{height:9px;background:#f3f4f6;border-radius:4px;margin-bottom:7px}
-.ln.a{background:linear-gradient(90deg,#f3f4f6,#ede9ff,#f3f4f6);background-size:200% 100%;animation:sh 2s ease-in-out infinite}
-@keyframes sh{0%,100%{background-position:0%}50%{background-position:100%}}
-.pcf{display:flex;gap:8px;padding:12px 16px;border-top:1px solid #f0f0f0}
-.pcc{flex:1;background:#1a1a2e;color:#fff;border:none;border-radius:7px;padding:9px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--ff-b)}
-.pcr{padding:9px 14px;border:1.5px solid #e5e7eb;border-radius:7px;background:transparent;color:#6b7280;font-size:12px;cursor:pointer}
-.fw{position:absolute;bottom:-18px;right:32px;background:linear-gradient(135deg,#1a1a2e,#2d2b55);color:#fff;border:none;border-radius:50px;padding:13px 24px;font-size:14px;font-weight:600;display:flex;align-items:center;gap:8px;box-shadow:0 8px 30px rgba(0,0,0,.4),0 0 0 1px rgba(255,255,255,.08);white-space:nowrap;font-family:var(--ff-b)}
-.fwd{width:7px;height:7px;background:var(--green);border-radius:50%}
-.stbar{background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:28px 56px;display:flex;justify-content:center;gap:80px;flex-wrap:wrap}
-.st{text-align:center}
-.stn{font-family:var(--ff-d);font-size:36px;font-weight:600;color:var(--gold);display:block;letter-spacing:-.02em}
-.stl{font-size:13px;color:var(--white3);font-weight:300;letter-spacing:.04em;text-transform:uppercase}
-.sec{max-width:1180px;margin:0 auto;padding:110px 56px}
-.ey{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.12em;color:var(--gold);margin-bottom:16px;display:block}
-.st2{font-family:var(--ff-d);font-size:clamp(32px,4vw,54px);font-weight:300;line-height:1.1;letter-spacing:-.02em;color:var(--white);margin-bottom:16px}
-.st2 em{font-style:italic;color:var(--gold)}
-.ss{font-size:17px;font-weight:300;color:var(--white2);line-height:1.75;max-width:540px;margin-bottom:64px}
-.bag{display:grid;grid-template-columns:1fr 1fr;gap:2px}
-.bc{background:var(--bg2);border:1px solid var(--border);overflow:hidden}
-.bc:first-child{border-radius:var(--r) 0 0 var(--r)}
-.bc:last-child{border-radius:0 var(--r) var(--r) 0}
-.bch{padding:14px 20px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)}
-.bb{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px}
-.bb1{background:rgba(239,68,68,.15);color:#fca5a5;border:1px solid rgba(239,68,68,.2)}
-.bb2{background:rgba(34,197,94,.15);color:#86efac;border:1px solid rgba(34,197,94,.2)}
-.bd2{font-size:12px;color:var(--white3)}
-.bbo{padding:20px;font-size:14px;line-height:1.85;color:var(--white2);font-weight:300}
-.bbo.g{color:var(--white);background:rgba(34,197,94,.03);border-left:2px solid rgba(34,197,94,.3)}
-.hl{background:rgba(239,68,68,.15);padding:1px 4px;border-radius:3px;color:#fca5a5}
-.hiw{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:80px;margin:0 56px}
-.sps{display:grid;grid-template-columns:repeat(3,1fr);gap:48px}
-.spn{width:44px;height:44px;border:1px solid var(--gold);border-radius:12px;display:flex;align-items:center;justify-content:center;font-family:var(--ff-d);font-size:20px;font-weight:600;color:var(--gold);margin-bottom:20px}
-.spt{font-family:var(--ff-d);font-size:22px;font-weight:400;color:var(--white);margin-bottom:10px;letter-spacing:-.01em}
-.spd{font-size:14px;font-weight:300;color:var(--white2);line-height:1.7}
-.hkg{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1px;background:var(--border);border-radius:var(--r);overflow:hidden;border:1px solid var(--border)}
-.hk{background:var(--bg);padding:28px;transition:background .2s}
-.hk:hover{background:var(--bg2)}
-.hkn{font-family:var(--ff-d);font-size:13px;color:var(--gold);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px}
-.hkt{font-family:var(--ff-d);font-size:20px;font-weight:400;color:var(--white);margin-bottom:10px;letter-spacing:-.01em}
-.hkq{font-size:13px;font-weight:300;font-style:italic;color:var(--white2);line-height:1.65;border-left:2px solid var(--gold-dim);padding-left:12px}
-.pw{background:var(--bg2);border:1px solid var(--border);border-radius:20px;padding:80px;margin:0 56px}
-.pg{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
-.pca{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:32px;position:relative;transition:border-color .2s}
-.pca:hover{border-color:var(--border2)}
-.pca.ft{background:linear-gradient(135deg,rgba(201,168,76,.08),rgba(201,168,76,.03));border-color:rgba(201,168,76,.35)}
-.pop{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--gold);color:var(--bg);font-size:10px;font-weight:700;padding:3px 14px;border-radius:20px;white-space:nowrap;letter-spacing:.06em;text-transform:uppercase}
-.ptr{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.1em;color:var(--white3);margin-bottom:12px}
-.ppr{font-family:var(--ff-d);font-size:52px;font-weight:300;color:var(--white);line-height:1;margin-bottom:4px;letter-spacing:-.03em}
-.ppr span{font-size:18px;color:var(--white3)}
-.pper{font-size:13px;color:var(--white3);margin-bottom:6px}
-.psv{font-size:12px;color:var(--green);font-weight:500;margin-bottom:24px}
-.pfl{list-style:none;margin-bottom:28px;display:flex;flex-direction:column;gap:10px}
-.pfl li{font-size:13px;font-weight:300;color:var(--white2);display:flex;gap:10px;align-items:flex-start}
-.pfl li::before{content:'—';color:var(--gold);flex-shrink:0}
-.pbtn{display:block;width:100%;padding:13px;border-radius:8px;font-size:14px;font-weight:600;text-align:center;text-decoration:none;transition:all .2s;font-family:var(--ff-b);cursor:pointer;border:none}
-.pbo{background:transparent;border:1px solid var(--border2);color:var(--white)}
-.pbo:hover{background:rgba(255,255,255,.06);border-color:var(--white3)}
-.pbg{background:var(--gold);color:var(--bg)}
-.pbg:hover{background:var(--gold2);transform:translateY(-1px);box-shadow:0 4px 20px rgba(201,168,76,.3)}
-.pgn{text-align:center;margin-top:32px;font-size:13px;font-weight:300;color:var(--white3)}
-.pgn strong{color:var(--white2)}
-.fql{display:flex;flex-direction:column;gap:1px;background:var(--border);border-radius:var(--r);overflow:hidden;border:1px solid var(--border)}
-.fi{background:var(--bg)}
-.fq{width:100%;text-align:left;padding:22px 28px;font-size:16px;font-weight:400;font-family:var(--ff-d);color:var(--white);background:none;border:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:16px;letter-spacing:-.01em;transition:background .15s}
-.fq:hover{background:var(--bg2)}
-.fic{width:24px;height:24px;border:1px solid var(--border2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--gold);flex-shrink:0;transition:transform .2s,background .2s}
-.fi.op .fic{transform:rotate(45deg);background:var(--gold-dim)}
-.fa{max-height:0;overflow:hidden;font-size:14px;font-weight:300;color:var(--white2);line-height:1.8;padding:0 28px;transition:max-height .3s ease,padding .3s}
-.fi.op .fa{max-height:200px;padding:0 28px 22px}
-.ctaw{max-width:1180px;margin:0 auto;padding:0 56px 100px}
-.ctai{background:linear-gradient(135deg,rgba(201,168,76,.12),rgba(201,168,76,.04));border:1px solid rgba(201,168,76,.25);border-radius:20px;padding:80px 60px;text-align:center;position:relative;overflow:hidden}
-.ctai::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:60%;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
-.ctai h2{font-family:var(--ff-d);font-size:clamp(32px,4vw,52px);font-weight:300;letter-spacing:-.02em;margin-bottom:14px}
-.ctai p{font-size:17px;font-weight:300;color:var(--white2);margin-bottom:36px}
-.bg2{display:inline-flex;align-items:center;gap:8px;background:var(--gold);color:var(--bg);padding:16px 36px;border-radius:50px;font-size:15px;font-weight:600;text-decoration:none;transition:all .2s;box-shadow:0 4px 30px rgba(201,168,76,.25)}
-.bg2:hover{background:var(--gold2);transform:translateY(-2px)}
-.ctan{font-size:12px;color:var(--white3);margin-top:16px}
-footer{background:var(--bg2);border-top:1px solid var(--border);padding:36px 56px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px}
-.fl{display:flex;align-items:center;gap:8px;text-decoration:none}
-.flm{width:26px;height:26px;background:linear-gradient(135deg,var(--gold),var(--gold2));border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:var(--ff-d);font-size:14px;font-weight:700;color:var(--bg)}
-.fln{font-family:var(--ff-d);font-size:16px;color:var(--white)}
-.flinks{display:flex;gap:28px;list-style:none}
-.flinks a{font-size:13px;color:var(--white3);text-decoration:none;transition:color .2s}
-.flinks a:hover{color:var(--white2)}
-.fc{font-size:12px;color:var(--white3)}
+body{font-family:var(--sans);background:var(--bg);color:var(--white);line-height:1.6;overflow-x:hidden}
+a{text-decoration:none;color:inherit}
+
+/* ── Animations ──────────────────────────────────────── */
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+@keyframes glow{0%,100%{opacity:.5}50%{opacity:1}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes shimmer{0%{background-position:-200% 0}100%{background-position:200% 0}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(201,168,76,.4)}70%{box-shadow:0 0 0 10px rgba(201,168,76,0)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+@keyframes typewriter{0%{width:0}100%{width:100%}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+@keyframes countUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes particleDrift{0%{transform:translateY(0) translateX(0);opacity:0}20%{opacity:.6}80%{opacity:.3}100%{transform:translateY(-120px) translateX(40px);opacity:0}}
+
 .rv{opacity:0;transform:translateY(28px);transition:opacity .65s ease,transform .65s ease}
 .rv.vs{opacity:1;transform:translateY(0)}
-.hv{position:relative}
-@media(max-width:900px){
-nav{padding:14px 24px}.nlinks{display:none}
-.hero{grid-template-columns:1fr;padding:100px 24px 60px;gap:40px}
-.hv{display:none}.sec{padding:70px 24px}.stbar{gap:32px;padding:24px 20px}
-.hiw,.pw{margin:0 24px;padding:48px 28px}.sps,.pg{grid-template-columns:1fr}
-.bag{grid-template-columns:1fr}.bc:first-child{border-radius:var(--r) var(--r) 0 0}
-.bc:last-child{border-radius:0 0 var(--r) var(--r)}
-footer{padding:28px 24px;flex-direction:column;align-items:flex-start}
-.ctaw{padding:0 24px 60px}.ctai{padding:48px 28px}}
+.rv2{opacity:0;transform:translateY(20px);transition:opacity .5s ease .15s,transform .5s ease .15s}
+.rv2.vs{opacity:1;transform:translateY(0)}
+
+/* ── Navigation ─────────────────────────────────────── */
+nav{position:fixed;top:0;left:0;right:0;z-index:200;padding:0 56px;height:64px;display:flex;align-items:center;justify-content:space-between;background:rgba(6,10,20,.82);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);transition:background .3s}
+.nav-logo{display:flex;align-items:center;gap:10px}
+.nav-icon{width:32px;height:32px;background:linear-gradient(135deg,#8a5f10,var(--gold),var(--gold2));border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 12px rgba(201,168,76,.3)}
+.nav-name{font-family:var(--serif);font-size:20px;font-weight:600;letter-spacing:-.01em}
+.nav-links{display:flex;align-items:center;gap:32px;list-style:none}
+.nav-links a{font-size:14px;color:var(--white2);transition:color .2s}
+.nav-links a:hover{color:var(--white)}
+.nav-right{display:flex;align-items:center;gap:12px}
+.btn-chrome{display:inline-flex;align-items:center;gap:7px;padding:9px 18px;background:rgba(255,255,255,.08);border:1px solid var(--border2);border-radius:50px;font-size:13px;font-weight:600;color:var(--white2);transition:all .2s}
+.btn-chrome:hover{background:rgba(255,255,255,.12);color:var(--white);border-color:rgba(255,255,255,.2)}
+.btn-chrome-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:glow 2s ease-in-out infinite}
+.btn-nav-cta{display:inline-flex;align-items:center;gap:7px;padding:9px 20px;background:var(--gold);color:#060a14;border-radius:50px;font-size:13px;font-weight:700;transition:all .2s;box-shadow:0 0 20px rgba(201,168,76,.2)}
+.btn-nav-cta:hover{background:var(--gold2);transform:translateY(-1px);box-shadow:0 4px 24px rgba(201,168,76,.35)}
+
+/* ── Hero ────────────────────────────────────────────── */
+.hero{min-height:100vh;padding:120px 56px 80px;display:flex;align-items:center;position:relative;overflow:hidden}
+.hero-bg{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.hero-glow1{position:absolute;top:-20%;left:-10%;width:60%;height:70%;background:radial-gradient(ellipse,rgba(201,168,76,.08) 0%,transparent 70%)}
+.hero-glow2{position:absolute;top:30%;right:-10%;width:50%;height:60%;background:radial-gradient(ellipse,rgba(96,165,250,.05) 0%,transparent 70%)}
+.hero-grid{position:absolute;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:60px 60px;mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black 30%,transparent 100%)}
+.particles{position:absolute;inset:0}
+.particle{position:absolute;width:3px;height:3px;border-radius:50%;background:var(--gold);animation:particleDrift linear infinite}
+
+.hero-inner{max-width:1200px;margin:0 auto;width:100%;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;position:relative}
+.hero-tag{display:inline-flex;align-items:center;gap:8px;background:var(--gold-bg);border:1px solid var(--gold-border);border-radius:50px;padding:6px 16px;font-size:11.5px;font-weight:600;color:var(--gold);letter-spacing:.08em;text-transform:uppercase;margin-bottom:28px;animation:fadeUp .6s ease forwards}
+.hero-tag-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s ease-in-out infinite}
+h1{font-family:var(--serif);font-size:clamp(52px,6vw,82px);font-weight:300;line-height:1.03;letter-spacing:-.025em;margin-bottom:22px;animation:fadeUp .7s ease .1s both}
+h1 em{font-style:italic;color:var(--gold)}
+h1 strong{font-weight:700}
+.hero-sub{font-size:17px;font-weight:300;color:var(--white2);line-height:1.8;margin-bottom:40px;max-width:480px;animation:fadeUp .7s ease .2s both}
+.hero-btns{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-bottom:40px;animation:fadeUp .7s ease .3s both}
+.btn-primary{display:inline-flex;align-items:center;gap:8px;padding:15px 32px;background:var(--gold);color:#060a14;border-radius:50px;font-size:15px;font-weight:700;transition:all .2s;box-shadow:0 0 40px rgba(201,168,76,.22)}
+.btn-primary:hover{background:var(--gold2);transform:translateY(-2px);box-shadow:0 8px 40px rgba(201,168,76,.35)}
+.btn-ghost{display:inline-flex;align-items:center;gap:6px;font-size:14px;color:var(--white3);transition:color .2s}
+.btn-ghost:hover{color:var(--white)}
+.hero-social{display:flex;align-items:center;gap:12px;font-size:13px;color:var(--white3);animation:fadeUp .7s ease .4s both}
+.avatars{display:flex}
+.avatar{width:28px;height:28px;border-radius:50%;border:2px solid var(--bg);margin-left:-8px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--bg)}
+.avatar:first-child{margin-left:0}
+
+/* ── Hero mockup ─────────────────────────────────────── */
+.hero-visual{animation:fadeUp .8s ease .2s both;position:relative}
+.browser-frame{background:var(--bg2);border:1px solid var(--border2);border-radius:16px;overflow:hidden;box-shadow:0 48px 120px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.05)}
+.browser-bar{background:var(--bg3);padding:12px 18px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)}
+.browser-dots{display:flex;gap:6px}
+.browser-dot{width:10px;height:10px;border-radius:50%}
+.browser-dot:nth-child(1){background:#ff5f56}.browser-dot:nth-child(2){background:#febc2e}.browser-dot:nth-child(3){background:#28c840}
+.browser-url{background:rgba(255,255,255,.06);border-radius:6px;padding:5px 14px;font-size:11px;color:var(--white3);flex:1;display:flex;align-items:center;gap:8px}
+.browser-url-lock{opacity:.5}
+.browser-body{padding:20px;background:#fff;position:relative}
+
+/* Extension panel mockup */
+.ext-panel{background:#0d1120;border:1px solid rgba(255,255,255,.1);border-radius:12px;overflow:hidden;box-shadow:0 24px 60px rgba(0,0,0,.6)}
+.ext-head{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.03)}
+.ext-brand{display:flex;align-items:center;gap:8px}
+.ext-logo-sm{width:24px;height:24px;border-radius:6px;background:linear-gradient(135deg,#8a5f10,var(--gold));display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ext-title-sm{font-size:12px;font-weight:700;color:var(--white)}
+.ext-hook-label{font-size:10px;color:var(--gold);font-weight:600}
+.ext-body{padding:16px}
+.ext-proposal-lines{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+.ext-line{height:8px;background:rgba(255,255,255,.1);border-radius:4px}
+.ext-line.writing{background:linear-gradient(90deg,rgba(201,168,76,.2),rgba(232,200,120,.4),rgba(201,168,76,.2));background-size:200% 100%;animation:shimmer 2s ease-in-out infinite}
+.ext-actions{display:flex;gap:8px}
+.ext-copy-btn{flex:1;padding:8px;background:var(--gold);border-radius:7px;font-size:11px;font-weight:700;color:#060a14;text-align:center}
+.ext-regen-btn{padding:8px 12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:7px;font-size:11px;color:var(--white2)}
+.ext-scores{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.ext-score-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:8px;padding:8px 10px}
+.ext-score-label{font-size:9px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+.ext-score-val{font-size:15px;font-weight:800;letter-spacing:-.03em}
+
+/* Write Proposal button floating */
+.write-btn-float{position:absolute;bottom:-18px;right:28px;background:linear-gradient(135deg,#1a2035,#0d1120);color:#fff;border-radius:50px;padding:12px 22px;font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px;box-shadow:0 8px 32px rgba(0,0,0,.5),0 0 0 1px rgba(255,255,255,.1);white-space:nowrap;animation:float 3s ease-in-out infinite}
+.write-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s ease-in-out infinite}
+
+/* ── Stats bar ───────────────────────────────────────── */
+.stats-bar{background:var(--bg2);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:36px 56px;display:flex;justify-content:center;gap:80px;flex-wrap:wrap}
+.stat{text-align:center}
+.stat-num{font-family:var(--serif);font-size:42px;font-weight:600;color:var(--gold);display:block;letter-spacing:-.03em;line-height:1}
+.stat-label{font-size:12px;color:var(--white3);font-weight:400;letter-spacing:.08em;text-transform:uppercase;margin-top:6px;display:block}
+
+/* ── Section base ────────────────────────────────────── */
+.section{max-width:1200px;margin:0 auto;padding:100px 56px}
+.eyebrow{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.14em;color:var(--gold);margin-bottom:14px;display:block}
+.section-title{font-family:var(--serif);font-size:clamp(36px,4.5vw,58px);font-weight:300;line-height:1.08;letter-spacing:-.025em;color:var(--white);margin-bottom:18px}
+.section-title em{font-style:italic;color:var(--gold)}
+.section-sub{font-size:17px;font-weight:300;color:var(--white2);line-height:1.8;max-width:540px;margin-bottom:64px}
+
+/* ── Before / After ─────────────────────────────────── */
+.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px;border-radius:var(--r);overflow:hidden;border:1px solid var(--border)}
+.compare-col{background:var(--bg2);overflow:hidden}
+.compare-col:first-child{border-radius:var(--r) 0 0 var(--r)}
+.compare-col:last-child{border-radius:0 var(--r) var(--r) 0}
+.compare-head{padding:14px 22px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border)}
+.compare-badge{font-size:10.5px;font-weight:700;padding:3px 10px;border-radius:20px}
+.badge-bad{background:rgba(239,68,68,.14);color:#fca5a5;border:1px solid rgba(239,68,68,.22)}
+.badge-good{background:rgba(34,197,94,.12);color:#86efac;border:1px solid rgba(34,197,94,.2)}
+.compare-label{font-size:12px;color:var(--white3)}
+.compare-body{padding:22px;font-size:13.5px;line-height:1.9;color:var(--white2);font-weight:300}
+.compare-body.good{color:var(--white);background:rgba(34,197,94,.025);border-left:2px solid rgba(34,197,94,.3)}
+.hl{background:rgba(239,68,68,.15);padding:1px 4px;border-radius:3px;color:#fca5a5;font-style:normal}
+
+/* ── How it works ────────────────────────────────────── */
+.hiw-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:24px;padding:80px;margin:0 auto;max-width:1200px}
+.hiw-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:40px;position:relative}
+.hiw-steps::before{content:'';position:absolute;top:22px;left:22px;right:22px;height:1px;background:linear-gradient(90deg,var(--gold-border),transparent);pointer-events:none}
+.hiw-step{position:relative}
+.hiw-num{width:46px;height:46px;border:1px solid var(--gold-border);background:var(--gold-bg);border-radius:12px;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:20px;font-weight:600;color:var(--gold);margin-bottom:20px;position:relative;z-index:1;background:var(--bg2)}
+.hiw-title{font-family:var(--serif);font-size:20px;font-weight:400;color:var(--white);margin-bottom:8px;letter-spacing:-.01em}
+.hiw-desc{font-size:13px;font-weight:300;color:var(--white2);line-height:1.75}
+.hiw-desc strong{color:var(--white);font-weight:500}
+.hiw-tag{display:inline-flex;margin-top:10px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:3px 10px;border-radius:20px;background:var(--gold-bg);color:var(--gold);border:1px solid var(--gold-border)}
+
+/* ── Features ────────────────────────────────────────── */
+.features-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.feature-card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;padding:32px;transition:border-color .2s,box-shadow .2s;position:relative;overflow:hidden}
+.feature-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px}
+.feature-card:nth-child(1)::before{background:linear-gradient(90deg,var(--gold),transparent)}
+.feature-card:nth-child(2)::before{background:linear-gradient(90deg,var(--green),transparent)}
+.feature-card:nth-child(3)::before{background:linear-gradient(90deg,var(--blue),transparent)}
+.feature-card:nth-child(4)::before{background:linear-gradient(90deg,var(--purple),transparent)}
+.feature-card:hover{border-color:rgba(255,255,255,.12);box-shadow:0 8px 40px rgba(0,0,0,.3)}
+.feature-card.large{grid-column:span 2}
+.feature-icon{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:20px;font-size:20px}
+.fi-gold{background:rgba(201,168,76,.12);border:1px solid var(--gold-border)}
+.fi-green{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.2)}
+.fi-blue{background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.2)}
+.fi-purple{background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.2)}
+.feature-title{font-size:17px;font-weight:700;color:var(--white);margin-bottom:8px;letter-spacing:-.02em}
+.feature-desc{font-size:13.5px;color:var(--white2);line-height:1.75;font-weight:300;margin-bottom:16px}
+.feature-tags{display:flex;flex-wrap:wrap;gap:6px}
+.ftag{font-size:11px;font-weight:600;padding:3px 10px;border-radius:20px;background:rgba(255,255,255,.05);border:1px solid var(--border2);color:var(--white3)}
+
+/* Risk flags mini */
+.risk-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:16px}
+.risk-item{display:flex;align-items:center;gap:8px;font-size:11.5px;color:rgba(240,238,234,.6);padding:7px 10px;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:8px}
+.risk-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.risk-red{background:#f87171;box-shadow:0 0 5px rgba(248,113,113,.5)}
+.risk-amber{background:#facc15;box-shadow:0 0 5px rgba(250,204,21,.4)}
+
+/* Hooks section */
+.hooks-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1px;background:var(--border);border-radius:var(--r);overflow:hidden;border:1px solid var(--border)}
+.hook-card{background:var(--bg);padding:26px;transition:background .2s}
+.hook-card:hover{background:var(--bg2)}
+.hook-num{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--gold);opacity:.75;margin-bottom:6px}
+.hook-name{font-family:var(--serif);font-size:18px;font-weight:400;color:var(--white);margin-bottom:8px;letter-spacing:-.01em}
+.hook-quote{font-size:12.5px;font-weight:300;font-style:italic;color:var(--white2);line-height:1.65;border-left:2px solid var(--gold-border);padding-left:12px}
+
+/* ── Visual demo ─────────────────────────────────────── */
+.demo-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:24px;padding:80px;overflow:hidden;position:relative}
+.demo-wrap::after{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:50%;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.demo-inner{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
+.demo-panel{background:#0d1120;border:1px solid rgba(255,255,255,.1);border-radius:16px;overflow:hidden;box-shadow:0 40px 80px rgba(0,0,0,.6)}
+.demo-panel-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.025)}
+.demo-brand-row{display:flex;align-items:center;gap:9px}
+.demo-logo{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,#8a5f10,var(--gold));display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.demo-panel-title{font-size:12.5px;font-weight:700;color:var(--white)}
+.demo-hook-tag{font-size:10px;font-weight:700;color:var(--gold);background:rgba(201,168,76,.1);border:1px solid var(--gold-border);padding:2px 8px;border-radius:20px}
+.demo-close{width:20px;height:20px;border-radius:50%;background:rgba(255,255,255,.07);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--white3)}
+.demo-content{display:grid;grid-template-columns:1fr 180px;gap:0}
+.demo-letter{padding:18px;border-right:1px solid rgba(255,255,255,.07)}
+.demo-letter-text{font-size:11.5px;line-height:1.85;color:rgba(240,238,234,.75);margin-bottom:12px;font-weight:300}
+.demo-letter-bold{color:var(--white);font-weight:600}
+.demo-copy-row{display:flex;gap:6px}
+.demo-copy-btn{flex:1;padding:7px;background:var(--gold);border-radius:6px;font-size:10.5px;font-weight:700;color:#060a14;text-align:center}
+.demo-regen{padding:7px 10px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:6px;font-size:10.5px;color:var(--white2)}
+.demo-intel{padding:14px}
+.demo-intel-label{font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.3);margin-bottom:10px}
+.demo-score-row{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.demo-score-item{display:flex;flex-direction:column;gap:3px}
+.demo-score-name{font-size:10px;color:rgba(240,238,234,.45)}
+.demo-score-pct{font-size:10px;font-weight:700;color:#4ade80}
+.demo-bar{height:4px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden}
+.demo-bar-fill{height:100%;border-radius:2px;background:#4ade80}
+
+/* Chips */
+.demo-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:10px}
+.demo-chip{font-size:10px;padding:3px 8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:5px;color:rgba(240,238,234,.5)}
+
+/* ── Pricing ─────────────────────────────────────────── */
+.pricing-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:24px;padding:80px;margin:0 56px;position:relative;overflow:hidden}
+.pricing-wrap::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:60%;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.plan-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--r);padding:32px;position:relative;transition:border-color .2s,transform .2s,box-shadow .2s;cursor:default}
+.plan-card:hover{border-color:rgba(201,168,76,.3);transform:translateY(-3px);box-shadow:0 16px 48px rgba(0,0,0,.35)}
+.plan-card.featured{background:linear-gradient(160deg,rgba(201,168,76,.07),rgba(201,168,76,.02));border-color:rgba(201,168,76,.35)}
+.plan-card.featured:hover{border-color:rgba(201,168,76,.55)}
+.plan-pop{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--gold),var(--gold2));color:#060a14;font-size:9px;font-weight:800;padding:4px 14px;border-radius:20px;white-space:nowrap;letter-spacing:.07em;text-transform:uppercase}
+.plan-tier{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--white3);margin-bottom:10px}
+.plan-tier.gold{color:var(--gold)}
+.plan-price{font-family:var(--serif);font-size:52px;font-weight:300;color:var(--white);line-height:1;margin-bottom:4px;letter-spacing:-.04em}
+.plan-price.gold-price{color:var(--gold)}
+.plan-price span{font-size:18px;color:var(--white3)}
+.plan-billing{font-size:12.5px;color:var(--white3);margin-bottom:6px}
+.plan-value{font-size:12px;color:var(--green2);font-weight:600;margin-bottom:28px}
+.plan-sep{height:1px;background:var(--border);margin-bottom:22px}
+.plan-features{list-style:none;display:flex;flex-direction:column;gap:11px;margin-bottom:28px}
+.plan-features li{font-size:13px;font-weight:300;color:var(--white2);display:flex;gap:10px;align-items:flex-start}
+.pf-check{width:18px;height:18px;border-radius:50%;background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.28);color:#4ade80;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;flex-shrink:0;margin-top:1px}
+.pf-check.gold-check{background:rgba(201,168,76,.14);border-color:rgba(201,168,76,.35);color:var(--gold)}
+.plan-btn{display:block;width:100%;padding:13px;border-radius:10px;font-size:14px;font-weight:700;text-align:center;cursor:pointer;border:none;font-family:var(--sans);transition:all .2s;letter-spacing:-.01em}
+.plan-btn-outline{background:transparent;border:1px solid var(--border2);color:var(--white)}
+.plan-btn-outline:hover{border-color:var(--gold);color:var(--gold)}
+.plan-btn-gold{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#060a14}
+.plan-btn-gold:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.pricing-note{text-align:center;margin-top:28px;font-size:13px;font-weight:300;color:var(--white3)}
+.pricing-note strong{color:var(--white2)}
+
+/* ── Install CTA ─────────────────────────────────────── */
+.install-section{max-width:1200px;margin:0 auto;padding:0 56px 80px}
+.install-card{background:linear-gradient(135deg,rgba(201,168,76,.1) 0%,rgba(201,168,76,.03) 60%),var(--bg2);border:1px solid rgba(201,168,76,.28);border-radius:20px;padding:60px;display:flex;align-items:center;justify-content:space-between;gap:40px;position:relative;overflow:hidden}
+.install-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.install-text .tag{display:inline-flex;align-items:center;gap:6px;background:var(--gold-bg);border:1px solid var(--gold-border);border-radius:50px;padding:5px 14px;font-size:11px;font-weight:700;color:var(--gold);letter-spacing:.07em;text-transform:uppercase;margin-bottom:16px}
+.install-text h2{font-family:var(--serif);font-size:38px;font-weight:300;letter-spacing:-.025em;margin-bottom:10px;line-height:1.1}
+.install-text p{font-size:15px;color:var(--white2);font-weight:300;line-height:1.7;max-width:440px}
+.install-actions{display:flex;flex-direction:column;align-items:flex-end;gap:12px;flex-shrink:0}
+.btn-install{display:inline-flex;align-items:center;gap:10px;padding:16px 32px;background:var(--gold);color:#060a14;border-radius:50px;font-size:15px;font-weight:700;transition:all .2s;box-shadow:0 4px 30px rgba(201,168,76,.3);white-space:nowrap;cursor:pointer;border:none;font-family:var(--sans)}
+.btn-install:hover{background:var(--gold2);transform:translateY(-2px);box-shadow:0 8px 40px rgba(201,168,76,.4)}
+.install-note{font-size:12px;color:var(--white3)}
+.chrome-logo{width:20px;height:20px}
+
+/* ── FAQ ─────────────────────────────────────────────── */
+.faq-list{display:flex;flex-direction:column;gap:1px;background:var(--border);border-radius:var(--r);overflow:hidden;border:1px solid var(--border)}
+.faq-item{background:var(--bg)}
+.faq-btn{width:100%;text-align:left;padding:22px 28px;font-size:16px;font-weight:400;font-family:var(--serif);color:var(--white);background:none;border:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:16px;letter-spacing:-.01em;transition:background .15s}
+.faq-btn:hover{background:var(--bg2)}
+.faq-icon{width:26px;height:26px;border:1px solid var(--border2);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--gold);flex-shrink:0;transition:transform .2s,background .2s}
+.faq-item.open .faq-icon{transform:rotate(45deg);background:var(--gold-bg)}
+.faq-body{max-height:0;overflow:hidden;font-size:14px;font-weight:300;color:var(--white2);line-height:1.85;padding:0 28px;transition:max-height .35s ease,padding .35s}
+.faq-item.open .faq-body{max-height:240px;padding:0 28px 22px}
+
+/* ── CTA Section ─────────────────────────────────────── */
+.cta-wrap{max-width:1200px;margin:0 auto;padding:0 56px 100px}
+.cta-inner{background:linear-gradient(135deg,rgba(201,168,76,.1),rgba(201,168,76,.03));border:1px solid rgba(201,168,76,.22);border-radius:24px;padding:80px 60px;text-align:center;position:relative;overflow:hidden}
+.cta-inner::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:50%;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+.cta-inner h2{font-family:var(--serif);font-size:clamp(36px,4vw,60px);font-weight:300;letter-spacing:-.03em;margin-bottom:14px;line-height:1.05}
+.cta-inner p{font-size:17px;font-weight:300;color:var(--white2);margin-bottom:36px}
+.cta-note{font-size:12px;color:var(--white3);margin-top:16px}
+
+/* ── Footer ──────────────────────────────────────────── */
+footer{background:var(--bg2);border-top:1px solid var(--border);padding:40px 56px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px}
+.footer-logo{display:flex;align-items:center;gap:9px}
+.footer-logo-icon{width:28px;height:28px;background:linear-gradient(135deg,#8a5f10,var(--gold));border-radius:8px;display:flex;align-items:center;justify-content:center}
+.footer-logo-name{font-family:var(--serif);font-size:17px;font-weight:600;color:var(--white)}
+.footer-links{display:flex;gap:28px;list-style:none;flex-wrap:wrap}
+.footer-links a{font-size:13px;color:var(--white3);transition:color .2s}
+.footer-links a:hover{color:var(--white2)}
+.footer-copy{font-size:12px;color:var(--white3)}
+
+/* ── Responsive ──────────────────────────────────────── */
+@media(max-width:960px){
+  nav{padding:0 24px}
+  .nav-links{display:none}
+  .hero{padding:100px 24px 60px}
+  .hero-inner{grid-template-columns:1fr;gap:40px}
+  .hero-visual{display:none}
+  .stats-bar{gap:32px;padding:28px 24px}
+  .section{padding:70px 24px}
+  .hiw-wrap{padding:48px 28px;margin:0 24px}
+  .hiw-steps{grid-template-columns:1fr 1fr;gap:28px}
+  .hiw-steps::before{display:none}
+  .features-grid{grid-template-columns:1fr}
+  .feature-card.large{grid-column:span 1}
+  .demo-wrap{padding:40px 28px;margin:0 24px}
+  .demo-inner{grid-template-columns:1fr;gap:36px}
+  .pricing-wrap{margin:0 24px;padding:48px 28px}
+  .pricing-grid{grid-template-columns:1fr}
+  .install-section{padding:0 24px 60px}
+  .install-card{flex-direction:column;padding:40px 28px;gap:28px}
+  .install-actions{align-items:flex-start}
+  .cta-wrap{padding:0 24px 60px}
+  .cta-inner{padding:48px 28px}
+  footer{padding:28px 24px;flex-direction:column;align-items:flex-start}
+  .faq-list{margin:0}
+  .compare-grid{grid-template-columns:1fr}
+  .compare-col:first-child{border-radius:var(--r) var(--r) 0 0}
+  .compare-col:last-child{border-radius:0 0 var(--r) var(--r)}
+}
 </style>
 <script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
 <script>
   Paddle.Environment.set('sandbox');
   Paddle.Initialize({ token: 'test_774f670464415caafd3f6b20160' });
-
   const PRICE_IDS = {
     starter: 'pri_01kqatq4f1st85p5q2xgx792qj',
     pro:     'pri_01kqats15v2v1kcx355gw24s5j',
     agency:  'pri_01kqatwfp1fr3ch8xq32qpmdnt'
   };
-
   function openPaddleCheckout(plan) {
     Paddle.Checkout.open({
       items: [{ priceId: PRICE_IDS[plan], quantity: 1 }],
-      settings: {
-        displayMode: 'overlay',
-        theme: 'dark',
-        locale: 'en',
-      }
+      settings: { displayMode: 'overlay', theme: 'dark', locale: 'en' }
     });
   }
 </script>
 </head>
 <body>
+
+<!-- ── Navigation ─────────────────────────────────── -->
 <nav>
-  <a href="#" class="nl"><div class="nm" style="background:none;padding:0;overflow:visible;">
-  <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect width="32" height="32" rx="8" fill="url(#ng)"/>
-    <path d="M10 20.5C10 20.5 11.5 22 14 22C16.5 22 18 20.5 18 18.5C18 16.5 16 15.5 14 14.5C12 13.5 10.5 12.5 10.5 10.5C10.5 8.5 12 7 14.5 7C17 7 18 8.5 18 8.5" stroke="white" stroke-width="2" stroke-linecap="round"/>
-    <path d="M16 9L22 9C22 9 24 11 22 13C24 13 26 15 24 17C25 17 26 19 24 21C25 21 25 23 23 24L16 24" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-    <defs>
-      <linearGradient id="ng" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
-        <stop offset="0%" stop-color="#c9a84c"/>
-        <stop offset="100%" stop-color="#e8c878"/>
-      </linearGradient>
-    </defs>
-  </svg>
-</div><span class="nn">Snag AI</span></a>
-  <ul class="nlinks">
+  <a href="#" class="nav-logo">
+    <div class="nav-icon">
+      <svg width="18" height="18" viewBox="0 0 32 32" fill="none"><path d="M10 20.5C10 20.5 11.5 22 14 22C16.5 22 18 20.5 18 18.5C18 16.5 16 15.5 14 14.5C12 13.5 10.5 12.5 10.5 10.5C10.5 8.5 12 7 14.5 7C17 7 18 8.5 18 8.5" stroke="white" stroke-width="2.2" stroke-linecap="round"/><path d="M16 9L22 9C22 9 24 11 22 13C24 13 26 15 24 17C25 17 26 19 24 21C25 21 25 23 23 24L16 24" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <span class="nav-name">Snag AI</span>
+  </a>
+  <ul class="nav-links">
     <li><a href="#how">How it works</a></li>
+    <li><a href="#features">Features</a></li>
     <li><a href="#hooks">Hooks</a></li>
     <li><a href="#pricing">Pricing</a></li>
     <li><a href="#faq">FAQ</a></li>
-    <li><a href="#pricing" class="ncta">Snag jobs free →</a></li>
   </ul>
+  <div class="nav-right">
+    <a href="#install" class="btn-chrome">
+      <span class="btn-chrome-dot"></span>
+      Add to Chrome
+    </a>
+    <a href="#pricing" class="btn-nav-cta">Start free →</a>
+  </div>
 </nav>
 
-<div style="max-width:1180px;margin:0 auto">
-  <div class="hero">
+<!-- ── Hero ───────────────────────────────────────── -->
+<section class="hero">
+  <div class="hero-bg">
+    <div class="hero-glow1"></div>
+    <div class="hero-glow2"></div>
+    <div class="hero-grid"></div>
+    <div class="particles" id="particles"></div>
+  </div>
+  <div class="hero-inner">
     <div>
-      <div class="htag">AI-Powered · Chrome Extension · Upwork</div>
-      <div style="margin-bottom:24px;display:inline-flex;align-items:center;gap:14px;">
-        <svg width="52" height="52" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect width="52" height="52" rx="14" fill="url(#hg)"/>
-          <path d="M16 33C16 33 18.5 36 23 36C27.5 36 30 33 30 29.5C30 26 26 24 22 22C18 20 15.5 17.5 15.5 14C15.5 10.5 18 8 22.5 8C27 8 29 11 29 11" stroke="white" stroke-width="3" stroke-linecap="round"/>
-          <path d="M25 11H36C36 11 40 15 36 19C40 19 43 23 39 27C41 27 43 31 39 34C41 34 41 38 37 40H25" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-          <circle cx="40" cy="12" r="4" fill="#22c55e"/>
-          <defs>
-            <linearGradient id="hg" x1="0" y1="0" x2="52" y2="52" gradientUnits="userSpaceOnUse">
-              <stop offset="0%" stop-color="#b8860b"/>
-              <stop offset="50%" stop-color="#c9a84c"/>
-              <stop offset="100%" stop-color="#e8c878"/>
-            </linearGradient>
-          </defs>
-        </svg>
-        <span style="font-family:var(--ff-d);font-size:32px;font-weight:600;color:var(--white);letter-spacing:-.02em;">Snag AI</span>
-      </div>
+      <div class="hero-tag"><span class="hero-tag-dot"></span>Chrome Extension · Upwork · AI-Powered</div>
       <h1>Snag the job<br><em>before</em><br><strong>anyone else.</strong></h1>
-      <p class="hsub">Snag AI reads the job, picks the perfect hook, and writes a personalised proposal while you're still reading. One click. Ten seconds.</p>
-      <div class="hbtns">
-        <a href="#pricing" class="bp">Snag 2 free proposals →</a>
-        <a href="#how" class="bg">See how it works ↓</a>
+      <p class="hero-sub">Snag AI reads the Upwork job, picks the perfect hook, matches your skills, and writes a personalised winning proposal in 10 seconds. One click. That's it.</p>
+      <div class="hero-btns">
+        <a href="#pricing" class="btn-primary">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c0 0 .7 5.8 2.1 7.2C15.5 10.6 21 12 21 12s-5.5 1.4-6.9 2.8C12.7 16.2 12 22 12 22s-.7-5.8-2.1-7.2C8.5 13.4 3 12 3 12s5.5-1.4 6.9-2.8C11.3 7.8 12 2 12 2z"/></svg>
+          Snag 2 free proposals
+        </a>
+        <a href="#how" class="btn-ghost">See how it works ↓</a>
       </div>
-      <div class="hpf">
-        <div class="avs">
-          <div class="av" style="background:#6366f1">A</div>
-          <div class="av" style="background:#c9a84c">M</div>
-          <div class="av" style="background:#22c55e">S</div>
-          <div class="av" style="background:#ef4444">K</div>
+      <div class="hero-social">
+        <div class="avatars">
+          <div class="avatar" style="background:#6366f1">A</div>
+          <div class="avatar" style="background:#c9a84c">M</div>
+          <div class="avatar" style="background:#22c55e">S</div>
+          <div class="avatar" style="background:#ef4444">K</div>
         </div>
-        <span>Freelancers winning more jobs with Snag AI</span>
+        <span>Freelancers landing more jobs with Snag AI</span>
       </div>
     </div>
-    <div class="hv">
-      <div class="mbr">
-        <div class="mbar"><div class="mdots"><div class="mdot"></div><div class="mdot"></div><div class="mdot"></div></div><div class="murl">upwork.com/jobs/Flutter-Developer_~022...</div></div>
-        <div class="mbody">
-          <div class="pc">
-            <div class="pch"><div class="pcb"><div class="pcl" style="background:none;padding:0;">
-  <svg width="26" height="26" viewBox="0 0 32 32" fill="none">
-    <rect width="32" height="32" rx="7" fill="url(#mg)"/>
-    <path d="M10 20.5C10 20.5 11.5 22 14 22C16.5 22 18 20.5 18 18.5C18 16.5 16 15.5 14 14.5C12 13.5 10.5 12.5 10.5 10.5C10.5 8.5 12 7 14.5 7C17 7 18 8.5 18 8.5" stroke="white" stroke-width="2" stroke-linecap="round"/>
-    <path d="M16 9L22 9C22 9 24 11 22 13C24 13 26 15 24 17C25 17 26 19 24 21C25 21 25 23 23 24L16 24" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-    <defs><linearGradient id="mg" x1="0" y1="0" x2="32" y2="32"><stop stop-color="#c9a84c"/><stop offset="1" stop-color="#e8c878"/></linearGradient></defs>
-  </svg>
-</div><div><div class="pct">Snag AI</div><div class="pcs">AI proposal writer</div></div></div><span style="font-size:12px;color:#9ca3af">✕</span></div>
-            <div class="pchk"><div class="pckl">Proof + Call Hook</div><div class="pckd">Led with a shipped result, urgency close</div></div>
-            <div class="pclt">
-              <div class="ln a" style="width:100%"></div><div class="ln" style="width:88%"></div><div class="ln" style="width:95%"></div>
-              <div class="ln" style="width:75%;margin-top:10px"></div><div class="ln" style="width:100%"></div><div class="ln" style="width:82%"></div>
-              <div class="ln" style="width:60%;margin-top:10px"></div><div class="ln" style="width:90%"></div>
+    <div class="hero-visual">
+      <div class="browser-frame">
+        <div class="browser-bar">
+          <div class="browser-dots"><div class="browser-dot"></div><div class="browser-dot"></div><div class="browser-dot"></div></div>
+          <div class="browser-url">
+            <span class="browser-url-lock">🔒</span>
+            upwork.com/jobs/Flutter-Developer_~022b9a4f...
+          </div>
+        </div>
+        <div class="browser-body" style="padding:0">
+          <div class="ext-panel">
+            <div class="ext-head">
+              <div class="ext-brand">
+                <div class="ext-logo-sm">
+                  <svg width="12" height="12" viewBox="0 0 32 32" fill="none"><path d="M10 20.5C10 20.5 11.5 22 14 22C16.5 22 18 20.5 18 18.5C18 16.5 16 15.5 14 14.5C12 13.5 10.5 12.5 10.5 10.5C10.5 8.5 12 7 14.5 7C17 7 18 8.5 18 8.5" stroke="white" stroke-width="2.5" stroke-linecap="round"/><path d="M16 9L22 9C22 9 24 11 22 13C24 13 26 15 24 17C25 17 26 19 24 21C25 21 25 23 23 24L16 24" stroke="white" stroke-width="2.2" stroke-linecap="round"/></svg>
+                </div>
+                <span class="ext-title-sm">Snag AI</span>
+              </div>
+              <span class="ext-hook-label">Hook: Proof of Result</span>
             </div>
-            <div class="pcf"><button class="pcc">Copy proposal</button><button class="pcr">↺ Rewrite</button></div>
+            <div class="ext-body">
+              <div class="ext-scores">
+                <div class="ext-score-card">
+                  <div class="ext-score-label">Win probability</div>
+                  <div class="ext-score-val" style="color:#4ade80">78%</div>
+                </div>
+                <div class="ext-score-card">
+                  <div class="ext-score-label">Profile match</div>
+                  <div class="ext-score-val" style="color:#c9a84c">85%</div>
+                </div>
+              </div>
+              <div class="ext-proposal-lines">
+                <div class="ext-line writing" style="width:100%"></div>
+                <div class="ext-line" style="width:92%"></div>
+                <div class="ext-line" style="width:85%"></div>
+                <div class="ext-line writing" style="width:78%;animation-delay:.3s"></div>
+                <div class="ext-line" style="width:95%"></div>
+                <div class="ext-line" style="width:60%"></div>
+              </div>
+              <div class="ext-actions">
+                <div class="ext-copy-btn">Copy proposal</div>
+                <div class="ext-regen-btn">↻ Rewrite</div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-      <button class="fw">✦ Write Proposal <span class="fwd"></span></button>
+      <button class="write-btn-float">✦ Write Proposal <span class="write-dot"></span></button>
+    </div>
+  </div>
+</section>
+
+<!-- ── Stats ──────────────────────────────────────── -->
+<div class="stats-bar">
+  <div class="stat rv"><span class="stat-num">10s</span><span class="stat-label">Generation time</span></div>
+  <div class="stat rv"><span class="stat-num">7</span><span class="stat-label">Proven hook types</span></div>
+  <div class="stat rv"><span class="stat-num">10</span><span class="stat-label">Risk flags checked</span></div>
+  <div class="stat rv"><span class="stat-num">100%</span><span class="stat-label">Personalised per job</span></div>
+</div>
+
+<!-- ── Before / After ─────────────────────────────── -->
+<div class="section" id="compare">
+  <span class="eyebrow rv">The difference</span>
+  <h2 class="section-title rv">Clients skim 50 proposals.<br>Two lines <em>decide everything.</em></h2>
+  <p class="section-sub rv">The average client spends 7 seconds on a proposal before deciding to read more. Snag AI writes the opening that makes them stop scrolling.</p>
+  <div class="compare-grid rv">
+    <div class="compare-col">
+      <div class="compare-head"><span class="compare-badge badge-bad">Typical proposal</span><span class="compare-label">What 90% of freelancers send</span></div>
+      <div class="compare-body"><em class="hl">Dear Sir/Madam,</em> I am writing to express my interest. I am a <em class="hl">passionate and dedicated</em> Flutter developer with <em class="hl">extensive experience</em> in similar projects. I <em class="hl">am confident I would be a great fit</em> for this role. Please review my profile and <em class="hl">I look forward to hearing from you.</em></div>
+    </div>
+    <div class="compare-col">
+      <div class="compare-head"><span class="compare-badge badge-good">Snag AI proposal</span><span class="compare-label">Written in 10 seconds. One click.</span></div>
+      <div class="compare-body good">I shipped <strong>Shypie</strong> — a gig-driver platform — to both stores with real-time tracking and Stripe. 1,200 daily active users. I'd like to do the same for you.<br><br>Flutter, Supabase, and Stripe is my daily stack. Your frontend being complete means we go straight to backend. I can start today and deliver within your deadline.<br><br>Happy to jump on a quick call. <strong>100% JSS · Top Rated</strong></div>
     </div>
   </div>
 </div>
 
-<div class="stbar">
-  <div class="st"><span class="stn">10s</span><span class="stl">Generation time</span></div>
-  <div class="st"><span class="stn">7</span><span class="stl">Proven hook types</span></div>
-  <div class="st"><span class="stn">0</span><span class="stl">Copy-pastes needed</span></div>
-  <div class="st"><span class="stn">100%</span><span class="stl">Personalised to each job</span></div>
-</div>
-
-<div class="sec" id="compare">
-  <span class="ey rv">Before vs After</span>
-  <h2 class="st2 rv">The difference is <em>obvious</em></h2>
-  <p class="ss rv">Clients skim 50 proposals in minutes. Two lines decide everything.</p>
-  <div class="bag rv">
-    <div class="bc"><div class="bch"><span class="bb bb1">Typical proposal</span><span class="bd2">What 90% of freelancers send</span></div><div class="bbo"><span class="hl">Dear Sir/Madam,</span> I am writing to express my interest. I am a <span class="hl">passionate and dedicated</span> Flutter developer with <span class="hl">extensive experience</span>. I have worked on many similar projects and <span class="hl">I am confident I would be a great fit.</span> Please review my profile and <span class="hl">I look forward to hearing from you.</span></div></div>
-    <div class="bc"><div class="bch"><span class="bb bb2">Snag AI proposal</span><span class="bd2">Written in 10 seconds. One click.</span></div><div class="bbo g">I've spent the last three months doing exactly this — taking over a Flutter app mid-build and shipping it to production on iOS, Android, and web. The codebase was messy. Fixed it. Supabase queries were slow. Optimized them.<br><br>I can start today. First thing — audit what's blocking launch, then prioritize the critical path. No fluff, just shipping.<br><br>Want to jump on a quick call this week?</div></div>
+<!-- ── How it works ───────────────────────────────── -->
+<div style="padding:0 56px;max-width:1200px;margin:0 auto" id="how">
+  <div class="hiw-wrap rv">
+    <span class="eyebrow">How it works</span>
+    <h2 class="section-title" style="margin-bottom:12px">Four steps. <em>Ten seconds.</em></h2>
+    <p class="section-sub" style="margin-bottom:52px">Snag AI lives inside Upwork. No tab switching. No copy-pasting. No thinking required.</p>
+    <div class="hiw-steps">
+      <div class="hiw-step rv">
+        <div class="hiw-num">1</div>
+        <div class="hiw-title">Set up in 3 minutes</div>
+        <p class="hiw-desc">Add your Upwork profile URL in the extension. Snag AI visits it and reads your <strong>name, JSS, tier, skills, rate, and portfolio</strong> automatically. Nothing to fill in manually.</p>
+        <span class="hiw-tag">One-time setup</span>
+      </div>
+      <div class="hiw-step rv2">
+        <div class="hiw-num">2</div>
+        <div class="hiw-title">Add your subscription email</div>
+        <p class="hiw-desc">Go to <strong>Settings → Account Email</strong> in the extension. Enter the same email you used to subscribe. This activates your plan and unlocks your proposal quota.</p>
+        <span class="hiw-tag">Activates your plan</span>
+      </div>
+      <div class="hiw-step rv2" style="transition-delay:.1s">
+        <div class="hiw-num">3</div>
+        <div class="hiw-title">Open any Upwork job</div>
+        <p class="hiw-desc">Browse normally. Snag AI checks the job — posting time, competition, client hire rate, risk flags — and shows you a <strong>Win Probability score</strong> before you spend a Connect.</p>
+        <span class="hiw-tag">Smart job analysis</span>
+      </div>
+      <div class="hiw-step rv2" style="transition-delay:.2s">
+        <div class="hiw-num">4</div>
+        <div class="hiw-title">Click once, win jobs</div>
+        <p class="hiw-desc">Click <strong>Write Proposal</strong>. Snag AI reads the job, picks the best hook, matches your portfolio, writes the proposal. Edit if you want. Copy. Submit. Done.</p>
+        <span class="hiw-tag">10 seconds to submit</span>
+      </div>
+    </div>
   </div>
 </div>
 
-<div class="hiw" id="how">
-  <div style="max-width:1180px;margin:0 auto">
-    <span class="ey rv">How it works</span>
-    <h2 class="st2 rv">Three steps. <em>Ten seconds.</em></h2>
-    <p class="ss rv">Snag AI lives inside Upwork. No tab switching. No copy-pasting.</p>
-    <div class="sps">
-      <div class="rv"><div class="spn">1</div><div class="spt">Set up once</div><p class="spd">Add your name, skills, and portfolio links in 2 minutes. Snag AI remembers everything and uses it in every proposal.</p></div>
-      <div class="rv"><div class="spn">2</div><div class="spt">Open any job</div><p class="spd">Browse Upwork normally. The Snag AI button appears automatically in the bottom-right corner of every job page.</p></div>
-      <div class="rv"><div class="spn">3</div><div class="spt">Click once, win jobs</div><p class="spd">Snag AI reads the job, picks the best hook, matches your skills, writes the proposal. Edit if needed. Copy. Submit.</p></div>
+<!-- ── Features ───────────────────────────────────── -->
+<div class="section" id="features">
+  <span class="eyebrow rv">Features</span>
+  <h2 class="section-title rv">Everything you need to <em>win faster.</em></h2>
+  <p class="section-sub rv">Not just a proposal writer. A full intelligence layer on top of Upwork.</p>
+  <div class="features-grid">
+
+    <div class="feature-card rv">
+      <div class="feature-icon fi-gold">🎯</div>
+      <div class="feature-title">Win Probability Scoring</div>
+      <p class="feature-desc">Before you write a single word, Snag AI scores the job based on posting time, number of proposals, client hire rate, and interviews in progress. Never waste a Connect on a job that's already decided.</p>
+      <div class="feature-tags">
+        <span class="ftag">Real-time scoring</span>
+        <span class="ftag">Posted time signal</span>
+        <span class="ftag">Profile match</span>
+      </div>
+    </div>
+
+    <div class="feature-card rv">
+      <div class="feature-icon fi-red">🚩</div>
+      <div class="feature-title">10 Risk Flags — shown before you apply</div>
+      <p class="feature-desc">Red flags fire instantly if the job is already closed, the client has never paid, the payment isn't verified, or competition is too high. Skip bad jobs. Spend Connects only where they count.</p>
+      <div class="risk-grid">
+        <div class="risk-item"><div class="risk-dot risk-red"></div>Already hired</div>
+        <div class="risk-item"><div class="risk-dot risk-red"></div>50+ proposals sent</div>
+        <div class="risk-item"><div class="risk-dot risk-red"></div>$0 client spending</div>
+        <div class="risk-item"><div class="risk-dot risk-red"></div>Payment unverified</div>
+        <div class="risk-item"><div class="risk-dot risk-amber"></div>Low hire rate</div>
+        <div class="risk-item"><div class="risk-dot risk-amber"></div>3+ interviewing</div>
+      </div>
+    </div>
+
+    <div class="feature-card rv">
+      <div class="feature-icon fi-green">✦</div>
+      <div class="feature-title">AI Proposals That Sound Like You</div>
+      <p class="feature-desc">Every proposal uses your actual skills, JSS, tier badge, and portfolio URLs. Snag AI detects hidden screening keywords ("include the word X") and adds them naturally. Refine with one-click chips or a custom prompt.</p>
+      <div class="feature-tags">
+        <span class="ftag">7 hook types</span>
+        <span class="ftag">Screening keywords</span>
+        <span class="ftag">Portfolio auto-matched</span>
+        <span class="ftag">Live editing</span>
+      </div>
+    </div>
+
+    <div class="feature-card rv">
+      <div class="feature-icon fi-blue">📊</div>
+      <div class="feature-title">Profile Strength & Auto-Sync</div>
+      <p class="feature-desc">Snag AI reads your Upwork profile automatically — skills, tier, earnings, employment history. Add portfolio links once and they appear in every relevant proposal. A profile strength score shows exactly what to improve.</p>
+      <div class="feature-tags">
+        <span class="ftag">Auto-sync from Upwork</span>
+        <span class="ftag">Portfolio matching</span>
+        <span class="ftag">Strength score</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ── Proposal visual demo ───────────────────────── -->
+<div style="max-width:1200px;margin:0 auto;padding:0 56px 100px">
+  <div class="demo-wrap rv">
+    <div class="demo-inner">
+      <div>
+        <span class="eyebrow" style="margin-bottom:12px">The proposal panel</span>
+        <h2 class="section-title" style="font-size:clamp(28px,3.5vw,44px);margin-bottom:16px">Proposal, scores &amp;<br><em>writing tips — in one view.</em></h2>
+        <p style="font-size:14px;color:var(--white2);line-height:1.8;margin-bottom:24px;font-weight:300">The panel opens on any Upwork job. On the left, your editable proposal. On the right, win probability, profile match, and actionable writing tips based on the client's location, budget, and competition level.</p>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:10px">
+          <li style="display:flex;align-items:flex-start;gap:10px;font-size:13.5px;color:var(--white2);font-weight:300"><span style="color:var(--gold);font-weight:700;flex-shrink:0">✓</span>Edit the proposal directly before copying</li>
+          <li style="display:flex;align-items:flex-start;gap:10px;font-size:13.5px;color:var(--white2);font-weight:300"><span style="color:var(--gold);font-weight:700;flex-shrink:0">✓</span>Refine chips: Shorter · More confident · Add rate</li>
+          <li style="display:flex;align-items:flex-start;gap:10px;font-size:13.5px;color:var(--white2);font-weight:300"><span style="color:var(--gold);font-weight:700;flex-shrink:0">✓</span>Clarifying questions for every screening question</li>
+          <li style="display:flex;align-items:flex-start;gap:10px;font-size:13.5px;color:var(--white2);font-weight:300"><span style="color:var(--gold);font-weight:700;flex-shrink:0">✓</span>Word count indicator — keep it under 130 to win</li>
+          <li style="display:flex;align-items:flex-start;gap:10px;font-size:13.5px;color:var(--white2);font-weight:300"><span style="color:var(--gold);font-weight:700;flex-shrink:0">✓</span>Drag, resize, and reposition the panel anywhere</li>
+        </ul>
+      </div>
+      <div class="demo-panel">
+        <div class="demo-panel-head">
+          <div class="demo-brand-row">
+            <div class="demo-logo">
+              <svg width="13" height="13" viewBox="0 0 32 32" fill="none"><path d="M10 20.5C10 20.5 11.5 22 14 22C16.5 22 18 20.5 18 18.5C18 16.5 16 15.5 14 14.5C12 13.5 10.5 12.5 10.5 10.5C10.5 8.5 12 7 14.5 7C17 7 18 8.5 18 8.5" stroke="white" stroke-width="2.5" stroke-linecap="round"/><path d="M16 9L22 9C22 9 24 11 22 13C24 13 26 15 24 17C25 17 26 19 24 21C25 21 25 23 23 24L16 24" stroke="white" stroke-width="2.2" stroke-linecap="round"/></svg>
+            </div>
+            <span class="demo-panel-title">Snag AI</span>
+            <span class="demo-hook-tag">Hook: Proof</span>
+          </div>
+          <span class="demo-close">✕</span>
+        </div>
+        <div class="demo-content">
+          <div class="demo-letter">
+            <div class="demo-letter-text">Hi <span class="demo-letter-bold">Ahmed</span>,<br><br>I shipped <span class="demo-letter-bold">Shypie</span> to both stores with real-time tracking and Stripe, serving real gig drivers daily. I'd like to do the same for you.<br><br>Flutter and Supabase is my daily stack. Your frontend being complete means we skip straight to backend.<br><br><span class="demo-letter-bold">Relevant work:</span><br>• Shypie — Flutter, Stripe, 1,200 daily users<br>• Al-Falah — App Store &amp; Play Store live<br><br>Happy to jump on a quick call today.<br><span class="demo-letter-bold">100% JSS · Top Rated</span><br>Noman</div>
+            <div class="demo-copy-row">
+              <div class="demo-copy-btn">Copy proposal</div>
+              <div class="demo-regen">↻ Rewrite</div>
+            </div>
+            <div class="demo-chips">
+              <div class="demo-chip">Shorter</div>
+              <div class="demo-chip">More confident</div>
+              <div class="demo-chip">Add my rate</div>
+            </div>
+          </div>
+          <div class="demo-intel">
+            <div class="demo-intel-label">Match scores</div>
+            <div class="demo-score-row">
+              <div class="demo-score-item">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
+                  <span class="demo-score-name">Win probability</span>
+                  <span class="demo-score-pct">78%</span>
+                </div>
+                <div class="demo-bar"><div class="demo-bar-fill" style="width:78%"></div></div>
+              </div>
+              <div class="demo-score-item">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:3px">
+                  <span class="demo-score-name">Profile match</span>
+                  <span class="demo-score-pct" style="color:#c9a84c">85%</span>
+                </div>
+                <div class="demo-bar"><div class="demo-bar-fill" style="width:85%;background:#c9a84c"></div></div>
+              </div>
+            </div>
+            <div class="demo-intel-label" style="margin-top:12px">Writing tips</div>
+            <div style="display:flex;flex-direction:column;gap:5px">
+              <div style="font-size:10px;color:rgba(74,222,128,.8);line-height:1.5;display:flex;gap:5px"><span style="color:#4ade80;flex-shrink:0">●</span>Low competition — apply now</div>
+              <div style="font-size:10px;color:rgba(250,204,21,.8);line-height:1.5;display:flex;gap:5px"><span style="color:#facc15;flex-shrink:0">●</span>Client is in Eastern time</div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
 
-<div class="sec" id="hooks">
-  <span class="ey rv">The hook system</span>
-  <h2 class="st2 rv">7 proven <em>opening hooks</em></h2>
-  <p class="ss rv">Snag AI picks the right hook automatically. The first two lines decide whether a client reads the rest.</p>
-  <div class="hkg rv">
-    <div class="hk"><div class="hkn">Hook 01</div><div class="hkt">Proof of Success</div><div class="hkq">"I saved my past client [X amount]. I'd like to do the same for you."</div></div>
-    <div class="hk"><div class="hkn">Hook 02</div><div class="hkt">Relatability</div><div class="hkq">"I've had the same issue. This is how I fixed it."</div></div>
-    <div class="hk"><div class="hkn">Hook 03</div><div class="hkt">Guarantee</div><div class="hkq">"I can complete X in Y timeframe — backed by a guarantee."</div></div>
-    <div class="hk"><div class="hkn">Hook 04</div><div class="hkt">Extra Value</div><div class="hkq">"I'll not only solve the issue — I'll include one free follow-up."</div></div>
-    <div class="hk"><div class="hkn">Hook 05</div><div class="hkt">Growth-Oriented</div><div class="hkq">"Let's jump on a call today. I can walk you through this in 15 minutes."</div></div>
-    <div class="hk"><div class="hkn">Hook 06</div><div class="hkt">Quick Proof</div><div class="hkq">"Here are my numbers: 50+ projects, 98% satisfaction, 5 years shipping."</div></div>
-    <div class="hk"><div class="hkn">Hook 07</div><div class="hkt">Client-Centered</div><div class="hkq">"My understanding is that you need [precise read of their problem]."</div></div>
+<!-- ── 7 Hooks ─────────────────────────────────────── -->
+<div class="section" id="hooks">
+  <span class="eyebrow rv">The hook system</span>
+  <h2 class="section-title rv">7 proven <em>opening hooks.</em></h2>
+  <p class="section-sub rv">The first 160 characters of a proposal decide if a client reads on. Snag AI picks the right hook automatically based on the job type, budget, and client signals.</p>
+  <div class="hooks-grid rv">
+    <div class="hook-card"><div class="hook-num">Hook 01</div><div class="hook-name">Proof of Success</div><div class="hook-quote">"I shipped [specific result] for [client type]. I'd like to do the same for you." Uses your top matched portfolio project.</div></div>
+    <div class="hook-card"><div class="hook-num">Hook 02</div><div class="hook-name">Relatability</div><div class="hook-quote">"I've done exactly this before. Here's how I'd approach yours:" Great for long-term and ongoing roles.</div></div>
+    <div class="hook-card"><div class="hook-num">Hook 03</div><div class="hook-name">Guarantee</div><div class="hook-quote">"I can deliver X in Y timeframe at $Z — backed by 4 live apps." Used automatically on fixed-price jobs.</div></div>
+    <div class="hook-card"><div class="hook-num">Hook 04</div><div class="hook-name">Extra Value</div><div class="hook-quote">"I'll not only build your features — I'll also set up crash monitoring and update workflows."</div></div>
+    <div class="hook-card"><div class="hook-num">Hook 05</div><div class="hook-name">Quick Call</div><div class="hook-quote">"Let's jump on a call today — I'll walk you through my exact approach in 15 minutes."</div></div>
+    <div class="hook-card"><div class="hook-num">Hook 06</div><div class="hook-name">By the Numbers</div><div class="hook-quote">"Here are my numbers: 4 apps shipped, 100% JSS, 30+ hrs available." Used when your profile stats are strong.</div></div>
+    <div class="hook-card"><div class="hook-num">Hook 07</div><div class="hook-name">Client First</div><div class="hook-quote">"My understanding: you need a developer who owns the full lifecycle — not just code." For large-budget jobs.</div></div>
   </div>
 </div>
 
-<div class="pw" id="pricing">
-  <div style="max-width:1180px;margin:0 auto">
-    <span class="ey rv">Pricing</span>
-    <h2 class="st2 rv">Start free. <em>Pay when it works.</em></h2>
-    <p class="ss rv">2 free proposals — no card needed. Subscribe when you're ready. Cancel anytime.</p>
-    <div class="pg">
-      <div class="pca rv">
-        <div class="ptr">Starter</div>
-        <div class="ppr">$19<span>/mo</span></div>
-        <div class="pper">billed monthly</div>
-        <div class="psv">Base rate · $0.127 per proposal</div>
-        <ul class="pfl"><li>150 proposals per month</li><li>All 7 hook types</li><li>Smart skill matching</li><li>Fixed + hourly pricing</li><li>Portfolio links</li></ul>
-        <button class="pbtn pbo" onclick="openPaddleCheckout('starter')">Start free trial →</button>
-      </div>
-      <div class="pca ft rv">
-        <div class="pop">SAVE 45% / PROPOSAL</div>
-        <div class="ptr">Pro</div>
-        <div class="ppr">$39<span>/mo</span></div>
-        <div class="pper">billed monthly</div>
-        <div class="psv">45% cheaper per proposal vs Starter</div>
-        <ul class="pfl"><li>400 proposals per month</li><li>All 7 hook types</li><li>Smart skill matching</li><li>Fixed + hourly pricing</li><li>Priority support</li></ul>
-        <button class="pbtn pbg" onclick="openPaddleCheckout('pro')">Start free trial →</button>
-      </div>
-      <div class="pca rv">
-        <div class="ptr">Agency</div>
-        <div class="ppr">$69<span>/mo</span></div>
-        <div class="pper">billed monthly</div>
-        <div class="psv">57% cheaper per proposal vs Starter</div>
-        <ul class="pfl"><li>900 proposals per month</li><li>All 7 hook types</li><li>Smart skill matching</li><li>Fixed + hourly pricing</li><li>Priority support + analytics</li></ul>
-        <button class="pbtn pbo" onclick="openPaddleCheckout('agency')">Start free trial →</button>
-      </div>
+<!-- ── Pricing ─────────────────────────────────────── -->
+<div style="padding:0 0 100px;max-width:1312px;margin:0 auto" id="pricing">
+  <div class="pricing-wrap rv">
+    <div style="text-align:center;margin-bottom:52px">
+      <span class="eyebrow" style="display:block;text-align:center;margin-bottom:14px">Pricing</span>
+      <h2 class="section-title" style="margin-bottom:12px">Start free. <em>Pay when it works.</em></h2>
+      <p style="font-size:16px;font-weight:300;color:var(--white2)">2 free proposals with no card. Subscribe when you're ready. Cancel anytime.</p>
     </div>
-    <p class="pgn"><strong>2 free proposals</strong> to snag · No card required · Instant email activation · Cancel anytime</p>
+    <div class="pricing-grid">
+
+      <div class="plan-card rv">
+        <div class="plan-tier">Starter</div>
+        <div class="plan-price">$19<span>/mo</span></div>
+        <div class="plan-billing">billed monthly · cancel anytime</div>
+        <div class="plan-value">$0.13 per proposal</div>
+        <div class="plan-sep"></div>
+        <ul class="plan-features">
+          <li><span class="pf-check">✓</span>150 proposals / month</li>
+          <li><span class="pf-check">✓</span>1 Upwork profile</li>
+          <li><span class="pf-check">✓</span>All 7 hook types</li>
+          <li><span class="pf-check">✓</span>Smart job analysis</li>
+          <li><span class="pf-check">✓</span>Win probability scoring</li>
+          <li><span class="pf-check">✓</span>Risk flag alerts</li>
+          <li><span class="pf-check">✓</span>Portfolio auto-matching</li>
+        </ul>
+        <button class="plan-btn plan-btn-outline" onclick="openPaddleCheckout('starter')">Get Starter →</button>
+      </div>
+
+      <div class="plan-card featured rv">
+        <div class="plan-pop">⭐ BEST VALUE</div>
+        <div class="plan-tier gold">Pro</div>
+        <div class="plan-price gold-price">$39<span>/mo</span></div>
+        <div class="plan-billing">billed monthly · cancel anytime</div>
+        <div class="plan-value">45% cheaper per proposal vs Starter</div>
+        <div class="plan-sep"></div>
+        <ul class="plan-features">
+          <li><span class="pf-check gold-check">✓</span>400 proposals / month</li>
+          <li><span class="pf-check gold-check">✓</span>3 Upwork profiles</li>
+          <li><span class="pf-check gold-check">✓</span>Everything in Starter</li>
+          <li><span class="pf-check gold-check">✓</span>Proposal refinement chips</li>
+          <li><span class="pf-check gold-check">✓</span>Profile strength analysis</li>
+          <li><span class="pf-check gold-check">✓</span>Client Q&amp;A answers</li>
+          <li><span class="pf-check gold-check">✓</span>Priority support</li>
+        </ul>
+        <button class="plan-btn plan-btn-gold" onclick="openPaddleCheckout('pro')">Get Pro →</button>
+      </div>
+
+      <div class="plan-card rv">
+        <div class="plan-tier">Agency</div>
+        <div class="plan-price">$69<span>/mo</span></div>
+        <div class="plan-billing">billed monthly · cancel anytime</div>
+        <div class="plan-value">57% cheaper per proposal vs Starter</div>
+        <div class="plan-sep"></div>
+        <ul class="plan-features">
+          <li><span class="pf-check">✓</span>900 proposals / month</li>
+          <li><span class="pf-check">✓</span>5 Upwork profiles</li>
+          <li><span class="pf-check">✓</span>Everything in Pro</li>
+          <li><span class="pf-check">✓</span>Team &amp; multi-freelancer use</li>
+          <li><span class="pf-check">✓</span>Priority processing</li>
+          <li><span class="pf-check">✓</span>Dedicated support</li>
+          <li><span class="pf-check">✓</span>Usage analytics</li>
+        </ul>
+        <button class="plan-btn plan-btn-outline" onclick="openPaddleCheckout('agency')">Get Agency →</button>
+      </div>
+
+    </div>
+    <p class="pricing-note"><strong>2 free proposals</strong> included · No credit card required · Instant activation · Cancel anytime from billing portal</p>
   </div>
 </div>
 
-<div class="sec" id="faq">
-  <span class="ey rv">FAQ</span>
-  <h2 class="st2 rv">Honest <em>answers</em></h2>
-  <p class="ss rv">Questions freelancers ask before subscribing.</p>
-  <div class="fql rv">
-    <div class="fi"><button class="fq" onclick="tf(this)">Will it sound like AI? Clients are getting better at detecting it.<span class="fic">+</span></button><div class="fa">Snag AI uses 7 specific hook patterns modelled on real winning proposals — not generic AI phrasing. It varies sentence length, uses contractions, avoids every clichéd phrase. In live tests on real Upwork jobs, the output rated 8.5–9.5/10 for human quality. You can also edit every word before copying.</div></div>
-    <div class="fi"><button class="fq" onclick="tf(this)">Does it really read the job automatically? No copy-pasting?<span class="fic">+</span></button><div class="fa">Yes — Snag AI runs inside Upwork. When you click Write Proposal, it reads the job title, description, required skills, budget, and client info from the page. Nothing to touch. No tab switching.</div></div>
-    <div class="fi"><button class="fq" onclick="tf(this)">How is this different from just using ChatGPT?<span class="fic">+</span></button><div class="fa">ChatGPT requires you to copy the job, write a prompt, paste your profile, and format the output — every single time. Snag AI does all of that in one click, uses a hook system specifically for Upwork, and only mentions skills relevant to that specific job.</div></div>
-    <div class="fi"><button class="fq" onclick="tf(this)">How do I get the extension after paying?<span class="fic">+</span></button><div class="fa">Immediately after payment, you'll receive an email with your license key and install instructions. Enter the key in the extension — done in 3 minutes.</div></div>
-    <div class="fi"><button class="fq" onclick="tf(this)">Can I cancel anytime?<span class="fic">+</span></button><div class="fa">Yes. Cancel from your Paddle billing portal at any time. No questions asked. Access continues until end of your billing period.</div></div>
+<!-- ── Install CTA ─────────────────────────────────── -->
+<div class="install-section rv" id="install">
+  <div class="install-card">
+    <div class="install-text">
+      <div class="tag">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Chrome Extension
+      </div>
+      <h2>Add Snag AI to Chrome.<br>Free to install.</h2>
+      <p>The extension installs in 30 seconds. Add your profile URL once, and every Upwork job page gets the Write Proposal button automatically. No configuration. No dashboards. Just open Upwork and start winning.</p>
+    </div>
+    <div class="install-actions">
+      <button class="btn-install" onclick="alert('Chrome Web Store listing coming soon — install the extension directly from the developer for now.')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/><path d="M8.56 2.75c4.37 6.03 6.02 9.42 8.03 17.72m2.54-15.38c-3.72 4.35-8.94 5.66-16.88 5.85m19.5 1.9c-3.5-.93-6.63-.82-8.94 0-2.58.92-5.01 2.86-7.44 6.32" stroke="currentColor" stroke-width="2"/></svg>
+        Add to Chrome — Free
+      </button>
+      <span class="install-note">Works on all Upwork job pages · Chrome &amp; Chromium browsers</span>
+    </div>
   </div>
 </div>
 
-<div class="ctaw">
-  <div class="ctai rv">
+<!-- ── FAQ ────────────────────────────────────────── -->
+<div class="section" id="faq">
+  <span class="eyebrow rv">FAQ</span>
+  <h2 class="section-title rv">Honest <em>answers.</em></h2>
+  <p class="section-sub rv">Questions freelancers ask before subscribing.</p>
+  <div class="faq-list rv">
+    <div class="faq-item"><button class="faq-btn" onclick="tf(this)">Will it sound like AI? Clients are getting better at detecting it.<span class="faq-icon">+</span></button><div class="faq-body">Snag AI uses 7 specific hook patterns modelled on real winning proposals — not generic AI phrasing. It varies sentence length, uses contractions, and avoids every clichéd phrase. You can edit every word before copying. In live tests, proposals rated 8.5–9.5/10 for human quality.</div></div>
+    <div class="faq-item"><button class="faq-btn" onclick="tf(this)">Does it really read the job automatically? No copy-pasting?<span class="faq-icon">+</span></button><div class="faq-body">Yes. Snag AI runs inside Upwork. When you click Write Proposal, it reads the job title, description, required skills, budget, client location, and reviews from the page. Nothing to touch. No tab switching.</div></div>
+    <div class="faq-item"><button class="faq-btn" onclick="tf(this)">How is this different from just using ChatGPT?<span class="faq-icon">+</span></button><div class="faq-body">ChatGPT requires you to copy the job, write a prompt, paste your profile, and format the output — every single time. Snag AI does all of that in one click, uses a hook system specifically designed for Upwork, auto-detects screening keywords, and only mentions skills relevant to that specific job.</div></div>
+    <div class="faq-item"><button class="faq-btn" onclick="tf(this)">When do my proposals reset each month?<span class="faq-icon">+</span></button><div class="faq-body">Your quota resets on your exact subscription anniversary — not the 1st of each month. For example, if you subscribed on June 15, your proposals reset on July 15 every month. The exact reset date is shown in the extension's Subscription page.</div></div>
+    <div class="faq-item"><button class="faq-btn" onclick="tf(this)">How do I activate my plan after subscribing?<span class="faq-icon">+</span></button><div class="faq-body">After subscribing on Paddle, open the Snag AI extension and go to Settings → Account Email. Enter the same email address you used during checkout. This is how Snag AI verifies your active plan. Your proposal quota unlocks immediately.</div></div>
+    <div class="faq-item"><button class="faq-btn" onclick="tf(this)">Can I upgrade, downgrade, or cancel anytime?<span class="faq-icon">+</span></button><div class="faq-body">Yes to all three. Upgrade or downgrade directly from the extension's Subscription page — Snag AI modifies your existing subscription instantly with prorated billing. Cancel from the Manage Billing portal. If you cancel, access continues until the end of your current billing period — you're never cut off early.</div></div>
+    <div class="faq-item"><button class="faq-btn" onclick="tf(this)">Does it work on all types of Upwork jobs?<span class="faq-icon">+</span></button><div class="faq-body">Yes — hourly and fixed-price. Snag AI detects the job type automatically and adjusts the proposal accordingly: for fixed-price jobs it includes the budget and timeline in the opening hook; for hourly it mentions your rate naturally.</div></div>
+  </div>
+</div>
+
+<!-- ── Final CTA ───────────────────────────────────── -->
+<div class="cta-wrap">
+  <div class="cta-inner rv">
     <h2>Snag the job <em>before anyone else</em></h2>
     <p>2 free proposals. No credit card. No commitment. One click wins jobs.</p>
-    <a href="#pricing" class="bg2">Start snagging jobs →</a>
-    <p class="ctan">Cancel anytime · Instant setup · Works on any Upwork job</p>
+    <a href="#pricing" class="btn-primary" style="display:inline-flex;font-size:16px;padding:16px 40px">Start snagging jobs →</a>
+    <p class="cta-note">Cancel anytime · Instant setup · Works on any Upwork job page</p>
   </div>
 </div>
 
+<!-- ── Footer ─────────────────────────────────────── -->
 <footer>
-  <a href="#" class="fl"><div class="flm" style="background:none;padding:0;">
-  <svg width="26" height="26" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect width="32" height="32" rx="8" fill="url(#fg)"/>
-    <path d="M10 20.5C10 20.5 11.5 22 14 22C16.5 22 18 20.5 18 18.5C18 16.5 16 15.5 14 14.5C12 13.5 10.5 12.5 10.5 10.5C10.5 8.5 12 7 14.5 7C17 7 18 8.5 18 8.5" stroke="white" stroke-width="2" stroke-linecap="round"/>
-    <path d="M16 9L22 9C22 9 24 11 22 13C24 13 26 15 24 17C25 17 26 19 24 21C25 21 25 23 23 24L16 24" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
-    <defs>
-      <linearGradient id="fg" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
-        <stop offset="0%" stop-color="#c9a84c"/>
-        <stop offset="100%" stop-color="#e8c878"/>
-      </linearGradient>
-    </defs>
-  </svg>
-</div><span class="fln">Snag AI</span></a>
-  <ul class="flinks">
+  <div class="footer-logo">
+    <div class="footer-logo-icon">
+      <svg width="16" height="16" viewBox="0 0 32 32" fill="none"><path d="M10 20.5C10 20.5 11.5 22 14 22C16.5 22 18 20.5 18 18.5C18 16.5 16 15.5 14 14.5C12 13.5 10.5 12.5 10.5 10.5C10.5 8.5 12 7 14.5 7C17 7 18 8.5 18 8.5" stroke="white" stroke-width="2.2" stroke-linecap="round"/><path d="M16 9L22 9C22 9 24 11 22 13C24 13 26 15 24 17C25 17 26 19 24 21C25 21 25 23 23 24L16 24" stroke="white" stroke-width="2" stroke-linecap="round"/></svg>
+    </div>
+    <span class="footer-logo-name">Snag AI</span>
+  </div>
+  <ul class="footer-links">
     <li><a href="#how">How it works</a></li>
     <li><a href="#pricing">Pricing</a></li>
+    <li><a href="#faq">FAQ</a></li>
     <li><a href="terms.html">Terms</a></li>
     <li><a href="privacy.html">Privacy</a></li>
     <li><a href="refund.html">Refunds</a></li>
     <li><a href="mailto:support@snagai.app">Support</a></li>
   </ul>
-  <span class="fc">© 2026 Snag AI. All rights reserved.</span>
+  <span class="footer-copy">© 2026 Snag AI. All rights reserved.</span>
 </footer>
 
 <script>
-function tf(btn){const i=btn.closest('.fi'),o=i.classList.contains('op');document.querySelectorAll('.fi').forEach(x=>x.classList.remove('op'));if(!o)i.classList.add('op')}
-const obs=new IntersectionObserver(e=>{e.forEach(x=>{if(x.isIntersecting)x.target.classList.add('vs')})},{threshold:.08,rootMargin:'0px 0px -40px 0px'});
-document.querySelectorAll('.rv').forEach(el=>obs.observe(el));
+// FAQ toggle
+function tf(btn){
+  const item = btn.closest('.faq-item');
+  const isOpen = item.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(x => x.classList.remove('open'));
+  if (!isOpen) item.classList.add('open');
+}
+
+// Scroll reveal
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('vs'); });
+}, { threshold: .06, rootMargin: '0px 0px -40px 0px' });
+document.querySelectorAll('.rv, .rv2').forEach(el => obs.observe(el));
+
+// Floating particles in hero
+(function() {
+  const container = document.getElementById('particles');
+  if (!container) return;
+  for (let i = 0; i < 18; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const size = Math.random() * 3 + 1;
+    p.style.cssText = [
+      'left:' + (Math.random() * 100) + '%',
+      'top:' + (Math.random() * 100 + 20) + '%',
+      'width:' + size + 'px',
+      'height:' + size + 'px',
+      'animation-duration:' + (Math.random() * 8 + 6) + 's',
+      'animation-delay:' + (Math.random() * 6) + 's',
+      'opacity:' + (Math.random() * 0.5 + 0.1),
+    ].join(';');
+    container.appendChild(p);
+  }
+})();
 </script>
 </body>
 </html>

@@ -8,9 +8,9 @@ document.getElementById('open-settings').addEventListener('click', () => {
   chrome.runtime.openOptionsPage();
 });
 
-// Upgrade button
+// Upgrade button — opens the extension's own Subscription page
 document.getElementById('upgrade-btn').addEventListener('click', () => {
-  chrome.tabs.create({ url: 'https://snagai.netlify.app/#pricing' });
+  chrome.runtime.sendMessage({ type: 'OPEN_OPTIONS_TAB', tab: 'subscription' });
 });
 
 // Email toggle
