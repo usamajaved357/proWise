@@ -753,6 +753,14 @@ app.post('/upgrade', async (req, res) => {
   if (!user || !user.sub_id) return res.status(404).json({ error: 'No active subscription found for this email.' });
   if (user.plan === plan)    return res.status(400).json({ error: 'You are already on this plan.' });
 
+  // Subscription is canceled or in grace period — can't PATCH, must do fresh checkout
+  if (user.active === false || user.cancels_at) {
+    return res.status(400).json({
+      error: 'Your subscription has been canceled. Please subscribe again.',
+      needsCheckout: true,
+    });
+  }
+
   const PRICE_IDS = {
     starter: process.env.PADDLE_PRICE_STARTER,
     pro:     process.env.PADDLE_PRICE_PRO,

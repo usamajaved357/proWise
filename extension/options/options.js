@@ -93,6 +93,12 @@ async function upgradePlan(newPlan) {
     const data = await res.json();
 
     if (!res.ok || !data.ok) {
+      if (data.needsCheckout) {
+        // Subscription is canceled — open a fresh checkout silently instead
+        document.querySelectorAll('.pcv2-btn[data-plan]').forEach(b => { b.disabled = false; });
+        openCheckout(newPlan);
+        return;
+      }
       alert(data.error || 'Could not update your plan. Please try again.');
       // Restore buttons
       document.querySelectorAll('.pcv2-btn[data-plan]').forEach(b => { b.disabled = false; });
