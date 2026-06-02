@@ -663,25 +663,19 @@ app.post('/webhook/paddle', async (req, res) => {
     }
   }
 
-  // Final cancellation confirmation (fires at end of billing period)
+  // Subscription canceled or paused — keep paid plan intact, just mark inactive + set access end date
+  // getUserStatus() handles the actual plan downgrade once cancels_at passes
   if (['subscription.canceled','subscription.paused'].includes(type)) {
-    const data   = event.data || {};
-    const email  = await resolveEmail(data);
+    const data  = event.data || {};
+    const email = await resolveEmail(data);
     if (email) {
       const cancelsAt = data.current_billing_period?.ends_at
                       || data.scheduled_change?.effective_at
                       || data.canceled_at
                       || null;
-
-      const accessAlreadyEnded = cancelsAt ? new Date(cancelsAt) <= new Date() : true;
-
-      if (accessAlreadyEnded) {
-        await updateUser(email, { plan: 'free', active: false, sub_id: '', cancels_at: cancelsAt });
-        console.log(`Cancelled (immediate): ${email}`);
-      } else {
-        await updateUser(email, { active: false, sub_id: '', cancels_at: cancelsAt });
-        console.log(`Canceling: ${email} | access until: ${cancelsAt}`);
-      }
+      // Never set plan:'free' here — user keeps access until cancels_at
+      await updateUser(email, { active: false, sub_id: '', cancels_at: cancelsAt });
+      console.log(`Cancelled: ${email} | access until: ${cancelsAt || 'immediately'}`);
     } else {
       console.error('subscription.canceled: could not resolve email', JSON.stringify(data).slice(0, 200));
     }
@@ -805,7 +799,7 @@ app.post('/upgrade', async (req, res) => {
       const detail = (result.error.detail || result.error.message || '').toLowerCase();
       // Paddle rejected because the subscription is already canceled — send client to fresh checkout
       if (detail.includes('cancel') || detail.includes('inactive') || detail.includes('not active')) {
-        // Also clean up DB so the state is consistent going forward
+        // Mark subscription as inactive but keep the plan — getUserStatus() downgrades when cancels_at passes
         await updateUser(email, { active: false, sub_id: '' }).catch(() => {});
         return res.status(400).json({
           error: 'Your subscription has been canceled. Please subscribe again.',

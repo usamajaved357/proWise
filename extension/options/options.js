@@ -234,8 +234,9 @@ function renderBillingCard(plan, used, quota, billing) {
   const wrap = document.getElementById('billing-card-wrap');
   if (!wrap) return;
 
-  // Hide for free users — show for any paid plan regardless of date data
-  if (plan === 'free') {
+  const subStatusNow = billing.subscriptionStatus || 'active';
+  // Hide for free users unless they're in a canceling grace period (paid until cancels_at)
+  if (plan === 'free' && subStatusNow !== 'canceling') {
     wrap.innerHTML = '';
     // Reset plan section title for free users
     const titleEl = document.getElementById('plan-section-title');
