@@ -190,7 +190,7 @@ async function renderProfileSlots() {
     div.innerHTML = `
       <div class="slot-num">${i + 1}</div>
       <input class="slot-input" type="url" placeholder="https://www.upwork.com/freelancers/~..." value="${p?.url || ''}" data-slot="${i}">
-      ${hasUrl ? `<button class="btn-slot-open" data-slot="${i}">Open →</button>` : ''}
+      ${hasUrl ? `<button class="btn-slot-open" data-slot="${i}"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg> Sync</button>` : ''}
     `;
     slots.appendChild(div);
   }
@@ -716,18 +716,26 @@ function saveCard(card, idx, allProfiles) {
 }
 
 // ── Navigation shortcuts ──────────────────────────────────────────────────────
-document.getElementById('add-profile-btn')?.addEventListener('click', () => {
-  const panel = document.getElementById('apd-panel');
-  if (panel) {
-    const open = panel.style.display !== 'none';
-    panel.style.display = open ? 'none' : 'block';
-    document.getElementById('add-profile-btn').textContent = open ? '+ Add Profile' : '✕ Close';
-  }
-});
-document.getElementById('apd-done')?.addEventListener('click', () => {
+// Helper: close dropdown and restore button
+function closeAddProfilePanel() {
   const panel = document.getElementById('apd-panel');
   if (panel) panel.style.display = 'none';
-  document.getElementById('add-profile-btn').textContent = '+ Add Profile';
+  const btn = document.getElementById('add-profile-btn');
+  if (btn) btn.textContent = 'Manage Profile';
+}
+
+document.getElementById('add-profile-btn')?.addEventListener('click', () => {
+  const panel = document.getElementById('apd-panel');
+  if (!panel) return;
+  const isOpen = panel.style.display !== 'none';
+  if (isOpen) {
+    // Closing — save first, then close
+    document.getElementById('save-profile-urls')?.click();
+    setTimeout(closeAddProfilePanel, 300);
+  } else {
+    panel.style.display = 'block';
+    document.getElementById('add-profile-btn').textContent = '✕ Close';
+  }
 });
 document.getElementById('goto-sub-btn')?.addEventListener('click',    () => switchSection('subscription'));
 

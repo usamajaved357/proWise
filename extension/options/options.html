@@ -398,6 +398,23 @@ textarea.edit-val{min-height:38px}
 .port-item.expanded .port-compact-desc {
   display: none;
 }
+
+/* ── Add profile panel footer ─────────────────────────────────────────────── */
+.apd-footer-msg{display:flex;align-items:center;gap:10px;margin-top:10px;min-height:24px}
+.apd-hint{font-size:11px;color:rgba(240,238,234,.3);font-style:italic}
+/* Sync button inside slot rows */
+.btn-slot-open{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:5px 12px;
+  background:rgba(74,222,128,.1);
+  border:1px solid rgba(74,222,128,.25);
+  border-radius:7px;
+  color:#4ade80;
+  font-size:11px;font-weight:700;
+  cursor:pointer;font-family:inherit;
+  transition:all .15s;white-space:nowrap;flex-shrink:0;
+}
+.btn-slot-open:hover{background:rgba(74,222,128,.18);border-color:rgba(74,222,128,.4);}
 </style>
 </head>
 <body>
@@ -469,7 +486,7 @@ textarea.edit-val{min-height:38px}
           <div class="section-title">Your Profiles</div>
           <div class="section-sub">Auto-synced from Upwork. Portfolio links added manually.</div>
         </div>
-        <button class="btn-add-profile" id="add-profile-btn">+ Add Profile</button>
+        <button class="btn-add-profile" id="add-profile-btn">Manage Profile</button>
       </div>
 
       <!-- Add Profile dropdown (hidden by default) -->
@@ -477,10 +494,10 @@ textarea.edit-val{min-height:38px}
         <div class="apd-title">Add Upwork Profile URL</div>
         <p class="apd-desc">Paste your Upwork profile URL below. Snag AI will sync your data automatically when you visit it.</p>
         <div class="profile-slots" id="profile-slots"></div>
-        <div class="apd-footer">
-          <button class="btn-primary" id="save-profile-urls" style="font-size:12px;padding:8px 18px">Save URL</button>
+        <button id="save-profile-urls" style="display:none" aria-hidden="true"></button>
+        <div class="apd-footer-msg">
           <span class="saved-msg" id="saved-urls-msg">✓ Saved</span>
-          <button class="apd-done" id="apd-done">Done</button>
+          <span class="apd-hint">Add a URL and click Sync to fetch your profile details.</span>
         </div>
       </div>
 
