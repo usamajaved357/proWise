@@ -84,29 +84,52 @@ async function getUserStatus(email) {
   const u = await getUser(email);
   if (!u) return { plan: 'free', limit: 2, used: 0, remaining: 2 };
 
-  const plan  = u.plan || 'free';
-  const limit = PLANS[plan]?.limit ?? 2;
+  let plan  = u.plan || 'free';
+  let limit = PLANS[plan]?.limit ?? 2;
+  let used  = u.used || 0;
 
-  let used = u.used || 0;
+  // ── Cancellation check: downgrade once access period expires ─────────────
+  if (u.cancels_at) {
+    const cancelsMs = new Date(u.cancels_at).getTime();
+    if (!isNaN(cancelsMs) && Date.now() >= cancelsMs) {
+      // Access period has ended — downgrade now
+      if (plan !== 'free') {
+        await updateUser(email, { plan: 'free', active: false });
+        plan  = 'free';
+        limit = PLANS['free'].limit;
+        used  = 0;
+      }
+    }
+  }
 
-  if (u.next_billed_at) {
-    // Anniversary-based reset: reset when the billing period has rolled over
+  // ── Usage reset ───────────────────────────────────────────────────────────
+  // Don't reset usage for canceling subscriptions — let them use what's left
+  const isCanceling = u.cancels_at && new Date(u.cancels_at) > new Date();
+
+  if (!isCanceling && u.next_billed_at) {
+    // Anniversary-based reset
     const nextBilledMs = new Date(u.next_billed_at).getTime();
     if (!isNaN(nextBilledMs) && Date.now() >= nextBilledMs) {
-      // Period has lapsed — reset usage (webhook may not have fired yet)
-      // Use billing_month as a guard so we only reset once per period
       const newMonth = currentMonth();
       if (u.billing_month !== newMonth) {
         used = 0;
         await updateUser(email, { used: 0, billing_month: newMonth });
       }
     }
-  } else {
-    // Fallback for users without next_billed_at yet: calendar-month reset
+  } else if (!isCanceling && !u.next_billed_at) {
+    // Fallback calendar-month reset
     if (u.billing_month !== currentMonth()) {
       used = 0;
       await updateUser(email, { used: 0, billing_month: currentMonth() });
     }
+  }
+
+  // ── Subscription status string ────────────────────────────────────────────
+  let subscriptionStatus = 'active';
+  if (u.cancels_at) {
+    subscriptionStatus = new Date(u.cancels_at) > new Date() ? 'canceling' : 'canceled';
+  } else if (u.active === false) {
+    subscriptionStatus = 'canceled';
   }
 
   return {
@@ -115,8 +138,10 @@ async function getUserStatus(email) {
     used,
     remaining:           Math.max(0, limit - used),
     active:              u.active !== false,
+    subscriptionStatus,
     nextBilledAt:        u.next_billed_at        || null,
     currentPeriodStart:  u.current_period_start  || null,
+    cancelsAt:           u.cancels_at            || null,
   };
 }
 
@@ -568,9 +593,10 @@ app.post('/webhook/paddle', async (req, res) => {
 
     const existingUser = await getUser(email);
     if (existingUser) {
-      await updateUser(email, { plan, active: true, sub_id: subId, customer_id: custId || existingUser.customer_id || null, billing_month: currentMonth(), next_billed_at: nextBilledAt, current_period_start: currentPeriodStart });
+      // Clear cancels_at if user is resubscribing after a cancellation
+      await updateUser(email, { plan, active: true, sub_id: subId, customer_id: custId || existingUser.customer_id || null, billing_month: currentMonth(), next_billed_at: nextBilledAt, current_period_start: currentPeriodStart, cancels_at: null });
     } else {
-      await upsertUser(email, { plan, active: true, sub_id: subId, customer_id: custId || null, used: 0, billing_month: currentMonth(), next_billed_at: nextBilledAt, current_period_start: currentPeriodStart });
+      await upsertUser(email, { plan, active: true, sub_id: subId, customer_id: custId || null, used: 0, billing_month: currentMonth(), next_billed_at: nextBilledAt, current_period_start: currentPeriodStart, cancels_at: null });
     }
     console.log('DB updated:', email, '→', plan, '| customer_id:', custId, '| next_billed_at:', nextBilledAt);
     await sendWelcomeEmail(email, plan);
@@ -612,8 +638,24 @@ app.post('/webhook/paddle', async (req, res) => {
   if (['subscription.canceled','subscription.paused'].includes(type)) {
     const email = event.data?.customer?.email;
     if (email) {
-      await updateUser(email, { plan: 'free', active: false, sub_id: '' });
-      console.log(`Cancelled: ${email}`);
+      // Use the billing period end date as access end — NOT the cancellation request date
+      // This lets the user keep access for the period they already paid for
+      const cancelsAt = event.data?.current_billing_period?.ends_at
+                      || event.data?.scheduled_change?.effective_at
+                      || event.data?.canceled_at
+                      || null;
+
+      const accessAlreadyEnded = cancelsAt ? new Date(cancelsAt) <= new Date() : true;
+
+      if (accessAlreadyEnded) {
+        // Period already over — downgrade immediately
+        await updateUser(email, { plan: 'free', active: false, sub_id: '', cancels_at: cancelsAt });
+        console.log(`Cancelled (immediate): ${email}`);
+      } else {
+        // Access still valid — mark as canceling, keep plan intact until cancels_at
+        await updateUser(email, { active: false, sub_id: '', cancels_at: cancelsAt });
+        console.log(`Canceling: ${email} | access until: ${cancelsAt}`);
+      }
     }
   }
 

@@ -5,9 +5,10 @@ const PLAN_LABELS  = { free: 'Free', starter: 'Starter', pro: 'Pro', agency: 'Ag
 const PLAN_QUOTAS  = { free: 2, starter: 150, pro: 400, agency: 900 };
 const SKILLS_SHOW  = 8; // visible before "x more"
 
-// Tracks the user's current plan so plan card buttons know whether to checkout or upgrade
-let _activePlan   = 'free';
-let currentSlide  = 0;
+// Tracks the user's current plan and subscription state so plan buttons route correctly
+let _activePlan         = 'free';
+let _subscriptionStatus = 'active'; // 'active' | 'canceling' | 'canceled'
+let currentSlide        = 0;
 
 // ── Section navigation ────────────────────────────────────────────────────────
 function switchSection(name) {
@@ -231,53 +232,91 @@ function renderBillingCard(plan, used, quota, billing) {
   const titleEl = document.getElementById('plan-section-title');
   if (titleEl) titleEl.textContent = 'Upgrade your plan';
 
-  const planPrices = { starter: '$19', pro: '$39', agency: '$69' };
-  const planLabel  = PLAN_LABELS[plan] || plan;
-  const price      = planPrices[plan]  || '';
-  const isActive   = billing.active !== false;
+  const planPrices        = { starter: '$19', pro: '$39', agency: '$69' };
+  const planLabel         = PLAN_LABELS[plan] || plan;
+  const price             = planPrices[plan]  || '';
+  const subStatus         = billing.subscriptionStatus || (billing.active !== false ? 'active' : 'canceled');
+  const isCanceling       = subStatus === 'canceling';
 
-  const hasDates    = !!(billing.nextBilledAt);
-  const periodStart = fmtDate(billing.currentPeriodStart);
-  const periodEnd   = fmtDate(billing.nextBilledAt);
-  const days        = daysUntil(billing.nextBilledAt);
+  // Dates — use cancels_at for canceling subs, next_billed_at for active
+  const hasBillingDates   = !!(billing.nextBilledAt);
+  const hasCancelDate     = !!(billing.cancelsAt);
+  const periodStart       = fmtDate(billing.currentPeriodStart);
 
-  const daysHtml = (hasDates && days !== null)
+  // For canceling: show access end date; for active: show renewal date
+  const keyDate           = isCanceling ? billing.cancelsAt : billing.nextBilledAt;
+  const keyDateFmt        = fmtDate(keyDate);
+  const days              = daysUntil(keyDate);
+
+  const daysHtml = (keyDate && days !== null)
     ? (days <= 0
-        ? '<span class="bc-days bc-days-due">Due today</span>'
+        ? '<span class="bc-days bc-days-due">Ends today</span>'
         : days <= 7
           ? `<span class="bc-days bc-days-soon">${days} day${days===1?'':'s'} left</span>`
           : `<span class="bc-days">${days} days left</span>`)
     : '';
 
-  const statusHtml = isActive
-    ? '<span class="bc-status bc-active"><span class="bc-status-dot"></span>Active</span>'
-    : '<span class="bc-status bc-canceled"><span class="bc-status-dot"></span>Canceled</span>';
+  // Status badge
+  let statusHtml;
+  if (isCanceling) {
+    statusHtml = `<span class="bc-status bc-canceling"><span class="bc-status-dot"></span>Cancels ${keyDateFmt}</span>`;
+  } else if (subStatus === 'canceled') {
+    statusHtml = '<span class="bc-status bc-canceled"><span class="bc-status-dot"></span>Canceled</span>';
+  } else {
+    statusHtml = '<span class="bc-status bc-active"><span class="bc-status-dot"></span>Active</span>';
+  }
 
-  // Dates row — show real dates if available, otherwise a soft pending note
-  const datesHtml = hasDates ? `
-    <div class="bc-divider"></div>
-    <div class="bc-dates-row">
-      <div class="bc-date-block">
-        <div class="bc-date-label">Period started</div>
-        <div class="bc-date-val">${periodStart}</div>
-      </div>
-      <div class="bc-date-arrow">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-      </div>
-      <div class="bc-date-block">
-        <div class="bc-date-label">Resets &amp; renews</div>
-        <div class="bc-date-val bc-date-next">${periodEnd}</div>
-      </div>
-      <div class="bc-date-sep"></div>
-      <div class="bc-days-block">
-        ${daysHtml}
-        <div class="bc-days-sub">until next charge</div>
-      </div>
-    </div>` : `
-    <div class="bc-divider"></div>
-    <div class="bc-dates-pending">
-      Exact billing dates will appear here after your next renewal cycle.
-    </div>`;
+  // Dates row
+  let datesHtml;
+  if (isCanceling && hasCancelDate) {
+    datesHtml = `
+      <div class="bc-divider"></div>
+      <div class="bc-dates-row bc-dates-canceling">
+        <div class="bc-date-block">
+          <div class="bc-date-label">Period started</div>
+          <div class="bc-date-val">${periodStart}</div>
+        </div>
+        <div class="bc-date-arrow">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </div>
+        <div class="bc-date-block">
+          <div class="bc-date-label">Access ends</div>
+          <div class="bc-date-val bc-date-canceling">${keyDateFmt}</div>
+        </div>
+        <div class="bc-date-sep"></div>
+        <div class="bc-days-block">
+          ${daysHtml}
+          <div class="bc-days-sub">then reverts to free</div>
+        </div>
+      </div>`;
+  } else if (!isCanceling && hasBillingDates) {
+    datesHtml = `
+      <div class="bc-divider"></div>
+      <div class="bc-dates-row">
+        <div class="bc-date-block">
+          <div class="bc-date-label">Period started</div>
+          <div class="bc-date-val">${periodStart}</div>
+        </div>
+        <div class="bc-date-arrow">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </div>
+        <div class="bc-date-block">
+          <div class="bc-date-label">Resets &amp; renews</div>
+          <div class="bc-date-val bc-date-next">${keyDateFmt}</div>
+        </div>
+        <div class="bc-date-sep"></div>
+        <div class="bc-days-block">
+          ${daysHtml}
+          <div class="bc-days-sub">until next charge</div>
+        </div>
+      </div>`;
+  } else {
+    datesHtml = `
+      <div class="bc-divider"></div>
+      <div class="bc-dates-pending">
+        Exact billing dates will appear here after your next renewal cycle.
+      </div>`;
+  }
 
   wrap.innerHTML = `
     <div class="billing-card">
@@ -342,9 +381,11 @@ async function loadStatus() {
   const cUsed  = cached.usageCount || 0;
   const cQuota = cached.usageLimit || PLAN_QUOTAS[cPlan] || 2;
   updatePlanUI(cPlan, cUsed, cQuota, {
-    active:             cached.userActive,
-    nextBilledAt:       cached.nextBilledAt       || null,
-    currentPeriodStart: cached.currentPeriodStart || null,
+    active:              cached.userActive,
+    subscriptionStatus:  cached.subscriptionStatus  || 'active',
+    nextBilledAt:        cached.nextBilledAt         || null,
+    currentPeriodStart:  cached.currentPeriodStart   || null,
+    cancelsAt:           cached.cancelsAt            || null,
   });
 
   // 2. Fetch fresh from server in background
@@ -355,17 +396,21 @@ async function loadStatus() {
       const used  = status.used  || 0;
       const quota = status.limit || PLAN_QUOTAS[plan] || 2;
       await chrome.storage.sync.set({
-        userPlan:           plan,
-        usageCount:         used,
-        usageLimit:         quota,
-        userActive:         status.active !== false,
-        nextBilledAt:       status.nextBilledAt       || null,
-        currentPeriodStart: status.currentPeriodStart || null,
+        userPlan:            plan,
+        usageCount:          used,
+        usageLimit:          quota,
+        userActive:          status.active !== false,
+        subscriptionStatus:  status.subscriptionStatus  || 'active',
+        nextBilledAt:        status.nextBilledAt         || null,
+        currentPeriodStart:  status.currentPeriodStart   || null,
+        cancelsAt:           status.cancelsAt            || null,
       });
       updatePlanUI(plan, used, quota, {
-        active:             status.active !== false,
-        nextBilledAt:       status.nextBilledAt       || null,
-        currentPeriodStart: status.currentPeriodStart || null,
+        active:              status.active !== false,
+        subscriptionStatus:  status.subscriptionStatus  || 'active',
+        nextBilledAt:        status.nextBilledAt         || null,
+        currentPeriodStart:  status.currentPeriodStart   || null,
+        cancelsAt:           status.cancelsAt            || null,
       });
     }
   } catch(e) { /* use cached */ }
