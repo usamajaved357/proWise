@@ -39,10 +39,30 @@
   function isValidSkill(s) {
     if (!s || s.length < 2 || s.length > 60) return false;
     if (UPWORK_TRAITS.test(s) || PORTFOLIO_NOISE.test(s)) return false;
-    if (/^\d+$/.test(s) || /\$\d/.test(s)) return false;
-    if (/\bdelivery\b|\bpaginat|\bcurrent page|\bgo to page/i.test(s)) return false;
+
+    // Reject pure numbers or decimals (e.g. "5.0", "42")
+    if (/^\d+(\.\d+)?$/.test(s)) return false;
+    if (/\$\d/.test(s)) return false;
+
+    // Reject rating/review patterns
+    if (/\brating\b|\bout of \d|\bstars?\b|\breview/i.test(s)) return false;
+    if (/^\d+\.\d+\s*out|^Rating is/i.test(s)) return false;
+
+    // Reject lines that are clearly English sentences (contain common sentence verbs mid-string)
+    if (/\b(is|was|are|were|have|has|had|will|would|could|should|need|want|looking|help|finishing|fixing|building)\b/i.test(s)) return false;
+
+    // Reject lines starting with common English verbs or prepositions (job titles, descriptions)
+    if (/^(Help|Need|Want|Looking|Build|Fix|Create|Make|Develop|Design|Get|Find|Add|Update|Improve|Write|Test|Review|Deploy|Manage|Handle|Working|See|Show|View|Click|Go|Back|Next|Prev|Load|Save|Submit|Cancel|Close|Open)\b/i.test(s)) return false;
+
+    // Reject date patterns
     if (/^Published (on|in)\b|^\d{1,2},?\s+\d{4}$|^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\b/i.test(s)) return false;
-    if (s.split(' ').length > 6) return false;
+
+    // Reject Upwork UI noise
+    if (/\bdelivery\b|\bpaginat|\bcurrent page|\bgo to page/i.test(s)) return false;
+
+    // Reject if too many words (real skill names are short)
+    if (s.split(' ').length > 5) return false;
+
     return true;
   }
 
