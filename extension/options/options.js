@@ -159,26 +159,36 @@ function updatePlanUI(plan, used, quota, billing = {}) {
 }
 
 // ── Billing card ──────────────────────────────────────────────────────────────
+const SERVER_URL = 'https://prowise-4e5t.onrender.com';
+
 function renderBillingCard(plan, used, quota, billing) {
   const wrap = document.getElementById('billing-card-wrap');
   if (!wrap) return;
 
-  // Only show for active paid plans
-  if (plan === 'free' || !billing.nextBilledAt) {
+  // Hide for free users — show for any paid plan regardless of date data
+  if (plan === 'free') {
     wrap.innerHTML = '';
+    // Reset plan section title for free users
+    const titleEl = document.getElementById('plan-section-title');
+    if (titleEl) titleEl.textContent = 'Choose a plan';
     return;
   }
 
-  const planPrices  = { starter: '$19', pro: '$39', agency: '$69' };
-  const planLabel   = PLAN_LABELS[plan] || plan;
-  const price       = planPrices[plan]  || '';
-  const isActive    = billing.active !== false;
+  // Update plan section title for paid users
+  const titleEl = document.getElementById('plan-section-title');
+  if (titleEl) titleEl.textContent = 'Upgrade your plan';
 
+  const planPrices = { starter: '$19', pro: '$39', agency: '$69' };
+  const planLabel  = PLAN_LABELS[plan] || plan;
+  const price      = planPrices[plan]  || '';
+  const isActive   = billing.active !== false;
+
+  const hasDates    = !!(billing.nextBilledAt);
   const periodStart = fmtDate(billing.currentPeriodStart);
   const periodEnd   = fmtDate(billing.nextBilledAt);
   const days        = daysUntil(billing.nextBilledAt);
 
-  const daysHtml = days !== null
+  const daysHtml = (hasDates && days !== null)
     ? (days <= 0
         ? '<span class="bc-days bc-days-due">Due today</span>'
         : days <= 7
@@ -189,6 +199,32 @@ function renderBillingCard(plan, used, quota, billing) {
   const statusHtml = isActive
     ? '<span class="bc-status bc-active"><span class="bc-status-dot"></span>Active</span>'
     : '<span class="bc-status bc-canceled"><span class="bc-status-dot"></span>Canceled</span>';
+
+  // Dates row — show real dates if available, otherwise a soft pending note
+  const datesHtml = hasDates ? `
+    <div class="bc-divider"></div>
+    <div class="bc-dates-row">
+      <div class="bc-date-block">
+        <div class="bc-date-label">Period started</div>
+        <div class="bc-date-val">${periodStart}</div>
+      </div>
+      <div class="bc-date-arrow">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+      </div>
+      <div class="bc-date-block">
+        <div class="bc-date-label">Resets &amp; renews</div>
+        <div class="bc-date-val bc-date-next">${periodEnd}</div>
+      </div>
+      <div class="bc-date-sep"></div>
+      <div class="bc-days-block">
+        ${daysHtml}
+        <div class="bc-days-sub">until next charge</div>
+      </div>
+    </div>` : `
+    <div class="bc-divider"></div>
+    <div class="bc-dates-pending">
+      Exact billing dates will appear here after your next renewal cycle.
+    </div>`;
 
   wrap.innerHTML = `
     <div class="billing-card">
@@ -202,33 +238,48 @@ function renderBillingCard(plan, used, quota, billing) {
           <div class="bc-plan-quota">${quota.toLocaleString()} proposals / month</div>
         </div>
         <div class="bc-action-col">
-          <a class="bc-manage-btn" href="https://customer.paddle.com" target="_blank">
+          <button class="bc-manage-btn" id="bc-manage-btn">
             Manage billing
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-          </a>
+          </button>
         </div>
       </div>
-      <div class="bc-divider"></div>
-      <div class="bc-dates-row">
-        <div class="bc-date-block">
-          <div class="bc-date-label">Period started</div>
-          <div class="bc-date-val">${periodStart}</div>
-        </div>
-        <div class="bc-date-arrow">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
-        </div>
-        <div class="bc-date-block">
-          <div class="bc-date-label">Resets &amp; renews</div>
-          <div class="bc-date-val bc-date-next">${periodEnd}</div>
-        </div>
-        <div class="bc-date-sep"></div>
-        <div class="bc-days-block">
-          ${daysHtml}
-          <div class="bc-days-sub">until next charge</div>
-        </div>
-      </div>
+      ${datesHtml}
     </div>
   `;
+
+  // Wire up manage billing button
+  document.getElementById('bc-manage-btn')?.addEventListener('click', async () => {
+    const btn = document.getElementById('bc-manage-btn');
+    if (btn) { btn.textContent = 'Opening…'; btn.disabled = true; }
+
+    try {
+      const { userEmail } = await chrome.storage.sync.get(['userEmail']);
+      if (!userEmail) {
+        alert('Please add your subscription email in Settings first.');
+        if (btn) { btn.innerHTML = 'Manage billing <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>'; btn.disabled = false; }
+        return;
+      }
+
+      const res  = await fetch(SERVER_URL + '/billing-portal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: userEmail })
+      });
+      const data = await res.json();
+
+      if (data.url) {
+        chrome.tabs.create({ url: data.url });
+      } else {
+        alert(data.error || 'Could not open billing portal. Try again.');
+      }
+    } catch(e) {
+      alert('Connection error. Check your internet and try again.');
+    } finally {
+      const b = document.getElementById('bc-manage-btn');
+      if (b) { b.innerHTML = 'Manage billing <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>'; b.disabled = false; }
+    }
+  });
 }
 
 async function loadStatus() {
