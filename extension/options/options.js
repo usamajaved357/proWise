@@ -167,6 +167,14 @@ function updatePlanUI(plan, used, quota, billing = {}) {
     _ue.textContent=msg; _ue.className=cls;
   }
 
+  // Show next reset date in proposals card footnote
+  const resetEl = document.getElementById('ud-reset-date');
+  if (resetEl) {
+    const resetIso = billing.cancelsAt || billing.nextBilledAt || null;
+    resetEl.textContent = resetIso ? fmtDate(resetIso) : 'monthly';
+    resetEl.style.color = (billing.subscriptionStatus === 'canceling') ? '#facc15' : 'inherit';
+  }
+
   // Usage stats — profiles card
   chrome.storage.local.get(['registeredProfiles'], d => {
     const profiles = (d.registeredProfiles || []).filter(p => p && p.url);
@@ -267,77 +275,91 @@ function renderBillingCard(plan, used, quota, billing) {
     statusHtml = '<span class="bc-status bc-active"><span class="bc-status-dot"></span>Active</span>';
   }
 
-  // Dates row
-  let datesHtml;
+  // ── 3-column stats strip ─────────────────────────────────────────────────
+  let statsHtml;
+
   if (isCanceling && hasCancelDate) {
-    datesHtml = `
-      <div class="bc-divider"></div>
-      <div class="bc-dates-row bc-dates-canceling">
-        <div class="bc-date-block">
-          <div class="bc-date-label">Period started</div>
-          <div class="bc-date-val">${periodStart}</div>
+    const daysVal = days !== null
+      ? (days <= 0 ? '<span class="bc-sval bc-sval-red">Today</span>'
+        : days <= 7 ? `<span class="bc-sval bc-sval-amber">${days} day${days===1?'':'s'}</span>`
+        : `<span class="bc-sval">${days} days</span>`)
+      : '<span class="bc-sval">—</span>';
+
+    statsHtml = `
+      <div class="bc-stats">
+        <div class="bc-stat">
+          <div class="bc-slabel">Period started</div>
+          <div class="bc-sval">${periodStart}</div>
         </div>
-        <div class="bc-date-arrow">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        <div class="bc-sdiv"></div>
+        <div class="bc-stat">
+          <div class="bc-slabel">Access ends</div>
+          <div class="bc-sval bc-sval-amber">${keyDateFmt}</div>
+          <div class="bc-ssub">then reverts to free</div>
         </div>
-        <div class="bc-date-block">
-          <div class="bc-date-label">Access ends</div>
-          <div class="bc-date-val bc-date-canceling">${keyDateFmt}</div>
-        </div>
-        <div class="bc-date-sep"></div>
-        <div class="bc-days-block">
-          ${daysHtml}
-          <div class="bc-days-sub">then reverts to free</div>
+        <div class="bc-sdiv"></div>
+        <div class="bc-stat">
+          <div class="bc-slabel">Days remaining</div>
+          ${daysVal}
+          <div class="bc-ssub">of paid access</div>
         </div>
       </div>`;
+
   } else if (!isCanceling && hasBillingDates) {
-    datesHtml = `
-      <div class="bc-divider"></div>
-      <div class="bc-dates-row">
-        <div class="bc-date-block">
-          <div class="bc-date-label">Period started</div>
-          <div class="bc-date-val">${periodStart}</div>
+    const daysVal = days !== null
+      ? (days <= 0 ? '<span class="bc-sval bc-sval-red">Today</span>'
+        : days <= 7 ? `<span class="bc-sval bc-sval-amber">${days} day${days===1?'':'s'}</span>`
+        : `<span class="bc-sval">${days} days</span>`)
+      : '<span class="bc-sval">—</span>';
+
+    statsHtml = `
+      <div class="bc-stats">
+        <div class="bc-stat">
+          <div class="bc-slabel">Current period</div>
+          <div class="bc-sval">${periodStart}</div>
         </div>
-        <div class="bc-date-arrow">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        <div class="bc-sdiv"></div>
+        <div class="bc-stat">
+          <div class="bc-slabel">Next billing date</div>
+          <div class="bc-sval bc-sval-gold">${keyDateFmt}</div>
+          <div class="bc-ssub">proposals reset on this date</div>
         </div>
-        <div class="bc-date-block">
-          <div class="bc-date-label">Resets &amp; renews</div>
-          <div class="bc-date-val bc-date-next">${keyDateFmt}</div>
-        </div>
-        <div class="bc-date-sep"></div>
-        <div class="bc-days-block">
-          ${daysHtml}
-          <div class="bc-days-sub">until next charge</div>
+        <div class="bc-sdiv"></div>
+        <div class="bc-stat">
+          <div class="bc-slabel">Days remaining</div>
+          ${daysVal}
+          <div class="bc-ssub">in current cycle</div>
         </div>
       </div>`;
+
   } else {
-    datesHtml = `
-      <div class="bc-divider"></div>
-      <div class="bc-dates-pending">
+    statsHtml = `
+      <div class="bc-stats bc-stats-pending">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
         Exact billing dates will appear here after your next renewal cycle.
       </div>`;
   }
 
   wrap.innerHTML = `
     <div class="billing-card">
-      <div class="bc-top">
-        <div class="bc-plan-col">
-          <div class="bc-plan-row">
+      <div class="bc-header">
+        <div class="bc-header-left">
+          <div class="bc-badges-row">
             <span class="bc-plan-badge badge-${plan}">${planLabel}</span>
             ${statusHtml}
           </div>
-          <div class="bc-plan-name">${planLabel} Plan <span class="bc-price">${price}/mo</span></div>
+          <div class="bc-plan-title">${planLabel} Plan <span class="bc-plan-price">${price}/mo</span></div>
           <div class="bc-plan-quota">${quota.toLocaleString()} proposals / month</div>
         </div>
-        <div class="bc-action-col">
+        <div class="bc-header-right">
           <button class="bc-manage-btn" id="bc-manage-btn">
             Manage billing
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
           </button>
         </div>
       </div>
-      ${datesHtml}
+      <div class="bc-body-divider"></div>
+      ${statsHtml}
     </div>
   `;
 
