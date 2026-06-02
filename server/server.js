@@ -602,82 +602,50 @@ app.post('/webhook/paddle', async (req, res) => {
     await sendWelcomeEmail(email, plan);
   }
 
-  // Helper: resolve email from event data, falling back to Paddle API if needed
-  async function resolveEmail(data) {
-    const email = data?.customer?.email || data?.email || null;
-    if (email) return email;
-    const custId = data?.customer_id;
-    if (custId && process.env.PADDLE_API_KEY) {
-      try { const c = await getPaddleCustomer(custId); return c?.email || null; } catch(e) {}
-    }
-    return null;
-  }
-
   if (type === 'subscription.renewed') {
-    const data           = event.data || {};
-    const email          = await resolveEmail(data);
-    const nextBilledAt       = data.next_billed_at || null;
-    const currentPeriodStart = data.current_billing_period?.starts_at || new Date().toISOString();
+    const email              = event.data?.customer?.email;
+    const nextBilledAt       = event.data?.next_billed_at || null;
+    const currentPeriodStart = event.data?.current_billing_period?.starts_at || new Date().toISOString();
     if (email) {
-      // Clear cancels_at on renewal — user reactivated or period rolled over
       await updateUser(email, { used: 0, billing_month: currentMonth(), next_billed_at: nextBilledAt, current_period_start: currentPeriodStart, cancels_at: null, active: true });
       console.log(`Renewed + reset: ${email} | next_billed_at: ${nextBilledAt}`);
-    } else {
-      console.error('subscription.renewed: could not resolve email');
     }
   }
 
-  // Plan change (upgrade/downgrade) OR scheduled cancellation via portal
+  // Plan change via upgrade/downgrade API — keep DB in sync
   if (type === 'subscription.updated') {
     const data  = event.data || {};
-    const email = await resolveEmail(data);
+    const email = data.customer?.email;
     if (email) {
-      // ── Scheduled cancellation — fires immediately when user cancels via portal ──
-      if (data.scheduled_change?.action === 'cancel') {
-        const cancelsAt = data.scheduled_change.effective_at
-                        || data.current_billing_period?.ends_at
-                        || null;
-        await updateUser(email, { active: false, sub_id: '', cancels_at: cancelsAt });
-        console.log(`Scheduled cancel: ${email} | access until: ${cancelsAt}`);
-
-      } else {
-        // ── Regular plan change (upgrade/downgrade via our /upgrade endpoint) ────
-        const priceId            = data.items?.[0]?.price?.id;
-        const nextBilledAt       = data.next_billed_at || null;
-        const currentPeriodStart = data.current_billing_period?.starts_at || null;
-        const PRICE_MAP_UP       = {
-          [process.env.PADDLE_PRICE_STARTER]: 'starter',
-          [process.env.PADDLE_PRICE_PRO]:     'pro',
-          [process.env.PADDLE_PRICE_AGENCY]:  'agency',
-        };
-        const newPlan = PRICE_MAP_UP[priceId];
-        const updates = { active: true };
-        if (newPlan)            updates.plan                 = newPlan;
-        if (nextBilledAt)       updates.next_billed_at       = nextBilledAt;
-        if (currentPeriodStart) updates.current_period_start = currentPeriodStart;
-        await updateUser(email, updates);
-        console.log(`subscription.updated: ${email} → plan:${newPlan || 'unchanged'}`);
-      }
-    } else {
-      console.error('subscription.updated: could not resolve email', JSON.stringify(data).slice(0, 200));
+      const priceId            = data.items?.[0]?.price?.id;
+      const nextBilledAt       = data.next_billed_at || null;
+      const currentPeriodStart = data.current_billing_period?.starts_at || null;
+      const PRICE_MAP_UP       = {
+        [process.env.PADDLE_PRICE_STARTER]: 'starter',
+        [process.env.PADDLE_PRICE_PRO]:     'pro',
+        [process.env.PADDLE_PRICE_AGENCY]:  'agency',
+      };
+      const newPlan = PRICE_MAP_UP[priceId];
+      const updates = { active: true };
+      if (newPlan)            updates.plan                 = newPlan;
+      if (nextBilledAt)       updates.next_billed_at       = nextBilledAt;
+      if (currentPeriodStart) updates.current_period_start = currentPeriodStart;
+      await updateUser(email, updates);
+      console.log(`subscription.updated: ${email} → plan:${newPlan || 'unchanged'}`);
     }
   }
 
-  // Subscription canceled or paused — keep paid plan intact, just mark inactive + set access end date
-  // getUserStatus() handles the actual plan downgrade once cancels_at passes
+  // Subscription canceled — keep paid plan active until cancels_at, getUserStatus() handles the downgrade
   if (['subscription.canceled','subscription.paused'].includes(type)) {
-    const data  = event.data || {};
-    const email = await resolveEmail(data);
+    const email = event.data?.customer?.email;
     if (email) {
-      const cancelsAt = data.current_billing_period?.ends_at
-                      || data.scheduled_change?.effective_at
-                      || data.canceled_at
+      const cancelsAt = event.data?.current_billing_period?.ends_at
+                      || event.data?.scheduled_change?.effective_at
+                      || event.data?.canceled_at
                       || null;
-      // Never set plan:'free' here — user keeps access until cancels_at
+      // Keep plan intact — never downgrade here. getUserStatus() downgrades when cancels_at passes.
       await updateUser(email, { active: false, sub_id: '', cancels_at: cancelsAt });
-      console.log(`Cancelled: ${email} | access until: ${cancelsAt || 'immediately'}`);
-    } else {
-      console.error('subscription.canceled: could not resolve email', JSON.stringify(data).slice(0, 200));
+      console.log(`Cancelled: ${email} | access until: ${cancelsAt || 'now'}`);
     }
   }
 
