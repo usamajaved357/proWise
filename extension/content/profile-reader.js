@@ -41,6 +41,7 @@
     if (UPWORK_TRAITS.test(s) || PORTFOLIO_NOISE.test(s)) return false;
     if (/^\d+$/.test(s) || /\$\d/.test(s)) return false;
     if (/\bdelivery\b|\bpaginat|\bcurrent page|\bgo to page/i.test(s)) return false;
+    if (/^Published (on|in)\b|^\d{1,2},?\s+\d{4}$|^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\b/i.test(s)) return false;
     if (s.split(' ').length > 6) return false;
     return true;
   }
@@ -233,7 +234,49 @@
     const dStart = text.indexOf('Project description.');
     const dEnd   = text.search(/Skills and deliverables|Report an issue/);
     const desc   = dStart > -1 ? text.slice(dStart + 20, dEnd > dStart ? dEnd : dStart + 800).replace(/\n+/g,' ').replace(/\s+/g,' ').trim().slice(0, 500) : '';
-    const skills = [...viewer.querySelectorAll('.skill-name')].map(el => el.innerText.trim().split('\n')[0]).filter(s => isValidSkill(s));
+    // Skills — try multiple selectors (Upwork changes class names frequently)
+    let skills = [];
+    const skillSels = [
+      '.skill-name',
+      '[class*="skill-name"]',
+      '[class*="skillName"]',
+      '.up-skill-badge',
+      '[class*="skill-badge"]',
+      '[class*="skillBadge"]',
+      '[data-test="skill-badge"]',
+      '[class*="skill-tag"]',
+      '[class*="skillTag"]',
+    ];
+    for (const sel of skillSels) {
+      try {
+        const els = viewer.querySelectorAll(sel);
+        if (els.length > 0) {
+          skills = [...els].map(el => el.innerText.trim().split('\n')[0].trim()).filter(s => isValidSkill(s));
+          if (skills.length > 0) break;
+        }
+      } catch(e) {}
+    }
+    // Fallback: text-based extraction from "Skills and deliverables" section
+    if (!skills.length) {
+      const sdStart = text.search(/Skills and deliverables/i);
+      if (sdStart > -1) {
+        // Find the newline AFTER the label to avoid cutting the first skill
+        const afterLabel = text.indexOf('\n', sdStart);
+        const sdFrom  = afterLabel > -1 ? afterLabel + 1 : sdStart + 24;
+        const sdChunk = text.slice(sdFrom, sdFrom + 800);
+        const sdEnd   = sdChunk.search(/\n(?:Report an issue|See more|Published on|\d+ views|Feedback|Flag|Share)/i);
+        const sdText  = sdEnd > -1 ? sdChunk.slice(0, sdEnd) : sdChunk.slice(0, 400);
+        skills = sdText.split('\n')
+          .map(l => l.trim())
+          .filter(l => {
+            if (!l || l.length < 2 || l.length > 60) return false;
+            if (/^Published (on|in)|^\d{4}$|\bJan\b|\bFeb\b|\bMar\b|\bApr\b|\bMay\b|\bJun\b|\bJul\b|\bAug\b|\bSep\b|\bOct\b|\bNov\b|\bDec\b/i.test(l)) return false;
+            if (/^\d+\s*(views?|likes?|comments?)/i.test(l)) return false;
+            return isValidSkill(l);
+          })
+          .slice(0, 15);
+      }
+    }
     const urls   = [];
     viewer.querySelectorAll('.portfolio-v2-viewer-media-block-link').forEach(el => {
       const href = el.getAttribute('href') || el.querySelector('a')?.getAttribute('href');
@@ -251,7 +294,7 @@
       if (ex) {
         if (!ex.desc   && d.desc)               ex.desc   = d.desc;
         if (!ex.role   && d.role)               ex.role   = d.role;
-        if (!ex.skills?.length && d.skills?.length) ex.skills = d.skills;
+        if (d.skills?.length)                   ex.skills = d.skills; // always refresh skills from sync
         if (!ex.urls?.length   && d.urls?.length)   ex.urls   = d.urls;
       } else {
         merged.push({ title: d.title, desc: d.desc||'', role: d.role||'', skills: d.skills||[], urls: d.urls||[], _autoRead: true });

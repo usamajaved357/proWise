@@ -543,14 +543,24 @@ function renderSkillsExpand(wrap, skillsArr, expanded) {
   }
 }
 
+// HTML escape helper — prevents broken innerHTML when text has < > & chars
+function _esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
 // ── Portfolio item renderer — compact 3-per-row + expandable edit ────────────
 function renderPortfolioItem(list, p, pi, allProfiles, profileIdx, autoOpen) {
   const hasLinks = p.urls && p.urls.some(u => u.trim());
-  const skills   = Array.isArray(p.skills) ? p.skills : [];
+  // Skills: handle both array and comma-separated string (older storage format)
+  const skills = Array.isArray(p.skills)
+    ? p.skills
+    : (typeof p.skills === 'string' && p.skills.trim())
+      ? p.skills.split(',').map(s => s.trim()).filter(Boolean)
+      : [];
   const item     = document.createElement('div');
   item.className = 'port-item';
   item.dataset.pi         = pi;
-  item.dataset.portSkills = JSON.stringify(p.skills || []);
+  item.dataset.portSkills = JSON.stringify(skills); // always array, even if stored as string
   item.dataset.portRole   = p.role || '';
 
   // Freshness
@@ -561,14 +571,14 @@ function renderPortfolioItem(list, p, pi, allProfiles, profileIdx, autoOpen) {
     : '';
 
   const urlsHtml = (p.urls && p.urls.length ? p.urls : ['']).map(u =>
-    '<div class="port-url-row"><input type="url" class="port-url-inp" value="' + u + '" placeholder="https://apps.apple.com/..."><button class="btn-url-del">×</button></div>'
+    '<div class="port-url-row"><input type="url" class="port-url-inp" value="' + _esc(u) + '" placeholder="https://apps.apple.com/..."><button class="btn-url-del">×</button></div>'
   ).join('');
 
   const firstUrl  = hasLinks ? (p.urls||[]).find(u=>u.trim()) : null;
   const urlDomain = firstUrl ? firstUrl.replace(/^https?:\/\//, '').split('/')[0] : '';
 
   const skillsChips = skills.length
-    ? skills.slice(0,4).map(s=>'<span class="port-skill-tag">'+s+'</span>').join('') + (skills.length>4?'<span class="port-skill-tag port-skill-more">+' + (skills.length-4) + '</span>':'')
+    ? skills.slice(0,4).map(s=>'<span class="port-skill-tag">'+_esc(s)+'</span>').join('') + (skills.length>4?'<span class="port-skill-tag port-skill-more">+' + (skills.length-4) + '</span>':'')
     : '<span class="port-no-skills">No skills</span>';
 
   const urlChips = hasLinks
@@ -576,22 +586,22 @@ function renderPortfolioItem(list, p, pi, allProfiles, profileIdx, autoOpen) {
     : '';
 
   const skillsReadonly = skills.length
-    ? skills.map(s=>'<span class="port-skill-tag">'+s+'</span>').join('')
+    ? skills.map(s=>'<span class="port-skill-tag">'+_esc(s)+'</span>').join('')
     : '<span style="font-size:11px;color:var(--white3)">Sync from Upwork profile.</span>';
 
   item.innerHTML =
     '<div class="port-compact">' +
       '<div class="port-compact-head">' +
         '<span class="port-compact-dot ' + (hasLinks?'ok':'warn') + '"></span>' +
-        '<span class="port-compact-name">' + (p.title || 'Untitled') + '</span>' +
+        '<span class="port-compact-name">' + _esc(p.title || 'Untitled') + '</span>' +
         freshBdg +
         '<button class="btn-port-edit">Edit</button>' +
         '<button class="btn-port-del">×</button>' +
       '</div>' +
       '<div class="port-compact-meta">' +
         '<div class="port-skill-tags">' + skillsChips + '</div>' +
-        (p.desc ? '<div class="port-compact-desc">' + p.desc + '</div>' : '') +
-        (urlDomain ? '<div class="port-compact-url">🔗 ' + urlDomain + '</div>' : '<div class="port-compact-url muted">No link</div>') +
+        (p.desc ? '<div class="port-compact-desc">' + _esc(p.desc) + '</div>' : '') +
+        (urlDomain ? '<div class="port-compact-url">🔗 ' + _esc(urlDomain) + '</div>' : '<div class="port-compact-url muted">No link</div>') +
         urlChips +
       '</div>' +
     '</div>' +
@@ -661,28 +671,45 @@ function saveCard(card, idx, allProfiles) {
   const profile = allProfiles[idx];
   if (!profile?.id) return;
 
-  const title      = card.querySelector('[data-field="title"]')?.value?.trim()   || '';
-  const bio        = card.querySelector('[data-field="bio"]')?.value?.trim()     || '';
-  const country    = card.querySelector('[data-field="country"]')?.value?.trim() || '';
-  const extra      = card.querySelector('[data-field="extra"]')?.value?.trim()   || '';
-  const portfolios = [...card.querySelectorAll('.port-item')].map(el => ({
-    title:  el.querySelector('.port-title-inp')?.value?.trim() || '',
-    urls:   [...el.querySelectorAll('.port-url-inp')].map(i=>i.value.trim()).filter(Boolean),
-    desc:   el.querySelector('.port-desc-inp')?.value?.trim()  || '',
-    skills: JSON.parse(el.dataset.portSkills||'[]'),
-    role:   el.dataset.portRole||'',
-  })).filter(p => p.title || p.urls.length);
+  const title   = card.querySelector('[data-field="title"]')?.value?.trim()   || '';
+  const bio     = card.querySelector('[data-field="bio"]')?.value?.trim()     || '';
+  const country = card.querySelector('[data-field="country"]')?.value?.trim() || '';
+  const extra   = card.querySelector('[data-field="extra"]')?.value?.trim()   || '';
+
+  // Collect only user-editable fields from DOM — do NOT read skills/role from DOM
+  const domPorts = [...card.querySelectorAll('.port-item')].map(el => ({
+    _pi:   parseInt(el.dataset.pi) || 0,
+    title: el.querySelector('.port-title-inp')?.value?.trim() || '',
+    urls:  [...el.querySelectorAll('.port-url-inp')].map(i => i.value.trim()).filter(Boolean),
+    desc:  el.querySelector('.port-desc-inp')?.value?.trim()  || '',
+  }));
 
   const localKey = 'profileFull_' + profile.id;
 
-  // Load existing full data, merge edits, save back to local
+  // Load current storage first — then MERGE: preserve skills/role/metadata from storage
   chrome.storage.local.get([localKey], (localData) => {
-    const existing = localData[localKey] || profile;
-    const updated  = { ...existing, title, bio, country, extra, portfolios };
+    const existing     = localData[localKey] || profile;
+    const storedPorts  = existing.portfolios || [];
 
+    // Merge: use storage portfolio as base (keeps skills, role, _autoRead, urls etc.)
+    // Override only the user-editable fields with what's in the DOM
+    const portfolios = domPorts
+      .filter(d => d.title || d.urls.length)
+      .map(d => {
+        // Match stored portfolio by index (pi) which was set when page rendered
+        const stored = storedPorts[d._pi] || {};
+        return {
+          ...stored,         // preserve: skills, role, _autoRead, and any other synced fields
+          title: d.title || stored.title || '',
+          urls:  d.urls.length  ? d.urls  : (stored.urls  || []),
+          desc:  d.desc  !== '' ? d.desc  : (stored.desc  || ''),
+        };
+      });
+
+    const updated = { ...existing, title, bio, country, extra, portfolios };
     chrome.storage.local.set({ [localKey]: updated }, () => {
-      // Also update sync profile for legacy compat (background.js fallback)
-      // profile data lives in local storage — no sync write needed
+      // Update in-memory allProfiles to stay consistent
+      if (allProfiles[idx]) allProfiles[idx].portfolios = portfolios;
       showSaved('saved-card-' + idx);
     });
   });
