@@ -415,6 +415,55 @@ textarea.edit-val{min-height:38px}
   transition:all .15s;white-space:nowrap;flex-shrink:0;
 }
 .btn-slot-open:hover{background:rgba(74,222,128,.18);border-color:rgba(74,222,128,.4);}
+
+/* ── Usage Stats Grid ─────────────────────────────────────────── */
+.us-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
+.us-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px 16px;position:relative;overflow:hidden}
+.us-card::before{content:'';display:block;height:2px;background:linear-gradient(90deg,var(--gold),var(--gold2),transparent);position:absolute;top:0;left:0;right:0}
+.us-card-dim::before{background:linear-gradient(90deg,var(--purple),transparent);opacity:.5}
+.us-card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.us-icon{width:32px;height:32px;border-radius:8px;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.2);display:flex;align-items:center;justify-content:center;color:var(--gold)}
+.us-icon-blue{background:rgba(96,165,250,.1);border-color:rgba(96,165,250,.2);color:var(--blue)}
+.us-icon-purple{background:rgba(167,139,250,.1);border-color:rgba(167,139,250,.2);color:var(--purple)}
+.us-plan-badge{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;padding:3px 9px;border-radius:20px;background:rgba(251,191,36,.12);color:var(--yellow);border:1px solid rgba(251,191,36,.2)}
+.us-plan-badge.badge-starter{background:rgba(96,165,250,.1);color:var(--blue);border-color:rgba(96,165,250,.2)}
+.us-plan-badge.badge-pro{background:var(--gold-bg);color:var(--gold);border-color:var(--gold-border)}
+.us-plan-badge.badge-agency{background:rgba(167,139,250,.1);color:var(--purple);border-color:rgba(167,139,250,.2)}
+.us-soon-tag{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:3px 9px;border-radius:20px;background:rgba(167,139,250,.1);color:var(--purple);border:1px solid rgba(167,139,250,.2)}
+.us-big-num{font-size:38px;font-weight:800;line-height:1;letter-spacing:-.04em;color:var(--white);margin-bottom:2px}
+.us-num-dim{color:var(--white4)}
+.us-big-label{font-size:11px;color:var(--white3);margin-bottom:12px}
+.us-bar-track{height:4px;background:rgba(255,255,255,.06);border-radius:999px;overflow:hidden;margin-bottom:8px}
+.us-bar{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--gold),var(--gold2));transition:width .55s cubic-bezier(.4,0,.2,1)}
+.us-footnote{font-size:10.5px;color:var(--white3);line-height:1.5}
+.us-footnote strong{color:var(--white2);font-weight:600}
+
+/* ── Plan Cards v2 ────────────────────────────────────────────── */
+.pcv2-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.pcv2-card{background:rgba(255,255,255,.03);border:1px solid var(--border2);border-radius:var(--radius);padding:22px 18px 18px;position:relative;transition:border-color .2s,transform .2s,box-shadow .2s;cursor:pointer}
+.pcv2-card:hover{border-color:rgba(201,168,76,.35);transform:translateY(-2px);box-shadow:0 10px 30px rgba(0,0,0,.3)}
+.pcv2-card.current{border-color:var(--green);background:rgba(52,211,153,.02)}
+.pcv2-card.current:hover{border-color:var(--green);transform:none}
+.pcv2-featured{border-color:rgba(201,168,76,.4);background:rgba(201,168,76,.04)}
+.pcv2-featured:hover{border-color:rgba(201,168,76,.6)}
+.pcv2-pop{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--gold),var(--gold2));color:#0a0e1a;font-size:9px;font-weight:700;padding:4px 14px;border-radius:20px;white-space:nowrap;letter-spacing:.07em}
+.pcv2-tier{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--white3);margin-bottom:8px}
+.pcv2-price{font-size:34px;font-weight:800;line-height:1;letter-spacing:-.04em;color:var(--white);margin-bottom:16px}
+.pcv2-price span{font-size:13px;font-weight:400;color:var(--white3)}
+.pcv2-sep{height:1px;background:var(--border);margin-bottom:14px}
+.pcv2-list{list-style:none;display:flex;flex-direction:column;gap:9px;margin-bottom:20px}
+.pcv2-list li{display:flex;align-items:flex-start;gap:9px;font-size:12px;font-weight:500;color:var(--white2);line-height:1.4}
+.pcv2-check{width:17px;height:17px;border-radius:50%;background:rgba(52,211,153,.13);border:1px solid rgba(52,211,153,.28);color:#4ade80;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;flex-shrink:0;margin-top:1px}
+.pcv2-check-gold{background:rgba(201,168,76,.14);border-color:rgba(201,168,76,.35);color:var(--gold)}
+.pcv2-btn{width:100%;padding:10px;border-radius:var(--radius-sm);font-size:12px;font-weight:700;cursor:pointer;border:none;font-family:inherit;transition:all .15s;letter-spacing:.01em}
+.pcv2-btn-outline{background:transparent;border:1px solid var(--border2);color:var(--white2)}
+.pcv2-btn-outline:hover{border-color:var(--gold);color:var(--gold)}
+.pcv2-btn-gold{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#0a0e1a}
+.pcv2-btn-gold:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.pcv2-btn-current{background:transparent;border:none;color:var(--green);font-size:12.5px;font-weight:700;cursor:default;letter-spacing:.01em}
+.pcv2-btn-current:hover{transform:none;filter:none}
+@keyframes pcv2-pulse{0%{box-shadow:0 0 0 0 rgba(201,168,76,.55)}65%{box-shadow:0 0 0 10px rgba(201,168,76,0)}100%{box-shadow:0 0 0 0 rgba(201,168,76,0)}}
+.pcv2-card.plan-selecting{animation:pcv2-pulse .55s ease-out}
 </style>
 </head>
 <body>
@@ -516,7 +565,52 @@ textarea.edit-val{min-height:38px}
     <!-- ══ SUBSCRIPTION ══ -->
     <div class="section" id="section-subscription">
       <div class="section-title-solo">Subscription</div>
-      <div class="section-sub-solo">Manage your plan, profile URLs, and proposal settings.</div>
+      <div class="section-sub-solo">Track your usage and manage your plan.</div>
+
+      <!-- Usage Stats Grid -->
+      <div class="us-grid">
+        <!-- Proposals -->
+        <div class="us-card">
+          <div class="us-card-head">
+            <div class="us-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            </div>
+            <div class="us-plan-badge" id="ud-plan-badge">Free</div>
+          </div>
+          <div class="us-big-num" id="ud-proposals-rem">2</div>
+          <div class="us-big-label">proposals remaining</div>
+          <div class="us-bar-track"><div class="us-bar" id="ud-bar" style="width:0%"></div></div>
+          <div class="us-footnote"><strong id="ud-used">0</strong> used · <span id="ud-limit">2</span> total this month</div>
+          <div class="ud-urgency" id="ud-urgency"></div>
+        </div>
+
+        <!-- Profiles -->
+        <div class="us-card">
+          <div class="us-card-head">
+            <div class="us-icon us-icon-blue">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            </div>
+          </div>
+          <div class="us-big-num" id="ud-profiles-used">0</div>
+          <div class="us-big-label">profiles added</div>
+          <div class="us-bar-track"><div class="us-bar" id="ud-profiles-bar" style="width:0%;background:var(--blue)"></div></div>
+          <div class="us-footnote">of <strong id="ud-profiles-limit">1</strong> allowed on your plan</div>
+        </div>
+
+        <!-- Audits — coming soon -->
+        <div class="us-card us-card-dim">
+          <div class="us-card-head">
+            <div class="us-icon us-icon-purple">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            </div>
+            <div class="us-soon-tag">Soon</div>
+          </div>
+          <div class="us-big-num us-num-dim">—</div>
+          <div class="us-big-label">profile audits</div>
+          <div class="us-bar-track"><div class="us-bar" style="width:0%;background:var(--purple)"></div></div>
+          <div class="us-footnote" style="color:var(--purple)">Coming in next update</div>
+        </div>
+      </div>
 
       <!-- Email -->
       <div class="card">
@@ -538,71 +632,65 @@ textarea.edit-val{min-height:38px}
         </div>
       </div>
 
-      <!-- Profile URL slots -->
-      <div class="card">
-        <div class="card-title">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          Profile URLs
-          <span style="font-size:11px;font-weight:400;color:var(--white3);text-transform:none;letter-spacing:0">— paste your Upwork profile link(s)</span>
-        </div>
-        <div style="font-size:12px;color:var(--white3);line-height:1.65;margin-bottom:14px">
-          Snag AI only reads profiles from these URLs. After adding, visit the URL and the extension syncs everything automatically.
-        </div>
-        <div class="profile-slots" id="profile-slots"></div>
-        <div style="display:flex;align-items:center;gap:12px;margin-top:4px">
-          <button class="btn-primary" id="save-profile-urls" style="font-size:12px;padding:9px 20px">Save URLs</button>
-          <span class="saved-msg" id="saved-urls-msg">✓ Saved</span>
-        </div>
-      </div>
-
-      <!-- Usage -->
-      <div class="usage-card">
-        <div class="usage-top">
-          <div class="usage-plan-name" id="ud-plan">Free plan</div>
-          <div class="usage-reset">Resets monthly</div>
-        </div>
-        <div class="usage-bar-wrap"><div class="usage-bar" id="ud-bar" style="width:0%"></div></div>
-        <div class="usage-counts">
-          <span><strong id="ud-used">0</strong> used</span>
-          <span id="ud-limit">2 total</span>
-        </div>
-        <div class="ud-urgency" id="ud-urgency"></div>
-      </div>
-
       <!-- Plans -->
-      <div class="card">
+      <div class="card" style="overflow:visible">
         <div class="card-title">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
           Choose a plan
         </div>
-        <div class="plans-grid">
-          <div class="plan-card" id="plan-starter">
-            <div class="plan-tier">Starter</div>
-            <div class="plan-price">$19<span>/mo</span></div>
-            <div class="plan-limit">150 proposals/mo</div>
-            <div class="plan-profiles">1 Upwork profile</div>
-            <button class="plan-btn plan-btn-outline" data-plan="starter">Get Starter →</button>
+        <div class="pcv2-grid">
+
+          <!-- Starter -->
+          <div class="pcv2-card" id="plan-starter">
+            <div class="pcv2-tier">STARTER</div>
+            <div class="pcv2-price">$19<span>/mo</span></div>
+            <div class="pcv2-sep"></div>
+            <ul class="pcv2-list">
+              <li><span class="pcv2-check">✓</span>150 proposals / month</li>
+              <li><span class="pcv2-check">✓</span>1 Upwork profile</li>
+              <li><span class="pcv2-check">✓</span>AI cover letters</li>
+              <li><span class="pcv2-check">✓</span>Job analysis &amp; risk alerts</li>
+              <li><span class="pcv2-check">✓</span>Win probability scoring</li>
+            </ul>
+            <button class="pcv2-btn pcv2-btn-outline" data-plan="starter">Get Starter →</button>
           </div>
-          <div class="plan-card featured" id="plan-pro">
-            <div class="plan-badge-pop">BEST VALUE</div>
-            <div class="plan-tier">Pro</div>
-            <div class="plan-price">$39<span>/mo</span></div>
-            <div class="plan-limit">400 proposals/mo</div>
-            <div class="plan-profiles">3 Upwork profiles</div>
-            <button class="plan-btn plan-btn-gold" data-plan="pro">Get Pro →</button>
+
+          <!-- Pro -->
+          <div class="pcv2-card pcv2-featured" id="plan-pro">
+            <div class="pcv2-pop">⭐ BEST VALUE</div>
+            <div class="pcv2-tier" style="color:var(--gold)">PRO</div>
+            <div class="pcv2-price" style="color:var(--gold)">$39<span>/mo</span></div>
+            <div class="pcv2-sep"></div>
+            <ul class="pcv2-list">
+              <li><span class="pcv2-check pcv2-check-gold">✓</span>400 proposals / month</li>
+              <li><span class="pcv2-check pcv2-check-gold">✓</span>3 Upwork profiles</li>
+              <li><span class="pcv2-check pcv2-check-gold">✓</span>Everything in Starter</li>
+              <li><span class="pcv2-check pcv2-check-gold">✓</span>Portfolio auto-matching</li>
+              <li><span class="pcv2-check pcv2-check-gold">✓</span>Profile strength analysis</li>
+            </ul>
+            <button class="pcv2-btn pcv2-btn-gold" data-plan="pro">Get Pro →</button>
           </div>
-          <div class="plan-card" id="plan-agency">
-            <div class="plan-tier">Agency</div>
-            <div class="plan-price">$69<span>/mo</span></div>
-            <div class="plan-limit">900 proposals/mo</div>
-            <div class="plan-profiles">5 Upwork profiles</div>
-            <button class="plan-btn plan-btn-outline" data-plan="agency">Get Agency →</button>
+
+          <!-- Agency -->
+          <div class="pcv2-card" id="plan-agency">
+            <div class="pcv2-tier">AGENCY</div>
+            <div class="pcv2-price">$69<span>/mo</span></div>
+            <div class="pcv2-sep"></div>
+            <ul class="pcv2-list">
+              <li><span class="pcv2-check">✓</span>900 proposals / month</li>
+              <li><span class="pcv2-check">✓</span>5 Upwork profiles</li>
+              <li><span class="pcv2-check">✓</span>Everything in Pro</li>
+              <li><span class="pcv2-check">✓</span>Team &amp; multi-freelancer use</li>
+              <li><span class="pcv2-check">✓</span>Priority processing</li>
+            </ul>
+            <button class="pcv2-btn pcv2-btn-outline" data-plan="agency">Get Agency →</button>
           </div>
+
         </div>
-        <p style="font-size:11px;color:var(--white3);text-align:center">Cancel anytime · Instant activation</p>
+        <p style="font-size:11px;color:var(--white3);text-align:center;margin-top:16px">Cancel anytime · Instant activation</p>
       </div>
 
-      <!-- Proposal settings (moved from Settings tab) -->
+      <!-- Proposal Settings -->
       <div class="card">
         <div class="card-title">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>

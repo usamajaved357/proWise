@@ -78,46 +78,65 @@ function updatePlanUI(plan, used, quota) {
   document.getElementById('sb-count').textContent     = used + ' / ' + quota + ' used';
   document.getElementById('sb-bar').style.width       = pct + '%';
 
-  // Subscription page usage section
-  document.getElementById('ud-plan').textContent  = label + ' plan';
-  document.getElementById('ud-used').textContent  = used;
-  document.getElementById('ud-limit').textContent = quota + ' total';
-  document.getElementById('ud-bar').style.width   = pct + '%';
+  // Usage stats — proposals card
+  const planBadgeEl = document.getElementById('ud-plan-badge');
+  if (planBadgeEl) { planBadgeEl.textContent = label; planBadgeEl.className = 'us-plan-badge badge-' + plan; }
+  const remEl = document.getElementById('ud-proposals-rem');
+  if (remEl) remEl.textContent = rem;
+  const usedEl = document.getElementById('ud-used');
+  if (usedEl) usedEl.textContent = used;
+  const limEl = document.getElementById('ud-limit');
+  if (limEl) limEl.textContent = quota;
+  const barEl = document.getElementById('ud-bar');
+  if (barEl) {
+    barEl.style.width = pct + '%';
+    barEl.style.background = pct >= 90 ? 'var(--red)' : pct >= 70 ? 'var(--yellow)' : '';
+  }
   const _ue = document.getElementById('ud-urgency');
   if (_ue) {
     let msg='', cls='ud-urgency';
-    if (pct>=100)     { msg='Out of proposals — upgrade to keep applying.'; cls+=' ud-danger'; }
-    else if(pct>=90)  { msg='Only '+rem+' proposals left this month.';      cls+=' ud-danger'; }
-    else if(pct>=70)  { msg="You've used "+used+' of '+quota+' proposals — '+rem+' remaining.'; cls+=' ud-warn'; }
-    else if(pct>=40)  { msg=used+' proposals used this month · '+rem+' left.'; cls+=' ud-ok'; }
+    if (pct>=100)    { msg='Out of proposals — upgrade to keep applying.'; cls+=' ud-danger'; }
+    else if(pct>=90) { msg='Only '+rem+' left this month.'; cls+=' ud-danger'; }
+    else if(pct>=70) { msg=used+' used · '+rem+' remaining this month.'; cls+=' ud-warn'; }
     _ue.textContent=msg; _ue.className=cls;
   }
 
-  // Highlight active plan card
-  // Reset all plan cards and buttons
-  document.querySelectorAll('.plan-card').forEach(c => {
+  // Usage stats — profiles card
+  chrome.storage.local.get(['registeredProfiles'], d => {
+    const profiles = (d.registeredProfiles || []).filter(p => p && p.url);
+    const profilesUsed  = profiles.length;
+    const profilesLimit = PLAN_LIMITS[plan] || 1;
+    const profilesPct   = Math.min(100, (profilesUsed / profilesLimit) * 100);
+    const puEl = document.getElementById('ud-profiles-used');
+    if (puEl) puEl.textContent = profilesUsed;
+    const plEl = document.getElementById('ud-profiles-limit');
+    if (plEl) plEl.textContent = profilesLimit;
+    const pbEl = document.getElementById('ud-profiles-bar');
+    if (pbEl) pbEl.style.width = profilesPct + '%';
+  });
+
+  // Plan cards — reset all
+  document.querySelectorAll('.pcv2-card').forEach(c => {
     c.classList.remove('current');
-    const btn = c.querySelector('.plan-btn[data-plan]');
+    const btn = c.querySelector('.pcv2-btn[data-plan]');
     if (btn) {
       const p = btn.dataset.plan;
-      const labels = { starter: 'Get Starter →', pro: 'Get Pro →', agency: 'Get Agency →' };
-      btn.textContent = labels[p] || 'Upgrade →';
+      const btnLabels = { starter:'Get Starter →', pro:'Get Pro →', agency:'Get Agency →' };
+      btn.textContent = btnLabels[p] || 'Upgrade →';
       btn.disabled    = false;
-      btn.className   = 'plan-btn ' + (p === 'pro' ? 'plan-btn-gold' : 'plan-btn-outline');
+      btn.className   = 'pcv2-btn ' + (p === 'pro' ? 'pcv2-btn-gold' : 'pcv2-btn-outline');
     }
   });
-  // Highlight and lock the active plan card
+  // Mark active plan
   const activeCard = document.getElementById('plan-' + plan);
   if (activeCard && plan !== 'free') {
     activeCard.classList.add('current');
-    const btn = activeCard.querySelector('.plan-btn[data-plan]');
+    const btn = activeCard.querySelector('.pcv2-btn[data-plan]');
     if (btn) {
       btn.textContent = '✓ Current plan';
       btn.disabled    = true;
-      btn.className   = 'plan-btn plan-btn-current';
+      btn.className   = 'pcv2-btn pcv2-btn-current';
     }
-  } else if (activeCard) {
-    activeCard.classList.add('current');
   }
 }
 
@@ -739,8 +758,16 @@ document.getElementById('add-profile-btn')?.addEventListener('click', () => {
 });
 document.getElementById('goto-sub-btn')?.addEventListener('click',    () => switchSection('subscription'));
 
-// ── Plan buttons ──────────────────────────────────────────────────────────────
-document.querySelectorAll('.plan-btn[data-plan]').forEach(btn => {
+// ── Plan cards — click animation + checkout ───────────────────────────────────
+document.querySelectorAll('.pcv2-card').forEach(card => {
+  card.addEventListener('click', () => {
+    card.classList.remove('plan-selecting');
+    void card.offsetWidth; // force reflow to restart animation
+    card.classList.add('plan-selecting');
+    setTimeout(() => card.classList.remove('plan-selecting'), 600);
+  });
+});
+document.querySelectorAll('.pcv2-btn[data-plan]').forEach(btn => {
   btn.addEventListener('click', e => { e.stopPropagation(); openCheckout(btn.dataset.plan); });
 });
 
