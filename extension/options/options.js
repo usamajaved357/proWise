@@ -5,7 +5,9 @@ const PLAN_LABELS  = { free: 'Free', starter: 'Starter', pro: 'Pro', agency: 'Ag
 const PLAN_QUOTAS  = { free: 2, starter: 150, pro: 400, agency: 900 };
 const SKILLS_SHOW  = 8; // visible before "x more"
 
-let currentSlide = 0;
+// Tracks the user's current plan so plan card buttons know whether to checkout or upgrade
+let _activePlan   = 'free';
+let currentSlide  = 0;
 
 // ── Section navigation ────────────────────────────────────────────────────────
 function switchSection(name) {
@@ -54,6 +56,54 @@ function showSaved(id) {
 }
 function openCheckout(plan) {
   chrome.tabs.create({ url: `https://snagai.netlify.app/checkout.html?plan=${plan}` });
+}
+
+// Upgrade/downgrade an existing subscription instead of opening a new checkout
+async function upgradePlan(newPlan) {
+  const { userEmail } = await chrome.storage.sync.get(['userEmail']);
+  if (!userEmail) {
+    alert('Please add your subscription email in Settings first.');
+    return;
+  }
+
+  const planLabel   = PLAN_LABELS[newPlan] || newPlan;
+  const planPrices  = { starter: '$19', pro: '$39', agency: '$69' };
+  const fromLabel   = PLAN_LABELS[_activePlan] || _activePlan;
+  const direction   = ['starter','pro','agency'].indexOf(newPlan) > ['starter','pro','agency'].indexOf(_activePlan)
+    ? 'Upgrade' : 'Downgrade';
+
+  const confirmed = confirm(
+    `${direction} from ${fromLabel} to ${planLabel} (${planPrices[newPlan] || ''}/mo)?\n\n` +
+    `Your new plan takes effect immediately and will be charged on a prorated basis.`
+  );
+  if (!confirmed) return;
+
+  // Show loading state on all plan buttons
+  document.querySelectorAll('.pcv2-btn[data-plan]').forEach(b => { b.disabled = true; });
+  const targetBtn = document.querySelector(`.pcv2-btn[data-plan="${newPlan}"]`);
+  if (targetBtn) targetBtn.textContent = 'Updating…';
+
+  try {
+    const res  = await fetch(SERVER_URL + '/upgrade', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: userEmail, plan: newPlan })
+    });
+    const data = await res.json();
+
+    if (!res.ok || !data.ok) {
+      alert(data.error || 'Could not update your plan. Please try again.');
+      // Restore buttons
+      document.querySelectorAll('.pcv2-btn[data-plan]').forEach(b => { b.disabled = false; });
+      return;
+    }
+
+    // Refresh status so UI updates immediately
+    await loadStatus();
+  } catch(e) {
+    alert('Connection error. Please check your internet and try again.');
+    document.querySelectorAll('.pcv2-btn[data-plan]').forEach(b => { b.disabled = false; });
+  }
 }
 function getSkillsArr(profile) {
   if (!profile) return [];
@@ -142,6 +192,9 @@ function updatePlanUI(plan, used, quota, billing = {}) {
       btn.className   = 'pcv2-btn ' + (p === 'pro' ? 'pcv2-btn-gold' : 'pcv2-btn-outline');
     }
   });
+  // Track active plan globally so plan button clicks know to upgrade vs checkout
+  _activePlan = plan;
+
   // Mark active plan card
   const activeCard = document.getElementById('plan-' + plan);
   if (activeCard && plan !== 'free') {
@@ -915,7 +968,7 @@ document.getElementById('add-profile-btn')?.addEventListener('click', () => {
 });
 document.getElementById('goto-sub-btn')?.addEventListener('click',    () => switchSection('subscription'));
 
-// ── Plan cards — click animation + checkout ───────────────────────────────────
+// ── Plan cards — click animation + checkout / upgrade ────────────────────────
 document.querySelectorAll('.pcv2-card').forEach(card => {
   card.addEventListener('click', () => {
     card.classList.remove('plan-selecting');
@@ -925,7 +978,17 @@ document.querySelectorAll('.pcv2-card').forEach(card => {
   });
 });
 document.querySelectorAll('.pcv2-btn[data-plan]').forEach(btn => {
-  btn.addEventListener('click', e => { e.stopPropagation(); openCheckout(btn.dataset.plan); });
+  btn.addEventListener('click', e => {
+    e.stopPropagation();
+    const targetPlan = btn.dataset.plan;
+    // If the user already has a paid plan → upgrade/downgrade the existing subscription
+    // If the user is free → open a new checkout
+    if (_activePlan !== 'free') {
+      upgradePlan(targetPlan);
+    } else {
+      openCheckout(targetPlan);
+    }
+  });
 });
 
 // ── Settings — option card pickers ───────────────────────────────────────────

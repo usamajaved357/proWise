@@ -586,6 +586,29 @@ app.post('/webhook/paddle', async (req, res) => {
     }
   }
 
+  // Plan change via upgrade/downgrade API — keep DB in sync
+  if (type === 'subscription.updated') {
+    const data  = event.data || {};
+    const email = data.customer?.email;
+    if (email) {
+      const priceId            = data.items?.[0]?.price?.id;
+      const nextBilledAt       = data.next_billed_at || null;
+      const currentPeriodStart = data.current_billing_period?.starts_at || null;
+      const PRICE_MAP_UP       = {
+        [process.env.PADDLE_PRICE_STARTER]: 'starter',
+        [process.env.PADDLE_PRICE_PRO]:     'pro',
+        [process.env.PADDLE_PRICE_AGENCY]:  'agency',
+      };
+      const newPlan = PRICE_MAP_UP[priceId];
+      const updates = { active: true };
+      if (newPlan)            updates.plan                = newPlan;
+      if (nextBilledAt)       updates.next_billed_at      = nextBilledAt;
+      if (currentPeriodStart) updates.current_period_start = currentPeriodStart;
+      await updateUser(email, updates);
+      console.log(`subscription.updated: ${email} → plan:${newPlan || 'unchanged'}`);
+    }
+  }
+
   if (['subscription.canceled','subscription.paused'].includes(type)) {
     const email = event.data?.customer?.email;
     if (email) {
@@ -647,6 +670,75 @@ app.post('/billing-portal', async (req, res) => {
   } catch(e) {
     console.error('Billing portal error:', e.message);
     res.status(500).json({ error: 'Failed to connect to Paddle.' });
+  }
+});
+
+// ── Upgrade / downgrade existing subscription ────────────────────────────────
+app.post('/upgrade', async (req, res) => {
+  const { email, plan } = req.body;
+  if (!email || !email.includes('@'))            return res.status(400).json({ error: 'Email required.' });
+  if (!['starter','pro','agency'].includes(plan)) return res.status(400).json({ error: 'Invalid plan.' });
+
+  const user = await getUser(email);
+  if (!user || !user.sub_id) return res.status(404).json({ error: 'No active subscription found for this email.' });
+  if (user.plan === plan)    return res.status(400).json({ error: 'You are already on this plan.' });
+
+  const PRICE_IDS = {
+    starter: process.env.PADDLE_PRICE_STARTER,
+    pro:     process.env.PADDLE_PRICE_PRO,
+    agency:  process.env.PADDLE_PRICE_AGENCY,
+  };
+  const priceId = PRICE_IDS[plan];
+  if (!priceId) return res.status(500).json({ error: `Price ID for "${plan}" is not configured on the server.` });
+
+  const apiKey = process.env.PADDLE_API_KEY;
+  if (!apiKey)  return res.status(500).json({ error: 'Paddle API key not configured.' });
+
+  const isProd = process.env.PADDLE_ENVIRONMENT === 'production';
+  const host   = isProd ? 'api.paddle.com' : 'sandbox-api.paddle.com';
+
+  try {
+    const result = await new Promise((resolve, reject) => {
+      const body = JSON.stringify({
+        items: [{ price_id: priceId, quantity: 1 }],
+        proration_behavior: 'proportionally',
+      });
+      const request = https.request({
+        hostname: host,
+        path:     `/subscriptions/${user.sub_id}`,
+        method:   'PATCH',
+        headers: {
+          'Authorization':  `Bearer ${apiKey}`,
+          'Content-Type':   'application/json',
+          'Content-Length': Buffer.byteLength(body),
+        }
+      }, response => {
+        let d = '';
+        response.on('data', c => d += c);
+        response.on('end', () => { try { resolve(JSON.parse(d)); } catch(e) { reject(e); } });
+      });
+      request.on('error', reject);
+      request.write(body);
+      request.end();
+    });
+
+    if (result.error) {
+      console.error('Paddle upgrade error:', JSON.stringify(result.error));
+      return res.status(400).json({ error: result.error.detail || 'Paddle could not update the subscription.' });
+    }
+
+    // Update DB immediately — subscription.updated webhook will also fire as confirmation
+    const newLimit           = PLANS[plan]?.limit ?? 2;
+    const nextBilledAt       = result.data?.next_billed_at || user.next_billed_at || null;
+    const currentPeriodStart = result.data?.current_billing_period?.starts_at || user.current_period_start || null;
+    await updateUser(email, { plan, billing_month: currentMonth(), next_billed_at: nextBilledAt, current_period_start: currentPeriodStart });
+    console.log(`Upgraded: ${email} → ${plan} (was ${user.plan})`);
+
+    res.json({ ok: true, plan, limit: newLimit });
+
+  } catch(e) {
+    console.error('Upgrade error:', e.message);
+    res.status(500).json({ error: 'Failed to contact Paddle. Try again.' });
   }
 });
 
