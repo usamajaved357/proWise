@@ -464,6 +464,31 @@ textarea.edit-val{min-height:38px}
 .pcv2-btn-current:hover{transform:none;filter:none}
 @keyframes pcv2-pulse{0%{box-shadow:0 0 0 0 rgba(201,168,76,.55)}65%{box-shadow:0 0 0 10px rgba(201,168,76,0)}100%{box-shadow:0 0 0 0 rgba(201,168,76,0)}}
 .pcv2-card.plan-selecting{animation:pcv2-pulse .55s ease-out}
+
+/* ── Settings page ────────────────────────────────────────────── */
+.st-group{margin-bottom:28px}
+.st-group:last-of-type{margin-bottom:0}
+.st-group-label{font-size:13px;font-weight:700;color:var(--white);margin-bottom:3px}
+.st-group-desc{font-size:11.5px;color:var(--white3);margin-bottom:12px;line-height:1.6}
+.st-opts{display:grid;gap:8px}
+.st-opts-4{grid-template-columns:repeat(4,1fr)}
+.st-opts-3{grid-template-columns:repeat(3,1fr)}
+.st-opt{background:rgba(255,255,255,.03);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:14px 10px;text-align:center;cursor:pointer;transition:all .18s;user-select:none}
+.st-opt:hover{border-color:rgba(201,168,76,.4);background:rgba(201,168,76,.05);transform:translateY(-1px)}
+.st-opt.active{border-color:var(--gold);background:rgba(201,168,76,.1);box-shadow:0 0 0 1px rgba(201,168,76,.25)}
+.st-opt-icon{font-size:20px;margin-bottom:7px;line-height:1}
+.st-opt-name{font-size:12px;font-weight:700;color:var(--white);margin-bottom:2px}
+.st-opt-sub{font-size:10px;color:var(--white3);line-height:1.4}
+.st-opt.active .st-opt-name{color:var(--gold)}
+.st-opt.active .st-opt-sub{color:rgba(201,168,76,.7)}
+.st-divider{height:1px;background:var(--border);margin:24px 0}
+/* Email card redesign for settings */
+.st-email-card{display:flex;align-items:center;gap:14px;padding:16px;background:rgba(255,255,255,.03);border:1px solid var(--border2);border-radius:var(--radius-sm)}
+.st-email-icon{width:38px;height:38px;border-radius:10px;background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--green)}
+.st-email-info{flex:1;min-width:0}
+.st-email-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--white3);margin-bottom:3px}
+.st-email-val{font-size:13px;font-weight:600;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.st-email-edit{margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
 </style>
 </head>
 <body>
@@ -494,6 +519,11 @@ textarea.edit-val{min-height:38px}
         <div class="sb-dot"></div>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
         Subscription
+      </div>
+      <div class="sb-item" data-section="settings">
+        <div class="sb-dot"></div>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Settings
       </div>
       <div class="sb-divider"></div>
       <div class="sb-item" data-section="howto">
@@ -612,26 +642,6 @@ textarea.edit-val{min-height:38px}
         </div>
       </div>
 
-      <!-- Email -->
-      <div class="card">
-        <div class="card-title">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-          Account Email
-        </div>
-        <div class="email-row">
-          <div class="email-dot" id="email-dot" style="background:#374151"></div>
-          <div class="email-info">
-            <div class="email-label">Subscription email</div>
-            <div class="email-val" id="email-val">Not set</div>
-          </div>
-          <button class="btn-email-toggle" id="email-toggle">Add</button>
-        </div>
-        <div id="email-edit" style="display:none">
-          <input type="email" id="email-inp" placeholder="your@email.com" style="width:100%;padding:9px 12px;background:rgba(255,255,255,.05);border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--white);font-size:13px;outline:none;margin-bottom:8px;font-family:inherit">
-          <button class="btn-primary" id="email-save" style="font-size:12px;padding:8px 18px">Save email</button>
-        </div>
-      </div>
-
       <!-- Plans -->
       <div class="card" style="overflow:visible">
         <div class="card-title">
@@ -690,37 +700,104 @@ textarea.edit-val{min-height:38px}
         <p style="font-size:11px;color:var(--white3);text-align:center;margin-top:16px">Cancel anytime · Instant activation</p>
       </div>
 
-      <!-- Proposal Settings -->
+    </div><!-- /subscription -->
+
+    <!-- ══ SETTINGS ══ -->
+    <div class="section" id="section-settings">
+      <div class="section-title-solo">Settings</div>
+      <div class="section-sub-solo">Customize how Snag AI works for you.</div>
+
+      <!-- Account Email -->
       <div class="card">
         <div class="card-title">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          Proposal Settings
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          Account Email
         </div>
-        <div class="field-row">
-          <div class="field">
-            <label>Tone</label>
-            <select id="tone">
-              <option value="professional">Professional &amp; confident</option>
-              <option value="friendly">Friendly &amp; approachable</option>
-              <option value="direct">Direct &amp; results-focused</option>
-              <option value="enthusiastic">Enthusiastic &amp; energetic</option>
-            </select>
+        <div class="st-email-card">
+          <div class="st-email-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
           </div>
-          <div class="field">
-            <label>Length</label>
-            <select id="length">
-              <option value="short">Short (100–130 words)</option>
-              <option value="medium" selected>Medium (130–160 words)</option>
-              <option value="long">Detailed (160–200 words)</option>
-            </select>
+          <div class="st-email-info">
+            <div class="st-email-label">Subscription email</div>
+            <div class="st-email-val" id="email-val">Not set</div>
           </div>
+          <div class="email-dot" id="email-dot" style="background:#374151;width:9px;height:9px;border-radius:50%;flex-shrink:0"></div>
+          <button class="btn-email-toggle" id="email-toggle">Add</button>
         </div>
-        <div style="display:flex;align-items:center;gap:12px;margin-top:4px">
+        <div class="st-email-edit" id="email-edit" style="display:none">
+          <input type="email" id="email-inp" placeholder="your@email.com" style="width:100%;padding:9px 12px;background:rgba(255,255,255,.05);border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--white);font-size:13px;outline:none;margin-bottom:10px;font-family:inherit">
+          <button class="btn-primary" id="email-save" style="font-size:12px;padding:8px 18px">Save email</button>
+        </div>
+      </div>
+
+      <!-- Proposal Writing Settings -->
+      <div class="card">
+        <div class="card-title">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          Proposal Writing
+        </div>
+
+        <!-- Tone -->
+        <div class="st-group">
+          <div class="st-group-label">Writing Tone</div>
+          <div class="st-group-desc">Controls the voice and personality of your AI-generated proposals.</div>
+          <div class="st-opts st-opts-4" id="st-tone-opts">
+            <div class="st-opt active" data-val="professional">
+              <div class="st-opt-icon">🎯</div>
+              <div class="st-opt-name">Professional</div>
+              <div class="st-opt-sub">Confident &amp; polished</div>
+            </div>
+            <div class="st-opt" data-val="friendly">
+              <div class="st-opt-icon">😊</div>
+              <div class="st-opt-name">Friendly</div>
+              <div class="st-opt-sub">Warm &amp; approachable</div>
+            </div>
+            <div class="st-opt" data-val="direct">
+              <div class="st-opt-icon">⚡</div>
+              <div class="st-opt-name">Direct</div>
+              <div class="st-opt-sub">Results-focused</div>
+            </div>
+            <div class="st-opt" data-val="enthusiastic">
+              <div class="st-opt-icon">🔥</div>
+              <div class="st-opt-name">Enthusiastic</div>
+              <div class="st-opt-sub">Energetic &amp; engaging</div>
+            </div>
+          </div>
+          <input type="hidden" id="tone" value="professional">
+        </div>
+
+        <div class="st-divider"></div>
+
+        <!-- Length -->
+        <div class="st-group">
+          <div class="st-group-label">Proposal Length</div>
+          <div class="st-group-desc">Longer proposals go into more depth but may lose client attention. Medium works best for most jobs.</div>
+          <div class="st-opts st-opts-3" id="st-length-opts">
+            <div class="st-opt" data-val="short">
+              <div class="st-opt-icon">✂️</div>
+              <div class="st-opt-name">Short</div>
+              <div class="st-opt-sub">100–130 words</div>
+            </div>
+            <div class="st-opt active" data-val="medium">
+              <div class="st-opt-icon">📄</div>
+              <div class="st-opt-name">Medium</div>
+              <div class="st-opt-sub">130–160 words</div>
+            </div>
+            <div class="st-opt" data-val="long">
+              <div class="st-opt-icon">📋</div>
+              <div class="st-opt-name">Detailed</div>
+              <div class="st-opt-sub">160–200 words</div>
+            </div>
+          </div>
+          <input type="hidden" id="length" value="medium">
+        </div>
+
+        <div style="display:flex;align-items:center;gap:12px;margin-top:8px">
           <button class="btn-primary" id="save-settings" style="font-size:12px;padding:9px 20px">Save settings</button>
           <span class="saved-msg" id="saved-settings-msg">✓ Saved</span>
         </div>
       </div>
-    </div><!-- /subscription -->
+    </div><!-- /settings -->
 
     <!-- ══ HOW TO USE ══ -->
     <div class="section" id="section-howto">

@@ -771,7 +771,39 @@ document.querySelectorAll('.pcv2-btn[data-plan]').forEach(btn => {
   btn.addEventListener('click', e => { e.stopPropagation(); openCheckout(btn.dataset.plan); });
 });
 
-// ── Settings (now in Subscription section) ────────────────────────────────────
+// ── Settings — option card pickers ───────────────────────────────────────────
+function initOptionPicker(containerId, hiddenId) {
+  const container = document.getElementById(containerId);
+  const hidden    = document.getElementById(hiddenId);
+  if (!container || !hidden) return;
+  container.querySelectorAll('.st-opt').forEach(opt => {
+    opt.addEventListener('click', () => {
+      container.querySelectorAll('.st-opt').forEach(o => o.classList.remove('active'));
+      opt.classList.add('active');
+      hidden.value = opt.dataset.val;
+    });
+  });
+}
+initOptionPicker('st-tone-opts',   'tone');
+initOptionPicker('st-length-opts', 'length');
+
+function applySettingsToUI(settings) {
+  const tone   = settings?.tone   || 'professional';
+  const length = settings?.length || 'medium';
+  const toneC  = document.getElementById('st-tone-opts');
+  const lenC   = document.getElementById('st-length-opts');
+  if (toneC) {
+    toneC.querySelectorAll('.st-opt').forEach(o => o.classList.toggle('active', o.dataset.val === tone));
+    const toneHidden = document.getElementById('tone');
+    if (toneHidden) toneHidden.value = tone;
+  }
+  if (lenC) {
+    lenC.querySelectorAll('.st-opt').forEach(o => o.classList.toggle('active', o.dataset.val === length));
+    const lenHidden = document.getElementById('length');
+    if (lenHidden) lenHidden.value = length;
+  }
+}
+
 document.getElementById('save-settings')?.addEventListener('click', async () => {
   await chrome.storage.sync.set({ settings: {
     tone:   document.getElementById('tone')?.value   || 'professional',
@@ -789,8 +821,7 @@ async function init() {
   renderProfilesPage();
 
   const { settings = {} } = await chrome.storage.sync.get(['settings']);
-  if(document.getElementById('tone'))   document.getElementById('tone').value   = settings.tone   || 'professional';
-  if(document.getElementById('length')) document.getElementById('length').value = settings.length || 'medium';
+  applySettingsToUI(settings);
 }
 
 init();
