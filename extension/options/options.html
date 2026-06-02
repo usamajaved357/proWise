@@ -472,110 +472,6 @@ textarea.edit-val{min-height:38px}
 
 /* ── Usage stats grid ──────────────────────────────────────────── */
 
-/* ── How to Use page ──────────────────────────────────────────── */
-.ht-hero{background:linear-gradient(135deg,rgba(201,168,76,.07) 0%,rgba(0,0,0,0) 65%);border:1px solid rgba(201,168,76,.15);border-radius:16px;padding:28px 32px 26px;margin-bottom:20px;position:relative;overflow:hidden}
-.ht-hero::after{content:'';position:absolute;top:-50px;right:-50px;width:200px;height:200px;background:radial-gradient(circle,rgba(201,168,76,.1) 0%,transparent 70%);pointer-events:none}
-.ht-hero-badge{display:inline-flex;align-items:center;gap:5px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--gold);background:rgba(201,168,76,.1);border:1px solid var(--gold-border);border-radius:20px;padding:3px 10px;margin-bottom:12px}
-.ht-hero-title{font-size:26px;font-weight:800;letter-spacing:-.04em;color:var(--white);margin-bottom:7px;line-height:1.1}
-.ht-hero-sub{font-size:13px;color:rgba(240,238,234,.45);line-height:1.65;max-width:480px}
-
-/* Section cards */
-.ht-section-card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:16px;box-shadow:0 2px 16px rgba(0,0,0,.2)}
-.ht-section-card::before{content:'';display:block;height:3px}
-.ht-card-gold::before{background:linear-gradient(90deg,var(--gold),var(--gold2),transparent)}
-.ht-card-green::before{background:linear-gradient(90deg,#34d399,rgba(52,211,153,.3),transparent)}
-.ht-card-blue::before{background:linear-gradient(90deg,var(--blue),rgba(96,165,250,.3),transparent)}
-.ht-card-red::before{background:linear-gradient(90deg,var(--red),rgba(248,113,113,.3),transparent)}
-.ht-card-purple::before{background:linear-gradient(90deg,var(--purple),rgba(167,139,250,.3),transparent)}
-.ht-card-amber::before{background:linear-gradient(90deg,#facc15,rgba(250,204,21,.3),transparent)}
-
-.ht-card-header{display:flex;align-items:center;gap:14px;padding:20px 22px 18px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,rgba(255,255,255,.02) 0%,transparent 100%)}
-.ht-card-icon{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.ht-icon-gold{background:rgba(201,168,76,.12);border:1px solid var(--gold-border);color:var(--gold)}
-.ht-icon-green{background:rgba(52,211,153,.1);border:1px solid var(--green-border);color:var(--green)}
-.ht-icon-blue{background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.25);color:var(--blue)}
-.ht-icon-red{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.25);color:var(--red)}
-.ht-icon-purple{background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.25);color:var(--purple)}
-.ht-icon-amber{background:rgba(250,204,21,.1);border:1px solid rgba(250,204,21,.28);color:#facc15}
-.ht-card-title-text{font-size:15px;font-weight:700;letter-spacing:-.02em;color:var(--white)}
-.ht-card-title-sub{font-size:11.5px;color:rgba(240,238,234,.38);margin-top:2px}
-
-/* Quick start 2x2 grid */
-.ht-steps-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;background:var(--border)}
-.ht-step{padding:20px 22px;background:var(--bg2);display:flex;gap:14px;align-items:flex-start;transition:background .15s}
-.ht-step:hover{background:rgba(255,255,255,.018)}
-@keyframes ht-pulse{0%,100%{box-shadow:0 0 0 0 rgba(201,168,76,0)}50%{box-shadow:0 0 0 5px rgba(201,168,76,.12)}}
-.ht-step-num{width:34px;height:34px;border-radius:10px;background:rgba(201,168,76,.1);border:1px solid var(--gold-border);color:var(--gold);font-size:15px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;letter-spacing:-.02em;animation:ht-pulse 4s ease-in-out infinite}
-.ht-step-title{font-size:13px;font-weight:700;color:var(--white);margin-bottom:5px;letter-spacing:-.01em}
-.ht-step-desc{font-size:12px;color:rgba(240,238,234,.48);line-height:1.65}
-.ht-step-desc strong{color:rgba(240,238,234,.82);font-weight:600}
-.ht-step-desc code{color:var(--gold);font-size:10.5px;background:rgba(201,168,76,.1);padding:1px 6px;border-radius:4px;font-family:monospace;font-style:normal}
-.ht-step-page{display:inline-flex;align-items:center;gap:4px;font-size:9.5px;font-weight:700;color:var(--gold);background:rgba(201,168,76,.1);border:1px solid var(--gold-border);padding:2px 8px;border-radius:20px;margin-top:7px;letter-spacing:.04em}
-
-/* Feature items */
-.ht-features{padding:4px 0}
-.ht-feature{display:flex;gap:14px;padding:18px 22px;border-bottom:1px solid rgba(255,255,255,.045)}
-.ht-feature:last-child{border-bottom:none}
-.ht-feature-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:17px;margin-top:1px}
-.ht-feature-title{font-size:13px;font-weight:700;color:var(--white);margin-bottom:5px;letter-spacing:-.01em;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
-.ht-feature-desc{font-size:12px;color:rgba(240,238,234,.48);line-height:1.72}
-.ht-feature-desc strong{color:rgba(240,238,234,.82);font-weight:600}
-.ht-feature-desc em{color:var(--gold);font-style:normal;font-weight:600}
-.ht-feature-desc code{color:var(--gold);font-size:10.5px;background:rgba(201,168,76,.1);padding:1px 6px;border-radius:4px;font-family:monospace}
-
-/* Callout boxes */
-.ht-callout{display:flex;gap:12px;padding:12px 16px;border-radius:10px;margin:0 22px 16px;font-size:12px;line-height:1.7;align-items:flex-start}
-.ht-callout-critical{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.25);color:rgba(248,113,113,.92)}
-.ht-callout-warn{background:rgba(250,204,21,.07);border:1px solid rgba(250,204,21,.22);color:#facc15}
-.ht-callout-tip{background:rgba(201,168,76,.07);border:1px solid var(--gold-border);color:var(--gold)}
-.ht-callout-info{background:rgba(96,165,250,.07);border:1px solid rgba(96,165,250,.22);color:rgba(147,197,253,.9)}
-.ht-callout-success{background:rgba(52,211,153,.06);border:1px solid var(--green-border);color:#4ade80}
-.ht-callout-icon{font-size:15px;flex-shrink:0;margin-top:1px}
-.ht-callout strong{font-weight:700}
-
-/* Inline tags */
-.ht-tag{display:inline-flex;align-items:center;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:2px 8px;border-radius:20px;white-space:nowrap}
-.ht-tag-gold{background:rgba(201,168,76,.12);color:var(--gold);border:1px solid var(--gold-border)}
-.ht-tag-red{background:rgba(248,113,113,.1);color:var(--red);border:1px solid rgba(248,113,113,.25)}
-.ht-tag-green{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
-.ht-tag-purple{background:rgba(167,139,250,.1);color:var(--purple);border:1px solid rgba(167,139,250,.25)}
-.ht-tag-blue{background:rgba(96,165,250,.1);color:var(--blue);border:1px solid rgba(96,165,250,.25)}
-
-/* Risk flags grid */
-.ht-flags-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:4px 22px 20px}
-.ht-flag{display:flex;align-items:center;gap:9px;padding:9px 12px;background:rgba(255,255,255,.025);border:1px solid var(--border);border-radius:9px;font-size:11.5px;color:rgba(240,238,234,.6)}
-.ht-flag-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
-.ht-flag-red .ht-flag-dot{background:var(--red);box-shadow:0 0 6px rgba(248,113,113,.5)}
-.ht-flag-amber .ht-flag-dot{background:#facc15;box-shadow:0 0 6px rgba(250,204,21,.45)}
-
-/* Hooks grid */
-.ht-hooks-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:4px 22px 20px}
-.ht-hook{padding:13px 15px;background:rgba(255,255,255,.025);border:1px solid var(--border);border-radius:10px;transition:border-color .15s}
-.ht-hook:hover{border-color:rgba(201,168,76,.25)}
-.ht-hook-num{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--gold);opacity:.8;margin-bottom:4px}
-.ht-hook-name{font-size:12.5px;font-weight:700;color:var(--white);margin-bottom:4px;letter-spacing:-.01em}
-.ht-hook-desc{font-size:11px;color:rgba(240,238,234,.42);line-height:1.55}
-
-/* Tips grid */
-.ht-tips-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:4px 22px 20px}
-.ht-tip{display:flex;gap:11px;padding:13px 14px;background:rgba(255,255,255,.025);border:1px solid var(--border);border-radius:10px;align-items:flex-start;transition:border-color .15s}
-.ht-tip:hover{border-color:rgba(255,255,255,.1)}
-.ht-tip-icon{font-size:19px;flex-shrink:0;line-height:1.2;margin-top:1px}
-.ht-tip-title{font-size:12.5px;font-weight:700;color:var(--white);margin-bottom:3px;letter-spacing:-.01em}
-.ht-tip-desc{font-size:11.5px;color:rgba(240,238,234,.45);line-height:1.6}
-
-/* Keyboard shortcut chip */
-.ht-kbd{display:inline-flex;align-items:center;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:5px;padding:1px 7px;font-size:10.5px;font-family:monospace;color:rgba(240,238,234,.72);letter-spacing:.01em}
-
-/* Coming soon overlay card */
-.ht-coming-soon{position:relative;overflow:hidden}
-.ht-cs-badge{position:absolute;top:18px;right:20px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;padding:3px 10px;border-radius:20px;background:rgba(167,139,250,.12);color:var(--purple);border:1px solid rgba(167,139,250,.25)}
-.ht-audit-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 22px 20px}
-.ht-audit-card{background:rgba(167,139,250,.05);border:1px solid rgba(167,139,250,.12);border-radius:10px;padding:14px 15px}
-.ht-audit-icon{font-size:20px;margin-bottom:7px}
-.ht-audit-title{font-size:12.5px;font-weight:700;color:var(--white);margin-bottom:4px}
-.ht-audit-desc{font-size:11.5px;color:rgba(240,238,234,.45);line-height:1.6}
-
 /* ── Settings page ────────────────────────────────────────────── */
 .st-group{margin-bottom:28px}
 .st-group:last-of-type{margin-bottom:0}
@@ -915,384 +811,108 @@ textarea.edit-val{min-height:38px}
 
     <!-- ══ HOW TO USE ══ -->
     <div class="section" id="section-howto">
+      <div class="section-title-solo">How Snag AI works</div>
+      <div class="section-sub-solo">Every feature explained — from setup to winning jobs.</div>
 
-      <!-- Hero -->
-      <div class="ht-hero">
-        <div class="ht-hero-badge">✦ Documentation</div>
-        <div class="ht-hero-title">How Snag AI works</div>
-        <div class="ht-hero-sub">Everything you need — from first setup to writing proposals that win. Read this once, apply it every day.</div>
-      </div>
-
-      <!-- ── 1. QUICK START ── -->
-      <div class="ht-section-card ht-card-gold">
-        <div class="ht-card-header">
-          <div class="ht-card-icon ht-icon-gold">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 8 12 12 14 14"/></svg>
-          </div>
-          <div>
-            <div class="ht-card-title-text">Quick Start</div>
-            <div class="ht-card-title-sub">Up and running in under 3 minutes</div>
-          </div>
+      <!-- Getting started -->
+      <div class="card">
+        <div class="card-title">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 8 12 12 14 14"/></svg>
+          Getting Started — 3 minutes
         </div>
-        <div class="ht-steps-grid">
-          <div class="ht-step">
-            <div class="ht-step-num">1</div>
-            <div>
-              <div class="ht-step-title">Add your Upwork profile URL</div>
-              <div class="ht-step-desc">Go to <strong>Subscription</strong> and paste your Upwork profile link. Both standard URLs (<code>upwork.com/freelancers/~xxx</code>) and custom usernames work. Click Sync to open it.</div>
-              <div class="ht-step-page">→ Subscription page</div>
-            </div>
-          </div>
-          <div class="ht-step">
-            <div class="ht-step-num">2</div>
-            <div>
-              <div class="ht-step-title">Visit your profile once to sync</div>
-              <div class="ht-step-desc">Snag AI reads your <strong>name, JSS, tier, rate, skills, earnings, and employment history</strong> automatically when the page loads. A gold toast confirms the sync.</div>
-              <div class="ht-step-page">→ Auto on your Upwork profile</div>
-            </div>
-          </div>
-          <div class="ht-step">
-            <div class="ht-step-num">3</div>
-            <div>
-              <div class="ht-step-title">Sync your portfolios</div>
-              <div class="ht-step-desc">In <strong>Profiles → Portfolio</strong> click <strong>⟳ Sync portfolios</strong>. Snag AI opens your profile, reads every project's title, skills, and links automatically. Then add URLs to any project missing them.</div>
-              <div class="ht-step-page">→ Profiles page</div>
-            </div>
-          </div>
-          <div class="ht-step">
-            <div class="ht-step-num">4</div>
-            <div>
-              <div class="ht-step-title">Add your email &amp; open any job</div>
-              <div class="ht-step-desc">Go to <strong>Settings → Account Email</strong> and enter the same email you used to subscribe on Paddle. Then open any Upwork job and click <strong>Write Proposal</strong>.</div>
-              <div class="ht-step-page">→ Settings page</div>
-            </div>
-          </div>
+        <div class="how-item">
+          <div class="how-num">1</div>
+          <div><div class="how-title">Add your Upwork profile URL</div><div class="how-desc">Go to <strong style="color:var(--white)">Subscription → Profile URLs</strong> and paste your Upwork profile link. Both standard URLs (<code style="color:var(--gold);font-size:11px">upwork.com/freelancers/~xxx</code>) and custom usernames work.</div></div>
+        </div>
+        <div class="how-item">
+          <div class="how-num">2</div>
+          <div><div class="how-title">Visit your profile once to sync</div><div class="how-desc">Open the URL in a browser tab. Snag AI reads your name, JSS, tier, skills, rate, earnings, employment history, education, and certifications automatically. A gold notification confirms the sync.</div></div>
+        </div>
+        <div class="how-item">
+          <div class="how-num">3</div>
+          <div><div class="how-title">Add portfolio links manually</div><div class="how-desc">Go to <strong style="color:var(--white)">Profiles → Portfolio</strong> → click Edit on each project → paste your App Store, Play Store, GitHub, or website links. These are inserted into every proposal automatically.</div></div>
+        </div>
+        <div class="how-item" style="margin-bottom:0">
+          <div class="how-num">4</div>
+          <div><div class="how-title">Open any job and click Write</div><div class="how-desc">The Write Proposal button appears on every Upwork job page. Snag AI generates a targeted proposal using your real profile data in seconds.</div></div>
         </div>
       </div>
 
-      <!-- ── 2. PROFILE & PORTFOLIO SETUP ── -->
-      <div class="ht-section-card ht-card-blue">
-        <div class="ht-card-header">
-          <div class="ht-card-icon ht-icon-blue">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          </div>
-          <div>
-            <div class="ht-card-title-text">Profile &amp; Portfolio Setup</div>
-            <div class="ht-card-title-sub">The foundation of every strong proposal</div>
-          </div>
+      <!-- Smart Job Analysis -->
+      <div class="card">
+        <div class="card-title">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          Smart Job Analysis &amp; Connect Saver
         </div>
-        <div class="ht-features">
-          <div class="ht-feature">
-            <div class="ht-feature-icon ht-icon-blue">🔗</div>
-            <div>
-              <div class="ht-feature-title">What gets auto-synced from Upwork</div>
-              <div class="ht-feature-desc">When you visit your profile URL, Snag AI reads: <strong>full name, professional title, JSS %, hourly rate, tier badge (Top Rated / Rising Talent etc.), total earnings, jobs completed, hours worked, skills list, bio, employment history, education, and languages.</strong> All of this feeds into every proposal — no manual entry needed.</div>
-            </div>
-          </div>
-          <div class="ht-feature">
-            <div class="ht-feature-icon ht-icon-blue">🗂️</div>
-            <div>
-              <div class="ht-feature-title">Portfolio sync — must be done manually <span class="ht-tag ht-tag-gold">Important</span></div>
-              <div class="ht-feature-desc">Portfolios are <strong>not</strong> read during the passive profile sync. You must click <em>⟳ Sync portfolios</em> in the Profiles page. This opens your Upwork profile and reads each portfolio item one by one — title, description, skills, and any live links. It takes about 30–60 seconds depending on how many items you have.<br><br>After syncing, <strong>add or verify the URLs</strong> for each project (App Store, Play Store, GitHub, live demo). Snag AI uses these links inside every proposal to show the client real proof of your work.</div>
-            </div>
-          </div>
-          <div class="ht-feature">
-            <div class="ht-feature-icon ht-icon-blue">⭐</div>
-            <div>
-              <div class="ht-feature-title">Multiple profiles <span class="ht-tag ht-tag-blue">Pro &amp; Agency</span></div>
-              <div class="ht-feature-desc">Pro plan supports up to 3 Upwork profiles. Agency supports 5. Add each profile URL in the Subscription page. In <strong>Profiles</strong>, click <em>Set primary</em> on the profile you want to use as the default for proposals. You can switch the primary at any time.</div>
-            </div>
-          </div>
+        <div style="font-size:12px;color:var(--white2);line-height:1.75;margin-bottom:14px">Before writing a single word, Snag AI runs a full job analysis so you never waste a Connect on a bad-fit job.</div>
+        <div class="how-item">
+          <div class="how-num" style="font-size:9px;letter-spacing:-.02em">FIT</div>
+          <div><div class="how-title">Profile Match Score</div><div class="how-desc">Compares your skills, JSS, hourly rate, and tier against the job's requirements. 75%+ skill overlap is green. A severe mismatch caps your win score and shows a warning — skip the job and save your Connect.</div></div>
         </div>
-        <div class="ht-callout ht-callout-warn" style="margin-top:0">
-          <div class="ht-callout-icon">⚠️</div>
-          <div><strong>Re-sync after Upwork profile changes.</strong> If you update your title, skills, tier, or add new portfolio items on Upwork, click Sync again in the Profiles page so Snag AI picks up the latest data. Proposals use whatever was last synced.</div>
+        <div class="how-item">
+          <div class="how-num" style="font-size:9px">JOB</div>
+          <div><div class="how-title">Job Odds Score</div><div class="how-desc">Scores the job activity itself: time since posting, number of proposals already sent, client hire rate, and how many freelancers are actively interviewing. A job posted 30 minutes ago with 3 proposals scores far higher than one posted 3 days ago with 40.</div></div>
+        </div>
+        <div class="how-item" style="margin-bottom:0">
+          <div class="how-num" style="font-size:10px;color:var(--red)">⚠</div>
+          <div><div class="how-title">10 Risk Flags — shown before you write</div><div class="how-desc">If any of these fire, Snag AI shows an alert with Skip/Write options: 50+ proposals, client rating &lt;4★, unverified payment, $0 client spending, 0% hire rate, active interviews, payment not verified, and more. Red = clear skip. Yellow = use your judgement.</div></div>
         </div>
       </div>
 
-      <!-- ── 3. SUBSCRIPTION & BILLING ── -->
-      <div class="ht-section-card ht-card-amber">
-        <div class="ht-card-header">
-          <div class="ht-card-icon ht-icon-amber">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-          </div>
-          <div>
-            <div class="ht-card-title-text">Subscription &amp; Billing</div>
-            <div class="ht-card-title-sub">How your plan and usage work</div>
-          </div>
+      <!-- AI Proposal Writing -->
+      <div class="card">
+        <div class="card-title">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          AI Proposal Writing
         </div>
-        <div class="ht-callout ht-callout-critical" style="margin-top:18px">
-          <div class="ht-callout-icon">🔑</div>
-          <div><strong>Your subscription email must match your Paddle email.</strong> After purchasing a plan on paddle, go to <strong>Settings → Account Email</strong> and enter the exact same email address. This is how Snag AI verifies your active plan and unlocks your proposal quota. If the emails don't match, you'll show as free.</div>
+        <div style="font-size:12px;color:var(--white2);line-height:1.75;margin-bottom:14px">Snag AI writes proposals that are targeted, personal, and different every time — not generic AI filler.</div>
+        <div class="how-item">
+          <div class="how-num" style="font-size:10px">✦</div>
+          <div><div class="how-title">Uses your real profile data</div><div class="how-desc">Every proposal is built from your actual skills, tier, JSS, and portfolio links — not a generic template. Your portfolio URLs are automatically inserted before the sign-off.</div></div>
         </div>
-        <div class="ht-features">
-          <div class="ht-feature">
-            <div class="ht-feature-icon ht-icon-amber">📅</div>
-            <div>
-              <div class="ht-feature-title">When your proposals reset</div>
-              <div class="ht-feature-desc">Your quota resets on your <strong>exact subscription anniversary</strong> — not the 1st of each month. For example, if you subscribed on June 15, your proposals reset on July 15. The exact reset date is shown in <em>Subscription → Next billing date</em> and in the proposals card footnote.</div>
-            </div>
-          </div>
-          <div class="ht-feature">
-            <div class="ht-feature-icon ht-icon-amber">⬆️</div>
-            <div>
-              <div class="ht-feature-title">Upgrading or downgrading your plan</div>
-              <div class="ht-feature-desc">Go to <strong>Subscription → Upgrade your plan</strong> and click on a different plan. If you already have an active subscription, Snag AI <strong>modifies your existing subscription</strong> — no new subscription is created. Paddle charges or credits the prorated difference immediately. Your proposal count updates right away.</div>
-            </div>
-          </div>
-          <div class="ht-feature">
-            <div class="ht-feature-icon ht-icon-amber">🚫</div>
-            <div>
-              <div class="ht-feature-title">Cancellation — you keep access until period ends</div>
-              <div class="ht-feature-desc">If you cancel, <strong>your plan stays active until your current billing period ends</strong>. You won't be charged again and you keep using your full quota until the end of the period. The billing card will show an amber <em>"Cancels [date]"</em> status. After that date you'll revert to the free plan (2 proposals).</div>
-            </div>
-          </div>
-          <div class="ht-feature">
-            <div class="ht-feature-icon ht-icon-amber">🏦</div>
-            <div>
-              <div class="ht-feature-title">Manage billing, update card, view invoices</div>
-              <div class="ht-feature-desc">Click <strong>Manage billing →</strong> in the Subscription page. This opens your personal Paddle customer portal where you can update your payment method, view past invoices, and reactivate a canceled subscription. The portal is specific to your account — no one else can access it.</div>
-            </div>
-          </div>
+        <div class="how-item">
+          <div class="how-num" style="font-size:10px">↻</div>
+          <div><div class="how-title">Refine without re-generating</div><div class="how-desc">After a proposal is generated, type a change in the refine box — <em style="color:var(--gold)">"make it shorter"</em>, <em style="color:var(--gold)">"add more about my React experience"</em>, <em style="color:var(--gold)">"change the opening"</em> — and click Generate again. Only what you asked for changes.</div></div>
+        </div>
+        <div class="how-item" style="margin-bottom:0">
+          <div class="how-num" style="font-size:10px">?</div>
+          <div><div class="how-title">Clarifying questions included</div><div class="how-desc">Each proposal includes 2–3 smart follow-up questions for the client, shown in the right panel. These demonstrate expertise and increase response rates.</div></div>
         </div>
       </div>
 
-      <!-- ── 4. JOB INTELLIGENCE ── -->
-      <div class="ht-section-card ht-card-red">
-        <div class="ht-card-header">
-          <div class="ht-card-icon ht-icon-red">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-          </div>
-          <div>
-            <div class="ht-card-title-text">Smart Job Analysis &amp; Connect Saver</div>
-            <div class="ht-card-title-sub">Never waste a Connect on a bad-fit job again</div>
-          </div>
+      <!-- Profile Audit — Coming Soon -->
+      <div class="card" style="margin-bottom:0;position:relative;overflow:hidden">
+        <div style="position:absolute;top:14px;right:16px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;padding:3px 9px;border-radius:20px;background:rgba(167,139,250,.12);color:var(--purple);border:1px solid rgba(167,139,250,.25)">Coming soon</div>
+        <div class="card-title">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          Profile Audit
         </div>
-        <div class="ht-features">
-          <div class="ht-feature">
-            <div class="ht-feature-icon" style="background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.2);border-radius:9px">📊</div>
-            <div>
-              <div class="ht-feature-title">Win Probability Score</div>
-              <div class="ht-feature-desc">Scores the <strong>job activity</strong>: time since posting, number of proposals already sent, client hire rate, and how many freelancers are actively interviewing. <em>A job posted 30 minutes ago with 3 proposals scores far higher than one posted 3 days ago with 40.</em> Scale is 0–100 — aim for 60+.</div>
-            </div>
-          </div>
-          <div class="ht-feature">
-            <div class="ht-feature-icon" style="background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.2);border-radius:9px">🎯</div>
-            <div>
-              <div class="ht-feature-title">Profile Match Score</div>
-              <div class="ht-feature-desc">Compares your <strong>skills, JSS, hourly rate, and tier</strong> against the job's requirements. 75%+ skill overlap is green. A severe mismatch caps your win score and shows a warning. This is why keeping your skills list synced and accurate matters.</div>
-            </div>
-          </div>
+        <div style="font-size:12px;color:var(--white2);line-height:1.75;margin-bottom:16px">
+          Using your synced profile data, Snag AI will run a full AI audit and give you an actionable score with specific improvements.
         </div>
-        <div style="padding:0 22px 6px;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:rgba(240,238,234,.28)">10 Risk flags — red means skip, amber means think twice</div>
-        <div class="ht-flags-grid">
-          <div class="ht-flag ht-flag-red"><div class="ht-flag-dot"></div>Already hired — job is closed</div>
-          <div class="ht-flag ht-flag-red"><div class="ht-flag-dot"></div>50+ proposals submitted</div>
-          <div class="ht-flag ht-flag-red"><div class="ht-flag-dot"></div>Client rating below 4.0★</div>
-          <div class="ht-flag ht-flag-red"><div class="ht-flag-dot"></div>Payment method unverified</div>
-          <div class="ht-flag ht-flag-red"><div class="ht-flag-dot"></div>$0 total spent by client</div>
-          <div class="ht-flag ht-flag-amber"><div class="ht-flag-dot"></div>Client hired 0–10% of proposals</div>
-          <div class="ht-flag ht-flag-amber"><div class="ht-flag-dot"></div>3+ freelancers already interviewing</div>
-          <div class="ht-flag ht-flag-amber"><div class="ht-flag-dot"></div>Job posted 3+ days ago with interviews</div>
-          <div class="ht-flag ht-flag-amber"><div class="ht-flag-dot"></div>Client sent 5+ invites (invite-only)</div>
-          <div class="ht-flag ht-flag-amber"><div class="ht-flag-dot"></div>Your JSS below the job requirement</div>
-        </div>
-        <div class="ht-callout ht-callout-tip" style="margin-top:0">
-          <div class="ht-callout-icon">💡</div>
-          <div><strong>You can always override the alert.</strong> If a risky job still looks right for you, click <em>Write proposal</em> anyway. The alert is a guide, not a blocker. Use your judgement — especially on "amber" flags.</div>
-        </div>
-      </div>
-
-      <!-- ── 5. AI PROPOSAL WRITING ── -->
-      <div class="ht-section-card ht-card-green">
-        <div class="ht-card-header">
-          <div class="ht-card-icon ht-icon-green">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div class="audit-feature-card">
+            <div class="audit-feature-icon">🎯</div>
+            <div class="audit-feature-title">Profile Score</div>
+            <div class="audit-feature-desc">Overall completeness and strength score out of 100, broken down by section.</div>
           </div>
-          <div>
-            <div class="ht-card-title-text">AI Proposal Writing</div>
-            <div class="ht-card-title-sub">Targeted, personal, different every time</div>
+          <div class="audit-feature-card">
+            <div class="audit-feature-icon">🔑</div>
+            <div class="audit-feature-title">Keyword Positioning</div>
+            <div class="audit-feature-desc">AI checks if your title, bio, and skills match high-value search terms in your niche.</div>
           </div>
-        </div>
-        <div class="ht-features">
-          <div class="ht-feature">
-            <div class="ht-feature-icon ht-icon-green">✦</div>
-            <div>
-              <div class="ht-feature-title">7 Opening Hooks — selected per job</div>
-              <div class="ht-feature-desc">Every proposal opens with one of 7 proven hook patterns. Snag AI picks the best one based on the job type, budget, timeline, and client signals — not randomly.</div>
-            </div>
+          <div class="audit-feature-card">
+            <div class="audit-feature-icon">⚡</div>
+            <div class="audit-feature-title">Grey Area Detection</div>
+            <div class="audit-feature-desc">Identifies weak sections — thin bio, missing skills, low-impact title — and explains why they hurt you.</div>
           </div>
-        </div>
-        <div class="ht-hooks-grid">
-          <div class="ht-hook">
-            <div class="ht-hook-num">Hook 1 — Proof</div>
-            <div class="ht-hook-name">Specific result you shipped</div>
-            <div class="ht-hook-desc">"I built X for [client type]. I'd like to do the same for you." Uses your top portfolio project.</div>
-          </div>
-          <div class="ht-hook">
-            <div class="ht-hook-num">Hook 2 — Relatability</div>
-            <div class="ht-hook-name">I've done this exact thing</div>
-            <div class="ht-hook-desc">"I've shipped 4 Flutter apps to both stores. Here's how I'd approach yours:" Good for ongoing roles.</div>
-          </div>
-          <div class="ht-hook">
-            <div class="ht-hook-num">Hook 3 — Guarantee</div>
-            <div class="ht-hook-name">Price + timeline up front</div>
-            <div class="ht-hook-desc">"I can deliver X in 2 weeks at $1,500, backed by 4 live apps." Used on fixed-price jobs.</div>
-          </div>
-          <div class="ht-hook">
-            <div class="ht-hook-num">Hook 4 — Extra Value</div>
-            <div class="ht-hook-name">I'll do more than asked</div>
-            <div class="ht-hook-desc">"I'll not only build your features — I'll also set up crash monitoring." Differentiates from the crowd.</div>
-          </div>
-          <div class="ht-hook">
-            <div class="ht-hook-num">Hook 5 — Call</div>
-            <div class="ht-hook-name">Jump on a call today</div>
-            <div class="ht-hook-desc">"Let's jump on a quick call today — I'll walk you through my exact approach in 15 minutes."</div>
-          </div>
-          <div class="ht-hook">
-            <div class="ht-hook-num">Hook 6 — Numbers</div>
-            <div class="ht-hook-name">Lead with your stats</div>
-            <div class="ht-hook-desc">"Here are my numbers: 4 apps shipped, 100% JSS, 30+ hrs/week available." Used when you have strong stats.</div>
-          </div>
-          <div class="ht-hook" style="grid-column:1/-1">
-            <div class="ht-hook-num">Hook 7 — Client First</div>
-            <div class="ht-hook-name">Restate their need better than they wrote it</div>
-            <div class="ht-hook-desc">"My understanding: you need a Flutter developer who owns the full mobile lifecycle — not just code, but store submissions, crash monitoring, and AI workflows." Used on large-budget, detailed jobs.</div>
-          </div>
-        </div>
-        <div class="ht-features" style="border-top:1px solid var(--border)">
-          <div class="ht-feature">
-            <div class="ht-feature-icon ht-icon-green">🔍</div>
-            <div>
-              <div class="ht-feature-title">Screening keywords — detected automatically</div>
-              <div class="ht-feature-desc">Many clients hide a test phrase in the job description like <em>"include the word 'pineapple' in your reply"</em>. Snag AI detects these patterns and includes the exact word naturally in your proposal. You never miss a screening test.</div>
-            </div>
-          </div>
-          <div class="ht-feature">
-            <div class="ht-feature-icon ht-icon-green">↻</div>
-            <div>
-              <div class="ht-feature-title">Refine without re-generating the full proposal</div>
-              <div class="ht-feature-desc">After a proposal is ready, use the <strong>quick chips</strong> at the bottom — <em>Shorter</em>, <em>More confident</em>, <em>Add my rate</em>, <em>Adjust for budget</em> — or type your own instruction in the text box. Press <span class="ht-kbd">⌘ Enter</span> or click <em>Regenerate</em>. Only what you asked changes.</div>
-            </div>
-          </div>
-          <div class="ht-feature">
-            <div class="ht-feature-icon ht-icon-green">❓</div>
-            <div>
-              <div class="ht-feature-title">Client Q&amp;A answers included</div>
-              <div class="ht-feature-desc">If the job has screening questions (e.g. "Describe your experience with React"), Snag AI writes thoughtful 2–4 sentence answers in the right panel. Copy them directly into Upwork's question fields. They're written in your voice, not AI-generic.</div>
-            </div>
-          </div>
-          <div class="ht-feature">
-            <div class="ht-feature-icon ht-icon-green">✏️</div>
-            <div>
-              <div class="ht-feature-title">Live editing before you copy</div>
-              <div class="ht-feature-desc">The proposal text box is <strong>fully editable</strong>. Make any quick changes directly — fix a name, adjust a number, add a personal note — before you copy. The word count indicator turns amber above 120 words and red above 160 to keep proposals tight.</div>
-            </div>
+          <div class="audit-feature-card">
+            <div class="audit-feature-icon">💡</div>
+            <div class="audit-feature-title">Smart Suggestions</div>
+            <div class="audit-feature-desc">Specific, rewrite-ready suggestions for every flagged section — not vague advice.</div>
           </div>
         </div>
       </div>
-
-      <!-- ── 6. PRO TIPS ── -->
-      <div class="ht-section-card ht-card-purple">
-        <div class="ht-card-header">
-          <div class="ht-card-icon ht-icon-purple">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-          </div>
-          <div>
-            <div class="ht-card-title-text">Tips for Winning More Jobs</div>
-            <div class="ht-card-title-sub">What actually makes the difference</div>
-          </div>
-        </div>
-        <div class="ht-tips-grid" style="margin-top:16px">
-          <div class="ht-tip">
-            <div class="ht-tip-icon">⚡</div>
-            <div>
-              <div class="ht-tip-title">Apply within 30 minutes</div>
-              <div class="ht-tip-desc">Being among the first 5 proposals dramatically increases your chances. Check the "Posted X minutes ago" indicator — jobs under 1 hour score the highest.</div>
-            </div>
-          </div>
-          <div class="ht-tip">
-            <div class="ht-tip-icon">🔗</div>
-            <div>
-              <div class="ht-tip-title">Keep portfolio URLs updated</div>
-              <div class="ht-tip-desc">Proposals without real links rarely convert. After syncing, open each portfolio item and add the live URL — App Store, GitHub, demo site. These are inserted automatically.</div>
-            </div>
-          </div>
-          <div class="ht-tip">
-            <div class="ht-tip-icon">📏</div>
-            <div>
-              <div class="ht-tip-title">Shorter usually wins</div>
-              <div class="ht-tip-desc">Clients read the first 160 characters before deciding to expand. Keep proposals under 130 words. Use the <em>Shorter</em> chip if a proposal runs long.</div>
-            </div>
-          </div>
-          <div class="ht-tip">
-            <div class="ht-tip-icon">🎯</div>
-            <div>
-              <div class="ht-tip-title">Refine for the specific client</div>
-              <div class="ht-tip-desc">Use the refinement box to mention something specific from the job description — "mention their FarmOS requirement" or "reference their May 28 deadline". Personal beats generic every time.</div>
-            </div>
-          </div>
-          <div class="ht-tip">
-            <div class="ht-tip-icon">🚩</div>
-            <div>
-              <div class="ht-tip-title">Respect the red flags</div>
-              <div class="ht-tip-desc">Clients with 0% hire rate or unverified payment almost never hire. Those Connects are real money — skip and spend them on a job that will actually respond.</div>
-            </div>
-          </div>
-          <div class="ht-tip">
-            <div class="ht-tip-icon">💼</div>
-            <div>
-              <div class="ht-tip-title">Your tier badge matters</div>
-              <div class="ht-tip-desc">Top Rated and Rising Talent badges are shown in every proposal. If you qualify, make sure your Upwork profile reflects it and re-sync so Snag AI includes it.</div>
-            </div>
-          </div>
-        </div>
-        <div class="ht-callout ht-callout-success" style="margin-top:8px">
-          <div class="ht-callout-icon">🏆</div>
-          <div><strong>The compound effect:</strong> Apply early + strong hook + real portfolio links + tight word count = consistently higher response rates. Each element alone helps — all four together is how you snag jobs before anyone else.</div>
-        </div>
-      </div>
-
-      <!-- ── 7. PROFILE AUDIT — COMING SOON ── -->
-      <div class="ht-section-card ht-card-purple ht-coming-soon">
-        <div class="ht-cs-badge">Coming soon</div>
-        <div class="ht-card-header" style="border-bottom:1px solid var(--border)">
-          <div class="ht-card-icon ht-icon-purple">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          </div>
-          <div>
-            <div class="ht-card-title-text">Profile Audit</div>
-            <div class="ht-card-title-sub">AI-powered score and actionable improvements for your Upwork profile</div>
-          </div>
-        </div>
-        <div class="ht-callout ht-callout-info" style="margin-top:18px">
-          <div class="ht-callout-icon">🔮</div>
-          <div>Using your synced profile data, Snag AI will run a full audit and give you an actionable improvement plan — specific rewrites, keyword gaps, and a profile strength score broken down by section.</div>
-        </div>
-        <div class="ht-audit-grid">
-          <div class="ht-audit-card">
-            <div class="ht-audit-icon">🎯</div>
-            <div class="ht-audit-title">Profile Score</div>
-            <div class="ht-audit-desc">Overall completeness and strength out of 100, broken down by section — title, bio, skills, portfolio.</div>
-          </div>
-          <div class="ht-audit-card">
-            <div class="ht-audit-icon">🔑</div>
-            <div class="ht-audit-title">Keyword Positioning</div>
-            <div class="ht-audit-desc">AI checks if your title, bio, and skills match high-value search terms in your niche.</div>
-          </div>
-          <div class="ht-audit-card">
-            <div class="ht-audit-icon">⚡</div>
-            <div class="ht-audit-title">Gap Detection</div>
-            <div class="ht-audit-desc">Identifies weak sections — thin bio, missing skills, low-impact title — and explains exactly why they're hurting you.</div>
-          </div>
-          <div class="ht-audit-card">
-            <div class="ht-audit-icon">💡</div>
-            <div class="ht-audit-title">Smart Suggestions</div>
-            <div class="ht-audit-desc">Specific, rewrite-ready suggestions for every flagged section. Not vague advice — actual improved copy.</div>
-          </div>
-        </div>
-      </div>
-
     </div><!-- /howto -->
 
   </div><!-- /main -->
