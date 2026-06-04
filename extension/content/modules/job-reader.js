@@ -52,8 +52,9 @@ window.SnagAI.getJob = function() {
   try {
     const pt = document.body.innerText;
     const histIdx = pt.indexOf("Client's recent history");
+    // cap review text to 600 chars — review scraping is the most flaggable data point
     if (histIdx > -1) {
-      reviewText = pt.slice(histIdx, histIdx + 2000);
+      reviewText = pt.slice(histIdx, histIdx + 600);
       const namePatterns = [
         /([A-Z][a-z]{2,}(?:\s[A-Z][a-z]{2,})?)\s+is\s+(?:an?\s+)?(?:exceptional|great|wonderful|amazing|fantastic|excellent|outstanding|awesome)\s+client/,
         /([A-Z][a-z]{2,}(?:\s[A-Z][a-z]{2,})?)\s+(?:was|is)\s+(?:a\s+)?great\s+(?:client|person|partner)/,
@@ -79,7 +80,25 @@ window.SnagAI.getJob = function() {
   const location = document.querySelector('[data-test="client-location"] strong')?.innerText?.trim() || '';
   const jobType  = document.querySelector('[data-test="job-type"], [class*="jobType"]')?.innerText?.trim() || '';
 
-  const pageText2 = document.body.innerText;
+  // Read stats from targeted sections — avoids full-page text dump
+  // Wait for Upwork's dynamic sections to render — also prevents bot-like instant reads
+  const pageText2 = (() => {
+    const sectionSelectors = [
+      '[data-test="sidebar"]',
+      '[data-test="client-info"]',
+      '[data-test="about-client-wrapper"]',
+      '[data-test="job-activity"]',
+      '[data-test="ClientStats"]',
+      '.client-stats',
+      '[class*="sidebar"]',
+      '[class*="AboutClient"]',
+      '[class*="JobActivity"]',
+    ];
+    const parts = sectionSelectors
+      .map(s => document.querySelector(s)?.innerText || '')
+      .filter(Boolean);
+    return parts.length ? parts.join('\n') : document.body.innerText.slice(-4000);
+  })();
 
   function extractNum(label) {
     const re = new RegExp(label + '[:\\s]+(\\d+(?:\\s+to\\s+\\d+)?)', 'i');

@@ -233,7 +233,7 @@ export function renderProfileCard(container, profile, idx, allProfiles, primaryP
       <div class="pending-body">
         <div class="pending-icon">🔄</div>
         <div class="pending-title">One more step</div>
-        <div class="pending-desc">Click below to open your Upwork profile. Snag AI will automatically read your data when the page loads.</div>
+        <div class="pending-desc">Click below to open your Upwork profile, then click <strong>Sync to Snag AI</strong> button that appears on the page.</div>
         <button class="btn-primary" id="open-pending-${idx}" style="margin-top:4px">Open my Upwork profile →</button>
       </div>
     `;
@@ -326,7 +326,7 @@ export function renderProfileCard(container, profile, idx, allProfiles, primaryP
           <span class="profile-section-count">${skillsArr.length} detected</span>
         </div>
         <div class="skills-wrap" id="skills-wrap-${idx}"></div>
-        <div style="font-size:11px;color:var(--white3);margin-top:6px">Read automatically from your Upwork profile.</div>
+        <div style="font-size:11px;color:var(--white3);margin-top:6px">Profile sync reads your own Upwork profile only when you click Sync. Snag AI never submits proposals on your behalf.</div>
       </div>
 
       <div class="profile-section">
@@ -336,7 +336,7 @@ export function renderProfileCard(container, profile, idx, allProfiles, primaryP
             ${profile._portfolioSyncedAt
               ? `<span style="font-size:10px;color:var(--white3)">Synced ${new Date(profile._portfolioSyncedAt).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</span>`
               : `<span style="font-size:10px;color:var(--yellow)">⚠ Not synced</span>`}
-            <button class="btn-sync-portfolios" id="sync-port-${idx}">⟳ Sync portfolios</button>
+            <button class="btn-sync-portfolios" id="sync-port-${idx}">⟳ Open & Re-sync</button>
             <button class="btn-port-add" data-action="add-port">+ Add</button>
           </div>
         </div>
@@ -359,13 +359,11 @@ export function renderProfileCard(container, profile, idx, allProfiles, primaryP
   });
 
   card.querySelector(`#sync-port-${idx}`)?.addEventListener('click', () => {
-    if (!profile.id || !profile.url) return;
+    if (!profile.url) return;
     const btn = card.querySelector(`#sync-port-${idx}`);
     if (btn) { btn.textContent = 'Opening…'; btn.disabled = true; }
-    chrome.storage.local.set({ ['portfolioSync_' + profile.id]: true }, () => {
-      chrome.tabs.create({ url: profile.url });
-      setTimeout(() => { if (btn) { btn.textContent = '⟳ Sync portfolios'; btn.disabled = false; } }, 3000);
-    });
+    chrome.tabs.create({ url: profile.url });
+    setTimeout(() => { if (btn) { btn.textContent = '⟳ Open & Re-sync'; btn.disabled = false; } }, 3000);
   });
 
   card.querySelector('.btn-delete')?.addEventListener('click', () => {

@@ -1,5 +1,6 @@
 // ── Proposal generation ───────────────────────────────────────────────────────
-const SERVER = 'https://prowise-4e5t.onrender.com';
+// const SERVER = 'https://prowise-4e5t.onrender.com'; // Production
+const SERVER = 'http://localhost:3000'; // Local Host
 
 export async function handleGenerate(payload) {
   const [syncData, localData] = await Promise.all([
