@@ -38,34 +38,49 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       target: { tabId: sender.tab.id },
       world: 'MAIN',
       func: async () => {
-        // Scroll to portfolio section to trigger Upwork's lazy load
-        const shelf = document.querySelector('.portfolio-v2-editor-shelf, [class*="portfolio-v2-shelf"]');
-        if (shelf) shelf.scrollIntoView({ behavior: 'instant', block: 'center' });
+        // Dispatch Vuex action to load all published portfolio projects
+        // page:1 triggers a fresh full fetch — returns all projects in one call
+        try {
+          const store = document.getElementById('__nuxt').__vue__.$store;
+          await store.dispatch('profileViewer/fetchPortfolioV2Items', { page: 1 });
+        } catch(e) {}
 
-        // Poll until publishedCurrentPageProjects is populated (up to 5s)
-        for (let i = 0; i < 13; i++) {
-          await new Promise(r => setTimeout(r, 400));
+        // Also load any additional pages (for profiles with many portfolios)
+        const collected = [];
+        const seen = new Set();
+        let page = 1;
+        const limit = 4;
+        while (true) {
           try {
             const store = document.getElementById('__nuxt').__vue__.$store;
             const pv2   = store.state.profileViewer.portfolioV2;
-            const all   = [...(pv2.publishedCurrentPageProjects || []), ...(pv2.draftCurrentPageProjects || [])];
-            if (all.length > 0 || i >= 12) {
-              return all.filter(p => p && p.title).map(p => {
-                const urls = [];
-                if (p.projectUrl && /^https?:\/\//.test(p.projectUrl)) urls.push(p.projectUrl);
-                (p.attachments || []).forEach(a => {
-                  const u = (a.type === 'embeddedLink' && /^https?:\/\//.test(a.link)) ? a.link : null;
-                  const o = /^https?:\/\//.test(a.originalAttachment || '') ? a.originalAttachment : null;
-                  const url = o || u;
-                  if (url && !urls.includes(url)) urls.push(url);
-                });
-                const skills = (p.tags || []).map(t => (t.ontologySkill && t.ontologySkill.prefLabel) || t.freeText || '').filter(Boolean);
-                return { title: p.title.trim(), desc: (p.description || '').trim().slice(0, 500), role: (p.role || '').trim(), urls, skills, _autoRead: true };
-              });
-            }
-          } catch(e) {}
+            const batch = [...(pv2.publishedCurrentPageProjects || []), ...(pv2.draftCurrentPageProjects || [])];
+            let addedNew = false;
+            batch.forEach(p => {
+              if (p && p.uid && !seen.has(p.uid)) { seen.add(p.uid); collected.push(p); addedNew = true; }
+            });
+            // If this page returned fewer than the limit, we've reached the end
+            if (!addedNew || (pv2.publishedCurrentPageProjects || []).length < limit) break;
+            // Load next page
+            page++;
+            if (page > 20) break; // safety cap
+            await store.dispatch('profileViewer/fetchPortfolioV2Items', { page });
+            await new Promise(r => setTimeout(r, 300));
+          } catch(e) { break; }
         }
-        return [];
+
+        return collected.filter(p => p && p.title).map(p => {
+          const urls = [];
+          if (p.projectUrl && /^https?:\/\//.test(p.projectUrl)) urls.push(p.projectUrl);
+          (p.attachments || []).forEach(a => {
+            const u = (a.type === 'embeddedLink' && /^https?:\/\//.test(a.link)) ? a.link : null;
+            const o = /^https?:\/\//.test(a.originalAttachment || '') ? a.originalAttachment : null;
+            const url = o || u;
+            if (url && !urls.includes(url)) urls.push(url);
+          });
+          const skills = (p.tags || []).map(t => (t.ontologySkill && t.ontologySkill.prefLabel) || t.freeText || '').filter(Boolean);
+          return { title: p.title.trim(), desc: (p.description || '').trim().slice(0, 500), role: (p.role || '').trim(), urls, skills, _autoRead: true };
+        });
       },
     }).then(results => sendResponse(results?.[0]?.result || []))
       .catch(() => sendResponse([]));
