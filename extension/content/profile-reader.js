@@ -131,62 +131,18 @@
     return '';
   }
 
-  // ── Portfolio titles — reads rendered page text from portfolio section ─────────
+  // ── Portfolio items — asks background to read Vuex store via MAIN world ───────
+  // Content scripts run in isolated world and can't access __vue__.
+  // Background uses chrome.scripting.executeScript(world:'MAIN') which bypasses CSP.
   async function readPortfolioTitles() {
-    // Scroll to portfolio section so Upwork lazy-renders it, then wait
-    const shelfSel = [
-      '.portfolio-v2-editor-shelf',
-      '[class*="portfolio-v2-shelf"]',
-      '[class*="portfolioShelf"]',
-    ];
-    for (const s of shelfSel) {
-      const el = document.querySelector(s);
-      if (el) { el.scrollIntoView({ behavior: 'instant', block: 'center' }); break; }
+    try {
+      const items = await chrome.runtime.sendMessage({ type: 'GET_PORTFOLIO_DATA' });
+      console.log('[SnagAI] Portfolio items from store:', (items || []).length, (items || []).map(i => i.title));
+      return items || [];
+    } catch(e) {
+      console.log('[SnagAI] Portfolio read error:', e.message);
+      return [];
     }
-    await new Promise(r => setTimeout(r, 800));
-
-    const titles = new Set();
-
-    // Strategy 1 — aria-label on shelf thumbnail buttons
-    document.querySelectorAll(
-      '.portfolio-v2-shelf-thumbnail,[class*="shelf-thumbnail"],[class*="shelfThumbnail"]'
-    ).forEach(el => {
-      const label = (el.getAttribute('aria-label') || el.querySelector('img')?.getAttribute('alt') || '').trim();
-      if (label.length > 2 && label.length < 120 && !PORTFOLIO_NOISE.test(label)) titles.add(label);
-    });
-
-    // Strategy 2 — innerText of every child span/div inside thumbnails
-    if (!titles.size) {
-      document.querySelectorAll(
-        '.portfolio-v2-shelf-thumbnail span, .portfolio-v2-shelf-thumbnail div, [class*="shelf-thumbnail"] span'
-      ).forEach(el => {
-        const t = (el.innerText || '').trim().split('\n')[0].trim();
-        if (t.length > 3 && t.length < 100 && !PORTFOLIO_NOISE.test(t) && !/^\d/.test(t)) titles.add(t);
-      });
-    }
-
-    // Strategy 3 — parse rendered page text between Portfolio and next section
-    if (!titles.size) {
-      const pt = document.body.innerText;
-      const portIdx = pt.search(/\n(?:Portfolio|Work Portfolio|Projects)\s*\n/i);
-      if (portIdx > -1) {
-        const after  = pt.slice(portIdx + 10, portIdx + 4000);
-        const endIdx = after.search(/\n(?:Work history|Employment history|Education|Languages|Certifications|Testimonials|Other experience)\s*\n/i);
-        const chunk  = endIdx > -1 ? after.slice(0, endIdx) : after.slice(0, 2000);
-        const lines  = chunk.split('\n').map(l => l.trim()).filter(l =>
-          l.length > 4 && l.length < 100 &&
-          !PORTFOLIO_NOISE.test(l) &&
-          !UPWORK_TRAITS.test(l) &&
-          !/^\d+(\.\d+)?$/.test(l) &&
-          !/^(Portfolio|See more|Show more|Add project|View project|Page \d|Next|Previous|\d+ of \d+)$/i.test(l) &&
-          /[a-zA-Z]/.test(l)
-        );
-        lines.slice(0, 30).forEach(l => titles.add(l));
-      }
-    }
-
-    console.log('[SnagAI] Portfolio titles found:', [...titles]);
-    return [...titles].slice(0, 30).map(title => ({ title, urls: [], desc: '', skills: [] }));
   }
 
   // Merge newly read portfolio titles — preserves user-added URLs/desc
@@ -223,19 +179,6 @@
     };
   }
 
-  // ── Single done toast ─────────────────────────────────────────────────────────
-  function showDoneToast(portCount) {
-    const existing = document.getElementById('snagai-toast');
-    if (existing) existing.remove();
-    const el = document.createElement('div');
-    el.id = 'snagai-toast';
-    el.style.cssText = 'position:fixed;bottom:90px;right:28px;z-index:2147483647;background:#0d1525;border:1px solid rgba(52,211,153,.25);border-radius:10px;overflow:hidden;box-shadow:0 6px 24px rgba(0,0,0,.55);font-family:-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;color:#f0eeea;opacity:0;transition:opacity .25s;pointer-events:none';
-    const portLine = portCount > 0 ? `<div style="font-size:11px;color:rgba(240,238,234,.45);margin-top:2px">${portCount} portfolio title${portCount!==1?'s':''} found — add links in Options</div>` : '';
-    el.innerHTML = `<div style="height:2px;background:linear-gradient(90deg,#34d399,transparent)"></div><div style="padding:11px 14px;display:flex;align-items:flex-start;gap:9px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2.5" style="flex-shrink:0;margin-top:1px"><polyline points="20 6 9 17 4 12"/></svg><div><div style="font-weight:600;font-size:12px;color:#f0eeea">Profile synced ✓</div>${portLine}</div></div>`;
-    document.body.appendChild(el);
-    requestAnimationFrame(() => { el.style.opacity = '1'; });
-    setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 280); }, 3500);
-  }
 
   // ── Storage helpers ───────────────────────────────────────────────────────────
   const local = {
@@ -288,7 +231,7 @@
         <span>Syncing…</span>
       `;
       try {
-        const portCount = await onSync();
+        await onSync();
         btn.innerHTML = `
           <div class="snagai-btn-icon" style="background:linear-gradient(135deg,#065f46,#34d399)">
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
@@ -296,7 +239,6 @@
           <span>Synced</span>
         `;
         btn.style.borderColor = 'rgba(52,211,153,.4)';
-        showDoneToast(portCount || 0);
       } catch(e) {
         btn.innerHTML = `
           <div class="snagai-btn-icon" style="background:linear-gradient(135deg,#7f1d1d,#f87171)">
@@ -345,7 +287,6 @@
 
       const freshPortfolios = await readPortfolioTitles();
       const mergedPortfolios = mergePortfolioTitles(existingFull.portfolios || [], freshPortfolios);
-      const newCount = mergedPortfolios.length - (existingFull.portfolios || []).length;
 
       const profileMeta = {
         id: profileId, url: currentUrl, syncEnabled: true,
@@ -363,13 +304,14 @@
         _portfolioSyncedAt: Date.now(),
       };
 
+      console.log('[SnagAI] Saving portfolios:', mergedPortfolios.length, mergedPortfolios.map(p => p.title));
       await local.set({
         registeredProfiles: registered.map(p => (p.url === originUrl || p.url === currentUrl) ? profileMeta : p),
         activeProfileId: profileId,
         [localKey]: profileFull,
       });
+      console.log('[SnagAI] Save complete ✓');
 
-      return newCount;
     });
   }
 
