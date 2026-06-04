@@ -131,6 +131,74 @@
     return '';
   }
 
+  // ── Portfolio titles — reads rendered page text from portfolio section ─────────
+  async function readPortfolioTitles() {
+    // Scroll to portfolio section so Upwork lazy-renders it, then wait
+    const shelfSel = [
+      '.portfolio-v2-editor-shelf',
+      '[class*="portfolio-v2-shelf"]',
+      '[class*="portfolioShelf"]',
+    ];
+    for (const s of shelfSel) {
+      const el = document.querySelector(s);
+      if (el) { el.scrollIntoView({ behavior: 'instant', block: 'center' }); break; }
+    }
+    await new Promise(r => setTimeout(r, 800));
+
+    const titles = new Set();
+
+    // Strategy 1 — aria-label on shelf thumbnail buttons
+    document.querySelectorAll(
+      '.portfolio-v2-shelf-thumbnail,[class*="shelf-thumbnail"],[class*="shelfThumbnail"]'
+    ).forEach(el => {
+      const label = (el.getAttribute('aria-label') || el.querySelector('img')?.getAttribute('alt') || '').trim();
+      if (label.length > 2 && label.length < 120 && !PORTFOLIO_NOISE.test(label)) titles.add(label);
+    });
+
+    // Strategy 2 — innerText of every child span/div inside thumbnails
+    if (!titles.size) {
+      document.querySelectorAll(
+        '.portfolio-v2-shelf-thumbnail span, .portfolio-v2-shelf-thumbnail div, [class*="shelf-thumbnail"] span'
+      ).forEach(el => {
+        const t = (el.innerText || '').trim().split('\n')[0].trim();
+        if (t.length > 3 && t.length < 100 && !PORTFOLIO_NOISE.test(t) && !/^\d/.test(t)) titles.add(t);
+      });
+    }
+
+    // Strategy 3 — parse rendered page text between Portfolio and next section
+    if (!titles.size) {
+      const pt = document.body.innerText;
+      const portIdx = pt.search(/\n(?:Portfolio|Work Portfolio|Projects)\s*\n/i);
+      if (portIdx > -1) {
+        const after  = pt.slice(portIdx + 10, portIdx + 4000);
+        const endIdx = after.search(/\n(?:Work history|Employment history|Education|Languages|Certifications|Testimonials|Other experience)\s*\n/i);
+        const chunk  = endIdx > -1 ? after.slice(0, endIdx) : after.slice(0, 2000);
+        const lines  = chunk.split('\n').map(l => l.trim()).filter(l =>
+          l.length > 4 && l.length < 100 &&
+          !PORTFOLIO_NOISE.test(l) &&
+          !UPWORK_TRAITS.test(l) &&
+          !/^\d+(\.\d+)?$/.test(l) &&
+          !/^(Portfolio|See more|Show more|Add project|View project|Page \d|Next|Previous|\d+ of \d+)$/i.test(l) &&
+          /[a-zA-Z]/.test(l)
+        );
+        lines.slice(0, 30).forEach(l => titles.add(l));
+      }
+    }
+
+    console.log('[SnagAI] Portfolio titles found:', [...titles]);
+    return [...titles].slice(0, 30).map(title => ({ title, urls: [], desc: '', skills: [] }));
+  }
+
+  // Merge newly read portfolio titles — preserves user-added URLs/desc
+  function mergePortfolioTitles(existing, fresh) {
+    const merged = [...existing];
+    fresh.forEach(item => {
+      const already = merged.find(p => p.title && p.title.toLowerCase() === item.title.toLowerCase());
+      if (!already) merged.push(item);
+    });
+    return merged;
+  }
+
   // ── Main profile data reader ──────────────────────────────────────────────────
   function readProfileData() {
     const pt = document.body.innerText;
@@ -155,14 +223,19 @@
     };
   }
 
-  // ── Toast ─────────────────────────────────────────────────────────────────────
-  const TID = 'snagai-toast';
-  const TCSS = 'position:fixed;bottom:20px;right:20px;z-index:2147483647;width:220px;background:#0d1525;border:1px solid rgba(201,168,76,.2);border-radius:10px;overflow:hidden;box-shadow:0 6px 24px rgba(0,0,0,.55);font-family:-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;color:#f0eeea;transition:opacity .3s';
-  const TANIM = '<style>@keyframes snag-spin{to{transform:rotate(360deg)}}@keyframes snag-in{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}#snagai-toast{animation:snag-in .2s ease}</style>';
-  function getT() { let el=document.getElementById(TID); if(!el){el=document.createElement('div');el.id=TID;el.setAttribute('style',TCSS);document.body.appendChild(el);} return el; }
-  function hideT(ms) { setTimeout(()=>{const el=document.getElementById(TID);if(!el)return;el.style.opacity='0';setTimeout(()=>el?.remove(),320);},ms||0); }
-  function showSyncingToast() { getT().innerHTML=TANIM+'<div style="height:2px;background:linear-gradient(90deg,#c9a84c,transparent)"></div><div style="padding:11px 13px;display:flex;align-items:center;gap:9px"><div style="width:18px;height:18px;flex-shrink:0;border-radius:50%;border:2px solid rgba(201,168,76,.15);border-top-color:#c9a84c;animation:snag-spin .8s linear infinite"></div><span style="font-weight:600;font-size:12px;color:#f0eeea">Syncing profile…</span></div>'; }
-  function showDoneToast() { getT().innerHTML=TANIM+'<div style="height:2px;background:linear-gradient(90deg,#34d399,transparent)"></div><div style="padding:11px 13px;display:flex;align-items:center;gap:8px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg><span style="font-weight:600;font-size:12px;color:#f0eeea">Profile synced ✓</span></div>'; hideT(2500); }
+  // ── Single done toast ─────────────────────────────────────────────────────────
+  function showDoneToast(portCount) {
+    const existing = document.getElementById('snagai-toast');
+    if (existing) existing.remove();
+    const el = document.createElement('div');
+    el.id = 'snagai-toast';
+    el.style.cssText = 'position:fixed;bottom:90px;right:28px;z-index:2147483647;background:#0d1525;border:1px solid rgba(52,211,153,.25);border-radius:10px;overflow:hidden;box-shadow:0 6px 24px rgba(0,0,0,.55);font-family:-apple-system,BlinkMacSystemFont,sans-serif;font-size:12px;color:#f0eeea;opacity:0;transition:opacity .25s;pointer-events:none';
+    const portLine = portCount > 0 ? `<div style="font-size:11px;color:rgba(240,238,234,.45);margin-top:2px">${portCount} portfolio title${portCount!==1?'s':''} found — add links in Options</div>` : '';
+    el.innerHTML = `<div style="height:2px;background:linear-gradient(90deg,#34d399,transparent)"></div><div style="padding:11px 14px;display:flex;align-items:flex-start;gap:9px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2.5" style="flex-shrink:0;margin-top:1px"><polyline points="20 6 9 17 4 12"/></svg><div><div style="font-weight:600;font-size:12px;color:#f0eeea">Profile synced ✓</div>${portLine}</div></div>`;
+    document.body.appendChild(el);
+    requestAnimationFrame(() => { el.style.opacity = '1'; });
+    setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 280); }, 3500);
+  }
 
   // ── Storage helpers ───────────────────────────────────────────────────────────
   const local = {
@@ -172,38 +245,71 @@
     )),
   };
 
-  // ── Inject "Sync to Snag AI" button ──────────────────────────────────────────
+  // ── Inject sync button — matches Write Proposal pill style ───────────────────
   function injectSyncButton(onSync) {
-    if (document.getElementById('snagai-sync-btn')) return;
+    if (document.getElementById('snagai-sync-trigger')) return;
+
     const style = document.createElement('style');
-    style.textContent = '@keyframes snagai-spin{to{transform:rotate(360deg)}} #snagai-sync-btn .snagai-spin{animation:snagai-spin .7s linear infinite;display:inline-block}';
+    style.textContent = `
+      @keyframes snagai-pulse{0%,100%{opacity:1}50%{opacity:.4}}
+      @keyframes snagai-spin{to{transform:rotate(360deg)}}
+      #snagai-sync-trigger{position:fixed;bottom:28px;right:28px;z-index:2147483646;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+      #snagai-sync-btn{display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,#0d1120,#1a2035);color:#f0eeea;border:1px solid rgba(201,168,76,.35);border-radius:50px;padding:11px 20px 11px 14px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 4px 24px rgba(0,0,0,.5),0 0 0 1px rgba(201,168,76,.15);transition:transform .2s,box-shadow .2s;font-family:inherit}
+      #snagai-sync-btn:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,.6),0 0 0 1px rgba(201,168,76,.3)}
+      #snagai-sync-btn:disabled{opacity:.7;cursor:default;transform:none}
+      .snagai-btn-icon{width:24px;height:24px;background:linear-gradient(135deg,#b8860b,#e8c878);border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+      .snagai-live-dot{width:6px;height:6px;background:#34d399;border-radius:50%;animation:snagai-pulse 2s ease-in-out infinite;flex-shrink:0}
+      .snagai-spin-icon{display:inline-block;animation:snagai-spin .7s linear infinite}
+    `;
     document.head.appendChild(style);
+
+    const wrap = document.createElement('div');
+    wrap.id = 'snagai-sync-trigger';
 
     const btn = document.createElement('button');
     btn.id = 'snagai-sync-btn';
-    btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;margin-right:5px"><polyline points="1 4 1 10 7 10"/><polyline points="23 20 23 14 17 14"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>Sync to Snag AI';
-    btn.style.cssText = 'position:fixed;top:16px;right:20px;z-index:2147483646;padding:9px 18px;background:#c9a84c;color:#0a0e1a;border:none;border-radius:8px;font-family:-apple-system,BlinkMacSystemFont,sans-serif;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 4px 16px rgba(201,168,76,.45);transition:background .15s,transform .15s;letter-spacing:-.01em;line-height:1.4';
-    btn.addEventListener('mouseenter', () => { if (!btn.disabled) { btn.style.background = '#e8c878'; btn.style.transform = 'translateY(-1px)'; } });
-    btn.addEventListener('mouseleave', () => { if (!btn.disabled) { btn.style.background = '#c9a84c'; btn.style.transform = ''; } });
+    btn.innerHTML = `
+      <div class="snagai-btn-icon">
+        <svg width="13" height="13" viewBox="0 0 32 32" fill="none">
+          <path d="M10 20.5C10 20.5 11.5 22 14 22C16.5 22 18 20.5 18 18.5C18 16.5 16 15.5 14 14.5C12 13.5 10.5 12.5 10.5 10.5C10.5 8.5 12 7 14.5 7C17 7 18 8.5 18 8.5" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
+          <path d="M16 9L22 9C22 9 24 11 22 13C24 13 26 15 24 17C25 17 26 19 24 21C25 21 25 23 23 24L16 24" stroke="white" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <span>Sync Profile</span>
+      <span class="snagai-live-dot"></span>
+    `;
+
     btn.addEventListener('click', async () => {
       btn.disabled = true;
-      btn.style.opacity = '.75';
-      btn.style.cursor = 'default';
-      btn.innerHTML = '<span class="snagai-spin" style="display:inline-block;vertical-align:middle;margin-right:5px">↻</span>Syncing…';
+      btn.innerHTML = `
+        <div class="snagai-btn-icon">
+          <span class="snagai-spin-icon" style="font-size:13px;color:#0a0e1a">↻</span>
+        </div>
+        <span>Syncing…</span>
+      `;
       try {
-        await onSync();
-        btn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;margin-right:5px"><polyline points="20 6 9 17 4 12"/></svg>Synced';
-        btn.style.background = '#34d399';
-        btn.style.opacity = '1';
+        const portCount = await onSync();
+        btn.innerHTML = `
+          <div class="snagai-btn-icon" style="background:linear-gradient(135deg,#065f46,#34d399)">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+          <span>Synced</span>
+        `;
+        btn.style.borderColor = 'rgba(52,211,153,.4)';
+        showDoneToast(portCount || 0);
       } catch(e) {
-        btn.innerHTML = '⚠ Sync failed — retry';
-        btn.style.background = '#f87171';
-        btn.style.opacity = '1';
+        btn.innerHTML = `
+          <div class="snagai-btn-icon" style="background:linear-gradient(135deg,#7f1d1d,#f87171)">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </div>
+          <span>Retry</span>
+        `;
         btn.disabled = false;
-        btn.style.cursor = 'pointer';
       }
     });
-    document.body.appendChild(btn);
+
+    wrap.appendChild(btn);
+    document.body.appendChild(wrap);
   }
 
   // ── Init ──────────────────────────────────────────────────────────────────────
@@ -231,13 +337,15 @@
     const originUrl = target.url;
 
     injectSyncButton(async () => {
-      showSyncingToast();
-
       const existing     = await local.get([localKey]);
       const existingFull = existing[localKey] || {};
       const data         = readProfileData();
       const availability = readAvailability(document.body.innerText);
       const autoExtra    = target.extra || existingFull.extra || [availability, data.country].filter(Boolean).join(' · ');
+
+      const freshPortfolios = await readPortfolioTitles();
+      const mergedPortfolios = mergePortfolioTitles(existingFull.portfolios || [], freshPortfolios);
+      const newCount = mergedPortfolios.length - (existingFull.portfolios || []).length;
 
       const profileMeta = {
         id: profileId, url: currentUrl, syncEnabled: true,
@@ -251,8 +359,8 @@
         title: data.title, bio: data.bio, extra: autoExtra,
         skills: data.skills, skillsArr: data.skillsArr,
         employment: data.employment, education: data.education, languages: data.languages,
-        portfolios: existingFull.portfolios || [],
-        _portfolioSyncedAt: existingFull._portfolioSyncedAt,
+        portfolios: mergedPortfolios,
+        _portfolioSyncedAt: Date.now(),
       };
 
       await local.set({
@@ -260,7 +368,8 @@
         activeProfileId: profileId,
         [localKey]: profileFull,
       });
-      showDoneToast();
+
+      return newCount;
     });
   }
 
