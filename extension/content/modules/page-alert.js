@@ -3,7 +3,7 @@ window.SnagAI.showProbAlert = function(wp, hired) {
   return new Promise(resolve => {
     const isHired = hired > 0;
 
-    const riskPenalty = Math.min(40, (wp.riskItems || []).length * 12);
+    const riskPenalty    = Math.min(40, (wp.riskItems || []).length * 12);
     const severeMismatch = (wp.topMatch || []).some(f => f.skillMatch && f.delta <= -25);
     const weakMismatch   = (wp.topMatch || []).some(f => f.skillMatch && f.delta <= -15);
     let combined = isHired ? 0 : Math.max(0, Math.min(95,
@@ -11,7 +11,11 @@ window.SnagAI.showProbAlert = function(wp, hired) {
     ));
     if (severeMismatch) combined = Math.min(combined, 12);
     else if (weakMismatch) combined = Math.min(combined, 38);
-    const nc = combined >= 70 ? '#34d399' : combined >= 45 ? '#f59e0b' : '#f87171';
+
+    const barColor   = combined >= 70 ? '#4ade80' : combined >= 45 ? '#facc15' : '#f87171';
+    const probColor  = wp.probScore  >= 70 ? '#4ade80' : wp.probScore  >= 45 ? '#facc15' : '#f87171';
+    const matchColor = wp.matchScore >= 70 ? '#4ade80' : wp.matchScore >= 45 ? '#e8a020' : '#f87171';
+
     const label = isHired ? 'Job Closed'
       : combined >= 70 ? 'Good Opportunity'
       : combined >= 55 ? 'Proceed with Caution'
@@ -20,126 +24,96 @@ window.SnagAI.showProbAlert = function(wp, hired) {
 
     const summary = isHired
       ? 'Already hired — applying only burns your Connects with zero chance.'
-      : combined >= 70
-        ? 'Strong opportunity. Low competition and your profile is a good match.'
-        : combined >= 55
-          ? 'Some factors against you — worth applying if you can stand out.'
-          : combined >= 35
-            ? 'Multiple red flags. High chance your proposal gets ignored.'
-            : combined >= 20
-              ? 'Poor match — very high competition or profile mismatch. Skip it.'
-              : 'Critical mismatch. Your profile does not meet this job. Save your Connects.';
+      : combined >= 70 ? 'Strong opportunity. Low competition and your profile is a good match.'
+      : combined >= 55 ? 'Some factors against you — worth applying if you can stand out.'
+      : combined >= 35 ? 'Multiple red flags. High chance your proposal gets ignored.'
+      : combined >= 20 ? 'Poor match — very high competition or profile mismatch. Skip it.'
+      : 'Critical mismatch. Your profile does not meet this job. Save your Connects.';
 
-    const probFactors  = (wp.topProb   || []);
-    const matchFactors = (wp.topMatch  || []);
-    const filterNotes  = (wp.filterNotes || {});
+    // Separate + annotate
+    const filterNotes  = wp.filterNotes || {};
+    const probFactors  = (wp.topProb  || []).map(f => {
+      const n = { ...f }; if (filterNotes[f.label]) n.filterNote = filterNotes[f.label]; return n;
+    }).sort((a, b) => a.delta - b.delta);
+    const matchFactors = (wp.topMatch || []).map(f => {
+      const n = { ...f }; if (filterNotes[f.label]) n.filterNote = filterNotes[f.label]; return n;
+    }).sort((a, b) => a.delta - b.delta);
 
-    // One unified list — negative first, then positive
-    const scoreFactors = [
-      ...probFactors.map(f => ({ ...f })),
-      ...matchFactors.map(f => ({ ...f })),
-    ].sort((a, b) => a.delta - b.delta);
-
-    // Annotate any factor whose label matches a filter violation
-    scoreFactors.forEach(f => {
-      if (filterNotes[f.label]) f.filterNote = filterNotes[f.label];
-    });
+    // Action tip — always visible, based on worst signal
+    const allSorted = [...probFactors, ...matchFactors].sort((a, b) => a.delta - b.delta);
+    const top = allSorted[0];
+    const topText = ((top?.label || '') + ' ' + (top?.value || '') + ' ' + (top?.note || '')).toLowerCase();
+    let actionTip = '';
+    if (isHired)                               { actionTip = 'Someone is already hired. Skip to save your Connects.'; }
+    else if (topText.includes('proposal'))     { actionTip = '50+ proposals — your first 160 chars are everything. Use a hook with a specific result.'; }
+    else if (topText.includes('skill') || topText.includes('mismatch')) { actionTip = 'Skill gap detected. Acknowledge it early and pivot to what you can deliver.'; }
+    else if (topText.includes('interview'))    { actionTip = 'Someone is interviewing. Speed and specificity in your hook are your only edge.'; }
+    else if (topText.includes('hire rate') || topText.includes('never hires')) { actionTip = "Client rarely hires from proposals. A direct CTA asking for a quick call works best."; }
+    else if (topText.includes('invite'))       { actionTip = 'Client prefers invited freelancers. Open by referencing their specific requirements exactly.'; }
+    else if (combined >= 70)                   { actionTip = 'Strong opportunity. Lead with your most relevant portfolio result in the opening line.'; }
+    else if (combined >= 55)                   { actionTip = 'Worth applying. Stand out by opening with a specific result, not a generic intro.'; }
+    else if (combined >= 35)                   { actionTip = 'Tough odds. Your only chance is an exceptional hook in the first 160 chars.'; }
+    else                                       { actionTip = 'Very low odds. If you apply anyway, focus everything on the opening sentence.'; }
 
     function factorPill(f) {
-      const isNeg = f.delta < 0;
-      const isPos = f.delta > 0;
-      const col      = isPos ? '#4ade80' : isNeg ? '#f87171' : '#facc15';
-      const bg       = isPos ? 'rgba(74,222,128,.07)' : isNeg ? 'rgba(248,113,113,.09)' : 'rgba(250,204,21,.07)';
-      const border   = f.filterNote ? ';border:1px solid rgba(250,204,21,.25)' : '';
-      const labelTxt = f.label + (f.value ? ': ' + f.value : '');
-      const note     = f.note     || '';
-      const fNote    = f.filterNote || '';
-      const deltaStr = isPos ? '+' + f.delta : isNeg ? String(f.delta) : '0';
-      const scoreCol = isPos ? 'rgba(74,222,128,.85)' : isNeg ? 'rgba(248,113,113,.85)' : 'rgba(250,204,21,.7)';
-
-      return '<div class="sn-af-item" style="background:' + bg + border + '">'
+      const isNeg = f.delta < 0, isPos = f.delta > 0;
+      const col   = isPos ? '#4ade80' : isNeg ? '#f87171' : '#facc15';
+      const lbl   = f.label + (f.value ? ': ' + f.value : '');
+      const delta = isPos ? '+' + f.delta : isNeg ? String(f.delta) : '0';
+      const dcol  = isPos ? 'rgba(74,222,128,.9)' : isNeg ? 'rgba(248,113,113,.9)' : 'rgba(250,204,21,.75)';
+      const dbg   = isPos ? 'rgba(74,222,128,.12)' : isNeg ? 'rgba(248,113,113,.14)' : 'rgba(250,204,21,.12)';
+      const extra = f.filterNote ? ' sn-af-item--filter' : '';
+      return '<div class="sn-af-item' + extra + '">'
         + '<span class="sn-af-dot" style="background:' + col + '"></span>'
         + '<div class="sn-af-body">'
-        + '<span class="sn-af-label">' + labelTxt + '</span>'
-        + (note  ? '<span class="sn-af-note">' + note + '</span>' : '')
-        + (fNote ? '<span class="sn-af-note" style="color:rgba(250,204,21,.65)">⚠ ' + fNote + '</span>' : '')
+        + '<span class="sn-af-label">' + lbl + '</span>'
+        + (f.note ? '<span class="sn-af-note">' + f.note + '</span>' : '')
+        + (f.filterNote ? '<span class="sn-af-note" style="color:rgba(250,204,21,.65)">⚠ ' + f.filterNote + '</span>' : '')
         + '</div>'
-        + '<span class="sn-af-score" style="color:' + scoreCol + '">' + deltaStr + '</span>'
+        + '<span class="sn-af-score" style="color:' + dcol + ';background:' + dbg + '">' + delta + '</span>'
         + '</div>';
     }
 
-    const topFactor = scoreFactors[0] || null;
-    const topLabel  = topFactor ? (topFactor.label || '').toLowerCase() : '';
-    let actionTip = '';
-    if (isHired) {
-      actionTip = 'Someone is already hired. Skip to save your Connects.';
-    } else if (topLabel.includes('50+') || topLabel.includes('proposal')) {
-      actionTip = '50+ proposals — your first 160 chars are everything. Use a hook with a specific result.';
-    } else if (topLabel.includes('skill') || topLabel.includes('match')) {
-      actionTip = 'Skill gap detected. Acknowledge it early and pivot to what you can deliver.';
-    } else if (topLabel.includes('interview') || topLabel.includes('already')) {
-      actionTip = 'Someone is interviewing. Speed and specificity in your hook are your only edge.';
-    } else if (topLabel.includes('budget') || topLabel.includes('rate')) {
-      actionTip = "Budget mismatch. Address your rate directly in the letter — don't leave it unspoken.";
-    } else if (topLabel.includes('hire rate') || topLabel.includes('rarely')) {
-      actionTip = "Client rarely hires from proposals. A direct CTA asking for a quick call works best.";
-    } else if (topLabel.includes('invite') || topLabel.includes('prefer')) {
-      actionTip = 'Client prefers invited freelancers. Open by referencing their specific requirements exactly.';
-    } else if (combined >= 70) {
-      actionTip = 'Strong opportunity. Lead with your most relevant portfolio result in the opening line.';
-    } else if (combined >= 55) {
-      actionTip = 'Worth applying. Stand out by opening with a specific result, not a generic intro.';
-    } else if (combined >= 35) {
-      actionTip = 'Tough odds. Your only chance is an exceptional hook in the first 160 chars.';
-    } else {
-      actionTip = 'Very low odds. If you apply anyway, focus everything on the opening sentence.';
-    }
-
-    const barColor   = combined >= 70 ? '#4ade80' : combined >= 45 ? '#facc15' : '#f87171';
-    const probColor  = wp.probScore  >= 70 ? '#4ade80' : wp.probScore  >= 45 ? '#facc15' : '#f87171';
-    const matchColor = wp.matchScore >= 70 ? '#4ade80' : wp.matchScore >= 45 ? '#e8a020' : '#f87171';
-
     document.getElementById('sn-body').innerHTML = `
       <div class="sn-alv2-wrap">
-        <div class="sn-alert-top">
-          <div class="sn-alert-summary-col">
-            <div class="sn-alert-status-badge" style="color:${barColor};background:${barColor}14;border-color:${barColor}30">
-              <span class="sn-alert-status-dot" style="background:${barColor}"></span>
-              ${label}
-            </div>
-            <p class="sn-alv2-summary">${summary}</p>
-            ${!isHired ? '<div class="sn-alv2-cta">Your Connects are real money.</div>' : ''}
-            <button class="sn-why-toggle" id="sn-why-toggle">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18h6M10 22h4M12 2a7 7 0 0 1 7 7c0 2.5-1.3 4.7-3.3 6l-.7.5V18H9v-2.5l-.7-.5A7 7 0 0 1 12 2z"/></svg>
-              What should I do?
-              <svg class="sn-why-chevron" width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-            </button>
-            <div class="sn-why-body" id="sn-why-body" style="display:none">
-              <div class="sn-why-tip">${actionTip}</div>
-            </div>
+
+        <div class="sn-alb-top">
+          <div class="sn-alert-status-badge" style="color:${barColor};background:${barColor}14;border-color:${barColor}30">
+            <span class="sn-alert-status-dot" style="background:${barColor}"></span>
+            ${label}
           </div>
-          <div class="sn-alert-scores-col">
-            <div class="sn-alert-scores-label">Scores</div>
-            <div class="sn-score-item">
-              <div class="sn-score-row">
-                <span class="sn-score-name">Win probability</span>
-                <span class="sn-score-pct" style="color:${probColor}">${wp.probScore}%</span>
-              </div>
-              <div class="sn-bar-track"><div class="sn-bar-fill" style="width:${wp.probScore}%;background:${probColor}"></div></div>
-            </div>
-            <div class="sn-score-item" style="margin-bottom:0">
-              <div class="sn-score-row">
-                <span class="sn-score-name">Profile match</span>
-                <span class="sn-score-pct" style="color:${matchColor}">${wp.matchScore}%</span>
-              </div>
-              <div class="sn-bar-track"><div class="sn-bar-fill" style="width:${wp.matchScore}%;background:${matchColor}"></div></div>
-            </div>
+          <p class="sn-alv2-summary">${summary}</p>
+        </div>
+
+        <div class="sn-score-cards">
+          <div class="sn-score-card">
+            <div class="sn-score-card-lbl">Win Probability</div>
+            <div class="sn-score-card-num" style="color:${probColor}">${wp.probScore}%</div>
+            <div class="sn-bar-track"><div class="sn-bar-fill" style="width:${wp.probScore}%;background:${probColor}"></div></div>
+            <div class="sn-score-card-sub">Competition factors</div>
+          </div>
+          <div class="sn-score-card">
+            <div class="sn-score-card-lbl">Profile Match</div>
+            <div class="sn-score-card-num" style="color:${matchColor}">${wp.matchScore}%</div>
+            <div class="sn-bar-track"><div class="sn-bar-fill" style="width:${wp.matchScore}%;background:${matchColor}"></div></div>
+            <div class="sn-score-card-sub">Your profile vs job</div>
           </div>
         </div>
 
-        <div class="sn-signals-divider"><div class="sn-signals-line"></div><span class="sn-signals-label">Signals</span><div class="sn-signals-line"></div></div>
-        <div class="sn-alv2-factors">
-          ${scoreFactors.length ? scoreFactors.map(f => factorPill(f)).join('') : '<div class="sn-af-empty">No major issues detected</div>'}
+        <div class="sn-factor-cols">
+          <div class="sn-factor-col">
+            <div class="sn-col-label">Competition</div>
+            ${probFactors.length ? probFactors.map(f => factorPill(f)).join('') : '<div class="sn-af-empty">No data</div>'}
+          </div>
+          <div class="sn-factor-col">
+            <div class="sn-col-label">Profile match</div>
+            ${matchFactors.length ? matchFactors.map(f => factorPill(f)).join('') : '<div class="sn-af-empty">No data</div>'}
+          </div>
+        </div>
+
+        <div class="sn-alb-tip">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(201,168,76,.7)" stroke-width="2" style="flex-shrink:0;margin-top:1px"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          <span>${actionTip}</span>
         </div>
 
         <div class="sn-alv2-footer" id="sn-alert-footer">
@@ -148,15 +122,6 @@ window.SnagAI.showProbAlert = function(wp, hired) {
         </div>
       </div>
     `;
-
-    document.getElementById('sn-why-toggle')?.addEventListener('click', () => {
-      const body    = document.getElementById('sn-why-body');
-      const chevron = document.querySelector('.sn-why-chevron');
-      const open    = body.style.display !== 'none';
-      body.style.display = open ? 'none' : 'block';
-      if (chevron) chevron.style.transform = open ? '' : 'rotate(180deg)';
-      document.getElementById('sn-why-toggle').classList.toggle('sn-why-active', !open);
-    });
 
     document.getElementById('sn-alert-cancel')?.addEventListener('click', () => {
       const REASONS = [
