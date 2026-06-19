@@ -410,12 +410,18 @@ function renderPortfolioItemV2(list, p, pi, allProfiles, profileIdx, autoOpen) {
 
   function renderNormal() {
     item.classList.remove('editing');
-    const hasLinks = p.urls && p.urls.some(u => u && u.trim());
+    const hasLinks   = p.urls && p.urls.some(u => u && u.trim());
+    const firstUrl   = hasLinks ? (p.urls || []).find(u => u.trim()) : null;
+    const domain     = firstUrl ? firstUrl.replace(/^https?:\/\//, '').split('/')[0].replace(/^www\./, '') : null;
+    const skillCount = skills.length;
     item.innerHTML =
       '<div class="port-v2-top ' + (hasLinks ? 'port-v2-top-gold' : 'port-v2-top-blue') + '"></div>' +
       '<div class="port-v2-body">' +
         '<div class="port-v2-title">' + _esc(p.title || 'Untitled') + '</div>' +
-        '<div class="port-v2-desc">' + (p.desc ? _esc(p.desc) : '<span style="color:rgba(240,238,234,.2);font-style:italic">No description</span>') + '</div>' +
+        '<div class="port-v2-meta-row">' +
+          '<span class="port-v2-link-lbl">' + (domain ? '🔗 ' + domain : '<span style="font-style:italic;opacity:.5">No link</span>') + '</span>' +
+          (skillCount > 0 ? '<span class="port-v2-skill-count">' + skillCount + ' skills</span>' : '') +
+        '</div>' +
       '</div>' +
       '<button class="port-v2-menu" aria-label="Options">' +
         '<div class="port-v2-mdot"></div><div class="port-v2-mdot"></div><div class="port-v2-mdot"></div>' +
