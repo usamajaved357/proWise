@@ -96,11 +96,18 @@
       const refineInstruction = SnagAI.state.refineInstruction || '';
 
       if (!refineInstruction) {
-        const preProfile = stored.profile || {};
-        const preWp = SnagAI.calcWinProbability(job.jobStats || {}, preProfile);
-        const hired = job.jobStats?.hiredCount;
+        const jobFilters   = prof.jobFilters || {};
+        const autoSkip     = jobFilters.autoSkipHired !== false;
+        const minScore     = jobFilters.minAlertScore ?? 60;
+        const hired        = job.jobStats?.hiredCount || 0;
+
+        // Auto-skip immediately if hired and user enabled that filter
+        if (hired > 0 && autoSkip) { SnagAI.closePanel(); return; }
+
+        const preWp   = SnagAI.calcWinProbability(job.jobStats || {}, prof, jobFilters);
         const hasRisk = (preWp.riskItems || []).length > 0;
-        if (hired > 0 || preWp.probScore < 60 || hasRisk) {
+
+        if (hired > 0 || preWp.combined < minScore || hasRisk) {
           const blocked = await SnagAI.showProbAlert(preWp, hired);
           if (blocked) return;
         }

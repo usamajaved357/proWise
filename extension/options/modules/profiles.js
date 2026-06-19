@@ -148,6 +148,206 @@ export function renderPortfolioItem(list, p, pi, allProfiles, profileIdx, autoOp
   if (autoOpen) openEdit();
 }
 
+// ── Job Filters — defaults, presets, renderer ─────────────────────────────────
+const JF_DEFAULTS = {
+  maxProposals: 50, maxInterviewing: 3, maxInvitesSent: 5,
+  minClientRating: 4.0, minHireRate: 30, minClientSpent: 0,
+  requirePaymentVerified: false, warnZeroSpent: true,
+  maxRateMismatch: 50, maxJobAgeDays: 7,
+  minSkillMatch: 30, warnLocationFilter: true, warnTierMismatch: true,
+  minAlertScore: 60, autoSkipHired: true,
+};
+const JF_PRESETS = {
+  conservative: { maxProposals: 20, maxInterviewing: 1, maxInvitesSent: 3, minClientRating: 4.5, minHireRate: 50, minClientSpent: 1000, requirePaymentVerified: true, warnZeroSpent: true, maxRateMismatch: 30, maxJobAgeDays: 3, minSkillMatch: 50, warnLocationFilter: true, warnTierMismatch: true, minAlertScore: 70, autoSkipHired: true },
+  balanced:     { ...JF_DEFAULTS },
+  aggressive:   { maxProposals: 50, maxInterviewing: 5, maxInvitesSent: 10, minClientRating: 3.0, minHireRate: 15, minClientSpent: 0, requirePaymentVerified: false, warnZeroSpent: false, maxRateMismatch: 80, maxJobAgeDays: 0, minSkillMatch: 10, warnLocationFilter: false, warnTierMismatch: false, minAlertScore: 40, autoSkipHired: false },
+};
+
+function jfFmt(id, raw) {
+  raw = parseInt(raw);
+  switch (id) {
+    case 'maxProposals':    return raw >= 50 ? '50+' : String(raw);
+    case 'maxInterviewing': return raw === 0 ? 'Off' : raw + '+';
+    case 'maxInvitesSent':  return raw === 0 ? 'Off' : raw + '+';
+    case 'minClientRating': return (raw / 10).toFixed(1) + '★';
+    case 'minHireRate':     return raw + '%';
+    case 'maxRateMismatch': return raw + '%↑';
+    case 'maxJobAgeDays':   return raw === 0 ? 'Any' : raw === 1 ? '24h' : raw + 'd';
+    case 'minSkillMatch':   return raw + '%';
+    case 'minAlertScore':   return '< ' + raw;
+    default:                return String(raw);
+  }
+}
+
+function jfTrack(sl) {
+  const pct = ((sl.value - sl.min) / (sl.max - sl.min)) * 100;
+  sl.style.background = `linear-gradient(to right,var(--gold) ${pct}%,rgba(255,255,255,.08) ${pct}%)`;
+}
+
+function jfBadgeInfo(filters) {
+  const custom = Object.keys(JF_DEFAULTS).filter(k => {
+    const a = filters[k]; const b = JF_DEFAULTS[k];
+    return a !== undefined && JSON.stringify(a) !== JSON.stringify(b);
+  });
+  return { text: custom.length ? custom.length + ' custom' : 'Default', def: !custom.length };
+}
+
+function renderJobFilters(body, profile) {
+  if (!profile?.id || !body) return;
+  const F = { ...JF_DEFAULTS, ...(profile.jobFilters || {}) };
+
+  function sl(id, label, min, max, step, val, desc) {
+    const pct = ((val - min) / (max - min)) * 100;
+    const trackBg = `linear-gradient(to right,var(--gold) ${pct}%,rgba(255,255,255,.08) ${pct}%)`;
+    return `
+      <div class="jf-sl-row">
+        <div class="jf-sl-hdr">
+          <span class="jf-sl-name">${label}</span>
+          <span class="jf-sl-val" id="jv-${id}">${jfFmt(id, val)}</span>
+        </div>
+        <input type="range" class="jf-sl" id="js-${id}" min="${min}" max="${max}" step="${step}" value="${val}" style="background:${trackBg}">
+        <div class="jf-sl-hint">${desc}</div>
+      </div>`;
+  }
+
+  function tog(id, label, val, desc) {
+    return `
+      <label class="jf-tog-item">
+        <div class="jf-tog-text">
+          <span class="jf-tog-name">${label}</span>
+          <span class="jf-tog-hint">${desc}</span>
+        </div>
+        <div class="toggle-switch" style="flex-shrink:0">
+          <input type="checkbox" id="jt-${id}" ${val ? 'checked' : ''}>
+          <span class="toggle-slider"></span>
+        </div>
+      </label>`;
+  }
+
+  body.innerHTML = `
+    <div class="jf-presets-row">
+      <span class="jf-presets-lbl">Preset</span>
+      <button class="jf-preset-btn" data-preset="conservative">Conservative</button>
+      <button class="jf-preset-btn" data-preset="balanced">Balanced</button>
+      <button class="jf-preset-btn" data-preset="aggressive">Aggressive</button>
+      <button class="jf-reset-btn" id="jf-reset">Reset</button>
+    </div>
+
+    <div class="jf-section-lbl">Competition</div>
+    ${sl('maxProposals',    'Max proposals',    5,  55,  5, Math.min(F.maxProposals, 55), 'Warn if job has more bids than this')}
+    ${sl('maxInterviewing', 'Max interviewing', 0,  10,  1, F.maxInterviewing,            'Warn if this many freelancers are already shortlisted (0 = off)')}
+    ${sl('maxInvitesSent',  'Max invites sent', 0,  15,  1, F.maxInvitesSent,             'Warn if client sent this many direct invites (0 = off)')}
+
+    <div class="jf-section-lbl">Client Quality</div>
+    ${sl('minClientRating', 'Min client rating', 10, 50, 5, Math.round(F.minClientRating * 10), 'Warn if client rating is below this (1.0 – 5.0★)')}
+    ${sl('minHireRate',     'Min hire rate',     0, 100, 5, F.minHireRate, 'Warn if client hires less than this % from proposals')}
+    <div class="jf-sl-row">
+      <div class="jf-sl-hdr"><span class="jf-sl-name">Min client spent</span></div>
+      <select class="jf-select" id="js-minClientSpent">
+        <option value="0"      ${F.minClientSpent===0      ?'selected':''}>Any amount</option>
+        <option value="100"    ${F.minClientSpent===100    ?'selected':''}>$100+ spent</option>
+        <option value="1000"   ${F.minClientSpent===1000   ?'selected':''}>$1K+ spent</option>
+        <option value="10000"  ${F.minClientSpent===10000  ?'selected':''}>$10K+ spent</option>
+        <option value="100000" ${F.minClientSpent===100000 ?'selected':''}>$100K+ spent</option>
+      </select>
+      <div class="jf-sl-hint">Warn if client has spent less than this on Upwork total</div>
+    </div>
+    <div class="jf-togs-grid">
+      ${tog('warnZeroSpent',          'Warn on $0 clients',     F.warnZeroSpent,          'Never hired anyone on Upwork')}
+      ${tog('requirePaymentVerified', 'Payment verified',       F.requirePaymentVerified, 'Warn if payment not verified')}
+    </div>
+
+    <div class="jf-section-lbl">Rate, Age & Match</div>
+    ${sl('maxRateMismatch', 'Max rate mismatch',  10, 100, 10, F.maxRateMismatch, "Warn if your rate is this % above client's avg paid rate")}
+    ${sl('maxJobAgeDays',   'Max job age (days)',  0,  14,  1, F.maxJobAgeDays,   'Warn if older than this — 0 = any age')}
+    ${sl('minSkillMatch',   'Min skill match',     0,  80, 10, F.minSkillMatch,   'Warn if skill overlap with job is below this %')}
+
+    <div class="jf-section-lbl">Job Requirements</div>
+    <div class="jf-togs-grid">
+      ${tog('warnLocationFilter', 'Location filter',   F.warnLocationFilter, 'Warn if job restricts to a region you may not be in')}
+      ${tog('warnTierMismatch',   'Tier requirement',  F.warnTierMismatch,   'Warn if job requires Top Rated/Expert tier you don\'t have')}
+    </div>
+
+    <div class="jf-section-lbl">Alert Behaviour</div>
+    ${sl('minAlertScore', 'Show alert if score below', 30, 80, 5, F.minAlertScore, 'Show the warning screen when combined win score is under this')}
+    <div class="jf-togs-grid">
+      ${tog('autoSkipHired', 'Auto-skip if hired', F.autoSkipHired, 'Close panel instantly if someone already hired')}
+    </div>
+  `;
+
+  function readFilters() {
+    const s = id => parseInt(body.querySelector('#js-' + id)?.value ?? 0);
+    const t = id => body.querySelector('#jt-' + id)?.checked ?? false;
+    return {
+      maxProposals:           s('maxProposals'),
+      maxInterviewing:        s('maxInterviewing'),
+      maxInvitesSent:         s('maxInvitesSent'),
+      minClientRating:        s('minClientRating') / 10,
+      minHireRate:            s('minHireRate'),
+      minClientSpent:         parseInt(body.querySelector('#js-minClientSpent')?.value ?? 0),
+      requirePaymentVerified: t('requirePaymentVerified'),
+      warnZeroSpent:          t('warnZeroSpent'),
+      maxRateMismatch:        s('maxRateMismatch'),
+      maxJobAgeDays:          s('maxJobAgeDays'),
+      minSkillMatch:          s('minSkillMatch'),
+      warnLocationFilter:     t('warnLocationFilter'),
+      warnTierMismatch:       t('warnTierMismatch'),
+      minAlertScore:          s('minAlertScore'),
+      autoSkipHired:          t('autoSkipHired'),
+    };
+  }
+
+  function save() {
+    const f = readFilters();
+    chrome.storage.local.get(['profileFull_' + profile.id], d => {
+      chrome.storage.local.set({ ['profileFull_' + profile.id]: { ...(d['profileFull_' + profile.id] || {}), jobFilters: f } });
+    });
+  }
+
+  const SL_IDS = ['maxProposals','maxInterviewing','maxInvitesSent','minClientRating','minHireRate','maxRateMismatch','maxJobAgeDays','minSkillMatch','minAlertScore'];
+  const TG_IDS = ['warnZeroSpent','requirePaymentVerified','warnLocationFilter','warnTierMismatch','autoSkipHired'];
+
+  function applyPreset(name) {
+    const P = JF_PRESETS[name]; if (!P) return;
+    SL_IDS.forEach(id => {
+      let val = id === 'minClientRating' ? Math.round(P[id] * 10) : id === 'maxProposals' ? Math.min(P[id], 55) : P[id];
+      const el = body.querySelector('#js-' + id);
+      if (el) { el.value = val; jfTrack(el); const v = body.querySelector('#jv-' + id); if (v) v.textContent = jfFmt(id, val); }
+    });
+    TG_IDS.forEach(id => { const el = body.querySelector('#jt-' + id); if (el) el.checked = P[id]; });
+    const sp = body.querySelector('#js-minClientSpent'); if (sp) sp.value = P.minClientSpent;
+    body.querySelectorAll('.jf-preset-btn').forEach(b => b.classList.toggle('active', b.dataset.preset === name));
+    save();
+  }
+
+  // Events
+  body.querySelectorAll('.jf-sl').forEach(el => {
+    el.addEventListener('input', () => {
+      jfTrack(el);
+      const id = el.id.replace('js-', '');
+      const v = body.querySelector('#jv-' + id);
+      if (v) v.textContent = jfFmt(id, parseInt(el.value));
+      body.querySelectorAll('.jf-preset-btn').forEach(b => b.classList.remove('active'));
+    });
+    el.addEventListener('change', save);
+  });
+  body.querySelectorAll('[id^="jt-"], #js-minClientSpent').forEach(el => {
+    el.addEventListener('change', () => { body.querySelectorAll('.jf-preset-btn').forEach(b => b.classList.remove('active')); save(); });
+  });
+  body.querySelectorAll('.jf-preset-btn').forEach(btn => btn.addEventListener('click', () => applyPreset(btn.dataset.preset)));
+  body.querySelector('#jf-reset')?.addEventListener('click', () => applyPreset('balanced'));
+
+  // Highlight active preset on load
+  ['conservative','balanced','aggressive'].forEach(name => {
+    const P = JF_PRESETS[name];
+    const match = Object.keys(JF_DEFAULTS).every(k => {
+      const a = F[k] ?? JF_DEFAULTS[k]; const b = P[k] ?? JF_DEFAULTS[k];
+      return typeof a === 'number' ? Math.abs(a - b) < 0.01 : a === b;
+    });
+    if (match) body.querySelector(`[data-preset="${name}"]`)?.classList.add('active');
+  });
+}
+
 // ── Save card ─────────────────────────────────────────────────────────────────
 export function saveCard(card, idx, allProfiles) {
   const profile = allProfiles[idx];
@@ -330,6 +530,20 @@ export function renderProfileCard(container, profile, idx, allProfiles, primaryP
       </div>
 
       <div class="profile-section">
+        <button class="jf-open-btn" id="jf-btn-${idx}">
+          <div class="jf-open-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+          </div>
+          <div class="jf-open-text">
+            <span class="jf-open-title">Job Filters</span>
+            <span class="jf-open-sub">Competition · Client Quality · Rate · Alert behaviour</span>
+          </div>
+          <svg class="jf-open-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+        <div id="jf-body-${idx}" style="display:none;margin-top:16px"></div>
+      </div>
+
+      <div class="profile-section">
         <div class="portfolio-section-hdr">
           <span class="profile-section-title">Portfolio <span style="font-weight:400;opacity:.6">(${portfolios.length})</span></span>
           <div style="display:flex;align-items:center;gap:8px">
@@ -387,6 +601,16 @@ export function renderProfileCard(container, profile, idx, allProfiles, primaryP
   card.querySelectorAll('.edit-val').forEach(el => el.addEventListener('blur', () => saveCard(card, idx, allProfiles)));
 
   container.appendChild(card);
+
+  // Job filters — render and wire collapse toggle
+  const jfBody = card.querySelector(`#jf-body-${idx}`);
+  renderJobFilters(jfBody, profile);
+  card.querySelector(`#jf-btn-${idx}`)?.addEventListener('click', () => {
+    const isOpen = jfBody.style.display !== 'none';
+    jfBody.style.display = isOpen ? 'none' : 'block';
+    card.querySelector(`#jf-btn-${idx}`)?.classList.toggle('jf-open-btn--active', !isOpen);
+    card.querySelector('.jf-open-chevron')?.style.setProperty('transform', isOpen ? '' : 'rotate(180deg)');
+  });
 }
 
 // ── Slider navigation ─────────────────────────────────────────────────────────

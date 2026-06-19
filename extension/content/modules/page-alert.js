@@ -31,43 +31,41 @@ window.SnagAI.showProbAlert = function(wp, hired) {
               : 'Critical mismatch. Your profile does not meet this job. Save your Connects.';
 
     const riskItems  = (wp.riskItems || []);
-    const jobFactors = (wp.topProb  || []);
-    const matchFactorsFiltered = (wp.topMatch || []).filter(f => f.delta <= 0 || f.warn);
+    const probFactors  = (wp.topProb  || []);
+    const matchFactors = (wp.topMatch || []);
 
-    const riskKeys = ['proposal','hired','interview','invite','rating','hire rate','spent','payment'];
-    function coveredByRisk(f) {
-      const fl = f.label.toLowerCase();
-      return riskItems.some(r => riskKeys.some(k => r.toLowerCase().includes(k) && fl.includes(k)));
-    }
-
-    const skillMismatch = (wp.topMatch || []).filter(f => f.skillMatch && f.delta < 0);
-    const otherMatch    = matchFactorsFiltered.filter(f => !f.skillMatch && f.delta < 0);
-    const neutralMatch  = matchFactorsFiltered.filter(f => f.delta === 0);
-
-    const allFactors = [
-      ...skillMismatch.map(f => ({ ...f, group: 'Match' })),
-      ...riskItems.map(r => ({ label: r, value: '', delta: -99, isRisk: true, group: 'Risk' })),
-      ...jobFactors.filter(f => f.delta < 0 && !coveredByRisk(f)).map(f => ({ ...f, group: 'Job' })),
-      ...otherMatch.map(f => ({ ...f, group: 'Match' })),
-      ...jobFactors.filter(f => f.delta === 0 && !coveredByRisk(f)).map(f => ({ ...f, group: 'Job' })),
-      ...neutralMatch.map(f => ({ ...f, group: 'Match' })),
-      ...jobFactors.filter(f => f.delta > 0 && !coveredByRisk(f)).map(f => ({ ...f, group: 'Job' })),
-    ];
+    // All score factors combined — sorted negative first, then positive
+    const scoreFactors = [
+      ...probFactors.map(f => ({ ...f, src: 'Competition' })),
+      ...matchFactors.map(f => ({ ...f, src: 'Profile Match' })),
+    ].sort((a, b) => a.delta - b.delta); // most negative first
 
     function factorPill(f) {
-      const col = f.isRisk ? '#f87171' : f.delta > 0 ? '#4ade80' : f.delta < 0 ? '#f87171' : '#facc15';
-      const bg  = f.isRisk ? 'rgba(248,113,113,.11)' : f.delta > 0 ? 'rgba(74,222,128,.09)' : f.delta < 0 ? 'rgba(248,113,113,.11)' : 'rgba(250,204,21,.09)';
-      const labelText = f.isRisk ? f.label : f.label + (f.value ? ': ' + f.value : '');
-      const note  = (!f.isRisk && f.note) ? f.note : '';
+      const col = f.delta > 0 ? '#4ade80' : f.delta < 0 ? '#f87171' : '#facc15';
+      const bg  = f.delta > 0 ? 'rgba(74,222,128,.07)' : f.delta < 0 ? 'rgba(248,113,113,.09)' : 'rgba(250,204,21,.07)';
+      const labelText = f.label + (f.value ? ': ' + f.value : '');
+      const note = f.note || '';
+      const deltaStr = f.delta > 0 ? '+' + f.delta : f.delta < 0 ? String(f.delta) : '0';
+      const scoreCol = f.delta > 0 ? 'rgba(74,222,128,.8)' : f.delta < 0 ? 'rgba(248,113,113,.8)' : 'rgba(250,204,21,.7)';
       return '<div class="sn-af-item" style="background:' + bg + '">'
         + '<span class="sn-af-dot" style="background:' + col + '"></span>'
         + '<div class="sn-af-body">'
         + '<span class="sn-af-label">' + labelText + '</span>'
         + (note ? '<span class="sn-af-note">' + note + '</span>' : '')
-        + '</div></div>';
+        + '</div>'
+        + '<span class="sn-af-score" style="color:' + scoreCol + '">' + deltaStr + '</span>'
+        + '</div>';
     }
 
-    const topFactor = allFactors[0];
+    function riskPill(text) {
+      return '<div class="sn-af-item" style="background:rgba(248,113,113,.09)">'
+        + '<span class="sn-af-dot" style="background:#f87171"></span>'
+        + '<div class="sn-af-body"><span class="sn-af-label">' + text + '</span></div>'
+        + '<span class="sn-af-filter-tag">Filter</span>'
+        + '</div>';
+    }
+
+    const topFactor = scoreFactors[0] || (riskItems.length ? { label: riskItems[0] } : null);
     const topLabel  = topFactor ? (topFactor.label || '').toLowerCase() : '';
     let actionTip = '';
     if (isHired) {
@@ -137,9 +135,18 @@ window.SnagAI.showProbAlert = function(wp, hired) {
         </div>
 
         <div class="sn-signals-divider"><div class="sn-signals-line"></div><span class="sn-signals-label">Signals</span><div class="sn-signals-line"></div></div>
-        <div class="sn-alv2-factors">
-          ${allFactors.length ? allFactors.map(f => factorPill(f)).join('') : '<div class="sn-af-empty">No major issues detected</div>'}
-        </div>
+        ${riskItems.length ? `
+          <div class="sn-af-section-lbl">Filter Violations</div>
+          <div class="sn-alv2-factors" style="margin-bottom:4px">
+            ${riskItems.map(r => riskPill(r)).join('')}
+          </div>
+        ` : ''}
+        ${scoreFactors.length ? `
+          <div class="sn-af-section-lbl">Score Factors</div>
+          <div class="sn-alv2-factors">
+            ${scoreFactors.map(f => factorPill(f)).join('')}
+          </div>
+        ` : (!riskItems.length ? '<div class="sn-af-empty">No major issues detected</div>' : '')}
 
         <div class="sn-alv2-footer" id="sn-alert-footer">
           <button class="sn-alv2-cancel" id="sn-alert-cancel">Skip this job</button>
