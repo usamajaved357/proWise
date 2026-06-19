@@ -93,6 +93,18 @@
 
       await new Promise(r => setTimeout(r, 800));
       const job = SnagAI.getJob();
+
+      // Enrich jobStats from Vuex store — more reliable than DOM parsing for all activity stats
+      try {
+        const storeData = await chrome.runtime.sendMessage({ type: 'GET_JOB_DATA' });
+        if (storeData && job.jobStats) {
+          Object.entries(storeData).forEach(([k, v]) => {
+            if (v !== null && v !== undefined) job.jobStats[k] = v;
+          });
+          console.log('[SnagAI] Job stats from store:', storeData);
+        }
+      } catch(e) { /* fall back to DOM-parsed stats */ }
+
       const refineInstruction = SnagAI.state.refineInstruction || '';
 
       if (!refineInstruction) {

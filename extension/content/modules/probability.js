@@ -67,9 +67,23 @@ window.SnagAI.calcWinProbability = function(jobStats, profile, filters) {
   if (cr !== null && cr !== undefined) {
     if      (cr >= 4.8) { probScore += 5;  probFactors.push({ label: 'Client rating', value: cr + '★', delta: +5,  note: 'Excellent client' }); }
     else if (cr >= 4.0) { /* neutral */ }
-    else if (cr >= 3.0) { probScore -= 8;  probFactors.push({ label: 'Client rating', value: cr + '★', delta: -8,  note: 'Below average — risk of disputes' }); warnings.push('Client rating ' + cr + '★ — below 4.0, may be difficult to work with'); }
-    else                { probScore -= 18; probFactors.push({ label: 'Client rating', value: cr + '★', delta: -18, note: 'Poor client — high dispute risk' }); warnings.push('Client only ' + cr + '★ — serious risk of disputes or non-payment'); }
+    else if (cr >= 3.0) { probScore -= 8;  probFactors.push({ label: 'Client rating', value: cr + '★', delta: -8,  note: 'Below average — risk of disputes' }); }
+    else                { probScore -= 18; probFactors.push({ label: 'Client rating', value: cr + '★', delta: -18, note: 'Poor client — high dispute risk' }); }
   }
+
+  // Client spend — scored factor (always shown, not just on filter violation)
+  const spentNum = jobStats.clientSpentNum || 0;
+  if (jobStats.clientTotalSpent !== undefined && jobStats.clientTotalSpent !== null) {
+    if      (spentNum >= 100000) { probScore += 8;  probFactors.push({ label: 'Client spend', value: '$100K+',             delta: +8,  note: 'Serious, high-spending client' }); }
+    else if (spentNum >= 10000)  { probScore += 4;  probFactors.push({ label: 'Client spend', value: '$10K+',              delta: +4,  note: 'Active, experienced client' }); }
+    else if (spentNum >= 1000)   { probScore += 0;  probFactors.push({ label: 'Client spend', value: '$1K+',               delta:  0,  note: 'Some hiring history' }); }
+    else if (spentNum > 0)       { probScore -= 4;  probFactors.push({ label: 'Client spend', value: '<$1K',               delta: -4,  note: 'Very little history' }); }
+    else                         { probScore -= 10; probFactors.push({ label: 'Client spend', value: '$0 spent',            delta: -10, note: 'Never paid a freelancer' }); }
+  }
+
+  // Payment verified
+  if (jobStats.paymentVerified === true)  { probScore += 3;  probFactors.push({ label: 'Payment', value: 'Verified',     delta: +3,  note: 'Safe to work with' }); }
+  if (jobStats.paymentVerified === false) { probScore -= 10; probFactors.push({ label: 'Payment', value: 'Unverified',   delta: -10, note: 'Risk of non-payment' }); }
 
   if (jobStats.timePostedMinutes > 1440 && (jobStats.proposalCount || 99) <= 10 && jobStats.interviewingCount === 0) {
     probScore += 8;
@@ -188,29 +202,30 @@ window.SnagAI.calcWinProbability = function(jobStats, profile, filters) {
   const _warnLocFilt   = flt.warnLocationFilter  ?? true;
   const _warnTierMis   = flt.warnTierMismatch    ?? true;
 
+  // filterNotes maps factor label → note shown on that factor's pill when filter is violated
+  const filterNotes = {};
   const riskItems = [];
 
   // Proposals
   const _p = jobStats.proposalCount || 0;
   if (_maxProp > 0 && _p >= _maxProp) {
     riskItems.push(_p >= 50 ? '50+ proposals — very high competition' : _p + ' proposals — above your ' + _maxProp + ' limit');
+    filterNotes['Proposals'] = 'above your ' + _maxProp + ' limit';
   }
 
-  // Interviewing
+  // Interviewing — 0 = Off
   const _ic = jobStats.interviewingCount || 0;
   if (_maxInt > 0 && _ic >= _maxInt) {
     riskItems.push(_ic >= 3 ? _ic + ' freelancers interviewing — heavily shortlisting' : _ic + ' freelancer(s) already interviewing');
-  } else if (_maxInt === 0 && _ic >= 1 && _ic <= 2) {
-    riskItems.push(_ic + ' freelancer(s) already interviewing');
+    filterNotes['Interviewing'] = 'above your ' + _maxInt + ' limit';
   }
 
-  // Job age
+  // Job age — 0 = Any
   const _ageMins = jobStats.timePostedMinutes || 0;
   if (_maxAgeDays > 0 && _ageMins > _maxAgeDays * 1440) {
     const _ageLabel = _maxAgeDays === 1 ? '24h' : _maxAgeDays + 'd';
     riskItems.push('Posted ' + jobStats.timePosted + ' — older than your ' + _ageLabel + ' limit');
-  } else if (_ageMins > 1440 && _ic > 0) {
-    riskItems.push('Posted ' + jobStats.timePosted + ' with active interviews — likely decided');
+    filterNotes['Posted'] = 'older than your ' + _ageLabel + ' limit';
   }
 
   // Already hired
@@ -218,36 +233,40 @@ window.SnagAI.calcWinProbability = function(jobStats, profile, filters) {
 
   // Client rating
   const _cr = jobStats.clientRating;
-  if (_cr !== null && _cr !== undefined && _cr < _minRat) {
+  if (_cr !== null && _cr !== undefined && _minRat > 0 && _cr < _minRat) {
     riskItems.push(_cr + '★ client rating — below your ' + _minRat.toFixed(1) + '★ minimum');
+    filterNotes['Client rating'] = 'below your ' + _minRat.toFixed(1) + '★ minimum';
   }
 
   // Hire rate
   const _hrV = jobStats.clientHireRate;
-  if (_hrV !== null && _hrV !== undefined && _hrV < _minHR) {
+  if (_hrV !== null && _hrV !== undefined && _minHR > 0 && _hrV < _minHR) {
     riskItems.push(_hrV + '% hire rate — below your ' + _minHR + '% minimum');
+    filterNotes['Hire rate'] = 'below your ' + _minHR + '% minimum';
   }
 
-  // Invites sent
+  // Invites sent — 0 = Off
   const _inv = jobStats.invitesSent || 0;
   if (_maxInv > 0 && _inv >= _maxInv) {
-    riskItems.push('Client sent ' + _inv + ' invites — hiring by invite only');
-  } else if (_inv >= 1 && _inv <= 4) {
-    riskItems.push('Client sent ' + _inv + ' invite(s) — prefers invited freelancers');
+    riskItems.push('Client sent ' + _inv + ' invites — above your ' + _maxInv + ' invite limit');
+    filterNotes['Invites'] = 'above your ' + _maxInv + ' invite limit';
   }
 
   // Client spent
   const _spentNum = jobStats.clientSpentNum || 0;
-  if (_warnZero && _spentNum === 0 && jobStats.clientTotalSpent !== null && jobStats.clientTotalSpent !== undefined) {
-    riskItems.push('$0 total spent — never paid a freelancer');
-  } else if (_minSpent > 0 && _spentNum < _minSpent) {
+  if (_minSpent > 0 && _spentNum < _minSpent) {
     const _fmtMin = _minSpent >= 1000 ? '$' + (_minSpent / 1000) + 'K' : '$' + _minSpent;
     riskItems.push('Client spent under ' + _fmtMin + ' — below your minimum');
+    filterNotes['Client spend'] = 'below your ' + _fmtMin + '+ minimum';
+  } else if (_warnZero && _spentNum === 0 && jobStats.clientTotalSpent !== null && jobStats.clientTotalSpent !== undefined) {
+    riskItems.push('$0 total spent — never paid a freelancer');
+    filterNotes['Client spend'] = 'flagged: $0 spent';
   }
 
   // Payment verified
-  if (jobStats.paymentVerified === false) {
-    riskItems.push(_reqPay ? 'Payment not verified — you require verified payment' : 'Payment method not verified — risk of non-payment');
+  if (jobStats.paymentVerified === false && _reqPay) {
+    riskItems.push('Payment not verified — you require verified payment');
+    filterNotes['Payment'] = 'you require verified payment';
   }
 
   // Rate mismatch — add to risk if above user threshold
@@ -258,37 +277,38 @@ window.SnagAI.calcWinProbability = function(jobStats, profile, filters) {
     }
   }
 
-  // Location filter — warn if job has a region restriction
-  if (_warnLocFilt && jobStats.clientLocation) {
-    const myCountry  = (profile.country || '').toLowerCase().trim();
-    const jobCountry = jobStats.clientLocation.toLowerCase().trim();
-    if (myCountry && jobCountry && myCountry !== jobCountry) {
-      riskItems.push('Job location: ' + jobStats.clientLocation + ' — may not match your region');
-    }
+  // Location filter — warn if job has explicit location restrictions
+  if (_warnLocFilt && jobStats.hasLocationFilter) {
+    const loc = jobStats.reqCountries?.[0] || jobStats.reqRegions?.[0] || jobStats.clientLocation || '';
+    riskItems.push('Job has location restrictions' + (loc ? ' (' + loc + ')' : '') + ' — verify you qualify');
   }
 
-  // Tier mismatch — warn if job requires a badge the user doesn't have
-  const TIER_RANK = { new: 0, rising: 1, top_rated: 2, top_rated_plus: 3, expert: 4 };
-  if (_warnTierMis && jobStats.reqTalentType) {
-    const reqType = (jobStats.reqTalentType || '').toLowerCase();
-    const userTier = profile.tierKey || 'new';
-    // If job explicitly requires agency and user is independent (or vice versa), warn
-    if (reqType === 'agency' && userTier !== 'agency') {
-      riskItems.push('Job requires an Agency — you\'re listed as Independent');
-    }
-  }
-  // Warn if job description mentions tier requirements not in profile
+  // Tier / expertise mismatch
   if (_warnTierMis) {
-    const userTierRank = TIER_RANK[profile.tierKey || 'new'] || 0;
-    if (userTierRank < TIER_RANK.top_rated_plus && jobStats.reqTopRatedPlus) {
-      riskItems.push('Job requires Top Rated Plus — your current badge doesn\'t qualify');
+    // Agency vs Independent mismatch
+    if ((jobStats.reqTalentType || '').toLowerCase() === 'agency') {
+      riskItems.push('Job requires an Agency account — you\'re listed as Independent');
     }
-    if (userTierRank < TIER_RANK.expert && jobStats.reqExpertVetted) {
-      riskItems.push('Job requires Expert-Vetted — your current badge doesn\'t qualify');
+    // Expertise level — contractorTier 3 = Expert sought
+    const TIER_RANK = { new: 0, rising: 1, top_rated: 2, top_rated_plus: 3, expert: 4 };
+    const userRank  = TIER_RANK[profile.tierKey || 'new'] || 0;
+    if (jobStats.contractorTier === 3 && userRank < TIER_RANK.top_rated) {
+      riskItems.push('Client seeks Expert-level freelancers — your current tier may not qualify');
+    }
+    // Rising talent requirement
+    if (jobStats.reqRisingTalent && userRank < TIER_RANK.rising) {
+      riskItems.push('Job requires Rising Talent badge — you don\'t have it yet');
+    }
+    // Minimum earnings requirement
+    if (jobStats.reqMinEarnings && jobStats.reqMinEarnings > 0) {
+      const earned = parseFloat((profile.earnings || '0').replace(/[^0-9.KkMm]/g, '')) || 0;
+      if (earned < jobStats.reqMinEarnings) {
+        riskItems.push('Job requires $' + jobStats.reqMinEarnings + '+ in earnings — check your eligibility');
+      }
     }
   }
 
   console.log('[SnagAI] riskItems:', riskItems.length, riskItems);
 
-  return { probScore, matchScore, combined, verdict, verdictColor, probColor, matchColor, topProb, topMatch, warnings, riskItems };
+  return { probScore, matchScore, combined, verdict, verdictColor, probColor, matchColor, topProb, topMatch, warnings, riskItems, filterNotes };
 };
