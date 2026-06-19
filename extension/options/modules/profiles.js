@@ -391,218 +391,305 @@ export function saveCard(card, idx, allProfiles) {
   });
 }
 
-// ── Profile card renderer ─────────────────────────────────────────────────────
+// ── Portfolio item v2 — compact card + ··· menu + inline edit ────────────────
+function renderPortfolioItemV2(list, p, pi, allProfiles, profileIdx, autoOpen) {
+  const item = document.createElement('div');
+  item.className = 'port-v2-card';
+  item.dataset.pi = pi;
+
+  const skills = Array.isArray(p.skills) ? p.skills
+    : (typeof p.skills === 'string' && p.skills.trim()) ? p.skills.split(',').map(s => s.trim()).filter(Boolean) : [];
+
+  function savePortfolios() {
+    const localKey = 'profileFull_' + (allProfiles[profileIdx]?.id);
+    if (!localKey || localKey === 'profileFull_undefined') return;
+    chrome.storage.local.get([localKey], d => {
+      chrome.storage.local.set({ [localKey]: { ...(d[localKey] || {}), portfolios: allProfiles[profileIdx]?.portfolios || [] } });
+    });
+  }
+
+  function renderNormal() {
+    item.classList.remove('editing');
+    const hasLinks = p.urls && p.urls.some(u => u && u.trim());
+    item.innerHTML =
+      '<div class="port-v2-top ' + (hasLinks ? 'port-v2-top-gold' : 'port-v2-top-blue') + '"></div>' +
+      '<div class="port-v2-body">' +
+        '<div class="port-v2-title">' + _esc(p.title || 'Untitled') + '</div>' +
+        '<div class="port-v2-desc">' + (p.desc ? _esc(p.desc) : '<span style="color:rgba(240,238,234,.2);font-style:italic">No description</span>') + '</div>' +
+      '</div>' +
+      '<button class="port-v2-menu" aria-label="Options">' +
+        '<div class="port-v2-mdot"></div><div class="port-v2-mdot"></div><div class="port-v2-mdot"></div>' +
+      '</button>';
+
+    item.querySelector('.port-v2-menu').addEventListener('click', e => {
+      e.stopPropagation();
+      document.querySelectorAll('.port-v2-drop').forEach(d => d.remove());
+      const drop = document.createElement('div');
+      drop.className = 'port-v2-drop';
+      drop.innerHTML =
+        '<button class="port-v2-drop-item port-v2-drop-edit"><i class="ti ti-edit" style="font-size:13px" aria-hidden="true"></i> Edit</button>' +
+        '<button class="port-v2-drop-item port-v2-drop-del"><i class="ti ti-trash" style="font-size:13px" aria-hidden="true"></i> Delete</button>';
+      item.appendChild(drop);
+      drop.querySelector('.port-v2-drop-edit').addEventListener('click', e2 => { e2.stopPropagation(); drop.remove(); renderEdit(); });
+      drop.querySelector('.port-v2-drop-del').addEventListener('click', e2 => {
+        e2.stopPropagation(); drop.remove();
+        allProfiles[profileIdx]?.portfolios?.splice(pi, 1);
+        item.remove();
+        savePortfolios();
+      });
+      const close = () => { drop.remove(); document.removeEventListener('click', close); };
+      setTimeout(() => document.addEventListener('click', close), 0);
+    });
+  }
+
+  function renderEdit() {
+    item.classList.add('editing');
+    const urlsHtml = (p.urls && p.urls.length ? p.urls : ['']).map(u =>
+      '<div class="port-v2-url-row"><input type="url" class="port-v2-url-inp" value="' + _esc(u) + '" placeholder="https://..."><button class="port-v2-url-del" type="button">×</button></div>'
+    ).join('');
+    const skillsHtml = skills.length
+      ? skills.map(s => '<span class="port-v2-skill-tag">' + _esc(s) + '</span>').join('')
+      : '<span style="font-size:10.5px;color:rgba(240,238,234,.25)">Sync from Upwork profile to populate.</span>';
+
+    item.innerHTML =
+      '<div class="port-v2-top port-v2-top-edit"></div>' +
+      '<div class="port-v2-edit-hdr">' +
+        '<input type="text" class="port-v2-title-inp" value="' + _esc(p.title || '') + '" placeholder="Project name">' +
+        '<button class="port-v2-done" type="button">✓ Done</button>' +
+      '</div>' +
+      '<div class="port-v2-edit-body">' +
+        '<span class="port-v2-edit-lbl">Links</span>' +
+        '<div class="port-v2-urls-list">' + urlsHtml + '</div>' +
+        '<button class="port-v2-add-url" type="button">+ Add link</button>' +
+        '<span class="port-v2-edit-lbl">Description</span>' +
+        '<textarea class="port-v2-desc-inp" rows="2" placeholder="Brief description…">' + _esc(p.desc || '') + '</textarea>' +
+        '<span class="port-v2-edit-lbl">Skills <span style="font-size:9px;opacity:.45;font-weight:400">(auto-synced)</span></span>' +
+        '<div class="port-v2-skills-ro">' + skillsHtml + '</div>' +
+      '</div>';
+
+    item.querySelectorAll('.port-v2-url-del').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const ul = item.querySelector('.port-v2-urls-list');
+        if (ul.querySelectorAll('.port-v2-url-row').length > 1) btn.closest('.port-v2-url-row').remove();
+      });
+    });
+    item.querySelector('.port-v2-add-url').addEventListener('click', () => {
+      const ul = item.querySelector('.port-v2-urls-list');
+      const row = document.createElement('div'); row.className = 'port-v2-url-row';
+      row.innerHTML = '<input type="url" class="port-v2-url-inp" placeholder="https://..."><button class="port-v2-url-del" type="button">×</button>';
+      row.querySelector('.port-v2-url-del').addEventListener('click', () => { if (ul.querySelectorAll('.port-v2-url-row').length > 1) row.remove(); });
+      ul.appendChild(row); row.querySelector('input').focus();
+    });
+    item.querySelector('.port-v2-done').addEventListener('click', () => {
+      p.title = item.querySelector('.port-v2-title-inp').value.trim();
+      p.desc  = item.querySelector('.port-v2-desc-inp').value.trim();
+      p.urls  = [...item.querySelectorAll('.port-v2-url-inp')].map(i => i.value.trim()).filter(Boolean);
+      if (allProfiles[profileIdx]) {
+        allProfiles[profileIdx].portfolios = allProfiles[profileIdx].portfolios || [];
+        allProfiles[profileIdx].portfolios[pi] = p;
+      }
+      savePortfolios();
+      renderNormal();
+    });
+  }
+
+  if (autoOpen) renderEdit(); else renderNormal();
+  list.appendChild(item);
+}
+
+// ── Profile card renderer (Option B design) ───────────────────────────────────
 export function renderProfileCard(container, profile, idx, allProfiles, primaryProfileId) {
   const card = document.createElement('div');
   card.className = 'profile-card';
   card.dataset.profileIdx = idx;
 
-  const synced       = !!(profile.name || profile.jss || profile._readAt);
-  const avatarLetter = (profile.name || '?').charAt(0).toUpperCase();
+  const synced        = !!(profile.name || profile.jss || profile._readAt);
   const validProfiles = allProfiles.filter(p => p && p.url);
-  const isPrimary    = validProfiles.length <= 1
-    ? true
-    : (primaryProfileId
-        ? profile.id === primaryProfileId
-        : idx === 0);
-  const readAt       = profile._readAt
-    ? new Date(profile._readAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-    : null;
-  const skillsArr    = getSkillsArr(profile);
-  const portfolios   = profile.portfolios || [];
+  const isPrimary     = validProfiles.length <= 1
+    ? true : (primaryProfileId ? profile.id === primaryProfileId : idx === 0);
+  const skillsArr     = getSkillsArr(profile);
+  const portfolios    = profile.portfolios || [];
 
-  const tierClasses = { expert:'tier-expert', top_rated_plus:'tier-top_rated_plus', top_rated:'tier-top_rated', rising:'tier-rising' };
-  const tierClass   = tierClasses[profile.tierKey] || 'tier-new';
-  const tierIcons   = { expert:'⚡', top_rated_plus:'⭐', top_rated:'✦', rising:'🚀' };
-  const tierIcon    = tierIcons[profile.tierKey] || '';
-  const tierHtml    = tierClass !== 'tier-new'
-    ? `<div class="tier-badge ${tierClass}">${tierIcon} ${profile.tier || ''}</div>` : '';
-
+  // Pending state
   if (!synced) {
     card.innerHTML = `
-      <div class="profile-card-hdr">
-        <div class="profile-avatar profile-avatar-pending">?</div>
-        <div class="profile-info">
-          <div class="profile-name" style="color:var(--white3)">Not synced yet</div>
-          <div class="profile-meta" style="font-size:10px;word-break:break-all">${profile.url}</div>
+      <div class="pcv2-pending">
+        <div class="pcv2-pending-icon">🔄</div>
+        <div class="pcv2-pending-title">Not synced yet</div>
+        <div class="pcv2-pending-desc">Open your Upwork profile and click the <strong>Sync to Snag AI</strong> button that appears on the page.</div>
+        <div style="font-size:11px;color:var(--white3);word-break:break-all">${profile.url}</div>
+        <div style="display:flex;gap:8px">
+          <button class="btn-primary" id="open-pending-${idx}">Open profile →</button>
+          <button class="btn-delete" style="font-size:13px;padding:8px 14px">Remove</button>
         </div>
-        <div class="profile-actions">
-          <button class="btn-delete" title="Remove">×</button>
-        </div>
-      </div>
-      <div class="pending-body">
-        <div class="pending-icon">🔄</div>
-        <div class="pending-title">One more step</div>
-        <div class="pending-desc">Click below to open your Upwork profile, then click <strong>Sync to Snag AI</strong> button that appears on the page.</div>
-        <button class="btn-primary" id="open-pending-${idx}" style="margin-top:4px">Open my Upwork profile →</button>
-      </div>
-    `;
+      </div>`;
     card.querySelector(`#open-pending-${idx}`)?.addEventListener('click', () => chrome.tabs.create({ url: profile.url }));
     card.querySelector('.btn-delete')?.addEventListener('click', () => {
       if (!confirm('Remove this profile?')) return;
-      const removedId = profile.id;
-      allProfiles.splice(idx, 1);
+      const id = profile.id; allProfiles.splice(idx, 1);
       chrome.storage.local.set({ registeredProfiles: allProfiles });
-      if (removedId) chrome.storage.local.remove('profileFull_' + removedId);
+      if (id) chrome.storage.local.remove('profileFull_' + id);
       renderProfilesPage();
     });
-    container.appendChild(card);
-    return;
+    container.appendChild(card); return;
   }
 
-  // Profile Strength calculation
-  (function() {
-    let sc = 0, reasons = [], gaps = [];
-    const bioL    = (profile.bio || '').trim().length;
-    const jssN    = parseInt(String(profile.jss || '0').replace(/[^0-9]/g, '')) || 0;
-    const portsOk = (portfolios || []).filter(p => p.urls && p.urls.some(u => u && u.trim())).length;
-    if (bioL > 150)            { sc += 20; reasons.push('Detailed bio (' + bioL + ' chars)'); }
-    else if (bioL > 50)        { sc += 10; gaps.push('Expand bio to 150+ chars'); }
-    else                       {           gaps.push('Add a bio to your profile'); }
-    if (skillsArr.length >= 8) { sc += 20; reasons.push(skillsArr.length + ' skills synced'); }
-    else if (skillsArr.length > 0) { sc += 10; gaps.push('Sync more skills from Upwork'); }
-    else                       {           gaps.push('Visit Upwork profile to sync skills'); }
-    if (portsOk >= 3)          { sc += 30; reasons.push(portsOk + ' portfolio links'); }
-    else if (portsOk > 0)      { sc += portsOk * 10; gaps.push('Add ' + (3 - portsOk) + ' more portfolio links'); }
-    else                       {           gaps.push('Add portfolio links'); }
-    if (jssN >= 90)            { sc += 15; reasons.push(jssN + '% JSS'); }
-    else if (jssN > 0)         { sc += 8;  gaps.push('Improve JSS above 90%'); }
-    if ((profile.title || '').trim().length > 5) { sc += 10; reasons.push('Title set'); }
-    else                       {           gaps.push('Add your professional title'); }
-    if (profile.hourlyRate)    { sc += 5; }
-    sc = Math.min(100, sc);
-    const col = sc >= 80 ? '#4ade80' : sc >= 55 ? '#e8a020' : '#f87171';
-    const lbl = sc >= 80 ? 'Strong' : sc >= 55 ? 'Good' : 'Needs work';
-    const reasonsHtml = reasons.length
-      ? '<div class="ps-reasons">' + reasons.map(r => '<span class="ps-reason">✓ ' + r + '</span>').join('') + '</div>'
-      : '';
-    const gapsHtml = gaps.length
-      ? '<div class="ps-gaps">' + gaps.slice(0, 2).map(g => '<span class="ps-gap">↗ ' + g + '</span>').join('') + '</div>'
-      : '';
-    card._psHtml = '<div class="ps-wrap">'
-      + '<div class="ps-header"><span class="ps-title">Profile Strength</span>'
-      + '<span class="ps-score" style="color:' + col + '">' + sc + '% · ' + lbl + '</span></div>'
-      + '<div class="ps-track"><div class="ps-fill" style="width:' + sc + '%;background:' + col + '"></div></div>'
-      + reasonsHtml + gapsHtml + '</div>';
-  })();
-  const psHtml = card._psHtml || '';
+  // Profile strength
+  const jssN    = parseInt(String(profile.jss || '0').replace(/[^0-9]/g, '')) || 0;
+  const portsOk = portfolios.filter(p => p.urls && p.urls.some(u => u && u.trim())).length;
+  const bioL    = (profile.bio || '').trim().length;
+  let sc = 0;
+  if (bioL > 150) sc += 20; else if (bioL > 50) sc += 10;
+  if (skillsArr.length >= 8) sc += 20; else if (skillsArr.length > 0) sc += 10;
+  if (portsOk >= 3) sc += 30; else sc += portsOk * 10;
+  if (jssN >= 90) sc += 15; else if (jssN > 0) sc += 8;
+  if ((profile.title || '').trim().length > 5) sc += 10;
+  if (profile.hourlyRate) sc += 5;
+  sc = Math.min(100, sc);
+  const strCol = sc >= 80 ? '#4ade80' : sc >= 55 ? '#e8a020' : '#f87171';
+  const strLbl = sc >= 80 ? 'Strong' : sc >= 55 ? 'Good' : 'Needs work';
+
+  // JSS ring
+  const circ      = 175.9;
+  const dashOff   = jssN > 0 ? circ * (1 - jssN / 100) : circ;
+  const ringColor = jssN >= 80 ? '#c9a84c' : jssN >= 60 ? '#facc15' : jssN > 0 ? '#f87171' : 'rgba(255,255,255,.12)';
+
+  // Tier badge
+  const tierMap  = { expert: ['pcv2-tier-purple','⚡ Expert Vetted'], top_rated_plus: ['pcv2-tier-gold','⭐ Top Rated Plus'], top_rated: ['pcv2-tier-green','✦ Top Rated'], rising: ['pcv2-tier-blue','🚀 Rising Talent'] };
+  const [tierCls, tierTxt] = tierMap[profile.tierKey] || [];
+  const tierHtml = tierCls ? `<span class="pcv2-tier ${tierCls}">${tierTxt}</span>` : '';
+
+  // Meta line
+  const meta = [profile.country, profile.rate, profile.jobs ? profile.jobs + ' jobs' : '', profile.earnings].filter(Boolean).join(' · ');
+
+  // Strip values
+  const readAt = profile._readAt ? new Date(profile._readAt).toLocaleDateString('en-US', { month:'short', day:'numeric' }) : '—';
+  const avail  = (profile.extra || '').split('·')[0].trim() || profile.hours ? profile.hours + ' hrs' : '—';
 
   card.innerHTML = `
-    <div class="profile-card-hdr">
-      <div class="profile-avatar">${avatarLetter}</div>
-      <div class="profile-info">
-        <div class="profile-name-row">
-          <span class="profile-name">${profile.name || 'Unknown'}</span>
+    <div class="pcv2-hdr">
+      <div class="pcv2-ring">
+        <svg viewBox="0 0 68 68">
+          <circle cx="34" cy="34" r="28" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="6"/>
+          <circle cx="34" cy="34" r="28" fill="none" stroke="${ringColor}" stroke-width="6"
+            stroke-dasharray="${circ}" stroke-dashoffset="${dashOff.toFixed(1)}"
+            stroke-linecap="round" transform="rotate(-90 34 34)"/>
+        </svg>
+        <div class="pcv2-ring-num" style="color:${ringColor}">${jssN > 0 ? jssN + '%' : '—'}</div>
+      </div>
+      <div class="pcv2-info">
+        <div class="pcv2-name-row">
+          <span class="pcv2-name">${profile.name || 'Unknown'}</span>
+          ${tierHtml}
           ${isPrimary && validProfiles.length > 1 ? '<span class="badge-primary">★ Primary</span>' : ''}
         </div>
-        <div class="profile-meta">
-          ${[profile.tier || '', profile.jss ? profile.jss + ' JSS' : ''].filter(Boolean).join(' · ')}
-          ${readAt ? `<span style="opacity:.5"> · Synced ${readAt}</span>` : ''}
-        </div>
-        <div class="profile-actions">
-          ${!isPrimary && validProfiles.length > 1 ? `<button class="btn-set-primary" id="btn-primary-${idx}">Set primary</button>` : ''}
+        <div class="pcv2-meta">${meta || '—'}</div>
+        <div class="pcv2-str-row">
+          <div class="pcv2-str-bar"><div class="pcv2-str-fill" style="width:${sc}%;background:${strCol}"></div></div>
+          <span class="pcv2-str-pct" style="color:${strCol}">${sc}% ${strLbl}</span>
+          <span class="pcv2-str-lbl">strength</span>
         </div>
       </div>
-      <button class="btn-delete" title="Remove profile" style="margin-top:2px">×</button>
+      <div class="pcv2-actions">
+        ${!isPrimary && validProfiles.length > 1 ? `<button class="btn-set-primary" id="btn-primary-${idx}">Set primary</button>` : ''}
+        <button class="btn-resync" id="sync-profile-${idx}" title="Open & Sync">⟳ Sync</button>
+        <button class="btn-delete" title="Remove profile">×</button>
+      </div>
     </div>
 
-    ${psHtml}
-    <div class="profile-body">
-      <div class="stats-row">
-        <div class="stat-box"><div class="stat-val">${profile.jss || '—'}</div><div class="stat-lbl">JSS</div></div>
-        <div class="stat-box"><div class="stat-val">${profile.rate || '—'}</div><div class="stat-lbl">Rate</div></div>
-        <div class="stat-box"><div class="stat-val">${profile.jobs || '—'}</div><div class="stat-lbl">Jobs</div></div>
-        <div class="stat-box"><div class="stat-val">${profile.earnings || '—'}</div><div class="stat-lbl">Earned</div></div>
+    <div class="pcv2-strip">
+      <div class="pcv2-strip-item">
+        <div class="pcv2-strip-lbl">Availability</div>
+        <div class="pcv2-strip-val">${(profile.extra || '').split('·')[0].trim() || '—'}</div>
       </div>
-      ${tierHtml}
-      <div class="edit-row"><span class="edit-lbl">Title</span><textarea class="edit-val" data-field="title" rows="2">${profile.title || ''}</textarea></div>
-      <div class="edit-row"><span class="edit-lbl">Bio</span><textarea class="edit-val" rows="3" data-field="bio">${profile.bio || ''}</textarea></div>
-      <div class="edit-row"><span class="edit-lbl">Country</span><input class="edit-val" type="text" data-field="country" value="${profile.country || ''}"></div>
-      <div class="edit-row"><span class="edit-lbl">Availability</span><textarea class="edit-val" rows="2" data-field="extra" placeholder="e.g. Available 30+ hrs/week · Pakistan">${profile.extra || ''}</textarea></div>
+      <div class="pcv2-strip-div"></div>
+      <div class="pcv2-strip-item">
+        <div class="pcv2-strip-lbl">Total hours</div>
+        <div class="pcv2-strip-val">${profile.hours || '—'}</div>
+      </div>
+      <div class="pcv2-strip-div"></div>
+      <div class="pcv2-strip-item">
+        <div class="pcv2-strip-lbl">Jobs done</div>
+        <div class="pcv2-strip-val">${profile.jobs || '—'}</div>
+      </div>
+      <div class="pcv2-strip-div"></div>
+      <div class="pcv2-strip-item">
+        <div class="pcv2-strip-lbl">Last synced</div>
+        <div class="pcv2-strip-val">${readAt}</div>
+      </div>
+    </div>
 
-      <div class="profile-section">
-        <div class="profile-section-hdr">
-          <span class="profile-section-title">Skills</span>
-          <span class="profile-section-count">${skillsArr.length} detected</span>
+    <div class="pcv2-section">
+      <div class="pcv2-sec-hdr">
+        <span class="pcv2-sec-title">Skills · ${skillsArr.length} detected</span>
+      </div>
+      <div class="skills-wrap" id="skills-wrap-${idx}"></div>
+    </div>
+
+    <div class="pcv2-section">
+      <button class="jf-open-btn" id="jf-btn-${idx}">
+        <div class="jf-open-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
         </div>
-        <div class="skills-wrap" id="skills-wrap-${idx}"></div>
-        <div style="font-size:11px;color:var(--white3);margin-top:6px">Profile sync reads your own Upwork profile only when you click Sync. Snag AI never submits proposals on your behalf.</div>
-      </div>
-
-      <div class="profile-section">
-        <button class="jf-open-btn" id="jf-btn-${idx}">
-          <div class="jf-open-icon">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
-          </div>
-          <div class="jf-open-text">
-            <span class="jf-open-title">Job Filters</span>
-            <span class="jf-open-sub">Competition · Client Quality · Rate · Alert behaviour</span>
-          </div>
-          <svg class="jf-open-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-        </button>
-        <div id="jf-body-${idx}" style="display:none;margin-top:16px"></div>
-      </div>
-
-      <div class="profile-section">
-        <div class="portfolio-section-hdr">
-          <span class="profile-section-title">Portfolio <span style="font-weight:400;opacity:.6">(${portfolios.length})</span></span>
-          <div style="display:flex;align-items:center;gap:8px">
-            ${profile._portfolioSyncedAt
-              ? `<span style="font-size:10px;color:var(--white3)">Synced ${new Date(profile._portfolioSyncedAt).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</span>`
-              : `<span style="font-size:10px;color:var(--yellow)">⚠ Not synced</span>`}
-            <button class="btn-sync-portfolios" id="sync-port-${idx}">⟳ Open & Re-sync</button>
-            <button class="btn-port-add" data-action="add-port">+ Add</button>
-          </div>
+        <div class="jf-open-text">
+          <span class="jf-open-title">Job Filters</span>
+          <span class="jf-open-sub">Competition · Client Quality · Rate · Alert behaviour</span>
         </div>
-        <div class="port-grid" id="port-list-${idx}"></div>
-        ${!portfolios.length ? `<div class="port-empty-msg">No portfolio items yet. Add them manually or visit your Upwork profile page.</div>` : ''}
+        <svg class="jf-open-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div id="jf-body-${idx}" style="display:none;margin-top:16px"></div>
+    </div>
+
+    <div class="pcv2-section">
+      <div class="pcv2-sec-hdr">
+        <span class="pcv2-sec-title">Portfolio · ${portfolios.length}</span>
+        <button class="btn-port-add" data-action="add-port">+ Add</button>
       </div>
+      <div class="pcv2-port-grid" id="port-list-${idx}"></div>
+      ${!portfolios.length ? '<div class="port-empty-msg" style="grid-column:1/-1;margin-top:4px">No portfolio items yet — click + Add or visit your Upwork profile.</div>' : ''}
     </div>
   `;
 
+  // Skills
   renderSkillsExpand(card.querySelector(`#skills-wrap-${idx}`), skillsArr);
 
+  // Portfolio
   const portList = card.querySelector(`#port-list-${idx}`);
-  portfolios.forEach((p, pi) => renderPortfolioItem(portList, p, pi, allProfiles, idx));
+  portfolios.forEach((p, pi) => renderPortfolioItemV2(portList, p, pi, allProfiles, idx));
 
-  card.querySelector(`#btn-primary-${idx}`)?.addEventListener('click', () => {
-    const profileId = profile.id || ('profile_' + (idx + 1));
-    chrome.runtime.sendMessage({ type: 'SET_PRIMARY_PROFILE', profileId }, () => {
-      renderProfilesPage();
-    });
-  });
-
-  card.querySelector(`#sync-port-${idx}`)?.addEventListener('click', () => {
-    if (!profile.url) return;
-    const btn = card.querySelector(`#sync-port-${idx}`);
-    if (btn) { btn.textContent = 'Opening…'; btn.disabled = true; }
-    chrome.tabs.create({ url: profile.url });
-    setTimeout(() => { if (btn) { btn.textContent = '⟳ Open & Re-sync'; btn.disabled = false; } }, 3000);
-  });
-
-  card.querySelector('.btn-delete')?.addEventListener('click', () => {
-    if (!confirm('Remove this profile?')) return;
-    const removedId = profile.id;
-    allProfiles.splice(idx, 1);
-    chrome.storage.local.set({ registeredProfiles: allProfiles });
-    if (removedId) chrome.storage.local.remove('profileFull_' + removedId);
-    renderProfilesPage();
-  });
-
+  // Add portfolio
   card.querySelector('[data-action="add-port"]')?.addEventListener('click', () => {
     const newItem = { title: '', urls: [], desc: '', _manual: true };
     allProfiles[idx].portfolios = allProfiles[idx].portfolios || [];
     allProfiles[idx].portfolios.push(newItem);
     const pi = allProfiles[idx].portfolios.length - 1;
     portList.querySelector('.port-empty-msg')?.remove();
-    renderPortfolioItem(portList, newItem, pi, allProfiles, idx, true);
+    renderPortfolioItemV2(portList, newItem, pi, allProfiles, idx, true);
   });
 
-  card.querySelectorAll('.edit-val').forEach(el => el.addEventListener('blur', () => saveCard(card, idx, allProfiles)));
+  // Sync
+  card.querySelector(`#sync-profile-${idx}`)?.addEventListener('click', () => {
+    if (!profile.url) return;
+    chrome.tabs.create({ url: profile.url });
+  });
+
+  // Set primary
+  card.querySelector(`#btn-primary-${idx}`)?.addEventListener('click', () => {
+    chrome.runtime.sendMessage({ type: 'SET_PRIMARY_PROFILE', profileId: profile.id }, () => renderProfilesPage());
+  });
+
+  // Delete
+  card.querySelector('.btn-delete')?.addEventListener('click', () => {
+    if (!confirm('Remove this profile?')) return;
+    const id = profile.id; allProfiles.splice(idx, 1);
+    chrome.storage.local.set({ registeredProfiles: allProfiles });
+    if (id) chrome.storage.local.remove('profileFull_' + id);
+    renderProfilesPage();
+  });
 
   container.appendChild(card);
 
-  // Job filters — render and wire collapse toggle
+  // Job filters
   const jfBody = card.querySelector(`#jf-body-${idx}`);
   renderJobFilters(jfBody, profile);
   card.querySelector(`#jf-btn-${idx}`)?.addEventListener('click', () => {

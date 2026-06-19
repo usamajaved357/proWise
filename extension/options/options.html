@@ -639,6 +639,95 @@ textarea.edit-val{min-height:38px}
 .jf-tog-text{flex:1;min-width:0}
 .jf-tog-name{display:block;font-size:11.5px;font-weight:600;color:var(--white2);margin-bottom:2px}
 .jf-tog-hint{display:block;font-size:10px;color:rgba(240,238,234,.3);line-height:1.4}
+
+/* ── Profile Card v2 (Option B) ──────────────────────────────────── */
+.profile-card{background:var(--bg2);border:1px solid var(--border);border-radius:18px;overflow:hidden;margin-bottom:20px;transition:box-shadow .2s,border-color .2s}
+.profile-card::before{content:'';display:block;height:3px;background:linear-gradient(90deg,var(--gold),var(--gold2),rgba(232,200,120,.3),transparent)}
+.profile-card:hover{border-color:rgba(201,168,76,.14);box-shadow:0 6px 32px rgba(0,0,0,.3)}
+
+/* Header */
+.pcv2-hdr{padding:20px 22px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:16px}
+.pcv2-ring{position:relative;width:68px;height:68px;flex-shrink:0}
+.pcv2-ring svg{width:68px;height:68px}
+.pcv2-ring-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800}
+.pcv2-info{flex:1;min-width:0}
+.pcv2-name-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:5px}
+.pcv2-name{font-size:17px;font-weight:700;color:var(--white);letter-spacing:-.02em}
+.pcv2-meta{font-size:12px;color:rgba(240,238,234,.4);margin-bottom:8px}
+.pcv2-str-row{display:flex;align-items:center;gap:10px}
+.pcv2-str-bar{flex:1;height:4px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden}
+.pcv2-str-fill{height:100%;border-radius:2px;transition:width .6s cubic-bezier(.4,0,.2,1)}
+.pcv2-str-pct{font-size:12px;font-weight:700;white-space:nowrap}
+.pcv2-str-lbl{font-size:10px;color:rgba(240,238,234,.28);white-space:nowrap}
+.pcv2-actions{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.pcv2-tier{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap}
+.pcv2-tier-gold{background:rgba(201,168,76,.1);color:var(--gold);border:1px solid var(--gold-border)}
+.pcv2-tier-green{background:rgba(52,211,153,.1);color:var(--green);border:1px solid var(--green-border)}
+.pcv2-tier-purple{background:rgba(167,139,250,.1);color:var(--purple);border:1px solid rgba(167,139,250,.25)}
+.pcv2-tier-blue{background:rgba(96,165,250,.1);color:var(--blue);border:1px solid rgba(96,165,250,.25)}
+
+/* Info strip */
+.pcv2-strip{display:grid;grid-template-columns:1fr 1px 1fr 1px 1fr 1px 1fr;background:rgba(0,0,0,.18);border-bottom:1px solid var(--border)}
+.pcv2-strip-item{padding:10px 14px;text-align:center}
+.pcv2-strip-div{background:var(--border)}
+.pcv2-strip-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:rgba(240,238,234,.28);margin-bottom:4px}
+.pcv2-strip-val{font-size:12.5px;font-weight:700;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* Sections */
+.pcv2-section{padding:14px 22px;border-bottom:1px solid var(--border)}
+.pcv2-section:last-child{border-bottom:none}
+.pcv2-sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.pcv2-sec-title{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(240,238,234,.3)}
+
+/* Skills — blue chips */
+.skill-chip{font-size:11px;padding:3px 10px;background:rgba(96,165,250,.1);color:#93c5fd;border:1px solid rgba(96,165,250,.18);border-radius:20px;font-weight:600;transition:background .12s}
+.skill-chip:hover{background:rgba(96,165,250,.16)}
+.skills-hint{font-size:11px;color:var(--white3);font-style:italic}
+
+/* Portfolio grid v2 — 2 cols */
+.pcv2-port-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px}
+.port-v2-card{background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.07);border-radius:11px;overflow:visible;position:relative;transition:border-color .15s}
+.port-v2-card:hover{border-color:rgba(255,255,255,.14)}
+.port-v2-card.editing{border-color:rgba(201,168,76,.3);background:rgba(201,168,76,.04)}
+.port-v2-top{height:2px;border-radius:11px 11px 0 0}
+.port-v2-top-gold{background:rgba(201,168,76,.6)}
+.port-v2-top-blue{background:rgba(96,165,250,.4)}
+.port-v2-top-edit{background:rgba(201,168,76,.9)}
+.port-v2-body{padding:10px 12px 11px}
+.port-v2-title{font-size:12px;font-weight:700;color:var(--white);margin-bottom:4px;padding-right:26px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.port-v2-desc{font-size:10.5px;color:rgba(240,238,234,.3);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:31px}
+.port-v2-menu{position:absolute;top:9px;right:9px;width:24px;height:24px;border:1px solid rgba(255,255,255,.1);border-radius:6px;background:rgba(255,255,255,.04);display:flex;align-items:center;justify-content:center;gap:2px;cursor:pointer;transition:all .15s;z-index:1}
+.port-v2-menu:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.22)}
+.port-v2-mdot{width:3px;height:3px;border-radius:50%;background:rgba(240,238,234,.45)}
+.port-v2-drop{position:absolute;top:36px;right:9px;background:#1a2035;border:1px solid rgba(255,255,255,.12);border-radius:9px;padding:4px;z-index:100;min-width:100px;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.port-v2-drop-item{display:flex;align-items:center;gap:7px;width:100%;padding:6px 10px;background:none;border:none;border-radius:5px;font-size:11.5px;font-weight:600;color:rgba(240,238,234,.7);cursor:pointer;font-family:inherit;transition:background .12s;text-align:left}
+.port-v2-drop-item:hover{background:rgba(255,255,255,.07)}
+.port-v2-drop-del{color:var(--red)}
+.port-v2-drop-del:hover{background:rgba(248,113,113,.1)}
+/* Edit mode */
+.port-v2-edit-hdr{display:flex;align-items:center;gap:8px;padding:10px 13px 0}
+.port-v2-title-inp{flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:7px;padding:6px 9px;font-size:12.5px;font-weight:700;color:var(--white);font-family:inherit;outline:none;min-width:0}
+.port-v2-title-inp:focus{border-color:rgba(201,168,76,.4)}
+.port-v2-done{flex-shrink:0;padding:5px 12px;background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.3);border-radius:7px;font-size:11px;font-weight:700;color:var(--gold);cursor:pointer;font-family:inherit;white-space:nowrap}
+.port-v2-edit-body{padding:8px 13px 12px}
+.port-v2-edit-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:rgba(240,238,234,.3);display:block;margin:8px 0 5px}
+.port-v2-edit-lbl:first-child{margin-top:0}
+.port-v2-url-row{display:flex;gap:5px;margin-bottom:5px}
+.port-v2-url-inp{flex:1;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:7px;padding:5px 9px;font-size:11.5px;color:var(--white);font-family:inherit;outline:none;min-width:0}
+.port-v2-url-inp:focus{border-color:rgba(201,168,76,.38)}
+.port-v2-url-del{width:28px;border:1px solid rgba(248,113,113,.18);background:rgba(248,113,113,.07);border-radius:7px;color:var(--red);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.port-v2-add-url{font-size:11px;color:rgba(201,168,76,.65);background:rgba(201,168,76,.04);border:1px dashed rgba(201,168,76,.2);border-radius:7px;padding:5px 9px;cursor:pointer;width:100%;font-family:inherit;text-align:left;margin-top:2px;display:block;transition:all .15s}
+.port-v2-add-url:hover{background:rgba(201,168,76,.09)}
+.port-v2-desc-inp{width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:7px;padding:7px 9px;font-size:11.5px;color:var(--white);font-family:inherit;outline:none;resize:none;line-height:1.5;min-height:52px}
+.port-v2-desc-inp:focus{border-color:rgba(201,168,76,.38)}
+.port-v2-skills-ro{display:flex;flex-wrap:wrap;gap:4px;padding:7px 9px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.06);border-radius:7px;min-height:28px}
+.port-v2-skill-tag{font-size:10px;padding:2px 8px;background:rgba(96,165,250,.09);color:#93c5fd;border:1px solid rgba(96,165,250,.18);border-radius:20px;font-weight:600}
+
+/* Pending state v2 */
+.pcv2-pending{padding:32px 24px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px}
+.pcv2-pending-icon{width:48px;height:48px;border-radius:13px;background:rgba(255,255,255,.04);border:1px dashed rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:22px}
+.pcv2-pending-title{font-size:15px;font-weight:700;color:var(--white)}
+.pcv2-pending-desc{font-size:12.5px;color:var(--white2);line-height:1.7;max-width:320px}
 </style>
 </head>
 <body>
