@@ -414,8 +414,9 @@ function renderPortfolioItemV2(list, p, pi, allProfiles, profileIdx, autoOpen) {
     const firstUrl   = hasLinks ? (p.urls || []).find(u => u.trim()) : null;
     const domain     = firstUrl ? firstUrl.replace(/^https?:\/\//, '').split('/')[0].replace(/^www\./, '') : null;
     const skillCount = skills.length;
+    item.classList.toggle('port-has-link', hasLinks);
+    item.classList.toggle('port-no-link', !hasLinks);
     item.innerHTML =
-      '<div class="port-v2-top ' + (hasLinks ? 'port-v2-top-gold' : 'port-v2-top-blue') + '"></div>' +
       '<div class="port-v2-body">' +
         '<div class="port-v2-title">' + _esc(p.title || 'Untitled') + '</div>' +
         '<div class="port-v2-meta-row">' +
@@ -430,12 +431,18 @@ function renderPortfolioItemV2(list, p, pi, allProfiles, profileIdx, autoOpen) {
     item.querySelector('.port-v2-menu').addEventListener('click', e => {
       e.stopPropagation();
       document.querySelectorAll('.port-v2-drop').forEach(d => d.remove());
+
+      const btn  = item.querySelector('.port-v2-menu');
+      const rect = btn.getBoundingClientRect();
+
       const drop = document.createElement('div');
       drop.className = 'port-v2-drop';
+      drop.style.cssText = 'position:fixed;top:' + (rect.bottom + 4) + 'px;right:' + (window.innerWidth - rect.right) + 'px;z-index:99999';
       drop.innerHTML =
         '<button class="port-v2-drop-item port-v2-drop-edit"><i class="ti ti-edit" style="font-size:13px" aria-hidden="true"></i> Edit</button>' +
         '<button class="port-v2-drop-item port-v2-drop-del"><i class="ti ti-trash" style="font-size:13px" aria-hidden="true"></i> Delete</button>';
-      item.appendChild(drop);
+      document.body.appendChild(drop);
+
       drop.querySelector('.port-v2-drop-edit').addEventListener('click', e2 => { e2.stopPropagation(); drop.remove(); renderEdit(); });
       drop.querySelector('.port-v2-drop-del').addEventListener('click', e2 => {
         e2.stopPropagation(); drop.remove();
@@ -458,7 +465,6 @@ function renderPortfolioItemV2(list, p, pi, allProfiles, profileIdx, autoOpen) {
       : '<span style="font-size:10.5px;color:rgba(240,238,234,.25)">Sync from Upwork profile to populate.</span>';
 
     item.innerHTML =
-      '<div class="port-v2-top port-v2-top-edit"></div>' +
       '<div class="port-v2-edit-hdr">' +
         '<input type="text" class="port-v2-title-inp" value="' + _esc(p.title || '') + '" placeholder="Project name">' +
         '<button class="port-v2-done" type="button">✓ Done</button>' +
@@ -746,7 +752,7 @@ export async function renderProfilesPage() {
     return;
   }
   noMsg.style.display  = 'none';
-  addBtn.style.display = mergedProfiles.length < limit ? 'flex' : 'none';
+  addBtn.style.display = 'flex'; // always show — needed for managing existing profile URL too
 
   if (mergedProfiles.length === 1) {
     renderProfileCard(container, mergedProfiles[0], 0, mergedProfiles, primaryProfileId);
