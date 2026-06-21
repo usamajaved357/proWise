@@ -5,7 +5,7 @@ const SERVER = 'http://localhost:3000'; // Local Host
 export async function handleGenerate(payload) {
   const [syncData, localData] = await Promise.all([
     chrome.storage.sync.get(['userEmail', 'anonId', 'settings']),
-    chrome.storage.local.get(['registeredProfiles', 'activeProfileId', 'primaryProfileId'])
+    chrome.storage.local.get(['registeredProfiles', 'activeProfileId', 'primaryProfileId', 'deviceId'])
   ]);
 
   const regProfiles = localData.registeredProfiles || [];
@@ -51,7 +51,8 @@ export async function handleGenerate(payload) {
       email:             syncData.userEmail || null,
       anonId,
       refineInstruction: payload.refineInstruction || '',
-      currentLetter:     payload.currentLetter     || ''
+      currentLetter:     payload.currentLetter     || '',
+      deviceId:          localData.deviceId        || ''
     })
   });
 

@@ -3,7 +3,12 @@ import { SERVER_URL, PLAN_LABELS, PLAN_QUOTAS, PLAN_LIMITS } from './config.js';
 import { state } from './state.js';
 import { fmtDate, daysUntil, showSaved } from './helpers.js';
 
-export function openCheckout(plan) {
+export async function openCheckout(plan) {
+  const { userEmail, emailVerified } = await chrome.storage.sync.get(['userEmail', 'emailVerified']);
+  if (!userEmail || !emailVerified) {
+    alert('Please verify your email in Settings → Account before purchasing. This keeps your account secure.');
+    return;
+  }
   chrome.tabs.create({ url: `https://snagai.netlify.app/checkout.html?plan=${plan}` });
 }
 

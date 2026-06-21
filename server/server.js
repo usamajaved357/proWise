@@ -9,6 +9,7 @@ const billingRoute  = require('./routes/billing');
 const upgradeRoute  = require('./routes/upgrade');
 const webhookRoute  = require('./routes/webhook');
 const adminRoute    = require('./routes/admin');
+const verifyRoute   = require('./routes/verify');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -32,6 +33,7 @@ app.use(express.json({ limit: '30kb' }));
 // ── Routes ────────────────────────────────────────────────────────────────────
 app.get('/', (req, res) => res.json({ status: 'ok', service: 'Snag AI API v7' }));
 
+app.use('/verify',          verifyRoute);
 app.use('/status',          statusRoute);
 app.use('/proposal',        proposalRoute);
 app.use('/billing-portal',  billingRoute);
