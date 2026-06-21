@@ -137,10 +137,12 @@
       const jobWithReviews = SnagAI.getJob();
       Object.assign(job, { clientName: jobWithReviews.clientName, reviewText: jobWithReviews.reviewText });
 
+      const currentLetter = SnagAI.state.currentLetter || '';
       SnagAI.state.refineInstruction = '';
+      SnagAI.state.currentLetter = '';
       const response = await chrome.runtime.sendMessage({
         type: 'GENERATE_PROPOSAL',
-        payload: { job, refineInstruction }
+        payload: { job, refineInstruction, currentLetter }
       });
 
       SnagAI.state.jobStats = job.jobStats;

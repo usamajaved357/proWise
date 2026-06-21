@@ -164,6 +164,7 @@ window.SnagAI.renderProposal = function(data) {
       if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
         e.preventDefault();
         SnagAI.state.refineInstruction = refineInp.value.trim();
+        SnagAI.state.currentLetter = document.getElementById('sn-letter')?.innerText?.trim() || '';
         SnagAI.showLoading(); SnagAI.generate();
       }
     });
@@ -184,6 +185,7 @@ window.SnagAI.renderProposal = function(data) {
   document.querySelectorAll('.sn-chip').forEach(chip => {
     chip.addEventListener('click', () => {
       SnagAI.state.refineInstruction = chip.dataset.refine;
+      SnagAI.state.currentLetter = document.getElementById('sn-letter')?.innerText?.trim() || '';
       document.querySelectorAll('.sn-chip').forEach(c => c.classList.remove('active'));
       chip.classList.add('active');
       SnagAI.showLoading(); SnagAI.generate();
@@ -218,6 +220,7 @@ window.SnagAI.renderProposal = function(data) {
   // Regen button
   document.getElementById('sn-regen').addEventListener('click', () => {
     SnagAI.state.refineInstruction = document.getElementById('sn-refine-inp')?.value?.trim() || '';
+    SnagAI.state.currentLetter = document.getElementById('sn-letter')?.innerText?.trim() || '';
     SnagAI.showLoading(); SnagAI.generate();
   });
 

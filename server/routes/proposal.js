@@ -55,6 +55,8 @@ router.post('/', async (req, res) => {
     console.log('Client name:', job.clientName || 'not found');
 
     const refineInstruction = req.body.refineInstruction || '';
+    const currentLetter     = req.body.currentLetter     || '';
+    const isRefinement      = !!(refineInstruction && currentLetter);
 
     const rawPortfolios = profile.portfolio || [];
     console.log('[DEBUG] portfolios received:', rawPortfolios.length);
@@ -62,7 +64,7 @@ router.post('/', async (req, res) => {
       console.log(`  [${i}] title="${p.title||p.name||'?'}" urls=${JSON.stringify(p.urls||[p.url||''])} skills=${JSON.stringify(p.skills||[])} desc="${(p.desc||'').slice(0,40)}"`);
     });
 
-    const userMsg = buildUserMessage({ job, profile, settings, refineInstruction });
+    const userMsg = buildUserMessage({ job, profile, settings, refineInstruction, currentLetter });
 
     const ptStart = userMsg.indexOf('PORTFOLIO (match');
     const ptEnd   = userMsg.indexOf('\n\n', ptStart);
@@ -85,14 +87,15 @@ router.post('/', async (req, res) => {
       }
     }
 
+    // Refinements don't consume a proposal credit — only fresh generations do
     if (isRealEmail) {
-      await recordUsage(userEmail);
+      if (!isRefinement) await recordUsage(userEmail);
       const status = await getUserStatus(userEmail);
       return res.json({ success: true, ...result, usage: status });
     } else if (anonId) {
-      await recordAnonUsage(anonId);
+      if (!isRefinement) await recordAnonUsage(anonId);
       const u    = await getAnon(anonId);
-      const used = u?.used || 1;
+      const used = u?.used || (isRefinement ? 0 : 1);
       return res.json({ success: true, ...result, usage: { plan: 'free', used, limit: 2, remaining: Math.max(0, 2 - used) } });
     }
 

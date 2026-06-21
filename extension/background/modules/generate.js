@@ -50,7 +50,8 @@ export async function handleGenerate(payload) {
       settings:          syncData.settings || {},
       email:             syncData.userEmail || null,
       anonId,
-      refineInstruction: payload.refineInstruction || ''
+      refineInstruction: payload.refineInstruction || '',
+      currentLetter:     payload.currentLetter     || ''
     })
   });
 

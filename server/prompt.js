@@ -170,7 +170,7 @@ CLIENT: [first name or blank]
 ===END===`;
 
 // ── User message builder ──────────────────────────────────────────────────────
-function buildUserMessage({ job, profile, settings, refineInstruction = '' }) {
+function buildUserMessage({ job, profile, settings, refineInstruction = '', currentLetter = '' }) {
 
   // Smart skill matching
   const jobText = ((job.title||'')+' '+(job.description||'')+' '+(job.skills||'')).toLowerCase();
@@ -186,62 +186,29 @@ function buildUserMessage({ job, profile, settings, refineInstruction = '' }) {
   const isFixed   = /fixed/.test(descLower) || /fixed/.test(budgetLower) || /fixed/.test(typeField) || !!job.budget;
   const pricingType = isHourly ? 'HOURLY' : isFixed ? 'FIXED' : 'UNKNOWN';
 
-  // Portfolio — score each project against the job, pass top 3 most relevant
+  // Portfolio — send first 10, Claude picks the 2 best matches itself
   const allPortfolios = (profile.portfolio || []).filter(p =>
     p.title || p.name || (p.urls && p.urls.length) || p.url
   );
 
-  function scoreProject(p) {
-    let score = 0;
-    const pText = [p.title, p.desc, p.role, (p.skills||[]).join(' ')].join(' ').toLowerCase();
-    const pSkillsArr = Array.isArray(p.skills) ? p.skills : (typeof p.skills === 'string' ? p.skills.split(',') : []);
+  const portfoliosToSend = allPortfolios.slice(0, 10);
 
-    // Skill overlap — strongest signal
-    pSkillsArr.forEach(skill => {
-      const s = (skill || '').trim().toLowerCase();
-      if (s && jobText.includes(s)) score += 4;
-    });
-
-    // Description/title keyword overlap with job
-    const jobWords = jobText.split(/\W+/).filter(w => w.length > 4);
-    jobWords.forEach(w => { if (pText.includes(w)) score += 1; });
-
-    // Has a real URL — strongly prefer projects with links
-    const firstUrl = (p.urls && p.urls.find(u => u && u.trim())) || p.url || '';
-    if (firstUrl) score += 3;
-
-    // App store URL for mobile jobs
-    if (/apps\.apple\.com|play\.google\.com/.test(firstUrl)) score += 2;
-
-    // Figma/design links are weak for non-design jobs
-    if (/figma\.com/.test(firstUrl) && !/design|ui|ux|figma/.test(jobText)) score -= 2;
-
-    return score;
-  }
-
-  const rankedPortfolios = allPortfolios
-    .map(p => ({ p, score: scoreProject(p) }))
-    .sort((a, b) => b.score - a.score)
-    .map(x => x.p);
-
-  const portfolioText = rankedPortfolios.length
-    ? rankedPortfolios.slice(0, 3).map(p => {
-        const name      = p.title || p.name || 'Project';
-        const firstUrl  = (p.urls && p.urls.find(u => u && u.trim())) || p.url || '';
+  const portfolioText = portfoliosToSend.length
+    ? portfoliosToSend.map((p, i) => {
+        const name     = p.title || p.name || 'Project';
+        const firstUrl = (p.urls && p.urls.find(u => u && u.trim())) || p.url || '';
         const skillsStr = Array.isArray(p.skills)
           ? p.skills.slice(0, 8).join(', ')
           : (typeof p.skills === 'string' ? p.skills : '');
-        const relevanceScore = scoreProject(p);
         return [
-          `Project: ${name}`,
-          firstUrl ? `URL: ${firstUrl}` : 'URL: none',
-          p.desc ? `Description: ${p.desc}` : '',
-          skillsStr ? `Skills: ${skillsStr}` : '',
-          p.role ? `Role: ${p.role}` : '',
-          `Relevance score: ${relevanceScore} (higher = better match for this job)`,
+          `${i + 1}. ${name}`,
+          firstUrl ? `   URL: ${firstUrl}` : '   URL: none — skip this project',
+          p.desc    ? `   Desc: ${p.desc.slice(0, 200)}`  : '',
+          skillsStr ? `   Skills: ${skillsStr}`            : '',
+          p.role    ? `   Role: ${p.role}`                 : '',
         ].filter(Boolean).join('\n');
       }).join('\n\n')
-    : (profile.portfolioLinks||[]).filter(Boolean).slice(0,3).map(l => `- ${l}`).join('\n') || 'none provided';
+    : (profile.portfolioLinks||[]).filter(Boolean).slice(0, 10).map(l => `- ${l}`).join('\n') || 'none provided';
 
   // Word limit from settings
   const wordLimit = settings?.length === 'short' ? '100-130'
@@ -339,41 +306,56 @@ function buildUserMessage({ job, profile, settings, refineInstruction = '' }) {
     'Relevant skills for THIS job: ' + relevantSkills.join(', '),
     'Extra context: ' + (profile.extra || 'none'),
     '',
-    'PORTFOLIO (already ranked by relevance to this job — use top 2-3, skip any with URL: none):',
+    'PORTFOLIO — FULL LIST (you choose the 2 most relevant to this job):',
+    'Pick based on: skill match with required skills, domain similarity, project complexity. Skip any marked "URL: none".',
     portfolioText,
     '',
     'BADGE LINE FOR END OF LETTER:',
     badgeLine || '(no badge data — just end with first name)',
     '',
-    'TOP MATCHING PROJECT FOR YOUR HOOK:',
-    rankedPortfolios.length
-      ? (() => {
-          const top = rankedPortfolios[0];
-          const name = top.title || top.name || 'Project';
-          const url  = (top.urls && top.urls.find(u => u && u.trim())) || top.url || '';
-          const skills = Array.isArray(top.skills) ? top.skills.slice(0,4).join(', ') : (top.skills || '');
-          return name + (url ? ' — ' + url : '') + (skills ? ' [' + skills + ']' : '') + (top.desc ? ' — ' + top.desc.slice(0,80) : '');
-        })()
-      : 'none',
-    'RULE: When your hook mentions a specific portfolio project, use TOP MATCHING PROJECT above — not a different project that happens to be in your memory.',
-    '',
     '──────────────────────────────',
     'INSTRUCTIONS',
     '──────────────────────────────',
     'Pricing: ' + (pricingType === 'HOURLY' ? 'Mention rate "' + (profile.hourlyRate || 'not set') + '" naturally' : pricingType === 'FIXED' ? 'Fixed budget ' + job.budget + ' — address in opening' : 'No pricing info — focus on CTA'),
-    refineInstruction ? ('REFINEMENT REQUEST: ' + refineInstruction) : '',
-    '',
-    '──────────────────────────────',
-    'HOOK ASSIGNMENT',
-    '──────────────────────────────',
-    'ASSIGNED HOOK: ' + assignedHook.name,
-    'OPENING TEMPLATE: ' + assignedHook.tpl,
-    'INSTRUCTIONS: Fill the [brackets] with job-specific details. Bold every key term. Keep it under 20 words.',
-    '',
-    'Write the letter now. Follow the IDEAL EXAMPLES structure exactly.',
-    'Use the ASSIGNED HOOK as your opening sentence — fill brackets, bold key terms.',
-    'Portfolio: use projects with highest relevance score. Skip any with URL: none. Write as "Relevant work:" inline.',
-    'End with badge line then first name only. Do NOT write "Regards,".',
+    // Refinement mode vs fresh generation
+    ...(refineInstruction && currentLetter ? [
+      '──────────────────────────────',
+      'REFINEMENT MODE — MODIFY EXISTING LETTER',
+      '──────────────────────────────',
+      'CURRENT LETTER (this is what the user wants modified):',
+      currentLetter,
+      '',
+      'USER REQUEST: ' + refineInstruction,
+      '',
+      'ALL PORTFOLIO PROJECTS AVAILABLE (if user asks to change portfolio, pick the best match from this full list):',
+      (profile.portfolio || []).map((p, i) => {
+        const name = p.title || p.name || 'Project ' + (i + 1);
+        const url  = (p.urls && p.urls.find(u => u && u.trim())) || p.url || '';
+        const skills = Array.isArray(p.skills) ? p.skills.slice(0, 5).join(', ') : (p.skills || '');
+        return `${i + 1}. ${name}${url ? ' — ' + url : ' (no URL)'}${skills ? ' [' + skills + ']' : ''}`;
+      }).join('\n') || 'none',
+      '',
+      'REFINEMENT RULES:',
+      '- Make ONLY the specific change the user requested.',
+      '- If they name a portfolio project, find it in the full list above and use it.',
+      '- Keep hook, badge line, sign-off, and overall structure identical unless explicitly asked to change.',
+      '- If they say "shorter" cut the body, not the hook or badge.',
+      '- If they ask for a different tone, adjust wording without changing facts or portfolio.',
+      '- Return the COMPLETE modified letter in ===LETTER=== format as usual.',
+      '- Keep ===QUESTIONS===, ===PORTFOLIO===, ===META=== sections as before.',
+    ] : [
+      '──────────────────────────────',
+      'HOOK ASSIGNMENT',
+      '──────────────────────────────',
+      'ASSIGNED HOOK: ' + assignedHook.name,
+      'OPENING TEMPLATE: ' + assignedHook.tpl,
+      'INSTRUCTIONS: Fill the [brackets] with job-specific details. Bold every key term. Keep it under 20 words.',
+      '',
+      'Write the letter now. Follow the IDEAL EXAMPLES structure exactly.',
+      'Use the ASSIGNED HOOK as your opening sentence — fill brackets, bold key terms.',
+      'Portfolio: from the full list above choose the 2 most relevant to THIS job. Skip any with "URL: none". Write as "Relevant work:" inline.',
+      'End with badge line then first name only. Do NOT write "Regards,".',
+    ]),
   ];
   const msg = msgParts.filter(s => s !== undefined && s !== null).join('\n').trim()
   return msg;
