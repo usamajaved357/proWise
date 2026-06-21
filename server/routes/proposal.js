@@ -79,8 +79,9 @@ router.post('/', async (req, res) => {
       }
     }
 
-    if (!job.clientName && (job.reviewText || job.description)) {
-      job.clientName = await extractClientName(job.reviewText || '', job.description || '');
+    // Only call Claude for name extraction when review text actually exists
+    if (!job.clientName && job.reviewText && job.reviewText.length > 20) {
+      job.clientName = await extractClientName(job.reviewText, job.description || '');
     }
     console.log('Client name:', job.clientName || 'not found');
 
@@ -94,13 +95,48 @@ router.post('/', async (req, res) => {
       console.log(`  [${i}] title="${p.title||p.name||'?'}" urls=${JSON.stringify(p.urls||[p.url||''])} skills=${JSON.stringify(p.skills||[])} desc="${(p.desc||'').slice(0,40)}"`);
     });
 
-    const userMsg = buildUserMessage({ job, profile, settings, refineInstruction, currentLetter });
+    const { msg: userMsg, systemWithLimit } = buildUserMessage({ job, profile, settings, refineInstruction, currentLetter });
 
     const ptStart = userMsg.indexOf('PORTFOLIO (match');
     const ptEnd   = userMsg.indexOf('\n\n', ptStart);
     if (ptStart > -1) console.log('[DEBUG] portfolioText in prompt:\n' + userMsg.slice(ptStart, ptEnd > -1 ? ptEnd : ptStart + 400));
 
-    const result = await callClaude(SYSTEM, userMsg);
+    const result = await callClaude(systemWithLimit, userMsg);
+
+    // Replace {{PRICE}} and {{TIMELINE}} placeholders using Claude's hour estimate
+    if (result.letter && result.letter.includes('{{') && hourlyRate > 0) {
+      const hoursStr = result.hours || '';
+      const hm = hoursStr.match(/(\d+)\s*[-–]\s*(\d+)|(\d+)/);
+      if (hm) {
+        const loHrs = parseInt(hm[1] || hm[3]);
+        const hiHrs = parseInt(hm[2] || hm[3]);
+
+        const loPrice = Math.round(loHrs * hourlyRate / 500) * 500;
+        const hiPrice = Math.round(hiHrs * hourlyRate / 500) * 500;
+        const priceStr = loPrice === hiPrice
+          ? `$${loPrice.toLocaleString()}`
+          : `$${loPrice.toLocaleString()}-$${hiPrice.toLocaleString()}`;
+
+        function weeksToTimeline(w) {
+          if (w <= 10) return w + ' weeks';
+          const m = w / 4.3;
+          const lo = Math.floor(m * 2) / 2;
+          const hi = Math.ceil(m * 2) / 2;
+          return lo === hi ? lo + ' months' : lo + '-' + hi + ' months';
+        }
+        const loWeeks = Math.ceil(loHrs / 40);
+        const hiWeeks = Math.ceil(hiHrs / 40);
+        const timeline = loWeeks === hiWeeks
+          ? weeksToTimeline(loWeeks)
+          : weeksToTimeline(loWeeks) + ' to ' + weeksToTimeline(hiWeeks);
+
+        result.letter = result.letter
+          .replace(/\{\{PRICE\}\}/g, priceStr)
+          .replace(/\{\{TIMELINE\}\}/g, timeline);
+
+        console.log(`[SCOPE] Claude estimated ${loHrs}-${hiHrs} hrs → ${priceStr}, ${timeline}`);
+      }
+    }
 
     if (result.letter) result.letter = processBold(result.letter);
     if (result.questions) result.questions = processBold(result.questions);

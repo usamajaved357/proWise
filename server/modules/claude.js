@@ -42,6 +42,7 @@ function parseDelimiterFormat(text) {
     clientName: getMetaField('CLIENT'),
     hookType:   getMetaField('HOOK'),
     hookDesc:   getMetaField('DESC'),
+    hours:      getMetaField('HOURS'),
     tips: [
       getMetaField('TIP1'),
       getMetaField('TIP2'),
