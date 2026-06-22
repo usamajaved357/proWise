@@ -52,6 +52,7 @@ export async function handleGenerate(payload) {
       anonId,
       refineInstruction: payload.refineInstruction || '',
       currentLetter:     payload.currentLetter     || '',
+      freelancerType:    syncData.settings?.freelancerType || 'developer',
       deviceId:          localData.deviceId        || ''
     })
   });

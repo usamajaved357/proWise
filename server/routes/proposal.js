@@ -79,6 +79,21 @@ router.post('/', async (req, res) => {
       }
     }
 
+    // Sanitize client name — reject common English words that aren't first names
+    const NOT_A_NAME = new Set([
+      'this','that','the','and','for','our','but','all','has','with','your',
+      'they','have','from','will','been','when','more','also','just','than',
+      'into','over','what','which','their','would','there','could','other',
+      'these','those','some','such','even','were','well','then','only','time',
+      'like','each','need','want','work','same','know','here','where','most',
+      'down','made','both','very','said','high','real','name','call','back',
+      'good','days','team','none','great','nice','dear','hello','sure','glad',
+      'hope','best','much','many','next','last','first','very','client','owner'
+    ]);
+    if (job.clientName && NOT_A_NAME.has(job.clientName.toLowerCase())) {
+      job.clientName = '';
+    }
+
     // Only call Claude for name extraction when review text actually exists
     if (!job.clientName && job.reviewText && job.reviewText.length > 20) {
       job.clientName = await extractClientName(job.reviewText, job.description || '');
@@ -87,6 +102,7 @@ router.post('/', async (req, res) => {
 
     const refineInstruction = req.body.refineInstruction || '';
     const currentLetter     = req.body.currentLetter     || '';
+    const freelancerType    = req.body.freelancerType    || 'developer';
     const isRefinement      = !!(refineInstruction && currentLetter);
 
     const rawPortfolios = profile.portfolio || [];
@@ -96,7 +112,8 @@ router.post('/', async (req, res) => {
     });
 
     const hourlyRate = parseFloat((profile.hourlyRate || '0').replace(/[^0-9.]/g, '')) || 0;
-    const { msg: userMsg, systemWithLimit } = buildUserMessage({ job, profile, settings, refineInstruction, currentLetter });
+    console.log(`[PRICING] jobType=${job.jobStats?.jobType||'unknown'} budget="${job.budget||''}" isOngoing=${/more than 6 months|ongoing|long.?term|part.?time/i.test((job.description||'').toLowerCase())}`);
+    const { msg: userMsg, systemWithLimit } = buildUserMessage({ job, profile, settings, refineInstruction, currentLetter, freelancerType });
 
     const ptStart = userMsg.indexOf('PORTFOLIO (match');
     const ptEnd   = userMsg.indexOf('\n\n', ptStart);

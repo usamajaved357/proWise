@@ -1049,7 +1049,49 @@ textarea.edit-val{min-height:38px}
           <input type="hidden" id="length" value="medium">
         </div>
 
-        <div style="display:flex;align-items:center;gap:12px;margin-top:8px">
+        <!-- Freelancer Type -->
+        <div class="st-group" style="margin-top:20px">
+          <div class="st-group-label">Freelancer Type</div>
+          <div class="st-group-desc">Tailors the AI to your field. More categories coming — Developer is fully supported today.</div>
+          <div class="st-opts st-opts-3" id="st-type-opts">
+            <div class="st-opt active" data-val="developer">
+              <div class="st-opt-icon">💻</div>
+              <div class="st-opt-name">Developer</div>
+              <div class="st-opt-sub">Full-stack, mobile, web</div>
+            </div>
+            <div class="st-opt" data-val="designer">
+              <div class="st-opt-icon">🎨</div>
+              <div class="st-opt-name">Designer</div>
+              <div class="st-opt-sub">UI/UX, graphics, branding</div>
+            </div>
+            <div class="st-opt" data-val="writer">
+              <div class="st-opt-icon">✍️</div>
+              <div class="st-opt-name">Writer</div>
+              <div class="st-opt-sub">Content, copy, SEO</div>
+            </div>
+            <div class="st-opt" data-val="marketer">
+              <div class="st-opt-icon">📈</div>
+              <div class="st-opt-name">Marketer</div>
+              <div class="st-opt-sub">Ads, social, growth</div>
+            </div>
+            <div class="st-opt" data-val="va">
+              <div class="st-opt-icon">🗂️</div>
+              <div class="st-opt-name">VA / Admin</div>
+              <div class="st-opt-sub">Support, data, ops</div>
+            </div>
+            <div class="st-opt" data-val="other">
+              <div class="st-opt-icon">⚡</div>
+              <div class="st-opt-name">Other</div>
+              <div class="st-opt-sub">Finance, legal, etc.</div>
+            </div>
+          </div>
+          <input type="hidden" id="freelancer-type" value="developer">
+          <div style="font-size:11px;color:var(--yellow);margin-top:8px;padding:6px 10px;background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.15);border-radius:6px">
+            ⚠ Designer, Writer, Marketer, VA, and Other categories are coming soon. Selecting them will still generate proposals using the universal structure, but without category-specific optimizations.
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:center;gap:12px;margin-top:16px">
           <button class="btn-primary" id="save-settings" style="font-size:12px;padding:9px 20px">Save settings</button>
           <span class="saved-msg" id="saved-settings-msg">✓ Saved</span>
         </div>

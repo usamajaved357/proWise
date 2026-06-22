@@ -192,6 +192,7 @@ RULES
 ✗ NEVER skip the call CTA — "Ready to start immediately" alone is NOT a CTA
 ✗ NEVER skip the question before CTA
 ✗ NEVER use project names from these examples — use the freelancer's actual portfolio
+✗ NEVER write a portfolio entry if you have no real URL for it. If ALL portfolio items say "URL: none", skip the entire portfolio section — write nothing. An empty section is better than a fabricated one.
 ✗ NEVER invent a false history for a specific named portfolio project. Saying "I took FansMunch from 80% to live" or "I took FansMunch from partial build" is fabrication if it was built from scratch. Describe portfolio projects ONLY using what is in the project data provided. General body claims like "I've taken over abandoned projects before" are fine — but never attach invented percentages or takeover stories to a specific named project.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -270,7 +271,8 @@ CLIENT: [first name or blank]
 ===END===`;
 
 // ── User message builder ──────────────────────────────────────────────────────
-function buildUserMessage({ job, profile, settings, refineInstruction = '', currentLetter = '' }) {
+function buildUserMessage({ job, profile, settings, refineInstruction = '', currentLetter = '', freelancerType = 'developer' }) {
+  const isDeveloper = freelancerType === 'developer';
 
   // Skill matching against job
   const jobText = ((job.title||'')+' '+(job.description||'')+' '+(job.skills||'')).toLowerCase();
@@ -278,12 +280,22 @@ function buildUserMessage({ job, profile, settings, refineInstruction = '', curr
   const matched   = allSkills.filter(s => jobText.includes(s.toLowerCase()));
   const relevantSkills = matched.length ? matched.slice(0,6) : allSkills.slice(0,4);
 
-  // ── Pricing type — use direct Vuex store field first, fall back to regex ───
-  const jobType   = job.jobStats?.jobType || job.type || '';
-  const budgetLower = (job.budget||'').toLowerCase();
+  // ── Pricing type — Vuex store is most reliable, DOM regex as fallback only ──
+  const jobType     = job.jobStats?.jobType || '';
+  const budgetStr   = (job.budget || '');
+  const budgetLower = budgetStr.toLowerCase();
   const descLower   = (job.description||'').toLowerCase();
-  const isHourly = jobType === 'hourly' || /hourly|\/hr|per hour/.test(budgetLower) || /hourly|\/hr/.test(descLower);
-  const isFixed  = jobType === 'fixed'  || /fixed/.test(budgetLower) || !!job.budget;
+
+  let isHourly, isFixed;
+  if (jobType === 'hourly') {
+    isHourly = true; isFixed = false;
+  } else if (jobType === 'fixed') {
+    isFixed = true; isHourly = false;
+  } else {
+    // Vuex not available — fall back to regex only (never use !!job.budget, too unreliable)
+    isHourly = /hourly|\/hr|per hour/.test(budgetLower) || /hourly|per hour/i.test(descLower);
+    isFixed  = /fixed.?price|fixed.?rate|fixed.?budget/i.test(budgetLower + ' ' + descLower);
+  }
   const pricingType = isHourly ? 'HOURLY' : isFixed ? 'FIXED' : 'UNKNOWN';
 
   // ── Word limit — use actual user settings, not hardcoded ──────────────────
@@ -368,9 +380,22 @@ function buildUserMessage({ job, profile, settings, refineInstruction = '', curr
   const badgeLine = badgeParts.join(' · ');
   const firstName = (profile.name || '').split(' ')[0] || '';
 
+  // ── Detect ongoing/long-term role ────────────────────────────────────────────
+  const fullJobContext = [job.description, job.title, job.budget, job.type].filter(Boolean).join(' ').toLowerCase();
+  const isOngoingRole = /more than 6 months|ongoing|long.?term|full.?time|part.?time|permanent|recurring|retainer/i.test(fullJobContext);
+
+  // ── Detect if portfolio has any usable real URLs ───────────────────────────
+  const hasAnyPortfolioUrl = portfoliosToSend.some(p => {
+    const url = (p.urls && p.urls.find(u => u && u.trim() && !/figma\.com/i.test(u))) || p.url || '';
+    return !!url || (isDesignJob && (p.urls || []).some(u => u && u.trim()));
+  });
+
   // ── Rate/cost/timeline — pre-calculated on server, Claude just copies ────────
   const hourlyRate = parseFloat((profile.hourlyRate || '0').replace(/[^0-9.]/g, '')) || 0;
-  const budgetNum  = parseInt((job.budget || '0').replace(/[^0-9]/g, '')) || 0;
+  // Only extract budget amount for fixed price jobs — avoids false positives on hourly jobs
+  const budgetNum = isFixed
+    ? Math.round(parseFloat(budgetStr.replace(/[^0-9.]/g, '')) || 0)
+    : (job.jobStats?.budgetNum || 0);
 
   function estimateScopeHours(desc, title) {
     const text = ((desc||'') + ' ' + (title||'')).toLowerCase();
@@ -412,8 +437,27 @@ function buildUserMessage({ job, profile, settings, refineInstruction = '', curr
   let mandatoryAnswers = '';
   let precalcScope = null;
 
-  // Always use placeholders when rate is set — not just when client explicitly asks
-  if (hourlyRate > 0) {
+  // Scope line — different logic based on job type and role duration
+  if (isFixed) {
+    // Fixed price job — reference client's budget if known, otherwise discuss on call
+    const budgetLine = budgetNum > 0
+      ? `Client's stated fixed budget: $${budgetNum}. Write scope as: "$${budgetNum} fixed. Covers [what is included]."`
+      : `Budget not specified. Write scope as: "Fixed price — happy to quote after a quick call to confirm scope."`;
+    mandatoryAnswers = `SCOPE LINE — FIXED PRICE JOB:
+${budgetLine}
+DO NOT calculate hourly rate × hours. DO NOT use {{PRICE}} or {{TIMELINE}} placeholders.
+DO NOT quote an ongoing hourly rate for a fixed price job.`;
+
+  } else if (isOngoingRole && hourlyRate > 0) {
+    // Ongoing long-term role — rate + availability, no project endpoint
+    mandatoryAnswers = `SCOPE LINE — ONGOING ROLE:
+This is a long-term ongoing position, not a fixed project.
+Write scope as: "$${hourlyRate}/hr — available daily / X days per week as needed."
+DO NOT write "estimated X weeks" or "X-Y months" — there is no fixed endpoint.
+DO NOT use {{PRICE}} or {{TIMELINE}} placeholders.`;
+
+  } else if (hourlyRate > 0) {
+    // Standard project — use placeholder system (dev jobs, fixed-scope projects)
     mandatoryAnswers = `SCOPE LINE — MANDATORY PLACEHOLDER RULE:
 Freelancer rate: $${hourlyRate}/hr
 
@@ -429,10 +473,11 @@ The server calculates from HOURS:
   timeline = hours ÷ 40hrs/week (≤10 weeks = say weeks, >10 = say months)
 
 ABSOLUTE RULES — NEVER BREAK THESE:
-- NEVER write a dollar amount like "$4,800" or "$16,000" in the letter — only {{PRICE}}
-- NEVER write a timeline like "8-10 weeks" or "3 months" in the letter — only {{TIMELINE}}
-- NEVER state price in the hook AND again in the scope line — pick ONE place: the scope line only
+- NEVER write a dollar amount in the letter — only {{PRICE}}
+- NEVER write a timeline in the letter — only {{TIMELINE}}
+- NEVER state price in the hook AND scope line — scope line only
 - Write BOTH {{PRICE}} and {{TIMELINE}} together, never one without the other`;
+
   } else {
     mandatoryAnswers = `No hourly rate set in profile. Invite them to discuss pricing on the call. Do not invent a number.`;
   }
@@ -521,12 +566,17 @@ ABSOLUTE RULES — NEVER BREAK THESE:
       '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
       'INSTRUCTIONS',
       '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
+      !hasAnyPortfolioUrl ? (
+        isDeveloper
+          ? '0. PORTFOLIO WARNING: No portfolio URLs available. Skip the portfolio section entirely — write nothing. Use Hook 7, 4, or 5 instead of Hook 1 or 6 which require live proof.'
+          : '0. PORTFOLIO NOTE: No portfolio URLs available — do NOT create a portfolio section with links. However, you MAY mention past client types or project names naturally in the body prose if the portfolio data shows real clients (e.g. "I\'ve managed accounts for chiropractors, e-commerce brands, and service businesses"). This is normal for social media and marketing roles. Do NOT use Hook 1 (PROOF) or Hook 6 (NUMBERS) — use Hook 7 (CLIENT FIRST), Hook 4 (EXTRA VALUE), or Hook 5 (CALL) instead.'
+      ) : '',
       '1. Read the job carefully. Identify the client\'s primary fear, desire, or pain. Choose the hook that speaks directly to it.',
       '2. Hook → Problem-Solution → Approach (how you\'d tackle it) → Body (1-2 sentences max) → Portfolio (no heading, no dash) → Scope → Question → CTA → Badge → Name.',
       '3. Portfolio: bold name, explain HOW it matches their specific need, URL on next line. No "Relevant work:" heading.',
       '4. After scope, ask ONE short specific question about their job before the CTA.',
       '5. No emojis anywhere.',
-      '6. Tech stack in body: reference the REQUIRED SKILLS from THIS specific job, not the freelancer profile stack. If the job needs Laravel + PHP, say that. Never write Node.js when the job asks for PHP/Laravel.',
+      isDeveloper ? '6. Tech stack in body: reference the REQUIRED SKILLS from THIS specific job, not the freelancer profile stack. If the job needs Laravel + PHP, say that. Never write Node.js when the job asks for PHP/Laravel.' : '6. In the body, reference the specific deliverables and requirements from THIS job, not your general background.',
       '7. Pricing: ' + (pricingType === 'HOURLY' ? `Hourly — state $${profile.hourlyRate || '?'}/hr and estimated weeks.` : pricingType === 'FIXED' ? `Fixed — address $${budgetNum || 'the'} budget in the hook.` : 'No clear pricing — focus on CTA.'),
       mandatoryAnswers ? '7. ⚠ MANDATORY — client asked these, MUST answer in scope line:\n' + mandatoryAnswers : '',
       '8. Keep total letter within ' + wordLimit + ' words. Max 2 short body sentences. Never 3+ body paragraphs.',

@@ -134,7 +134,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
             // Job details
             contractorTier:     job.contractorTier      || null,
-            jobType:            job.type === 1 ? 'hourly' : job.type === 2 ? 'fixed' : null,
+            jobType:            job.type === 1 ? 'fixed' : job.type === 2 ? 'hourly' : null,
             engagementDuration: (job.engagementDuration || {}).label || null,
             weeklyHours:        job.workload             || null,
             isContractToHire:   job.isContractToHire    || false,

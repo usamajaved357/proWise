@@ -105,9 +105,11 @@ Text to search:
 ${textToSearch}
 
 Rules:
-- Return ONLY the client's first name (one word)
+- Return ONLY the client's first name (one word, a real proper noun name like John, Sarah, Mike)
 - Do NOT return freelancer names (names after "To freelancer:" are freelancers, not the client)
-- If no client name found, reply: none`;
+- Do NOT return pronouns, articles, or common words like: this, that, the, our, his, her, their, working, great, nice, good, very, well, clear, real, same
+- "Working with this client" — "this" is NOT a name, return none
+- If no real client first name found, reply: none`;
 
     const body = JSON.stringify({
       model: 'claude-haiku-4-5-20251001',
@@ -126,7 +128,18 @@ Rules:
           const p = JSON.parse(d);
           const name = (p.content?.[0]?.text || '').trim();
           console.log('Name extraction result:', name);
-          if (name && name.toLowerCase() !== 'none' && /^[A-Z][a-z]{1,20}$/.test(name)) {
+          // Reject common English words that aren't first names
+          const NOT_A_NAME = new Set([
+            'this','that','the','and','for','our','but','all','has','with','your',
+            'they','have','from','will','been','when','more','also','just','than',
+            'into','over','what','which','their','would','there','could','other',
+            'these','those','some','such','even','were','well','then','only','time',
+            'like','each','need','want','work','same','know','here','where','most',
+            'down','made','both','very','said','high','real','name','call','back',
+            'good','days','team','none','great','very','nice','dear','hello','sure',
+            'glad','hope','best','well','from','very','much','many','next','last'
+          ]);
+          if (name && !NOT_A_NAME.has(name.toLowerCase()) && /^[A-Z][a-z]{1,20}$/.test(name)) {
             resolve(name);
           } else {
             resolve('');
