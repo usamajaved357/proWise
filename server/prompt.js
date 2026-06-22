@@ -192,6 +192,7 @@ RULES
 ✗ NEVER skip the call CTA — "Ready to start immediately" alone is NOT a CTA
 ✗ NEVER skip the question before CTA
 ✗ NEVER use project names from these examples — use the freelancer's actual portfolio
+✗ NEVER invent a false history for a specific named portfolio project. Saying "I took FansMunch from 80% to live" or "I took FansMunch from partial build" is fabrication if it was built from scratch. Describe portfolio projects ONLY using what is in the project data provided. General body claims like "I've taken over abandoned projects before" are fine — but never attach invented percentages or takeover stories to a specific named project.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 BANNED PHRASES — THESE KILL REPLY RATES
@@ -525,7 +526,8 @@ ABSOLUTE RULES — NEVER BREAK THESE:
       '3. Portfolio: bold name, explain HOW it matches their specific need, URL on next line. No "Relevant work:" heading.',
       '4. After scope, ask ONE short specific question about their job before the CTA.',
       '5. No emojis anywhere.',
-      '6. Pricing: ' + (pricingType === 'HOURLY' ? `Hourly — state $${profile.hourlyRate || '?'}/hr and estimated weeks.` : pricingType === 'FIXED' ? `Fixed — address $${budgetNum || 'the'} budget in the hook.` : 'No clear pricing — focus on CTA.'),
+      '6. Tech stack in body: reference the REQUIRED SKILLS from THIS specific job, not the freelancer profile stack. If the job needs Laravel + PHP, say that. Never write Node.js when the job asks for PHP/Laravel.',
+      '7. Pricing: ' + (pricingType === 'HOURLY' ? `Hourly — state $${profile.hourlyRate || '?'}/hr and estimated weeks.` : pricingType === 'FIXED' ? `Fixed — address $${budgetNum || 'the'} budget in the hook.` : 'No clear pricing — focus on CTA.'),
       mandatoryAnswers ? '7. ⚠ MANDATORY — client asked these, MUST answer in scope line:\n' + mandatoryAnswers : '',
       '8. Keep total letter within ' + wordLimit + ' words. Max 2 short body sentences. Never 3+ body paragraphs.',
       'Write the letter now.',

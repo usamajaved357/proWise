@@ -148,6 +148,14 @@ router.post('/', async (req, res) => {
       }
     }
 
+    // Strip em dashes and fix sentence capitalization
+    if (result.letter) {
+      result.letter = result.letter
+        .replace(/\s*—\s*/g, '. ')                           // em dash with spaces → period
+        .replace(/—/g, ', ')                                 // em dash without spaces → comma
+        .replace(/\.\s+([a-z])/g, (m, c) => '. ' + c.toUpperCase()); // capitalize after period
+    }
+
     if (result.letter) result.letter = processBold(result.letter);
     if (result.questions) result.questions = processBold(result.questions);
 
