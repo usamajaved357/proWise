@@ -95,6 +95,7 @@ router.post('/', async (req, res) => {
       console.log(`  [${i}] title="${p.title||p.name||'?'}" urls=${JSON.stringify(p.urls||[p.url||''])} skills=${JSON.stringify(p.skills||[])} desc="${(p.desc||'').slice(0,40)}"`);
     });
 
+    const hourlyRate = parseFloat((profile.hourlyRate || '0').replace(/[^0-9.]/g, '')) || 0;
     const { msg: userMsg, systemWithLimit } = buildUserMessage({ job, profile, settings, refineInstruction, currentLetter });
 
     const ptStart = userMsg.indexOf('PORTFOLIO (match');
@@ -104,6 +105,10 @@ router.post('/', async (req, res) => {
     const result = await callClaude(systemWithLimit, userMsg);
 
     // Replace {{PRICE}} and {{TIMELINE}} placeholders using Claude's hour estimate
+    if (result.hours) console.log(`[SCOPE] Claude hour estimate: ${result.hours}`);
+    if (result.letter && result.letter.includes('{{PRICE}}') !== result.letter.includes('{{TIMELINE}}')) {
+      console.warn('[SCOPE] WARNING: Claude used only one placeholder — both {{PRICE}} and {{TIMELINE}} are required');
+    }
     if (result.letter && result.letter.includes('{{') && hourlyRate > 0) {
       const hoursStr = result.hours || '';
       const hm = hoursStr.match(/(\d+)\s*[-–]\s*(\d+)|(\d+)/);
@@ -117,18 +122,23 @@ router.post('/', async (req, res) => {
           ? `$${loPrice.toLocaleString()}`
           : `$${loPrice.toLocaleString()}-$${hiPrice.toLocaleString()}`;
 
-        function weeksToTimeline(w) {
-          if (w <= 10) return w + ' weeks';
-          const m = w / 4.3;
-          const lo = Math.floor(m * 2) / 2;
-          const hi = Math.ceil(m * 2) / 2;
-          return lo === hi ? lo + ' months' : lo + '-' + hi + ' months';
-        }
         const loWeeks = Math.ceil(loHrs / 40);
         const hiWeeks = Math.ceil(hiHrs / 40);
-        const timeline = loWeeks === hiWeeks
-          ? weeksToTimeline(loWeeks)
-          : weeksToTimeline(loWeeks) + ' to ' + weeksToTimeline(hiWeeks);
+
+        function weeksToMonths(w) {
+          return Math.round(w / 4.3 * 2) / 2; // round to nearest 0.5
+        }
+
+        let timeline;
+        if (hiWeeks <= 10) {
+          // Short project — say weeks
+          timeline = loWeeks === hiWeeks ? loWeeks + ' weeks' : loWeeks + '-' + hiWeeks + ' weeks';
+        } else {
+          // Long project — say months as a clean single range
+          const loM = Math.floor(weeksToMonths(loWeeks));
+          const hiM = Math.ceil(weeksToMonths(hiWeeks));
+          timeline = loM === hiM ? loM + ' months' : loM + '-' + hiM + ' months';
+        }
 
         result.letter = result.letter
           .replace(/\{\{PRICE\}\}/g, priceStr)

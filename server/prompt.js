@@ -50,6 +50,20 @@ HOOK 7 — CLIENT FIRST (use when: client wrote a long detailed post, has a comp
 
 HOOK SELECTION RULE: Read the job. Ask yourself: "What is this client's primary fear or desire right now?" Then pick the hook that speaks directly to that. Bold every key term.
 
+HOOK LENGTH RULE — CRITICAL:
+The hook is the ONLY thing clients see before deciding to open the proposal (~160 characters visible in the feed).
+- Keep the hook to ONE sentence, under 160 characters
+- Name ONE specific project and ONE compelling result — that's it
+- Do NOT list features, tech stack, or multiple things in the hook
+- The detail and approach come AFTER they open — the hook just makes them want to
+
+BAD hook (too long, lists 6 things):
+"I've built FansMunch, a complete food delivery platform identical to yours: Flutter for iOS and Android, Node.js backend, Firebase, Stripe, GPS tracking, and a restaurant dashboard."
+
+GOOD hook (tight, specific, makes them open):
+"I shipped FansMunch, a complete DoorDash clone live on App Store and Play Store. I'd build Manje Rapid the same way."
+(109 chars — leaves them wanting to see HOW)
+
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 IDEAL STRUCTURE — FOLLOW THIS EXACTLY
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -165,12 +179,16 @@ RULES
 ✗ NO "Relevant work:" heading — go straight to the project name
 ✗ NO bullet dashes before portfolio items
 ✗ NO generic opening sentences that could apply to any job
+✗ NO listing 4+ features/tech in the hook — pick one project and one result
+✗ NO hook longer than 160 characters — clients decide to open based on those chars alone
 ✗ NO more than 2 short body sentences — never 3+ body paragraphs
 ✗ NO listing your experience in general — always connect to their specific need
 ✗ NO "Regards," — badge then first name only
 ✗ NO parentheses ()
 ✗ NEVER state price and timeline that are mathematically inconsistent
 ✗ NEVER say "35 weeks" or "22 weeks" for long projects. Convert to months.
+✗ NEVER mention price in the hook — state it ONCE only in the scope line using {{PRICE}}
+✗ NEVER write a Figma link as a portfolio URL on a development job — skip that project or use its App Store/Play Store URL instead
 ✗ NEVER skip the call CTA — "Ready to start immediately" alone is NOT a CTA
 ✗ NEVER skip the question before CTA
 ✗ NEVER use project names from these examples — use the freelancer's actual portfolio
@@ -180,7 +198,7 @@ BANNED PHRASES — THESE KILL REPLY RATES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 These phrases are detected as AI by clients in 2026 and drop reply rates. Never use them:
 ✗ "proven track record" / "track record of success"
-✗ "seamless" / "seamlessly"
+✗ "seamless" / "seamlessly" — NEVER use this word, not even once
 ✗ "robust" / "robust solution"
 ✗ "leverage" (as a verb — "leverage my skills")
 ✗ "scalable solution" / "highly scalable"
@@ -279,16 +297,28 @@ function buildUserMessage({ job, profile, settings, refineInstruction = '', curr
 
   const portfoliosToSend = allPortfolios.slice(0, 10);
 
+  // Detect if this is specifically a design/UI job (Figma links valid)
+  // Must match strong design signals — "design team" alone doesn't count
+  const isDesignJob = /\bfigma\s+(design|file|prototype)\b|\bui.?ux\s+design\b|\bweb\s+design\b|\bgraphic\s+design\b|\bwireframe\b|\bhigh.?fidelity\b|\bux\s+research\b|\bdesign\s+system\b/i.test(jobText);
+
   const portfolioText = portfoliosToSend.length
     ? portfoliosToSend.map((p, i) => {
         const name     = p.title || p.name || 'Project';
-        const firstUrl = (p.urls && p.urls.find(u => u && u.trim())) || p.url || '';
+        let firstUrl   = (p.urls && p.urls.find(u => u && u.trim())) || p.url || '';
+
+        // Skip Figma links on non-design jobs — they signal no live product
+        if (!isDesignJob && /figma\.com/i.test(firstUrl)) {
+          // Try next URL
+          const altUrl = p.urls && p.urls.find(u => u && u.trim() && !/figma\.com/i.test(u));
+          firstUrl = altUrl || '';
+        }
+
         const skillsStr = Array.isArray(p.skills)
           ? p.skills.slice(0, 8).join(', ')
           : (typeof p.skills === 'string' ? p.skills : '');
         return [
           `${i + 1}. ${name}`,
-          firstUrl ? `   URL: ${firstUrl}` : '   URL: none — skip this project',
+          firstUrl ? `   URL: ${firstUrl}` : '   URL: none — skip this project in letter',
           p.desc    ? `   Desc: ${p.desc.slice(0, 200)}`  : '',
           skillsStr ? `   Skills: ${skillsStr}`            : '',
           p.role    ? `   Role: ${p.role}`                 : '',
@@ -381,35 +411,33 @@ function buildUserMessage({ job, profile, settings, refineInstruction = '', curr
   let mandatoryAnswers = '';
   let precalcScope = null;
 
-  if (asksForPrice || asksForTimeline || asksForExamples) {
-    const parts = [];
-
-    if ((asksForPrice || asksForTimeline) && hourlyRate > 0) {
-      parts.push(`CLIENT ASKED FOR PRICE AND/OR TIMELINE.
+  // Always use placeholders when rate is set — not just when client explicitly asks
+  if (hourlyRate > 0) {
+    mandatoryAnswers = `SCOPE LINE — MANDATORY PLACEHOLDER RULE:
 Freelancer rate: $${hourlyRate}/hr
 
-YOUR JOB: Read the full job description and estimate the scope in hours. Be realistic.
-Then write the scope line with these EXACT placeholders (the server will replace them with correct math):
+ALWAYS write the scope line using BOTH placeholders (applies to EVERY letter):
+  "{{PRICE}} fixed, {{TIMELINE}}. Covers [what is included]."
+  or for hourly: "$${hourlyRate}/hr, estimated {{TIMELINE}} based on scope."
 
-  For fixed price: "{{PRICE}} fixed, {{TIMELINE}}. Covers [what is included]."
-  For hourly: "$${hourlyRate}/hr, {{TIMELINE}} estimated based on scope."
+In META, write your scope hour estimate:
+  HOURS: [range like "400-600" or "1200-1500"]
 
-In META, write your hour estimate:
-  HOURS: [your estimate, e.g. "600-800" or "1200-1400"]
+The server calculates from HOURS:
+  price    = hours × $${hourlyRate}/hr
+  timeline = hours ÷ 40hrs/week (≤10 weeks = say weeks, >10 = say months)
 
-The server will calculate: price = your_hours × $${hourlyRate}/hr and timeline = your_hours ÷ 40hrs/week.
-DO NOT write actual dollar amounts or months — only {{PRICE}} and {{TIMELINE}} as placeholders.
-DO NOT write things like "$20,000" or "6 months" — write only {{PRICE}} and {{TIMELINE}}.`);
+ABSOLUTE RULES — NEVER BREAK THESE:
+- NEVER write a dollar amount like "$4,800" or "$16,000" in the letter — only {{PRICE}}
+- NEVER write a timeline like "8-10 weeks" or "3 months" in the letter — only {{TIMELINE}}
+- NEVER state price in the hook AND again in the scope line — pick ONE place: the scope line only
+- Write BOTH {{PRICE}} and {{TIMELINE}} together, never one without the other`;
+  } else {
+    mandatoryAnswers = `No hourly rate set in profile. Invite them to discuss pricing on the call. Do not invent a number.`;
+  }
 
-    } else if ((asksForPrice || asksForTimeline) && hourlyRate === 0) {
-      parts.push(`CLIENT ASKED FOR PRICE/TIMELINE — no rate set in profile. Acknowledge the scope and invite them to discuss pricing on the call.`);
-    }
-
-    if (asksForExamples) {
-      parts.push(`CLIENT ASKED FOR EXAMPLES — your portfolio section IS the answer. Show the most relevant live apps with real URLs.`);
-    }
-
-    mandatoryAnswers = parts.join('\n');
+  if (asksForExamples) {
+    mandatoryAnswers += `\nCLIENT ASKED FOR EXAMPLES — your portfolio section IS the answer. Show the most relevant live apps.`;
   }
 
   // ── Client reviews — cap at 300 chars, first review has the key signals ────
