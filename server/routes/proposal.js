@@ -121,6 +121,14 @@ router.post('/', async (req, res) => {
 
     const result = await callClaude(systemWithLimit, userMsg);
 
+    // Education tip — override TIP2 when no portfolio URLs so user knows to add them
+    const hasPortfolioUrls = (profile.portfolio || []).some(p =>
+      (p.urls && p.urls.some(u => u && u.trim())) || (p.url && p.url.trim())
+    );
+    if (!hasPortfolioUrls && result.tips) {
+      result.tips[1] = 'Add live URLs to your portfolio items in Options → Profiles. The AI selects the 2 most relevant ones per job and explains how they match — this significantly improves proposal quality across all categories.';
+    }
+
     // Replace {{PRICE}} and {{TIMELINE}} placeholders using Claude's hour estimate
     if (result.hours) console.log(`[SCOPE] Claude hour estimate: ${result.hours}`);
     if (result.letter && result.letter.includes('{{PRICE}}') !== result.letter.includes('{{TIMELINE}}')) {

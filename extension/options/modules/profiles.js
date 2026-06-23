@@ -659,6 +659,12 @@ export function renderProfileCard(container, profile, idx, allProfiles, primaryP
       </div>
       <div class="pcv2-port-grid" id="port-list-${idx}"></div>
       ${!portfolios.length ? '<div class="port-empty-msg" style="grid-column:1/-1;margin-top:4px">No portfolio items yet — click + Add or visit your Upwork profile.</div>' : ''}
+      ${portfolios.length > 0 && portsOk === 0 ? `
+      <div style="margin-top:10px;padding:9px 12px;background:rgba(250,204,21,.05);border:1px solid rgba(250,204,21,.18);border-radius:8px;font-size:11px;color:rgba(250,204,21,.75);line-height:1.55">
+        ↗ <strong style="color:rgba(250,204,21,.9)">Add live links to your portfolio items.</strong>
+        The AI picks the most relevant ones per job and explains how they match. Without links, it can't reference your actual work in the cover letter.
+        Click <strong style="color:rgba(250,204,21,.9)">···</strong> on any item → Edit to add a URL.
+      </div>` : ''}
     </div>
   `;
 
