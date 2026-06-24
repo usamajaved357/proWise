@@ -181,7 +181,7 @@ function jfFmt(id, raw) {
 
 function jfTrack(sl) {
   const pct = ((sl.value - sl.min) / (sl.max - sl.min)) * 100;
-  sl.style.background = `linear-gradient(to right,var(--gold) ${pct}%,rgba(255,255,255,.08) ${pct}%)`;
+  sl.style.background = `linear-gradient(to right,#6366f1 ${pct}%,rgba(255,255,255,.08) ${pct}%)`;
 }
 
 function jfBadgeInfo(filters) {
@@ -198,80 +198,81 @@ function renderJobFilters(body, profile) {
 
   function sl(id, label, min, max, step, val, desc) {
     const pct = ((val - min) / (max - min)) * 100;
-    const trackBg = `linear-gradient(to right,var(--gold) ${pct}%,rgba(255,255,255,.08) ${pct}%)`;
-    return `
-      <div class="jf-sl-row">
-        <div class="jf-sl-hdr">
-          <span class="jf-sl-name">${label}</span>
-          <span class="jf-sl-val" id="jv-${id}">${jfFmt(id, val)}</span>
-        </div>
-        <input type="range" class="jf-sl" id="js-${id}" min="${min}" max="${max}" step="${step}" value="${val}" style="background:${trackBg}">
-        <div class="jf-sl-hint">${desc}</div>
-      </div>`;
+    const bg = `linear-gradient(to right,#6366f1 ${pct}%,rgba(255,255,255,.08) ${pct}%)`;
+    return `<div class="jf-row2">
+      <span class="jf-row2-name">${label}</span>
+      <div class="jf-row2-right">
+        <input type="range" class="jf-sl jf-sl-compact" id="js-${id}" min="${min}" max="${max}" step="${step}" value="${val}" title="${desc}" style="background:${bg}">
+        <span class="jf-row2-val" id="jv-${id}">${jfFmt(id, val)}</span>
+      </div>
+    </div>`;
   }
 
   function tog(id, label, val, desc) {
-    return `
-      <label class="jf-tog-item">
-        <div class="jf-tog-text">
-          <span class="jf-tog-name">${label}</span>
-          <span class="jf-tog-hint">${desc}</span>
+    return `<div class="jf-row2">
+      <span class="jf-row2-name">${label}</span>
+      <div class="jf-row2-right">
+        <div class="jf-tog-sm ${val ? 'on' : 'off'}" id="jv-tog-${id}" title="${desc}" onclick="this.classList.toggle('on');this.classList.toggle('off');var cb=document.getElementById('jt-${id}');if(cb)cb.checked=this.classList.contains('on')">
+          <div class="jf-tok"></div>
         </div>
-        <div class="toggle-switch" style="flex-shrink:0">
-          <input type="checkbox" id="jt-${id}" ${val ? 'checked' : ''}>
-          <span class="toggle-slider"></span>
-        </div>
-      </label>`;
+        <input type="checkbox" id="jt-${id}" ${val ? 'checked' : ''} style="display:none">
+      </div>
+    </div>`;
   }
 
+  const ICK = '<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+
   body.innerHTML = `
-    <div class="jf-presets-row">
-      <span class="jf-presets-lbl">Preset</span>
-      <button class="jf-preset-btn" data-preset="conservative">Conservative</button>
-      <button class="jf-preset-btn" data-preset="balanced">Balanced</button>
-      <button class="jf-preset-btn" data-preset="aggressive">Aggressive</button>
-      <button class="jf-reset-btn" id="jf-reset">Reset</button>
+    <div class="jf-seg">
+      <div class="jf-seg-opt" data-preset="conservative">
+        <div class="jf-seg-ck">${ICK}</div>
+        <div class="jf-seg-txt"><div class="jf-seg-name">Conservative</div><div class="jf-seg-sub">Protect Connects</div></div>
+      </div>
+      <div class="jf-seg-opt jf-active" data-preset="balanced">
+        <div class="jf-seg-ck">${ICK}</div>
+        <div class="jf-seg-txt"><div class="jf-seg-name">Balanced</div><div class="jf-seg-sub">Recommended</div></div>
+      </div>
+      <div class="jf-seg-opt" data-preset="aggressive">
+        <div class="jf-seg-ck">${ICK}</div>
+        <div class="jf-seg-txt"><div class="jf-seg-name">Aggressive</div><div class="jf-seg-sub">Apply broadly</div></div>
+      </div>
     </div>
 
-    <div class="jf-section-lbl">Competition</div>
-    ${sl('maxProposals',    'Max proposals',    5,  55,  5, Math.min(F.maxProposals, 55), 'Warn if job has more bids than this')}
-    ${sl('maxInterviewing', 'Max interviewing', 0,  10,  1, F.maxInterviewing,            'Warn if this many freelancers are already shortlisted (0 = off)')}
-    ${sl('maxInvitesSent',  'Max invites sent', 0,  15,  1, F.maxInvitesSent,             'Warn if client sent this many direct invites (0 = off)')}
-
-    <div class="jf-section-lbl">Client Quality</div>
-    ${sl('minClientRating', 'Min client rating', 10, 50, 5, Math.round(F.minClientRating * 10), 'Warn if client rating is below this (1.0 – 5.0★)')}
-    ${sl('minHireRate',     'Min hire rate',     0, 100, 5, F.minHireRate, 'Warn if client hires less than this % from proposals')}
-    <div class="jf-sl-row">
-      <div class="jf-sl-hdr"><span class="jf-sl-name">Min client spent</span></div>
-      <select class="jf-select" id="js-minClientSpent">
-        <option value="0"      ${F.minClientSpent===0      ?'selected':''}>Any amount</option>
-        <option value="100"    ${F.minClientSpent===100    ?'selected':''}>$100+ spent</option>
-        <option value="1000"   ${F.minClientSpent===1000   ?'selected':''}>$1K+ spent</option>
-        <option value="10000"  ${F.minClientSpent===10000  ?'selected':''}>$10K+ spent</option>
-        <option value="100000" ${F.minClientSpent===100000 ?'selected':''}>$100K+ spent</option>
-      </select>
-      <div class="jf-sl-hint">Warn if client has spent less than this on Upwork total</div>
-    </div>
-    <div class="jf-togs-grid">
-      ${tog('warnZeroSpent',          'Warn on $0 clients',     F.warnZeroSpent,          'Never hired anyone on Upwork')}
-      ${tog('requirePaymentVerified', 'Payment verified',       F.requirePaymentVerified, 'Warn if payment not verified')}
-    </div>
-
-    <div class="jf-section-lbl">Rate, Age & Match</div>
-    ${sl('maxRateMismatch', 'Max rate mismatch',  10, 100, 10, F.maxRateMismatch, "Warn if your rate is this % above client's avg paid rate")}
-    ${sl('maxJobAgeDays',   'Max job age (days)',  0,  14,  1, F.maxJobAgeDays,   'Warn if older than this — 0 = any age')}
-    ${sl('minSkillMatch',   'Min skill match',     0,  80, 10, F.minSkillMatch,   'Warn if skill overlap with job is below this %')}
-
-    <div class="jf-section-lbl">Job Requirements</div>
-    <div class="jf-togs-grid">
-      ${tog('warnLocationFilter', 'Location filter',   F.warnLocationFilter, 'Warn if job restricts to a region you may not be in')}
-      ${tog('warnTierMismatch',   'Tier requirement',  F.warnTierMismatch,   'Warn if job requires Top Rated/Expert tier you don\'t have')}
+    <div class="jf-groups">
+      <div class="jf-group">
+        <div class="jf-group-lbl">Competition</div>
+        ${sl('maxProposals',    'Max proposals',    5,  55,  5, Math.min(F.maxProposals, 55), 'Warn if job has more bids than this')}
+        ${sl('maxInterviewing', 'Max interviewing', 0,  10,  1, F.maxInterviewing,            'Warn if this many are shortlisted')}
+        ${sl('maxInvitesSent',  'Max invites sent', 0,  15,  1, F.maxInvitesSent,             'Warn if client sent this many invites')}
+      </div>
+      <div class="jf-group">
+        <div class="jf-group-lbl">Client quality</div>
+        ${sl('minHireRate',     'Min hire rate',    0, 100,  5, F.minHireRate,                'Warn if client hires less than this %')}
+        ${sl('minClientRating', 'Min rating',      10,  50,  5, Math.round(F.minClientRating * 10), 'Warn if rating below this')}
+        ${tog('requirePaymentVerified', 'Payment verified', F.requirePaymentVerified, 'Warn if payment not verified')}
+        ${tog('warnZeroSpent',          'Warn $0 clients',  F.warnZeroSpent,          'Warn if client never spent on Upwork')}
+      </div>
+      <div class="jf-group">
+        <div class="jf-group-lbl">Match &amp; age</div>
+        ${sl('minSkillMatch',   'Min skill match',  0,  80, 10, F.minSkillMatch,   'Warn if skill overlap below this %')}
+        ${sl('maxRateMismatch', 'Rate mismatch',   10, 100, 10, F.maxRateMismatch, 'Warn if your rate is this % above avg')}
+        ${sl('maxJobAgeDays',   'Max job age',      0,  14,  1, F.maxJobAgeDays,   'Warn if older than this — 0 = any age')}
+      </div>
+      <div class="jf-group">
+        <div class="jf-group-lbl">Alert behaviour</div>
+        ${sl('minAlertScore', 'Min alert score', 30, 80, 5, F.minAlertScore, 'Show alert when score is under this')}
+        ${tog('autoSkipHired',      'Auto-skip hired',    F.autoSkipHired,      'Close panel if someone already hired')}
+        ${tog('warnLocationFilter', 'Location filter',    F.warnLocationFilter, 'Warn if job has location restrictions')}
+        ${tog('warnTierMismatch',   'Tier mismatch',      F.warnTierMismatch,   'Warn if job requires a tier you lack')}
+      </div>
     </div>
 
-    <div class="jf-section-lbl">Alert Behaviour</div>
-    ${sl('minAlertScore', 'Show alert if score below', 30, 80, 5, F.minAlertScore, 'Show the warning screen when combined win score is under this')}
-    <div class="jf-togs-grid">
-      ${tog('autoSkipHired', 'Auto-skip if hired', F.autoSkipHired, 'Close panel instantly if someone already hired')}
+    <div class="jf-filter-footer">
+      <button class="btn-reset-plain" id="jf-reset">Reset to balanced</button>
+      <button class="btn-apply-filters" id="jf-save">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        Apply filters
+      </button>
     </div>
   `;
 
@@ -284,7 +285,7 @@ function renderJobFilters(body, profile) {
       maxInvitesSent:         s('maxInvitesSent'),
       minClientRating:        s('minClientRating') / 10,
       minHireRate:            s('minHireRate'),
-      minClientSpent:         parseInt(body.querySelector('#js-minClientSpent')?.value ?? 0),
+      minClientSpent:         F.minClientSpent,
       requirePaymentVerified: t('requirePaymentVerified'),
       warnZeroSpent:          t('warnZeroSpent'),
       maxRateMismatch:        s('maxRateMismatch'),
@@ -314,28 +315,42 @@ function renderJobFilters(body, profile) {
       const el = body.querySelector('#js-' + id);
       if (el) { el.value = val; jfTrack(el); const v = body.querySelector('#jv-' + id); if (v) v.textContent = jfFmt(id, val); }
     });
-    TG_IDS.forEach(id => { const el = body.querySelector('#jt-' + id); if (el) el.checked = P[id]; });
-    const sp = body.querySelector('#js-minClientSpent'); if (sp) sp.value = P.minClientSpent;
-    body.querySelectorAll('.jf-preset-btn').forEach(b => b.classList.toggle('active', b.dataset.preset === name));
+    TG_IDS.forEach(id => {
+      const cb  = body.querySelector('#jt-' + id);
+      const tog = body.querySelector('#jv-tog-' + id);
+      if (cb)  cb.checked = P[id];
+      if (tog) { tog.classList.toggle('on', P[id]); tog.classList.toggle('off', !P[id]); }
+    });
+    body.querySelectorAll('.jf-seg-opt').forEach(b => b.classList.toggle('jf-active', b.dataset.preset === name));
     save();
   }
 
-  // Events
+  // Events — sliders
   body.querySelectorAll('.jf-sl').forEach(el => {
     el.addEventListener('input', () => {
       jfTrack(el);
       const id = el.id.replace('js-', '');
       const v = body.querySelector('#jv-' + id);
       if (v) v.textContent = jfFmt(id, parseInt(el.value));
-      body.querySelectorAll('.jf-preset-btn').forEach(b => b.classList.remove('active'));
+      body.querySelectorAll('.jf-seg-opt').forEach(b => b.classList.remove('jf-active'));
     });
     el.addEventListener('change', save);
   });
-  body.querySelectorAll('[id^="jt-"], #js-minClientSpent').forEach(el => {
-    el.addEventListener('change', () => { body.querySelectorAll('.jf-preset-btn').forEach(b => b.classList.remove('active')); save(); });
+
+  // Events — checkboxes (from toggle onclick already handles UI; just save on change)
+  body.querySelectorAll('[id^="jt-"]').forEach(el => {
+    el.addEventListener('change', () => {
+      body.querySelectorAll('.jf-seg-opt').forEach(b => b.classList.remove('jf-active'));
+      save();
+    });
   });
-  body.querySelectorAll('.jf-preset-btn').forEach(btn => btn.addEventListener('click', () => applyPreset(btn.dataset.preset)));
+
+  // Segment preset buttons
+  body.querySelectorAll('.jf-seg-opt').forEach(btn => btn.addEventListener('click', () => applyPreset(btn.dataset.preset)));
+
+  // Reset + Save
   body.querySelector('#jf-reset')?.addEventListener('click', () => applyPreset('balanced'));
+  body.querySelector('#jf-save')?.addEventListener('click', () => { save(); });
 
   // Highlight active preset on load
   ['conservative','balanced','aggressive'].forEach(name => {
@@ -344,7 +359,9 @@ function renderJobFilters(body, profile) {
       const a = F[k] ?? JF_DEFAULTS[k]; const b = P[k] ?? JF_DEFAULTS[k];
       return typeof a === 'number' ? Math.abs(a - b) < 0.01 : a === b;
     });
-    if (match) body.querySelector(`[data-preset="${name}"]`)?.classList.add('active');
+    if (match) {
+      body.querySelectorAll('.jf-seg-opt').forEach(btn => btn.classList.toggle('jf-active', btn.dataset.preset === name));
+    }
   });
 }
 
@@ -410,25 +427,20 @@ function renderPortfolioItemV2(list, p, pi, allProfiles, profileIdx, autoOpen) {
 
   function renderNormal() {
     item.classList.remove('editing');
-    const hasLinks   = p.urls && p.urls.some(u => u && u.trim());
-    const firstUrl   = hasLinks ? (p.urls || []).find(u => u.trim()) : null;
-    const domain     = firstUrl ? firstUrl.replace(/^https?:\/\//, '').split('/')[0].replace(/^www\./, '') : null;
-    const skillCount = skills.length;
+    const hasLinks = p.urls && p.urls.some(u => u && u.trim());
+    const firstUrl = hasLinks ? (p.urls || []).find(u => u.trim()) : null;
+    const domain   = firstUrl ? firstUrl.replace(/^https?:\/\//, '').split('/')[0].replace(/^www\./, '') : null;
     item.classList.toggle('port-has-link', hasLinks);
     item.classList.toggle('port-no-link', !hasLinks);
     item.innerHTML =
-      '<div class="port-v2-body">' +
-        '<div class="port-v2-title">' + _esc(p.title || 'Untitled') + '</div>' +
-        '<div class="port-v2-meta-row">' +
-          '<span class="port-v2-link-lbl">' + (domain ? '🔗 ' + domain : '<span style="font-style:italic;opacity:.5">No link</span>') + '</span>' +
-          (skillCount > 0 ? '<span class="port-v2-skill-count">' + skillCount + ' skills</span>' : '') +
-        '</div>' +
-      '</div>' +
-      '<button class="port-v2-menu" aria-label="Options">' +
-        '<div class="port-v2-mdot"></div><div class="port-v2-mdot"></div><div class="port-v2-mdot"></div>' +
-      '</button>';
+      '<div class="pi-dot ' + (hasLinks ? 'pi-dot-g' : 'pi-dot-a') + '"></div>' +
+      '<div class="pi-name">' + _esc(p.title || 'Untitled') + '</div>' +
+      (domain
+        ? '<div class="pi-url-lbl">' + _esc(domain) + '</div>'
+        : '<div class="pi-no-url">+ Add URL</div>') +
+      '<button class="pi-menu-btn" aria-label="Options">···</button>';
 
-    item.querySelector('.port-v2-menu').addEventListener('click', e => {
+    item.querySelector('.pi-menu-btn').addEventListener('click', e => {
       e.stopPropagation();
       document.querySelectorAll('.port-v2-drop').forEach(d => d.remove());
 
@@ -439,8 +451,8 @@ function renderPortfolioItemV2(list, p, pi, allProfiles, profileIdx, autoOpen) {
       drop.className = 'port-v2-drop';
       drop.style.cssText = 'position:fixed;top:' + (rect.bottom + 4) + 'px;right:' + (window.innerWidth - rect.right) + 'px;z-index:99999';
       drop.innerHTML =
-        '<button class="port-v2-drop-item port-v2-drop-edit"><i class="ti ti-edit" style="font-size:13px" aria-hidden="true"></i> Edit</button>' +
-        '<button class="port-v2-drop-item port-v2-drop-del"><i class="ti ti-trash" style="font-size:13px" aria-hidden="true"></i> Delete</button>';
+        '<button class="port-v2-drop-item port-v2-drop-edit">Edit</button>' +
+        '<button class="port-v2-drop-item port-v2-drop-del">Delete</button>';
       document.body.appendChild(drop);
 
       drop.querySelector('.port-v2-drop-edit').addEventListener('click', e2 => { e2.stopPropagation(); drop.remove(); renderEdit(); });
@@ -509,34 +521,54 @@ function renderPortfolioItemV2(list, p, pi, allProfiles, profileIdx, autoOpen) {
   list.appendChild(item);
 }
 
-// ── Profile card renderer (Option B design) ───────────────────────────────────
+// ── Profile card renderer ─────────────────────────────────────────────────────
 export function renderProfileCard(container, profile, idx, allProfiles, primaryProfileId) {
   const card = document.createElement('div');
-  card.className = 'profile-card';
+  card.className = 'pr-detail';
   card.dataset.profileIdx = idx;
 
   const synced        = !!(profile.name || profile.jss || profile._readAt);
   const validProfiles = allProfiles.filter(p => p && p.url);
   const isPrimary     = validProfiles.length <= 1
     ? true : (primaryProfileId ? profile.id === primaryProfileId : idx === 0);
-  const skillsArr     = getSkillsArr(profile);
   const portfolios    = profile.portfolios || [];
+  const portsOk       = portfolios.filter(p => p.urls && p.urls.some(u => u && u.trim())).length;
 
-  // Pending state
+  function ini(name) {
+    return (name || '').trim().split(/\s+/).map(w => w[0] || '').slice(0, 2).join('').toUpperCase() || '?';
+  }
+
+  // Pending (not synced) state
   if (!synced) {
     card.innerHTML = `
-      <div class="pcv2-pending">
-        <div class="pcv2-pending-icon">🔄</div>
-        <div class="pcv2-pending-title">Not synced yet</div>
-        <div class="pcv2-pending-desc">Open your Upwork profile and click the <strong>Sync to Snag AI</strong> button that appears on the page.</div>
-        <div style="font-size:11px;color:var(--white3);word-break:break-all">${profile.url}</div>
-        <div style="display:flex;gap:8px">
-          <button class="btn-primary" id="open-pending-${idx}">Open profile →</button>
-          <button class="btn-delete" style="font-size:13px;padding:8px 14px">Remove</button>
+      <div class="pr-hdr">
+        <div class="pr-av pr-av-pending"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
+        <div class="pr-info">
+          <div class="pr-name-row">
+            <span class="pr-name" style="color:rgba(240,238,234,.38);font-size:15px">Not synced yet</span>
+          </div>
+          <div class="pr-meta" style="font-style:italic">${profile.url || ''}</div>
+          <div class="pr-acts">
+            <button class="btn-indigo" id="open-pending-${idx}">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg> Open &amp; Sync
+            </button>
+            ${!isPrimary && validProfiles.length > 1 ? `<button class="btn-indigo-outline" id="btn-primary-${idx}">★ Make Primary</button>` : ''}
+            <button class="btn-icon-del" title="Remove profile"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg></button>
+          </div>
         </div>
+      </div>
+      <div style="padding:28px 22px;text-align:center;border-top:1px solid var(--border)">
+        <div style="width:44px;height:44px;border-radius:13px;background:rgba(255,255,255,.03);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;margin:0 auto 12px">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(240,238,234,.12)" stroke-width="1.5" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
+        <div style="font-size:13px;font-weight:700;color:rgba(240,238,234,.25);margin-bottom:5px">No data yet</div>
+        <div style="font-size:11.5px;color:rgba(240,238,234,.15);line-height:1.7;max-width:300px;margin:0 auto">Click <strong style="color:rgba(240,238,234,.28)">Open &amp; Sync</strong> above, then click the "Sync Profile" pill in the bottom-right corner of the page.</div>
       </div>`;
     card.querySelector(`#open-pending-${idx}`)?.addEventListener('click', () => chrome.tabs.create({ url: profile.url }));
-    card.querySelector('.btn-delete')?.addEventListener('click', () => {
+    card.querySelector(`#btn-primary-${idx}`)?.addEventListener('click', () => {
+      chrome.runtime.sendMessage({ type: 'SET_PRIMARY_PROFILE', profileId: profile.id }, () => renderProfilesPage());
+    });
+    card.querySelector('.btn-icon-del')?.addEventListener('click', () => {
       if (!confirm('Remove this profile?')) return;
       const id = profile.id; allProfiles.splice(idx, 1);
       chrome.storage.local.set({ registeredProfiles: allProfiles });
@@ -546,183 +578,82 @@ export function renderProfileCard(container, profile, idx, allProfiles, primaryP
     container.appendChild(card); return;
   }
 
-  // Profile strength
-  const jssN    = parseInt(String(profile.jss || '0').replace(/[^0-9]/g, '')) || 0;
-  const portsOk = portfolios.filter(p => p.urls && p.urls.some(u => u && u.trim())).length;
-  const bioL    = (profile.bio || '').trim().length;
-  let sc = 0;
-  if (bioL > 150) sc += 20; else if (bioL > 50) sc += 10;
-  if (skillsArr.length >= 8) sc += 20; else if (skillsArr.length > 0) sc += 10;
-  if (portsOk >= 3) sc += 30; else sc += portsOk * 10;
-  if (jssN >= 90) sc += 15; else if (jssN > 0) sc += 8;
-  if ((profile.title || '').trim().length > 5) sc += 10;
-  if (profile.hourlyRate) sc += 5;
-  sc = Math.min(100, sc);
-  const strCol = sc >= 80 ? '#4ade80' : sc >= 55 ? '#e8a020' : '#f87171';
-  const strLbl = sc >= 80 ? 'Strong' : sc >= 55 ? 'Good' : 'Needs work';
+  // Tier text for meta line
+  const tierLabels = { expert: 'Expert Vetted', top_rated_plus: 'Top Rated Plus', top_rated: 'Top Rated', rising: 'Rising Talent' };
+  const tierTxt    = tierLabels[profile.tierKey] || '';
 
-  // JSS ring
-  const circ      = 175.9;
-  const dashOff   = jssN > 0 ? circ * (1 - jssN / 100) : circ;
-  const ringColor = jssN >= 80 ? '#c9a84c' : jssN >= 60 ? '#facc15' : jssN > 0 ? '#f87171' : 'rgba(255,255,255,.12)';
+  // Meta line: title · rate · tier · country
+  const meta = [profile.title, profile.rate, tierTxt, profile.country].filter(Boolean).join(' · ');
 
-  // Tier badge
-  const tierMap  = { expert: ['pcv2-tier-purple','⚡ Expert Vetted'], top_rated_plus: ['pcv2-tier-gold','⭐ Top Rated Plus'], top_rated: ['pcv2-tier-green','✦ Top Rated'], rising: ['pcv2-tier-blue','🚀 Rising Talent'] };
-  const [tierCls, tierTxt] = tierMap[profile.tierKey] || [];
-  const tierHtml = tierCls ? `<span class="pcv2-tier ${tierCls}">${tierTxt}</span>` : '';
+  // Last synced
+  const readAt = profile._readAt
+    ? new Date(profile._readAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+    : null;
 
-  // Meta line
-  const meta = [profile.country, profile.rate, profile.jobs ? profile.jobs + ' jobs' : '', profile.earnings].filter(Boolean).join(' · ');
+  const SYNC_ICON = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>';
+  const DEL_ICON  = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg>';
 
-  // Strip values
-  const readAt = profile._readAt ? new Date(profile._readAt).toLocaleDateString('en-US', { month:'short', day:'numeric' }) : '—';
-  const avail  = (profile.extra || '').split('·')[0].trim() || profile.hours ? profile.hours + ' hrs' : '—';
-
+  // Profile card — header + stats + synced footer only
   card.innerHTML = `
-    <div class="pcv2-hdr">
-      <div class="pcv2-ring">
-        <svg viewBox="0 0 68 68">
-          <circle cx="34" cy="34" r="28" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="6"/>
-          <circle cx="34" cy="34" r="28" fill="none" stroke="${ringColor}" stroke-width="6"
-            stroke-dasharray="${circ}" stroke-dashoffset="${dashOff.toFixed(1)}"
-            stroke-linecap="round" transform="rotate(-90 34 34)"/>
-        </svg>
-        <div class="pcv2-ring-num" style="color:${ringColor}">${jssN > 0 ? jssN + '%' : '—'}</div>
-      </div>
-      <div class="pcv2-info">
-        <div class="pcv2-name-row">
-          <span class="pcv2-name">${profile.name || 'Unknown'}</span>
-          ${tierHtml}
-          ${isPrimary && validProfiles.length > 1 ? '<span class="badge-primary">★ Primary</span>' : ''}
+    <div class="pr-hdr">
+      <div class="pr-av">${ini(profile.name)}</div>
+      <div class="pr-info">
+        <div class="pr-name-row">
+          <span class="pr-name">${profile.name || 'Unknown'}</span>
+          ${isPrimary && validProfiles.length > 1 ? '<span class="badge-primary">Primary</span>' : ''}
         </div>
-        <div class="pcv2-meta">${meta || '—'}</div>
-        <div class="pcv2-str-row">
-          <div class="pcv2-str-bar"><div class="pcv2-str-fill" style="width:${sc}%;background:${strCol}"></div></div>
-          <span class="pcv2-str-pct" style="color:${strCol}">${sc}% ${strLbl}</span>
-          <span class="pcv2-str-lbl">strength</span>
-        </div>
+        <div class="pr-meta">${meta || '—'}</div>
+        ${!isPrimary && validProfiles.length > 1 ? `<button class="btn-make-primary" id="btn-primary-${idx}">Make this profile primary</button>` : ''}
       </div>
-      <div class="pcv2-actions">
-        ${!isPrimary && validProfiles.length > 1 ? `<button class="btn-set-primary" id="btn-primary-${idx}">Set primary</button>` : ''}
-        <button class="btn-resync" id="sync-profile-${idx}" title="Open & Sync">⟳ Sync</button>
-        <button class="btn-delete" title="Remove profile">×</button>
+      <div class="pr-hdr-right">
+        <button class="btn-indigo" id="sync-profile-${idx}">${SYNC_ICON} Sync</button>
+        <button class="btn-icon-del" title="Remove profile">${DEL_ICON}</button>
       </div>
     </div>
-
-    <div class="pcv2-strip">
-      <div class="pcv2-strip-item">
-        <div class="pcv2-strip-lbl">Availability</div>
-        <div class="pcv2-strip-val">${(profile.extra || '').split('·')[0].trim() || '—'}</div>
-      </div>
-      <div class="pcv2-strip-div"></div>
-      <div class="pcv2-strip-item">
-        <div class="pcv2-strip-lbl">Total hours</div>
-        <div class="pcv2-strip-val">${profile.hours || '—'}</div>
-      </div>
-      <div class="pcv2-strip-div"></div>
-      <div class="pcv2-strip-item">
-        <div class="pcv2-strip-lbl">Jobs done</div>
-        <div class="pcv2-strip-val">${profile.jobs || '—'}</div>
-      </div>
-      <div class="pcv2-strip-div"></div>
-      <div class="pcv2-strip-item">
-        <div class="pcv2-strip-lbl">Last synced</div>
-        <div class="pcv2-strip-val">${readAt}</div>
-      </div>
+    <div class="pr-stats">
+      <div class="pr-stat"><div class="pr-stat-n">${profile.jss || '—'}</div><div class="pr-stat-l">JSS</div></div>
+      <div class="pr-stat"><div class="pr-stat-n">${profile.earnings || '—'}</div><div class="pr-stat-l">Earned</div></div>
+      <div class="pr-stat"><div class="pr-stat-n">${profile.jobs || '—'}</div><div class="pr-stat-l">Jobs</div></div>
+      <div class="pr-stat"><div class="pr-stat-n">${profile.hours || '—'}</div><div class="pr-stat-l">Hours</div></div>
     </div>
-
-    <div class="pcv2-section">
-      <div class="pcv2-sec-hdr">
-        <span class="pcv2-sec-title">Skills · ${skillsArr.length} detected</span>
-      </div>
-      <div class="skills-wrap" id="skills-wrap-${idx}"></div>
-    </div>
-
-    <div class="pcv2-section">
-      <button class="jf-open-btn" id="jf-btn-${idx}">
-        <div class="jf-open-icon">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
-        </div>
-        <div class="jf-open-text">
-          <span class="jf-open-title">Job Filters</span>
-          <span class="jf-open-sub">Competition · Client Quality · Rate · Alert behaviour</span>
-        </div>
-        <svg class="jf-open-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
-      </button>
-      <div id="jf-body-${idx}" style="display:none;margin-top:16px"></div>
-    </div>
-
-    <div class="pcv2-section">
-      <div class="pcv2-sec-hdr">
-        <span class="pcv2-sec-title">Portfolio · ${portfolios.length}</span>
-        <button class="btn-port-add" data-action="add-port">+ Add</button>
-      </div>
-      <div class="pcv2-port-grid" id="port-list-${idx}"></div>
-      ${!portfolios.length ? '<div class="port-empty-msg" style="grid-column:1/-1;margin-top:4px">No portfolio items yet — click + Add or visit your Upwork profile.</div>' : ''}
-      ${portfolios.length > 0 && portsOk === 0 ? `
-      <div style="margin-top:10px;padding:9px 12px;background:rgba(250,204,21,.05);border:1px solid rgba(250,204,21,.18);border-radius:8px;font-size:11px;color:rgba(250,204,21,.75);line-height:1.55">
-        ↗ <strong style="color:rgba(250,204,21,.9)">Add live links to your portfolio items.</strong>
-        The AI picks the most relevant ones per job and explains how they match. Without links, it can't reference your actual work in the cover letter.
-        Click <strong style="color:rgba(250,204,21,.9)">···</strong> on any item → Edit to add a URL.
-      </div>` : ''}
-    </div>
+    ${readAt ? `<div class="pr-foot"><div class="pr-sync-dot"></div><div class="pr-sync-txt">Synced ${readAt} &nbsp;·&nbsp; ${profile.url || ''}</div></div>` : ''}
   `;
 
-  // Skills
-  renderSkillsExpand(card.querySelector(`#skills-wrap-${idx}`), skillsArr);
-
-  // Portfolio
-  const portList = card.querySelector(`#port-list-${idx}`);
-  portfolios.forEach((p, pi) => renderPortfolioItemV2(portList, p, pi, allProfiles, idx));
-
-  // Add portfolio
-  card.querySelector('[data-action="add-port"]')?.addEventListener('click', () => {
-    const newItem = { title: '', urls: [], desc: '', _manual: true };
-    allProfiles[idx].portfolios = allProfiles[idx].portfolios || [];
-    allProfiles[idx].portfolios.push(newItem);
-    const pi = allProfiles[idx].portfolios.length - 1;
-    portList.querySelector('.port-empty-msg')?.remove();
-    renderPortfolioItemV2(portList, newItem, pi, allProfiles, idx, true);
-  });
-
-  // Sync
   card.querySelector(`#sync-profile-${idx}`)?.addEventListener('click', () => {
     if (!profile.url) return;
     chrome.tabs.create({ url: profile.url });
   });
-
-  // Set primary
   card.querySelector(`#btn-primary-${idx}`)?.addEventListener('click', () => {
     chrome.runtime.sendMessage({ type: 'SET_PRIMARY_PROFILE', profileId: profile.id }, () => renderProfilesPage());
   });
-
-  // Delete
-  card.querySelector('.btn-delete')?.addEventListener('click', () => {
+  card.querySelector('.btn-icon-del')?.addEventListener('click', () => {
     if (!confirm('Remove this profile?')) return;
     const id = profile.id; allProfiles.splice(idx, 1);
     chrome.storage.local.set({ registeredProfiles: allProfiles });
     if (id) chrome.storage.local.remove('profileFull_' + id);
     renderProfilesPage();
   });
-
   container.appendChild(card);
 
-  // Job filters
-  const jfBody = card.querySelector(`#jf-body-${idx}`);
-  renderJobFilters(jfBody, profile);
-  card.querySelector(`#jf-btn-${idx}`)?.addEventListener('click', () => {
-    const isOpen = jfBody.style.display !== 'none';
-    jfBody.style.display = isOpen ? 'none' : 'block';
-    card.querySelector(`#jf-btn-${idx}`)?.classList.toggle('jf-open-btn--active', !isOpen);
-    card.querySelector('.jf-open-chevron')?.style.setProperty('transform', isOpen ? '' : 'rotate(180deg)');
-  });
-}
+  // Portfolio — separate card block
+  const portBlock = document.createElement('div');
+  portBlock.className = 'pr-card-block';
+  portBlock.innerHTML =
+    `<div class="pr-card-block-lbl">Portfolio &nbsp;·&nbsp; ${portfolios.length} items${portsOk > 0 ? ', ' + portsOk + ' linked' : ''}</div>` +
+    `<div class="pi-list" id="port-list-${idx}"></div>` +
+    (!portfolios.length ? '<div style="font-size:11.5px;color:rgba(240,238,234,.2);padding:4px 0;font-style:italic">No portfolio items — sync to import from Upwork.</div>' : '') +
+    (portfolios.length > 0 && portsOk === 0 ? `<div style="margin-top:10px;padding:9px 12px;background:rgba(250,204,21,.04);border:1px solid rgba(250,204,21,.15);border-radius:8px;font-size:11px;color:rgba(250,204,21,.6);line-height:1.55">Add live URLs — click <strong style="color:rgba(250,204,21,.8)">···</strong> → Edit on any item.</div>` : '');
 
-// ── Slider navigation ─────────────────────────────────────────────────────────
-export function goToSlide(idx) {
-  state.currentSlide = idx;
-  document.querySelectorAll('.profile-slide').forEach((s, i) => s.classList.toggle('active', i === idx));
-  document.querySelectorAll('.slider-dot').forEach((d, i)  => d.classList.toggle('active', i === idx));
+  const portList = portBlock.querySelector(`#port-list-${idx}`);
+  portfolios.forEach((p, pi) => renderPortfolioItemV2(portList, p, pi, allProfiles, idx));
+  container.appendChild(portBlock);
+
+  // Filters — separate card block
+  const filtersBlock = document.createElement('div');
+  filtersBlock.className = 'pr-card-block';
+  filtersBlock.innerHTML = `<div class="pr-card-block-lbl">Job Filters</div><div id="jf-body-${idx}"></div>`;
+  container.appendChild(filtersBlock);
+  renderJobFilters(filtersBlock.querySelector(`#jf-body-${idx}`), profile);
 }
 
 // ── Profiles page (main entry point) ─────────────────────────────────────────
@@ -731,9 +662,9 @@ export async function renderProfilesPage() {
     chrome.storage.sync.get(['userPlan']),
     chrome.storage.local.get(['registeredProfiles','activeProfileId','primaryProfileId'])
   ]);
-  const userPlan          = syncStored.userPlan || 'free';
+  const userPlan           = syncStored.userPlan || 'free';
   const registeredProfiles = localStored.registeredProfiles || [];
-  const primaryProfileId  = localStored.primaryProfileId || null;
+  const primaryProfileId   = localStored.primaryProfileId || null;
 
   const registered = registeredProfiles.filter(p => p && p.url);
   const localKeys  = registered.map(p => p.id ? 'profileFull_' + p.id : null).filter(Boolean);
@@ -758,38 +689,56 @@ export async function renderProfilesPage() {
     return;
   }
   noMsg.style.display  = 'none';
-  addBtn.style.display = 'flex'; // always show — needed for managing existing profile URL too
+  addBtn.style.display = 'none';
 
-  if (mergedProfiles.length === 1) {
-    renderProfileCard(container, mergedProfiles[0], 0, mergedProfiles, primaryProfileId);
-  } else {
-    const wrap   = document.createElement('div');
-    wrap.className = 'profile-slider-wrap';
-    const slides = document.createElement('div');
-    slides.className = 'profile-slides';
-    mergedProfiles.forEach((p, i) => {
-      const slide = document.createElement('div');
-      slide.className = 'profile-slide' + (i === state.currentSlide ? ' active' : '');
-      slide.id = 'slide-' + i;
-      renderProfileCard(slide, p, i, mergedProfiles, primaryProfileId);
-      slides.appendChild(slide);
-    });
-    wrap.appendChild(slides);
+  const validProfiles = mergedProfiles.filter(p => p && p.url);
 
-    const ctrl = document.createElement('div');
-    ctrl.className = 'slider-controls';
-    ctrl.innerHTML = `<button class="slider-arr" id="sl-prev">‹</button>`;
-    mergedProfiles.forEach((_, i) => {
-      const dot = document.createElement('div');
-      dot.className = 'slider-dot' + (i === state.currentSlide ? ' active' : '');
-      dot.addEventListener('click', () => goToSlide(i));
-      ctrl.appendChild(dot);
-    });
-    ctrl.innerHTML += `<button class="slider-arr" id="sl-next">›</button>`;
-    wrap.appendChild(ctrl);
-    container.appendChild(wrap);
+  // ── Profile selector grid ──────────────────────────────────────────────────
+  const selGrid = document.createElement('div');
+  selGrid.className = 'pr-sel-grid';
 
-    document.getElementById('sl-prev')?.addEventListener('click', () => goToSlide(Math.max(0, state.currentSlide - 1)));
-    document.getElementById('sl-next')?.addEventListener('click', () => goToSlide(Math.min(registered.length - 1, state.currentSlide + 1)));
+  const detailContainer = document.createElement('div');
+
+  function initials(name) {
+    return (name || '').trim().split(/\s+/).map(w => w[0] || '').slice(0, 2).join('').toUpperCase() || '?';
   }
+
+  function switchTo(idx) {
+    state.currentSlide = idx;
+    selGrid.querySelectorAll('.pr-sel-card').forEach((c, j) => c.classList.toggle('active', j === idx));
+    detailContainer.innerHTML = '';
+    renderProfileCard(detailContainer, mergedProfiles[idx], idx, mergedProfiles, primaryProfileId);
+  }
+
+  mergedProfiles.forEach((p, i) => {
+    const synced    = !!(p.name || p.jss || p._readAt);
+    const isPrimary = validProfiles.length <= 1 ? true : (primaryProfileId ? p.id === primaryProfileId : i === 0);
+    const ini       = initials(p.name);
+
+    const card = document.createElement('div');
+    card.className = 'pr-sel-card' + (i === (state.currentSlide || 0) ? ' active' : '');
+    card.innerHTML =
+      (isPrimary && validProfiles.length > 1 ? '<div class="pr-sel-tag">Primary</div>' : '') +
+      '<div class="pr-sel-av">' + ini + '</div>' +
+      '<div class="pr-sel-name">' + (p.name || 'Profile ' + (i + 1)) + '</div>' +
+      '<div class="pr-sel-meta">' + (synced ? (p.jss ? p.jss + ' JSS' : 'Synced') : 'Not synced yet') + '</div>';
+
+    card.addEventListener('click', () => switchTo(i));
+    selGrid.appendChild(card);
+  });
+
+  if (mergedProfiles.length < limit) {
+    const addCard = document.createElement('div');
+    addCard.className = 'pr-sel-card pr-add';
+    addCard.innerHTML = '<span class="pr-add-icon" style="font-size:22px;font-weight:300;line-height:1">+</span><span class="pr-add-lbl">Add profile</span>';
+    addCard.addEventListener('click', () => document.getElementById('add-profile-btn')?.click());
+    selGrid.appendChild(addCard);
+  }
+
+  container.appendChild(selGrid);
+  container.appendChild(detailContainer);
+
+  const initialIdx = Math.min(state.currentSlide || 0, mergedProfiles.length - 1);
+  state.currentSlide = initialIdx;
+  renderProfileCard(detailContainer, mergedProfiles[initialIdx], initialIdx, mergedProfiles, primaryProfileId);
 }
