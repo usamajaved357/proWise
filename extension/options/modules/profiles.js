@@ -221,6 +221,12 @@ function renderJobFilters(body, profile) {
   }
 
   const ICK = '<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
+  const I_COMP  = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>';
+  const I_QUAL  = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
+  const I_MATCH = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>';
+  const I_ALERT = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>';
+
+  const spentVal = v => [0,100,1000,10000,100000].map(n => `<option value="${n}"${F.minClientSpent===n?' selected':''}>${n===0?'Any':n>=1000?'$'+(n/1000)+'K+':'$'+n+'+'}</option>`).join('');
 
   body.innerHTML = `
     <div class="jf-seg">
@@ -240,26 +246,27 @@ function renderJobFilters(body, profile) {
 
     <div class="jf-groups">
       <div class="jf-group">
-        <div class="jf-group-lbl">Competition</div>
+        <div class="jf-group-lbl">${I_COMP}Competition</div>
         ${sl('maxProposals',    'Max proposals',    5,  55,  5, Math.min(F.maxProposals, 55), 'Warn if job has more bids than this')}
         ${sl('maxInterviewing', 'Max interviewing', 0,  10,  1, F.maxInterviewing,            'Warn if this many are shortlisted')}
         ${sl('maxInvitesSent',  'Max invites sent', 0,  15,  1, F.maxInvitesSent,             'Warn if client sent this many invites')}
       </div>
       <div class="jf-group">
-        <div class="jf-group-lbl">Client quality</div>
+        <div class="jf-group-lbl">${I_QUAL}Client quality</div>
         ${sl('minHireRate',     'Min hire rate',    0, 100,  5, F.minHireRate,                'Warn if client hires less than this %')}
         ${sl('minClientRating', 'Min rating',      10,  50,  5, Math.round(F.minClientRating * 10), 'Warn if rating below this')}
+        <div class="jf-row2"><span class="jf-row2-name">Min client spent</span><div class="jf-row2-right"><select class="jf-select" id="js-minClientSpent">${spentVal()}</select></div></div>
         ${tog('requirePaymentVerified', 'Payment verified', F.requirePaymentVerified, 'Warn if payment not verified')}
         ${tog('warnZeroSpent',          'Warn $0 clients',  F.warnZeroSpent,          'Warn if client never spent on Upwork')}
       </div>
       <div class="jf-group">
-        <div class="jf-group-lbl">Match &amp; age</div>
+        <div class="jf-group-lbl">${I_MATCH}Match &amp; age</div>
         ${sl('minSkillMatch',   'Min skill match',  0,  80, 10, F.minSkillMatch,   'Warn if skill overlap below this %')}
         ${sl('maxRateMismatch', 'Rate mismatch',   10, 100, 10, F.maxRateMismatch, 'Warn if your rate is this % above avg')}
         ${sl('maxJobAgeDays',   'Max job age',      0,  14,  1, F.maxJobAgeDays,   'Warn if older than this — 0 = any age')}
       </div>
       <div class="jf-group">
-        <div class="jf-group-lbl">Alert behaviour</div>
+        <div class="jf-group-lbl">${I_ALERT}Alert behaviour</div>
         ${sl('minAlertScore', 'Min alert score', 30, 80, 5, F.minAlertScore, 'Show alert when score is under this')}
         ${tog('autoSkipHired',      'Auto-skip hired',    F.autoSkipHired,      'Close panel if someone already hired')}
         ${tog('warnLocationFilter', 'Location filter',    F.warnLocationFilter, 'Warn if job has location restrictions')}
@@ -268,7 +275,7 @@ function renderJobFilters(body, profile) {
     </div>
 
     <div class="jf-filter-footer">
-      <button class="btn-reset-plain" id="jf-reset">Reset to balanced</button>
+      <button class="btn-reset-plain" id="jf-reset">Reset Filters</button>
       <button class="btn-apply-filters" id="jf-save">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
         Apply filters
@@ -285,7 +292,7 @@ function renderJobFilters(body, profile) {
       maxInvitesSent:         s('maxInvitesSent'),
       minClientRating:        s('minClientRating') / 10,
       minHireRate:            s('minHireRate'),
-      minClientSpent:         F.minClientSpent,
+      minClientSpent:         parseInt(body.querySelector('#js-minClientSpent')?.value ?? 0),
       requirePaymentVerified: t('requirePaymentVerified'),
       warnZeroSpent:          t('warnZeroSpent'),
       maxRateMismatch:        s('maxRateMismatch'),
@@ -321,6 +328,8 @@ function renderJobFilters(body, profile) {
       if (cb)  cb.checked = P[id];
       if (tog) { tog.classList.toggle('on', P[id]); tog.classList.toggle('off', !P[id]); }
     });
+    const sp = body.querySelector('#js-minClientSpent');
+    if (sp) sp.value = P.minClientSpent;
     body.querySelectorAll('.jf-seg-opt').forEach(b => b.classList.toggle('jf-active', b.dataset.preset === name));
     save();
   }
@@ -337,7 +346,7 @@ function renderJobFilters(body, profile) {
     el.addEventListener('change', save);
   });
 
-  // Events — checkboxes (from toggle onclick already handles UI; just save on change)
+  // Events — checkboxes
   body.querySelectorAll('[id^="jt-"]').forEach(el => {
     el.addEventListener('change', () => {
       body.querySelectorAll('.jf-seg-opt').forEach(b => b.classList.remove('jf-active'));
@@ -345,12 +354,34 @@ function renderJobFilters(body, profile) {
     });
   });
 
+  // Min client spent select
+  body.querySelector('#js-minClientSpent')?.addEventListener('change', () => {
+    body.querySelectorAll('.jf-seg-opt').forEach(b => b.classList.remove('jf-active'));
+    save();
+  });
+
   // Segment preset buttons
   body.querySelectorAll('.jf-seg-opt').forEach(btn => btn.addEventListener('click', () => applyPreset(btn.dataset.preset)));
 
-  // Reset + Save
+  // Reset
   body.querySelector('#jf-reset')?.addEventListener('click', () => applyPreset('balanced'));
-  body.querySelector('#jf-save')?.addEventListener('click', () => { save(); });
+
+  // Apply filters — save + toast
+  body.querySelector('#jf-save')?.addEventListener('click', () => {
+    save();
+    let toast = document.querySelector('.jf-toast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.className = 'jf-toast';
+      toast.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg> Filters saved';
+      document.body.appendChild(toast);
+    }
+    requestAnimationFrame(() => toast.classList.add('show'));
+    clearTimeout(toast._t);
+    toast._t = setTimeout(() => {
+      toast.classList.remove('show');
+    }, 2000);
+  });
 
   // Highlight active preset on load
   ['conservative','balanced','aggressive'].forEach(name => {
@@ -428,43 +459,14 @@ function renderPortfolioItemV2(list, p, pi, allProfiles, profileIdx, autoOpen) {
   function renderNormal() {
     item.classList.remove('editing');
     const hasLinks = p.urls && p.urls.some(u => u && u.trim());
-    const firstUrl = hasLinks ? (p.urls || []).find(u => u.trim()) : null;
-    const domain   = firstUrl ? firstUrl.replace(/^https?:\/\//, '').split('/')[0].replace(/^www\./, '') : null;
     item.classList.toggle('port-has-link', hasLinks);
     item.classList.toggle('port-no-link', !hasLinks);
     item.innerHTML =
       '<div class="pi-dot ' + (hasLinks ? 'pi-dot-g' : 'pi-dot-a') + '"></div>' +
       '<div class="pi-name">' + _esc(p.title || 'Untitled') + '</div>' +
-      (domain
-        ? '<div class="pi-url-lbl">' + _esc(domain) + '</div>'
-        : '<div class="pi-no-url">+ Add URL</div>') +
-      '<button class="pi-menu-btn" aria-label="Options">···</button>';
-
-    item.querySelector('.pi-menu-btn').addEventListener('click', e => {
-      e.stopPropagation();
-      document.querySelectorAll('.port-v2-drop').forEach(d => d.remove());
-
-      const btn  = item.querySelector('.pi-menu-btn');
-      const rect = btn.getBoundingClientRect();
-
-      const drop = document.createElement('div');
-      drop.className = 'port-v2-drop';
-      drop.style.cssText = 'position:fixed;top:' + (rect.bottom + 4) + 'px;right:' + (window.innerWidth - rect.right) + 'px;z-index:99999';
-      drop.innerHTML =
-        '<button class="port-v2-drop-item port-v2-drop-edit">Edit</button>' +
-        '<button class="port-v2-drop-item port-v2-drop-del">Delete</button>';
-      document.body.appendChild(drop);
-
-      drop.querySelector('.port-v2-drop-edit').addEventListener('click', e2 => { e2.stopPropagation(); drop.remove(); renderEdit(); });
-      drop.querySelector('.port-v2-drop-del').addEventListener('click', e2 => {
-        e2.stopPropagation(); drop.remove();
-        allProfiles[profileIdx]?.portfolios?.splice(pi, 1);
-        item.remove();
-        savePortfolios();
-      });
-      const close = () => { drop.remove(); document.removeEventListener('click', close); };
-      setTimeout(() => document.addEventListener('click', close), 0);
-    });
+      (hasLinks
+        ? '<div class="pi-linked-ok">✓</div>'
+        : '<div class="pi-missing-url">No URL</div>');
   }
 
   function renderEdit() {
@@ -591,20 +593,25 @@ export function renderProfileCard(container, profile, idx, allProfiles, primaryP
     ? new Date(profile._readAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
     : null;
 
-  const SYNC_ICON = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>';
+  const SYNC_ICON = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>';
   const DEL_ICON  = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg>';
 
   // Profile card — header + stats + synced footer only
+  const detailAv = profile.profilePicUrl
+    ? `<img src="${profile.profilePicUrl}" alt="${profile.name || ''}">`
+    : ini(profile.name);
+  const detailAvBg = profile.profilePicUrl ? 'background:transparent' : '';
+
   card.innerHTML = `
     <div class="pr-hdr">
-      <div class="pr-av">${ini(profile.name)}</div>
+      <div class="pr-av" style="${detailAvBg}">${detailAv}</div>
       <div class="pr-info">
         <div class="pr-name-row">
           <span class="pr-name">${profile.name || 'Unknown'}</span>
-          ${isPrimary && validProfiles.length > 1 ? '<span class="badge-primary">Primary</span>' : ''}
+          ${isPrimary ? '<span class="badge-primary">Primary</span>' : ''}
         </div>
         ${metaTitle ? `<div class="pr-meta" style="color:rgba(240,238,234,.5);font-size:12.5px;margin-bottom:3px">${metaTitle}</div>` : ''}
-        ${metaSub ? `<div class="pr-meta" style="font-size:11.5px">${metaSub}</div>` : ''}
+        ${metaSub ? `<div class="pr-meta" style="font-size:11px;color:rgba(240,238,255,.32);letter-spacing:.01em">${metaSub}</div>` : ''}
         ${!isPrimary && validProfiles.length > 1 ? `<button class="btn-make-primary" id="btn-primary-${idx}">Make this profile primary</button>` : ''}
       </div>
       <div class="pr-hdr-right">
@@ -637,25 +644,40 @@ export function renderProfileCard(container, profile, idx, allProfiles, primaryP
   });
   container.appendChild(card);
 
-  // Portfolio — separate card block
+  // Portfolio label — outside the card frame
+  const portLbl = document.createElement('div');
+  portLbl.className = 'pr-card-block-lbl';
+  portLbl.style.cssText = 'margin-bottom:8px;margin-top:20px';
+  portLbl.textContent = 'Portfolio · ' + portfolios.length + ' items' + (portsOk > 0 ? ', ' + portsOk + ' linked' : '');
+
+  // Filters label — outside the card frame (comes first now)
+  const filtersLbl = document.createElement('div');
+  filtersLbl.className = 'pr-card-block-lbl';
+  filtersLbl.style.cssText = 'margin-bottom:8px;margin-top:20px';
+  filtersLbl.textContent = 'Job Filters';
+  container.appendChild(filtersLbl);
+
+  // Filters card
+  const filtersBlock = document.createElement('div');
+  filtersBlock.className = 'pr-card-block';
+  filtersBlock.innerHTML = `<div id="jf-body-${idx}"></div>`;
+  container.appendChild(filtersBlock);
+  renderJobFilters(filtersBlock.querySelector(`#jf-body-${idx}`), profile);
+
+  // Portfolio label + card (below filters)
+  container.appendChild(portLbl);
+
   const portBlock = document.createElement('div');
   portBlock.className = 'pr-card-block';
+  portBlock.style.cssText = 'padding:4px 22px;margin-bottom:20px';
   portBlock.innerHTML =
-    `<div class="pr-card-block-lbl">Portfolio &nbsp;·&nbsp; ${portfolios.length} items${portsOk > 0 ? ', ' + portsOk + ' linked' : ''}</div>` +
     `<div class="pi-list" id="port-list-${idx}"></div>` +
-    (!portfolios.length ? '<div style="font-size:11.5px;color:rgba(240,238,234,.2);padding:4px 0;font-style:italic">No portfolio items — sync to import from Upwork.</div>' : '') +
-    (portfolios.length > 0 && portsOk === 0 ? `<div style="margin-top:10px;padding:9px 12px;background:rgba(250,204,21,.04);border:1px solid rgba(250,204,21,.15);border-radius:8px;font-size:11px;color:rgba(250,204,21,.6);line-height:1.55">Add live URLs — click <strong style="color:rgba(250,204,21,.8)">···</strong> → Edit on any item.</div>` : '');
+    (!portfolios.length ? '<div style="font-size:11.5px;color:rgba(240,238,234,.2);padding:12px 0;font-style:italic">No portfolio items — sync to import from Upwork.</div>' : '') +
+    (portfolios.length > 0 && portsOk === 0 ? `<div style="margin:4px 0 10px;padding:9px 12px;background:rgba(250,204,21,.04);border:1px solid rgba(250,204,21,.15);border-radius:8px;font-size:11px;color:rgba(250,204,21,.55);line-height:1.55">No URLs added — go to your Upwork profile, add portfolio links there, then re-sync.</div>` : '');
 
   const portList = portBlock.querySelector(`#port-list-${idx}`);
   portfolios.forEach((p, pi) => renderPortfolioItemV2(portList, p, pi, allProfiles, idx));
   container.appendChild(portBlock);
-
-  // Filters — separate card block
-  const filtersBlock = document.createElement('div');
-  filtersBlock.className = 'pr-card-block';
-  filtersBlock.innerHTML = `<div class="pr-card-block-lbl">Job Filters</div><div id="jf-body-${idx}"></div>`;
-  container.appendChild(filtersBlock);
-  renderJobFilters(filtersBlock.querySelector(`#jf-body-${idx}`), profile);
 }
 
 // ── Profiles page (main entry point) ─────────────────────────────────────────
@@ -719,11 +741,16 @@ export async function renderProfilesPage() {
 
     const card = document.createElement('div');
     card.className = 'pr-sel-card' + (i === (state.currentSlide || 0) ? ' active' : '');
+    const avContent = p.profilePicUrl
+      ? '<img src="' + p.profilePicUrl + '" alt="' + (p.name || '') + '">'
+      : ini;
     card.innerHTML =
-      (isPrimary && validProfiles.length > 1 ? '<div class="pr-sel-tag">Primary</div>' : '') +
-      '<div class="pr-sel-av">' + ini + '</div>' +
+      (isPrimary ? '<div class="pr-sel-tag">Primary</div>' : '') +
+      '<div class="pr-sel-av">' + avContent + '</div>' +
       '<div class="pr-sel-name">' + (p.name || 'Profile ' + (i + 1)) + '</div>' +
-      '<div class="pr-sel-meta">' + (synced ? (p.jss ? p.jss + ' JSS' : 'Synced') : 'Not synced yet') + '</div>';
+      '<div class="pr-sel-meta">' + (synced
+      ? [p.jss ? p.jss + ' JSS' : '', p.tier || '', p.country || ''].filter(Boolean).join(' · ') || 'Synced'
+      : 'Not synced yet') + '</div>';
 
     card.addEventListener('click', () => switchTo(i));
     selGrid.appendChild(card);

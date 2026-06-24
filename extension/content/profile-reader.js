@@ -156,6 +156,14 @@
   }
 
   // ── Main profile data reader ──────────────────────────────────────────────────
+  async function readProfilePic() {
+    try {
+      const url = await chrome.runtime.sendMessage({ type: 'GET_PROFILE_PIC' });
+      if (url) return url;
+    } catch(e) {}
+    return '';
+  }
+
   function readProfileData() {
     const pt = document.body.innerText;
     const jssM = pt.match(/(\d+)%\s*Job Success/i);
@@ -285,6 +293,7 @@
       const availability = readAvailability(document.body.innerText);
       const autoExtra    = target.extra || existingFull.extra || [availability, data.country].filter(Boolean).join(' · ');
 
+      const profilePicUrl   = await readProfilePic();
       const freshPortfolios = await readPortfolioTitles();
       const mergedPortfolios = mergePortfolioTitles(existingFull.portfolios || [], freshPortfolios);
 
@@ -297,6 +306,7 @@
       const profileFull = {
         ...profileMeta,
         hourlyRate: data.hourlyRate, hours: data.hours,
+        profilePicUrl: profilePicUrl || existingFull.profilePicUrl || '',
         title: data.title, bio: data.bio, extra: autoExtra,
         skills: data.skills, skillsArr: data.skillsArr,
         employment: data.employment, education: data.education, languages: data.languages,

@@ -146,6 +146,34 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       .catch(() => sendResponse(null));
     return true;
   }
+  if (msg.type === 'GET_PROFILE_PIC') {
+    chrome.scripting.executeScript({
+      target: { tabId: sender.tab.id },
+      world: 'MAIN',
+      func: () => {
+        try {
+          const store = document.getElementById('__nuxt').__vue__.$store;
+          const fp = store?.state?.profileViewer?.profile;
+          if (fp?.profilePhoto?.publicUrl) return fp.profilePhoto.publicUrl;
+          if (fp?.profilePhoto?.url)       return fp.profilePhoto.url;
+        } catch(e) {}
+        const selectors = [
+          'img.air3-avatar-photo', 'img[class*="avatar"]', 'img[class*="portrait"]',
+          'img[class*="photo"]', '[data-test="portrait"] img', '.portrait img',
+        ];
+        for (const sel of selectors) {
+          try {
+            const el = document.querySelector(sel);
+            if (el?.src?.startsWith('https://') && !/placeholder|default|blank/i.test(el.src)) return el.src;
+          } catch(e) {}
+        }
+        const og = document.querySelector('meta[property="og:image"]');
+        return og?.content?.startsWith('https://') ? og.content : '';
+      },
+    }).then(results => sendResponse(results?.[0]?.result || ''))
+      .catch(() => sendResponse(''));
+    return true;
+  }
   if (msg.type === 'GET_PORTFOLIO_DATA') {
     // Runs in the page's JS context (MAIN world) — bypasses CSP, can access __vue__
     chrome.scripting.executeScript({
