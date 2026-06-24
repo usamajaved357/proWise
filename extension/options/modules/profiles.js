@@ -444,7 +444,7 @@ function renderPortfolioItemV2(list, p, pi, allProfiles, profileIdx, autoOpen) {
       e.stopPropagation();
       document.querySelectorAll('.port-v2-drop').forEach(d => d.remove());
 
-      const btn  = item.querySelector('.port-v2-menu');
+      const btn  = item.querySelector('.pi-menu-btn');
       const rect = btn.getBoundingClientRect();
 
       const drop = document.createElement('div');
@@ -578,12 +578,13 @@ export function renderProfileCard(container, profile, idx, allProfiles, primaryP
     container.appendChild(card); return;
   }
 
-  // Tier text for meta line
+  // Tier text
   const tierLabels = { expert: 'Expert Vetted', top_rated_plus: 'Top Rated Plus', top_rated: 'Top Rated', rising: 'Rising Talent' };
   const tierTxt    = tierLabels[profile.tierKey] || '';
 
-  // Meta line: title · rate · tier · country
-  const meta = [profile.title, profile.rate, tierTxt, profile.country].filter(Boolean).join(' · ');
+  // Two-line meta: title on line 1, rate · tier · country on line 2
+  const metaTitle = profile.title || '';
+  const metaSub   = [profile.rate, tierTxt, profile.country].filter(Boolean).join(' · ');
 
   // Last synced
   const readAt = profile._readAt
@@ -602,7 +603,8 @@ export function renderProfileCard(container, profile, idx, allProfiles, primaryP
           <span class="pr-name">${profile.name || 'Unknown'}</span>
           ${isPrimary && validProfiles.length > 1 ? '<span class="badge-primary">Primary</span>' : ''}
         </div>
-        <div class="pr-meta">${meta || '—'}</div>
+        ${metaTitle ? `<div class="pr-meta" style="color:rgba(240,238,234,.5);font-size:12.5px;margin-bottom:3px">${metaTitle}</div>` : ''}
+        ${metaSub ? `<div class="pr-meta" style="font-size:11.5px">${metaSub}</div>` : ''}
         ${!isPrimary && validProfiles.length > 1 ? `<button class="btn-make-primary" id="btn-primary-${idx}">Make this profile primary</button>` : ''}
       </div>
       <div class="pr-hdr-right">
