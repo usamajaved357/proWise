@@ -473,12 +473,68 @@ function renderPortfolioItemV2(list, p, pi, allProfiles, profileIdx, autoOpen) {
     const hasLinks = p.urls && p.urls.some(u => u && u.trim());
     item.classList.toggle('port-has-link', hasLinks);
     item.classList.toggle('port-no-link', !hasLinks);
+
+    const CHECK_ICON =
+      '<svg width="18" height="18" viewBox="0 0 24 24" fill="none">' +
+        '<circle cx="12" cy="12" r="9" stroke="rgba(52,211,153,.5)" stroke-width="1.5"/>' +
+        '<polyline points="8 12 11 15 16 9" stroke="#34d399" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '</svg>';
+
+    const WARN_ICON =
+      '<svg width="18" height="18" viewBox="0 0 24 24" fill="none">' +
+        '<circle cx="12" cy="12" r="9" stroke="rgba(250,204,21,.4)" stroke-width="1.5"/>' +
+        '<line x1="12" y1="8" x2="12" y2="13" stroke="rgba(250,204,21,.75)" stroke-width="1.8" stroke-linecap="round"/>' +
+        '<circle cx="12" cy="16" r="0.8" fill="rgba(250,204,21,.75)"/>' +
+      '</svg>';
+
     item.innerHTML =
-      '<div class="pi-dot ' + (hasLinks ? 'pi-dot-g' : 'pi-dot-a') + '"></div>' +
       '<div class="pi-name">' + _esc(p.title || 'Untitled') + '</div>' +
       (hasLinks
-        ? '<div class="pi-linked-ok">✓</div>'
-        : '<div class="pi-missing-url">No URL</div>');
+        ? '<div class="pi-check-ok" title="URL linked">' + CHECK_ICON + '</div>'
+        : '<div class="pi-missing-btn">' + WARN_ICON + '</div>');
+
+    if (!hasLinks) {
+      const missingBtn = item.querySelector('.pi-missing-btn');
+      let tip = null;
+
+      missingBtn.addEventListener('mouseenter', () => {
+        if (tip) return;
+        const rect = missingBtn.getBoundingClientRect();
+        tip = document.createElement('div');
+        tip.style.cssText =
+          'position:fixed;z-index:99999;pointer-events:none;' +
+          'background:#1a1830;border:1px solid rgba(250,204,21,.28);' +
+          'color:rgba(240,238,255,.78);font-size:11px;font-weight:500;line-height:1.5;' +
+          'padding:8px 12px;border-radius:8px;max-width:240px;' +
+          'font-family:-apple-system,BlinkMacSystemFont,sans-serif;' +
+          'box-shadow:0 6px 20px rgba(0,0,0,.45);';
+        tip.textContent = 'Missing URL — add this project\'s link to your Upwork portfolio, then re-sync.';
+
+        // Arrow pointing down toward the icon
+        const arrow = document.createElement('div');
+        arrow.style.cssText =
+          'position:absolute;bottom:-5px;left:50%;' +
+          'transform:translateX(-50%) rotate(45deg);' +
+          'width:8px;height:8px;' +
+          'background:#1a1830;' +
+          'border-right:1px solid rgba(250,204,21,.28);' +
+          'border-bottom:1px solid rgba(250,204,21,.28);';
+        tip.appendChild(arrow);
+        document.body.appendChild(tip);
+
+        // Position above the icon, horizontally centred on it
+        const tipW = tip.offsetWidth;
+        const tipH = tip.offsetHeight;
+        const left  = Math.max(8, rect.left + rect.width / 2 - tipW / 2);
+        const top   = rect.top - tipH - 10;
+        tip.style.left = left + 'px';
+        tip.style.top  = top  + 'px';
+      });
+
+      missingBtn.addEventListener('mouseleave', () => {
+        if (tip) { tip.remove(); tip = null; }
+      });
+    }
   }
 
   function renderEdit() {
@@ -656,11 +712,14 @@ export function renderProfileCard(container, profile, idx, allProfiles, primaryP
   });
   container.appendChild(card);
 
-  // Portfolio label — outside the card frame
+  // Portfolio — label + subtitle outside the card frame
   const portLbl = document.createElement('div');
   portLbl.className = 'pr-card-block-lbl';
-  portLbl.style.cssText = 'margin-bottom:8px;margin-top:20px';
+  portLbl.style.cssText = 'margin-bottom:4px;margin-top:20px';
   portLbl.textContent = 'Portfolio · ' + portfolios.length + ' items' + (portsOk > 0 ? ', ' + portsOk + ' linked' : '');
+  const portSub = document.createElement('div');
+  portSub.style.cssText = 'font-size:11px;color:rgba(240,238,255,.22);margin-bottom:10px;line-height:1.55;font-weight:400';
+  portSub.textContent = 'Snag AI matches your portfolio projects to each job by skills and description, then references the most relevant linked ones in your cover letter.';
 
   // Filters label — outside the card frame (comes first now)
   const filtersLbl = document.createElement('div');
@@ -678,6 +737,7 @@ export function renderProfileCard(container, profile, idx, allProfiles, primaryP
 
   // Portfolio label + card (below filters)
   container.appendChild(portLbl);
+  container.appendChild(portSub);
 
   const portBlock = document.createElement('div');
   portBlock.className = 'pr-card-block';

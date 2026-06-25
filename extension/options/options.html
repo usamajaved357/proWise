@@ -791,15 +791,13 @@ textarea.edit-val{min-height:38px}
 
 /* ── Portfolio item row (new design) ───────────────────────────────────────── */
 .pi-list{display:flex;flex-direction:column}
-.port-v2-card:not(.editing){display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid rgba(255,255,255,.045);background:transparent;border-top:none;border-left:none;border-right:none;border-radius:0;overflow:visible;transition:background .1s;cursor:default}
+.port-v2-card:not(.editing){display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.035);background:transparent;border-top:none;border-left:none;border-right:none;border-radius:0;overflow:visible;cursor:default}
 .port-v2-card:not(.editing):last-child{border-bottom:none}
 .port-v2-card:not(.editing)::before{display:none!important}
-.pi-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.pi-dot-g{background:#34d399;box-shadow:0 0 0 3px rgba(52,211,153,.14)}
-.pi-dot-a{background:rgba(250,204,21,.7);box-shadow:0 0 0 3px rgba(250,204,21,.1)}
-.pi-name{flex:1;font-size:12.5px;font-weight:500;color:rgba(240,238,234,.82);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.01em}
-.pi-linked-ok{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:rgba(52,211,153,.9);flex-shrink:0;background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.25)}
-.pi-missing-url{font-size:10.5px;font-weight:600;color:rgba(250,204,21,.5);flex-shrink:0;background:rgba(250,204,21,.06);border:1px solid rgba(250,204,21,.15);border-radius:20px;padding:2px 8px;white-space:nowrap}
+.pi-name{flex:1;font-size:11px;font-weight:400;color:rgba(240,238,234,.45);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pi-check-ok{width:18px;height:18px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.pi-missing-btn{width:18px;height:18px;flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:50%;transition:background .12s}
+.pi-missing-btn:hover{background:rgba(250,204,21,.08)}
 
 /* ── Filter segmented control ──────────────────────────────────────────────── */
 .jf-seg{background:transparent;border-radius:0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
