@@ -185,7 +185,7 @@ export function renderBillingCard(plan, used, quota, billing) {
     const daysVal = days !== null
       ? (days <= 0 ? '<span class="bc-sval bc-sval-red">Today</span>'
         : days <= 7 ? `<span class="bc-sval bc-sval-amber">${days} day${days===1?'':'s'}</span>`
-        : `<span class="bc-sval">${days} days</span>`)
+        : `<span class="bc-sval bc-sval-indigo">${days} days</span>`)
       : '<span class="bc-sval">—</span>';
     statsHtml = `
       <div class="bc-stats">
@@ -199,13 +199,13 @@ export function renderBillingCard(plan, used, quota, billing) {
     const daysVal = days !== null
       ? (days <= 0 ? '<span class="bc-sval bc-sval-red">Today</span>'
         : days <= 7 ? `<span class="bc-sval bc-sval-amber">${days} day${days===1?'':'s'}</span>`
-        : `<span class="bc-sval">${days} days</span>`)
+        : `<span class="bc-sval bc-sval-indigo">${days} days</span>`)
       : '<span class="bc-sval">—</span>';
     statsHtml = `
       <div class="bc-stats">
         <div class="bc-stat"><div class="bc-slabel">Current period</div><div class="bc-sval">${periodStart}</div></div>
         <div class="bc-sdiv"></div>
-        <div class="bc-stat"><div class="bc-slabel">Next billing date</div><div class="bc-sval bc-sval-gold">${keyDateFmt}</div><div class="bc-ssub">proposals reset on this date</div></div>
+        <div class="bc-stat"><div class="bc-slabel">Next billing date</div><div class="bc-sval bc-sval-indigo">${keyDateFmt}</div><div class="bc-ssub">proposals reset on this date</div></div>
         <div class="bc-sdiv"></div>
         <div class="bc-stat"><div class="bc-slabel">Days remaining</div>${daysVal}<div class="bc-ssub">in current cycle</div></div>
       </div>`;
@@ -229,9 +229,8 @@ export function renderBillingCard(plan, used, quota, billing) {
           <div class="bc-plan-quota">${quota.toLocaleString()} proposals / month</div>
         </div>
         <div class="bc-header-right">
-          <button class="bc-manage-btn" id="bc-manage-btn">
-            Manage billing
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          <button class="bc-manage-btn" id="bc-manage-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> Manage billing
+           
           </button>
         </div>
       </div>
@@ -247,7 +246,7 @@ export function renderBillingCard(plan, used, quota, billing) {
       const { userEmail } = await chrome.storage.sync.get(['userEmail']);
       if (!userEmail) {
         alert('Please add your subscription email in Settings first.');
-        if (btn) { btn.innerHTML = 'Manage billing <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>'; btn.disabled = false; }
+        if (btn) { btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> Manage billing'; btn.disabled = false; }
         return;
       }
       const res  = await fetch(SERVER_URL + '/billing-portal', {
@@ -265,7 +264,7 @@ export function renderBillingCard(plan, used, quota, billing) {
       alert('Connection error. Check your internet and try again.');
     } finally {
       const b = document.getElementById('bc-manage-btn');
-      if (b) { b.innerHTML = 'Manage billing <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>'; b.disabled = false; }
+      if (b) { b.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> Manage billing'; b.disabled = false; }
     }
   });
 }
