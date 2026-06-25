@@ -248,10 +248,13 @@ textarea.edit-val{min-height:38px}
 .plan-btn-current{background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);cursor:default;opacity:.95}
 .plan-btn-current:hover{background:var(--green-bg)!important;transform:none!important;box-shadow:none!important}
 /* sidebar legal links */
-.sb-legal{padding:6px 10px 0;display:flex;flex-direction:column;gap:0}
-.sb-legal-title{display:none}
-.sb-legal a{display:flex;align-items:center;padding:5px 12px;font-size:10.5px;font-weight:400;color:rgba(240,238,234,.2);border-radius:var(--radius-xs);transition:color .15s;border-left:2px solid transparent;letter-spacing:.01em}
-.sb-legal a:hover{color:rgba(240,238,234,.42)}
+/* ── Legal pages ─────────────────────────────────────────────────────────── */
+.legal-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+.legal-section{padding:22px 28px;border-bottom:1px solid rgba(255,255,255,.04)}
+.legal-section:last-child{border-bottom:none}
+.legal-section-title{font-size:13px;font-weight:700;color:var(--white);letter-spacing:-.015em;margin-bottom:10px}
+.legal-section p{font-size:13px;color:rgba(240,238,234,.45);line-height:1.8}
+.legal-section p strong{color:rgba(240,238,234,.7);font-weight:600}
 /* Edit-val resize handle */
 textarea.edit-val{min-height:38px}
 .audit-feature-card{background:rgba(167,139,250,.05);border:1px solid rgba(167,139,250,.12);border-radius:var(--radius-sm);padding:12px 14px}
@@ -944,10 +947,17 @@ textarea.edit-val{min-height:38px}
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
         How to use
       </div>
-      <div class="sb-legal">
-        <a href="https://snagai.netlify.app/terms.html" target="_blank">Terms of Service</a>
-        <a href="https://snagai.netlify.app/privacy.html" target="_blank">Privacy Policy</a>
-        <a href="https://snagai.netlify.app/refund.html" target="_blank">Refund Policy</a>
+      <div class="sb-item" data-section="terms">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        Terms of Service
+      </div>
+      <div class="sb-item" data-section="privacy">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Privacy Policy
+      </div>
+      <div class="sb-item" data-section="refund">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.51"/></svg>
+        Refund Policy
       </div>
     </nav>
 
@@ -1653,6 +1663,240 @@ textarea.edit-val{min-height:38px}
       </div>
 
     </div><!-- /howto -->
+
+    <!-- ══ TERMS OF SERVICE ══ -->
+    <div class="section" id="section-terms">
+      <div class="sec-label">Legal</div>
+      <div class="section-title-solo">Terms of Service</div>
+      <div class="section-sub-solo">Last updated June 2025 &nbsp;·&nbsp; Snag AI Chrome Extension</div>
+
+      <div class="legal-card">
+        <div class="legal-section">
+          <div class="legal-section-title">1. Acceptance of Terms</div>
+          <p>By installing, accessing, or using the Snag AI Chrome Extension and associated services (collectively, the "Service"), you confirm that you are at least 18 years old, have the legal authority to enter into this agreement, and agree to be bound by these Terms of Service and our Privacy Policy. If you do not agree with any part of these terms, you must not use the Service. These terms apply to all users, including free-tier users and paid subscribers.</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">2. Description of Service</div>
+          <p>Snag AI is a browser extension that assists freelancers on the Upwork platform by providing AI-powered tools to improve their job application process. Specifically, the Service enables you to:</p>
+          <p style="margin-top:8px">— Sync publicly available information from your Upwork profile page (when you explicitly initiate the sync action) including your name, professional title, job success score, hourly rate, tier badge, earnings history, skills, bio, employment history, languages, education, and portfolio items.</p>
+          <p style="margin-top:8px">— Read live job listing data from Upwork job pages you visit, including publicly visible statistics such as proposal counts, client hiring rates, client ratings, and job requirements, to calculate a win probability and profile match score.</p>
+          <p style="margin-top:8px">— Generate personalised AI cover letters and proposal drafts using the Anthropic Claude API, based on the combination of your synced profile data and the job listing you are viewing.</p>
+          <p style="margin-top:8px">— Receive AI-generated writing tips, job signal analysis, and screening question answers displayed within the extension panel.</p>
+          <p style="margin-top:8px">The Service is a drafting and analysis tool only. It does not submit applications, send messages, interact with Upwork on your behalf, or perform any automated actions. All actions on the Upwork platform are taken solely by you. You are entirely responsible for reviewing, editing, and deciding whether to use any AI-generated content before submitting it.</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">3. User Accounts & Eligibility</div>
+          <p>To access paid features, you must provide a valid email address and maintain an active subscription processed through Paddle. You are responsible for maintaining the confidentiality of your account credentials and for all activity that occurs under your account. You must notify us immediately at support@snagai.app if you suspect any unauthorised use of your account.</p>
+          <p style="margin-top:10px">You represent that your use of Snag AI does not violate any applicable laws or regulations in your jurisdiction, including but not limited to employment laws, data protection laws, and any applicable platform terms. You must have an active Upwork account in good standing. Snag AI is not affiliated with, endorsed by, or officially connected to Upwork in any way.</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">4. Subscriptions & Payment</div>
+          <p>Snag AI offers free and paid subscription plans. All payments for paid plans are processed by Paddle, who acts as the Merchant of Record for all transactions. By subscribing to a paid plan, you authorise Paddle to charge the applicable fees to your chosen payment method on a recurring basis at the start of each billing period.</p>
+          <p style="margin-top:10px">Subscription fees are charged in advance. Your plan's proposal quota resets on your billing anniversary date, not the first of each month. Unused proposals do not roll over to the next billing period. We reserve the right to change pricing with reasonable notice — price changes will be communicated via the extension or email at least 14 days in advance and will apply to your next renewal.</p>
+          <p style="margin-top:10px">Upgrades take effect immediately, with charges prorated for the remainder of the billing period. Downgrades take effect at the next renewal. You may cancel your subscription at any time — your access continues until the end of the current paid period and you will not be charged again unless you resubscribe.</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">5. Acceptable Use & Prohibited Activities</div>
+          <p>You agree to use the Service only for its intended purpose of assisting with legitimate freelance job applications. You must not use Snag AI to:</p>
+          <p style="margin-top:8px">— Submit proposals that misrepresent your qualifications, experience, skills, or identity in any material way.</p>
+          <p style="margin-top:8px">— Generate or submit content that is fraudulent, defamatory, harassing, discriminatory, or violates any applicable law.</p>
+          <p style="margin-top:8px">— Attempt to reverse engineer, decompile, disassemble, or extract the source code of the extension or its backend services.</p>
+          <p style="margin-top:8px">— Circumvent, disable, or interfere with subscription limits, security features, or access controls.</p>
+          <p style="margin-top:8px">— Share, sell, or transfer your account or subscription to another person.</p>
+          <p style="margin-top:8px">— Use automated scripts, bots, or any other means to access or interact with the Service beyond normal human use.</p>
+          <p style="margin-top:8px">— Violate the Terms of Service, Community Guidelines, or any other policies of Upwork or any other platform where you use content generated by Snag AI.</p>
+          <p style="margin-top:10px">We reserve the right to determine, in our sole discretion, what constitutes a violation of this acceptable use policy. Violations may result in immediate suspension or termination of your access without refund.</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">6. AI-Generated Content</div>
+          <p>The cover letters, proposals, and other text generated by Snag AI are produced by a large language model (Anthropic's Claude) and are intended as drafts and starting points only. You acknowledge that AI-generated content may contain inaccuracies, may not reflect your actual experience or skills, and should always be reviewed and edited before use. Snag AI makes no representations about the accuracy, completeness, or suitability of generated content for any particular job application.</p>
+          <p style="margin-top:10px">You retain full ownership of any content you create by editing or building upon AI-generated drafts. Snag AI does not claim ownership of proposal content generated through the Service.</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">7. Intellectual Property</div>
+          <p>The Snag AI extension, including its code, design, interface, algorithms, branding, and documentation, is the exclusive property of Snag AI and is protected by copyright, trademark, trade secret, and other intellectual property laws. Nothing in these Terms grants you any right, title, or interest in the Service except for the limited licence to use it as described herein.</p>
+          <p style="margin-top:10px">You are granted a personal, non-exclusive, non-transferable, revocable licence to use the extension solely for your own freelancing activities in accordance with these Terms. This licence terminates immediately upon cancellation or termination of your account.</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">8. Service Availability & Modifications</div>
+          <p>We strive to keep Snag AI available at all times but do not guarantee uninterrupted access. The Service may be temporarily unavailable due to maintenance, updates, technical issues, or circumstances beyond our control including third-party API outages (e.g., the Anthropic Claude API). We are not liable for any losses caused by Service unavailability.</p>
+          <p style="margin-top:10px">We reserve the right to modify, update, or discontinue features of the Service at any time with or without notice. Material changes that significantly reduce core functionality will be communicated with reasonable notice. Continued use of the Service after modifications constitutes your acceptance of the changes.</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">9. Disclaimer of Warranties</div>
+          <p>The Service is provided "as is" and "as available" without any warranties of any kind, express or implied, including but not limited to warranties of merchantability, fitness for a particular purpose, non-infringement, or accuracy. We do not warrant that the Service will be error-free, that defects will be corrected, or that the Service or the servers that make it available are free of viruses or other harmful components. Use of the Service is at your own risk.</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">10. Limitation of Liability</div>
+          <p>To the fullest extent permitted by applicable law, Snag AI, its owners, employees, and agents shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including but not limited to loss of profits, loss of data, loss of business opportunities, missed job applications, account restrictions imposed by Upwork, or any other losses arising from your use of or inability to use the Service, even if we have been advised of the possibility of such damages.</p>
+          <p style="margin-top:10px">Our total cumulative liability to you for any claims arising under or related to these Terms shall not exceed the total amount you paid to Snag AI in the 90 days immediately preceding the event giving rise to the claim.</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">11. Indemnification</div>
+          <p>You agree to indemnify, defend, and hold harmless Snag AI and its owners, officers, employees, and agents from and against any and all claims, damages, losses, costs, and expenses (including reasonable legal fees) arising from: (a) your use of the Service; (b) your violation of these Terms; (c) your violation of any third-party rights, including Upwork's Terms of Service; or (d) any content you submit, transmit, or make available through the Service.</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">12. Governing Law & Disputes</div>
+          <p>These Terms are governed by and construed in accordance with applicable law. Any disputes arising from or relating to these Terms or the Service shall first be attempted to be resolved through good-faith negotiation. If a dispute cannot be resolved informally, it shall be submitted to binding arbitration or the courts of competent jurisdiction in the territory where Snag AI is registered.</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">13. Contact</div>
+          <p>For any questions regarding these Terms of Service, please contact us at <span style="color:var(--indigo)">support@snagai.app</span>. We aim to respond to all enquiries within 2 business days.</p>
+        </div>
+      </div>
+    </div><!-- /terms -->
+
+    <!-- ══ PRIVACY POLICY ══ -->
+    <div class="section" id="section-privacy">
+      <div class="sec-label">Legal</div>
+      <div class="section-title-solo">Privacy Policy</div>
+      <div class="section-sub-solo">Last updated June 2025 &nbsp;·&nbsp; Snag AI Chrome Extension</div>
+
+      <div class="legal-card">
+        <div class="legal-section">
+          <div class="legal-section-title">1. Introduction & Data Controller</div>
+          <p>This Privacy Policy explains how Snag AI ("we", "us", "our") collects, uses, stores, and protects information when you use the Snag AI Chrome Extension and associated backend services. We are committed to protecting your privacy and handling your data with transparency and care.</p>
+          <p style="margin-top:10px">By using Snag AI, you acknowledge that you have read and understood this Privacy Policy. If you have questions or concerns, you may contact us at <span style="color:var(--indigo)">support@snagai.app</span> at any time.</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">2. Data We Collect and How</div>
+          <p><strong>Profile data (user-initiated sync)</strong> — When you click the "Sync Profile" button on your Upwork profile page, the extension reads publicly visible information from that page including: your display name, professional title, Job Success Score, hourly rate, Upwork tier badge, total earnings, total jobs completed, total hours worked, skills list, professional bio/overview, employment history, education, spoken languages, profile photo URL, availability status, and portfolio project titles, descriptions, skills, and attached links. This data is stored exclusively in your browser's local Chrome storage on your device. It is transmitted to our backend server only when you generate a proposal, and only as part of that request.</p>
+          <p style="margin-top:10px"><strong>Account email address</strong> — When you add your email in Settings, it is stored in Chrome's sync storage (which Chrome may synchronise across your devices if you are signed into Chrome). Your email is sent to our backend to verify your subscription plan status and to track your proposal usage count against your plan limit. It is not used for unsolicited marketing communications.</p>
+          <p style="margin-top:10px"><strong>Job listing data</strong> — When you visit an Upwork job page, the extension automatically reads publicly available job data from the page, including job title, description, budget, posted time, client statistics (hire rate, rating, spend, payment verification status), and current proposal/interview counts. This data is processed locally in your browser and is transmitted to our backend only when you click "Write Proposal" to generate a cover letter for that specific job.</p>
+          <p style="margin-top:10px"><strong>Proposal usage count</strong> — We record the number of proposals you generate in each billing period to enforce your plan's monthly limit. This count is stored on our servers associated with your email address. We do not store the content of generated proposals on our servers.</p>
+          <p style="margin-top:10px"><strong>Device ID</strong> — A random identifier is generated and stored locally in your browser to prevent abuse of free trial limits on a single device. This ID is not linked to your identity and is not transmitted to our servers.</p>
+          <p style="margin-top:10px"><strong>Technical usage data</strong> — We may log basic server-side request metadata (timestamps, error codes) for the purpose of debugging and maintaining service stability. We do not log the content of proposals or profile data beyond what is necessary to process requests.</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">3. Legal Basis for Processing (GDPR)</div>
+          <p>For users in the European Economic Area, United Kingdom, or Switzerland, we process your personal data on the following legal bases:</p>
+          <p style="margin-top:8px">— <strong>Contract performance</strong> — Processing your email and usage data is necessary to provide you with the subscription service you have purchased, verify your plan, and enforce usage limits.</p>
+          <p style="margin-top:8px">— <strong>Legitimate interests</strong> — We process technical metadata to maintain the security and stability of the Service. We do not override your fundamental rights in doing so.</p>
+          <p style="margin-top:8px">— <strong>Consent</strong> — Profile data is processed based on your explicit action of clicking "Sync Profile". You can withdraw this by clearing the extension's storage at any time.</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">4. How We Use Your Data</div>
+          <p>All data collected is used solely for the following purposes:</p>
+          <p style="margin-top:8px">— <strong>Proposal generation</strong> — Your profile data and the job listing data are combined and sent to the Anthropic Claude API to generate a personalised cover letter draft.</p>
+          <p style="margin-top:8px">— <strong>Job analysis</strong> — Job listing statistics are processed locally and on our server to produce win probability scores and profile match scores shown in the extension panel.</p>
+          <p style="margin-top:8px">— <strong>Plan verification</strong> — Your email is used to look up your subscription status via Paddle's billing system to determine which features and proposal limits apply to you.</p>
+          <p style="margin-top:8px">— <strong>Usage enforcement</strong> — We track how many proposals you have generated in the current billing period to enforce the limits of your plan.</p>
+          <p style="margin-top:10px">We do not sell your data to any third party. We do not use your data for advertising purposes. We do not share your Upwork profile data or job data with any party other than Anthropic (for proposal generation) and our hosting infrastructure providers.</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">5. Third-Party Services & Data Sharing</div>
+          <p><strong>Anthropic (Claude API)</strong> — When you generate a proposal, your profile data and job description are transmitted to Anthropic's API to produce the AI response. Anthropic processes this data in accordance with their API usage policies. We have configured our API settings to opt out of data use for model training. Anthropic's privacy policy is available at anthropic.com/privacy.</p>
+          <p style="margin-top:10px"><strong>Paddle</strong> — All subscription payments are processed by Paddle, who acts as the Merchant of Record. Paddle collects and processes billing information, payment card details, and transaction records directly. We do not receive or store your payment card information. Paddle's privacy policy governs the handling of payment data and is available at paddle.com/legal/privacy.</p>
+          <p style="margin-top:10px"><strong>Supabase</strong> — User account records (email address, subscription plan, usage count, billing status) are stored in a Supabase PostgreSQL database. Data is hosted on servers in the EU region with encryption at rest and in transit.</p>
+          <p style="margin-top:10px"><strong>Render.com</strong> — Our backend API server is hosted on Render. Request processing occurs on Render's infrastructure. Render's infrastructure is SOC 2 compliant.</p>
+          <p style="margin-top:10px">We do not share your data with any other third parties except as required by law (e.g., in response to a valid court order or legal process).</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">6. Local Storage & Cookies</div>
+          <p>Snag AI uses Chrome's built-in storage APIs exclusively — specifically <code style="font-family:monospace;font-size:12px;background:rgba(255,255,255,.06);padding:1px 6px;border-radius:4px">chrome.storage.local</code> and <code style="font-family:monospace;font-size:12px;background:rgba(255,255,255,.06);padding:1px 6px;border-radius:4px">chrome.storage.sync</code>. We do not set browser cookies. All profile data, portfolio items, settings, and preferences are stored locally in your browser and are not accessible to websites or other extensions.</p>
+          <p style="margin-top:10px"><code style="font-family:monospace;font-size:12px;background:rgba(255,255,255,.06);padding:1px 6px;border-radius:4px">chrome.storage.local</code> data stays on your device only. <code style="font-family:monospace;font-size:12px;background:rgba(255,255,255,.06);padding:1px 6px;border-radius:4px">chrome.storage.sync</code> data (your email address and basic settings) may be synchronised by Chrome to other devices where you are signed in, subject to Google's policies for Chrome sync data.</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">7. Data Retention</div>
+          <p><strong>Local data</strong> — Profile data, portfolio, settings, and filters stored in Chrome's local storage are retained until you clear the extension's storage or uninstall it.</p>
+          <p style="margin-top:10px"><strong>Server-side data</strong> — Account records (email, plan status, usage count) are retained for as long as your account is active and for a reasonable period thereafter for legal and accounting purposes. If you request deletion, we will remove your personal data from our servers within 30 days, except where retention is required by law.</p>
+          <p style="margin-top:10px"><strong>Proposal request logs</strong> — Basic server logs (timestamps, response codes) may be retained for up to 90 days for debugging and security purposes. Proposal content is not stored on our servers.</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">8. International Data Transfers</div>
+          <p>Snag AI operates globally. When you use the Service, your data may be processed in countries outside your own, including the United States and EU member states. We ensure that any international data transfers are carried out with appropriate safeguards in place, including where applicable the use of standard contractual clauses or equivalent mechanisms recognised by applicable data protection law.</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">9. Your Rights</div>
+          <p>Depending on your location, you may have the following rights regarding your personal data:</p>
+          <p style="margin-top:8px">— <strong>Right of access</strong> — You may request a copy of the personal data we hold about you.</p>
+          <p style="margin-top:8px">— <strong>Right to rectification</strong> — You may request correction of inaccurate or incomplete data.</p>
+          <p style="margin-top:8px">— <strong>Right to erasure</strong> — You may request deletion of your personal data, subject to certain exceptions.</p>
+          <p style="margin-top:8px">— <strong>Right to restrict processing</strong> — You may request that we limit how we use your data in certain circumstances.</p>
+          <p style="margin-top:8px">— <strong>Right to data portability</strong> — You may request your data in a structured, machine-readable format.</p>
+          <p style="margin-top:8px">— <strong>Right to object</strong> — You may object to processing based on legitimate interests.</p>
+          <p style="margin-top:10px">To exercise any of these rights, contact us at <span style="color:var(--indigo)">support@snagai.app</span>. We will respond within 30 days. You also have the right to lodge a complaint with the data protection authority in your jurisdiction if you believe your data has been processed unlawfully.</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">10. Children's Privacy</div>
+          <p>Snag AI is not directed at individuals under the age of 18. We do not knowingly collect personal data from anyone under 18. If we become aware that we have collected data from a person under 18 without appropriate consent, we will take immediate steps to delete that data.</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">11. Changes to This Policy</div>
+          <p>We may update this Privacy Policy from time to time to reflect changes in our practices, technology, or legal requirements. When we make material changes, we will update the "Last updated" date at the top of this page and, where appropriate, notify you through the extension interface or by email. We encourage you to review this policy periodically.</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">12. Contact Us</div>
+          <p>If you have any questions, concerns, or requests regarding this Privacy Policy or how we handle your data, please contact us at <span style="color:var(--indigo)">support@snagai.app</span>. We take all privacy enquiries seriously and aim to respond within 2 business days.</p>
+        </div>
+      </div>
+    </div><!-- /privacy -->
+
+    <!-- ══ REFUND POLICY ══ -->
+    <div class="section" id="section-refund">
+      <div class="sec-label">Legal</div>
+      <div class="section-title-solo">Refund Policy</div>
+      <div class="section-sub-solo">Last updated June 2025 &nbsp;·&nbsp; Snag AI Chrome Extension</div>
+
+      <div class="legal-card">
+        <div class="legal-section">
+          <div class="legal-section-title">Merchant of Record</div>
+          <p>All payments for Snag AI subscriptions are processed by <strong>Paddle</strong>, who acts as the authorised Merchant of Record and reseller for all transactions. This means Paddle is the seller of record for billing and tax purposes, and all charges appear under Paddle's name on your payment statements. By purchasing a Snag AI subscription, you are entering into a purchase agreement with Paddle, subject to Paddle's terms and this Refund Policy.</p>
+          <p style="margin-top:10px">Refunds are issued by Paddle back to your original payment method. To initiate a refund, you may contact Snag AI at <span style="color:var(--indigo)">support@snagai.app</span> or access Paddle's buyer support directly at <span style="color:var(--indigo)">paddle.net/contact</span>.</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">Statutory Rights — EU, EEA, UK & Switzerland</div>
+          <p>If you are located in the European Union, European Economic Area, United Kingdom, or Switzerland, you have a statutory right to withdraw from your purchase within <strong>14 days</strong> of the date of subscription without providing any reason. This is your legal right under the EU Consumer Rights Directive and equivalent UK consumer law.</p>
+          <p style="margin-top:10px"><strong>Important — digital content exception:</strong> The 14-day withdrawal right does not apply if you have already begun using the digital service — specifically, if you have generated one or more AI proposals using Snag AI before requesting the withdrawal. By clicking "Write Proposal" and using the Service, you expressly consent to the immediate performance of the digital service and acknowledge that you thereby waive your right of withdrawal for that session's usage.</p>
+          <p style="margin-top:10px">If you have not yet generated any proposals, your 14-day withdrawal right remains fully intact. Contact us at <span style="color:var(--indigo)">support@snagai.app</span> within 14 days of your subscription start to exercise this right.</p>
+          <p style="margin-top:10px"><strong>Annual subscriptions (UK users):</strong> If you are a UK resident on an annual plan, a fresh 14-day withdrawal window opens at each auto-renewal date, in accordance with UK consumer law requirements.</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">Statutory Rights — Other Regions</div>
+          <p>Customers in additional regions have the following statutory cancellation rights regardless of usage:</p>
+          <p style="margin-top:8px">— <strong>Turkey & Israel</strong> — 14-day cancellation window from date of purchase.</p>
+          <p style="margin-top:8px">— <strong>South Korea, Brazil, Canada, China</strong> — 7-day cancellation window from date of purchase.</p>
+          <p style="margin-top:8px">— <strong>Singapore</strong> — 5-day cancellation window from date of purchase.</p>
+          <p style="margin-top:10px">These statutory rights exist in addition to any rights granted under our voluntary refund policy below. To exercise these rights, contact us before the applicable deadline at <span style="color:var(--indigo)">support@snagai.app</span>.</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">Voluntary Refund Policy</div>
+          <p>In addition to your statutory rights, we offer the following voluntary refund terms for all customers worldwide:</p>
+          <p style="margin-top:10px"><strong>New subscriber guarantee</strong> — If you subscribed within the last 7 days and have generated fewer than 5 proposals, you may request a full refund without explanation. We will process your refund within 5 business days without any questions.</p>
+          <p style="margin-top:10px"><strong>Technical failure</strong> — If the Service was materially unavailable or broken due to issues on our end for a significant portion of your billing period (48+ hours of continuous unavailability), you may request a pro-rated refund for the affected period. We will review each case fairly and respond within 3 business days.</p>
+          <p style="margin-top:10px"><strong>Billing errors</strong> — If you were charged incorrectly — for example, charged at the wrong rate, charged twice, or charged after a confirmed cancellation — you are entitled to a full refund of the incorrect amount. Contact us immediately at <span style="color:var(--indigo)">support@snagai.app</span> and we will resolve the error within 5 business days.</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">Non-Refundable Circumstances</div>
+          <p>Unless required by applicable statutory law, refunds will not be issued in the following circumstances:</p>
+          <p style="margin-top:8px">— Change of mind after actively using the Service (generating proposals).</p>
+          <p style="margin-top:8px">— Dissatisfaction with AI output quality, writing style, or proposal effectiveness.</p>
+          <p style="margin-top:8px">— Failure to cancel before an auto-renewal date after the statutory withdrawal period has expired.</p>
+          <p style="margin-top:8px">— Account suspension or termination due to violation of our Terms of Service.</p>
+          <p style="margin-top:8px">— Proposal quota already consumed during the billing period.</p>
+          <p style="margin-top:8px">— Requests made more than 30 days after the charge date (outside statutory periods).</p>
+          <p style="margin-top:10px">We reserve the right to refuse refund requests that appear to abuse this policy, such as repeated refund requests across multiple subscription periods.</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">Cancellations</div>
+          <p>You may cancel your Snag AI subscription at any time from the Subscription page in the extension by clicking "Manage Billing" and following the prompts in the Paddle customer portal. Cancellation stops future automatic charges but does not immediately terminate your access — you retain full access to your plan's features until the end of your current paid billing period. No refund is issued for the unused portion of the current period upon cancellation, except where required by law.</p>
+          <p style="margin-top:10px">After cancellation, your account automatically reverts to the free plan (limited to 2 lifetime proposals). Your synced profile data remains stored locally in your browser and is not deleted by cancellation.</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">How to Request a Refund</div>
+          <p>To request a refund, email us at <span style="color:var(--indigo)">support@snagai.app</span> with the following information:</p>
+          <p style="margin-top:8px">— The email address associated with your Snag AI account.</p>
+          <p style="margin-top:8px">— The approximate date of the charge you are disputing.</p>
+          <p style="margin-top:8px">— A brief description of the reason for your refund request.</p>
+          <p style="margin-top:10px">We aim to respond to all refund requests within 1–2 business days. Once approved, refunds are processed by Paddle and returned to your original payment method. Processing times vary by bank and payment method — typically 5–10 business days, but may take up to 15 business days in some cases.</p>
+          <p style="margin-top:10px">You may also contact Paddle's buyer support directly at <span style="color:var(--indigo)">paddle.net/contact</span> if you have questions about a charge or wish to initiate a refund request directly with the Merchant of Record.</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">Changes to This Policy</div>
+          <p>We may update this Refund Policy from time to time. Any changes will be effective from the date of publication. Material changes that affect your refund rights will be communicated via the extension or by email with reasonable notice before taking effect.</p>
+        </div>
+      </div>
+    </div><!-- /refund -->
 
   </div><!-- /main -->
 </div>
