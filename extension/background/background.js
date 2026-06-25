@@ -151,24 +151,48 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       target: { tabId: sender.tab.id },
       world: 'MAIN',
       func: () => {
+        // 1. Vuex store — profileViewer holds the VIEWED freelancer's data
         try {
           const store = document.getElementById('__nuxt').__vue__.$store;
-          const fp = store?.state?.profileViewer?.profile;
-          if (fp?.profilePhoto?.publicUrl) return fp.profilePhoto.publicUrl;
-          if (fp?.profilePhoto?.url)       return fp.profilePhoto.url;
+          const pv = store?.state?.profileViewer;
+          const url =
+            pv?.profile?.profilePhoto?.publicUrl ||
+            pv?.profile?.profilePhoto?.url ||
+            pv?.model?.portrait?.publicUrl ||
+            pv?.freelancerProfile?.profilePhoto?.publicUrl ||
+            pv?.profile?.portrait?.publicUrl;
+          if (url && url.startsWith('https://')) return url;
         } catch(e) {}
-        const selectors = [
-          'img.air3-avatar-photo', 'img[class*="avatar"]', 'img[class*="portrait"]',
-          'img[class*="photo"]', '[data-test="portrait"] img', '.portrait img',
-        ];
-        for (const sel of selectors) {
-          try {
-            const el = document.querySelector(sel);
-            if (el?.src?.startsWith('https://') && !/placeholder|default|blank/i.test(el.src)) return el.src;
-          } catch(e) {}
-        }
-        const og = document.querySelector('meta[property="og:image"]');
-        return og?.content?.startsWith('https://') ? og.content : '';
+
+        // 2. OG image — Upwork sets this to the viewed profile's photo
+        try {
+          const og = document.querySelector('meta[property="og:image"]');
+          if (og?.content?.startsWith('https://') && !/upwork-logo|placeholder/i.test(og.content)) {
+            return og.content;
+          }
+        } catch(e) {}
+
+        // 3. Target the profile content section specifically — skip nav header
+        try {
+          const sections = [
+            document.querySelector('[data-test="portrait"]'),
+            document.querySelector('[data-test="pib-portrait"]'),
+            document.querySelector('.fe-profile-header'),
+            document.querySelector('.pib-top'),
+            document.querySelector('main'),
+          ].filter(Boolean);
+          for (const section of sections) {
+            const imgs = section.querySelectorAll('img[src]');
+            for (const img of imgs) {
+              if (img.src.startsWith('https://') &&
+                  !/placeholder|default|blank|logo|icon/i.test(img.src) &&
+                  img.naturalWidth > 40) {
+                return img.src;
+              }
+            }
+          }
+        } catch(e) {}
+        return '';
       },
     }).then(results => sendResponse(results?.[0]?.result || ''))
       .catch(() => sendResponse(''));

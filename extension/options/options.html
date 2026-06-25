@@ -88,12 +88,12 @@ a{text-decoration:none;color:inherit}
 
 /* ── No profiles empty state ── */
 .empty-state{text-align:center;padding:60px 32px;background:var(--bg2);border:1px solid var(--border);border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,.2)}
-.empty-icon{width:64px;height:64px;margin:0 auto 20px;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:18px}
+.empty-icon{width:64px;height:64px;margin:0 auto 24px;display:flex;align-items:center;justify-content:center;background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.2);border-radius:50%}
 .empty-title{font-size:17px;font-weight:700;margin-bottom:10px;letter-spacing:-.025em;color:var(--white)}
 .empty-desc{font-size:13px;color:var(--white3);line-height:1.75;margin-bottom:24px;max-width:340px;margin-left:auto;margin-right:auto}
 .empty-url-form{display:flex;gap:8px;max-width:420px;margin:0 auto 14px}
 .empty-url-input{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:10px 14px;font-size:12px;color:var(--white);font-family:inherit;outline:none;transition:border-color .15s,box-shadow .15s}
-.empty-url-input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,168,76,.12)}
+.empty-url-input:focus{border-color:rgba(99,102,241,.5);box-shadow:0 0 0 3px rgba(99,102,241,.08)}
 .empty-url-input::placeholder{color:var(--white4)}
 .empty-url-hint{font-size:11px;color:var(--white4);line-height:1.6;max-width:360px;margin:0 auto}
 .empty-url-hint strong{color:var(--white3)}
@@ -788,15 +788,15 @@ textarea.edit-val{min-height:38px}
 
 /* ── Portfolio item row (new design) ───────────────────────────────────────── */
 .pi-list{display:flex;flex-direction:column}
-.port-v2-card:not(.editing){display:flex;align-items:center;gap:10px;padding:13px 0;border-bottom:1px solid rgba(255,255,255,.04);background:transparent;border-top:none;border-left:none;border-right:none;border-radius:0;overflow:visible}
+.port-v2-card:not(.editing){display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:1px solid rgba(255,255,255,.045);background:transparent;border-top:none;border-left:none;border-right:none;border-radius:0;overflow:visible;transition:background .1s;cursor:default}
 .port-v2-card:not(.editing):last-child{border-bottom:none}
 .port-v2-card:not(.editing)::before{display:none!important}
-.pi-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
-.pi-dot-g{background:#34d399;box-shadow:0 0 0 2px rgba(52,211,153,.12)}
-.pi-dot-a{background:rgba(250,204,21,.6);box-shadow:0 0 0 2px rgba(250,204,21,.08)}
-.pi-name{flex:1;font-size:11.5px;font-weight:500;color:rgba(240,238,234,.65);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pi-linked-ok{width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:rgba(52,211,153,.8);flex-shrink:0;background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.2)}
-.pi-missing-url{font-size:10.5px;color:rgba(250,204,21,.38);flex-shrink:0;font-style:italic}
+.pi-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.pi-dot-g{background:#34d399;box-shadow:0 0 0 3px rgba(52,211,153,.14)}
+.pi-dot-a{background:rgba(250,204,21,.7);box-shadow:0 0 0 3px rgba(250,204,21,.1)}
+.pi-name{flex:1;font-size:12.5px;font-weight:500;color:rgba(240,238,234,.82);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.01em}
+.pi-linked-ok{width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:rgba(52,211,153,.9);flex-shrink:0;background:rgba(52,211,153,.12);border:1px solid rgba(52,211,153,.25)}
+.pi-missing-url{font-size:10.5px;font-weight:600;color:rgba(250,204,21,.5);flex-shrink:0;background:rgba(250,204,21,.06);border:1px solid rgba(250,204,21,.15);border-radius:20px;padding:2px 8px;white-space:nowrap}
 
 /* ── Filter segmented control ──────────────────────────────────────────────── */
 .jf-seg{background:transparent;border-radius:0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
@@ -993,10 +993,10 @@ textarea.edit-val{min-height:38px}
       <div id="no-profiles-msg" style="display:none">
         <div class="empty-state">
           <div class="empty-icon">
-            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="rgba(240,238,234,.2)" stroke-width="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(139,140,240,.7)" stroke-width="1.5" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
           </div>
           <div class="empty-title">Add your Upwork profile</div>
-          <div class="empty-desc">Paste your Upwork profile URL below. After saving, open your profile and click <strong style="color:rgba(240,238,234,.75)">"Sync to Snag AI"</strong> to read your skills, tier, and data.</div>
+          <div class="empty-desc">Paste your Upwork profile URL. After saving, open your profile page and click the <strong style="color:rgba(240,238,255,.7)">"Sync Profile"</strong> pill that appears in the bottom-right corner.</div>
           <div class="empty-url-form">
             <input
               id="empty-profile-url-inp"
@@ -1006,9 +1006,9 @@ textarea.edit-val{min-height:38px}
               autocomplete="off"
               spellcheck="false"
             />
-            <button class="btn-primary" id="empty-save-profile-btn">Save &amp; Sync →</button>
+            <button class="btn-indigo" id="empty-save-profile-btn">Save &amp; Sync →</button>
           </div>
-          <div class="empty-url-hint">After saving, click <strong>Open profile</strong> then click <strong>Sync to Snag AI</strong> on the Upwork page — takes about 5 seconds.</div>
+          <div class="empty-url-hint">After saving, click <strong>Open &amp; Sync</strong> in the profile card, then click <strong>Sync Profile</strong> on the Upwork page — takes about 5 seconds.</div>
         </div>
       </div>
     </div><!-- /profiles -->

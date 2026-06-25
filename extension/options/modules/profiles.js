@@ -212,7 +212,7 @@ function renderJobFilters(body, profile) {
     return `<div class="jf-row2">
       <span class="jf-row2-name">${label}</span>
       <div class="jf-row2-right">
-        <div class="jf-tog-sm ${val ? 'on' : 'off'}" id="jv-tog-${id}" title="${desc}" onclick="this.classList.toggle('on');this.classList.toggle('off');var cb=document.getElementById('jt-${id}');if(cb)cb.checked=this.classList.contains('on')">
+        <div class="jf-tog-sm ${val ? 'on' : 'off'}" id="jv-tog-${id}" title="${desc}">
           <div class="jf-tok"></div>
         </div>
         <input type="checkbox" id="jt-${id}" ${val ? 'checked' : ''} style="display:none">
@@ -305,10 +305,30 @@ function renderJobFilters(body, profile) {
     };
   }
 
-  function save() {
+  function save(showToast) {
+    if (!profile?.id) { console.warn('[SnagAI] save(): profile.id missing, cannot save filters'); return; }
     const f = readFilters();
-    chrome.storage.local.get(['profileFull_' + profile.id], d => {
-      chrome.storage.local.set({ ['profileFull_' + profile.id]: { ...(d['profileFull_' + profile.id] || {}), jobFilters: f } });
+    profile.jobFilters = f; // update in-memory so switchTo() re-renders with correct values
+    const key = 'profileFull_' + profile.id;
+    chrome.storage.local.get([key], d => {
+      const updated = { ...(d[key] || {}), jobFilters: f };
+      chrome.storage.local.set({ [key]: updated }, () => {
+        if (chrome.runtime.lastError) {
+          console.error('[SnagAI] Filter save error:', chrome.runtime.lastError.message);
+        } else if (showToast) {
+          let t = document.getElementById('snagai-filter-toast');
+          if (!t) {
+            t = document.createElement('div');
+            t.id = 'snagai-filter-toast';
+            t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e1d32;border:1px solid rgba(99,102,241,.4);color:rgba(240,238,255,.85);font-size:12.5px;font-weight:600;padding:10px 20px;border-radius:999px;z-index:99999;pointer-events:none;opacity:0;transition:opacity .2s;font-family:-apple-system,BlinkMacSystemFont,sans-serif;display:flex;align-items:center;gap:7px';
+            t.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg> Filters saved';
+            document.body.appendChild(t);
+          }
+          t.style.opacity = '1';
+          clearTimeout(t._timer);
+          t._timer = setTimeout(() => { t.style.opacity = '0'; }, 2000);
+        }
+      });
     });
   }
 
@@ -346,11 +366,18 @@ function renderJobFilters(body, profile) {
     el.addEventListener('change', save);
   });
 
-  // Events — checkboxes
-  body.querySelectorAll('[id^="jt-"]').forEach(el => {
-    el.addEventListener('change', () => {
-      body.querySelectorAll('.jf-seg-opt').forEach(b => b.classList.remove('jf-active'));
-      save();
+  // Events — visual toggles → update checkbox + save
+  body.querySelectorAll('.jf-tog-sm').forEach(togEl => {
+    togEl.addEventListener('click', () => {
+      togEl.classList.toggle('on');
+      togEl.classList.toggle('off');
+      const id = togEl.id.replace('jv-tog-', '');
+      const cb = body.querySelector('#jt-' + id);
+      if (cb) {
+        cb.checked = togEl.classList.contains('on');
+        body.querySelectorAll('.jf-seg-opt').forEach(b => b.classList.remove('jf-active'));
+        save();
+      }
     });
   });
 
@@ -366,22 +393,7 @@ function renderJobFilters(body, profile) {
   // Reset
   body.querySelector('#jf-reset')?.addEventListener('click', () => applyPreset('balanced'));
 
-  // Apply filters — save + toast
-  body.querySelector('#jf-save')?.addEventListener('click', () => {
-    save();
-    let toast = document.querySelector('.jf-toast');
-    if (!toast) {
-      toast = document.createElement('div');
-      toast.className = 'jf-toast';
-      toast.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg> Filters saved';
-      document.body.appendChild(toast);
-    }
-    requestAnimationFrame(() => toast.classList.add('show'));
-    clearTimeout(toast._t);
-    toast._t = setTimeout(() => {
-      toast.classList.remove('show');
-    }, 2000);
-  });
+  body.querySelector('#jf-save')?.addEventListener('click', () => save(true));
 
   // Highlight active preset on load
   ['conservative','balanced','aggressive'].forEach(name => {
@@ -756,18 +768,66 @@ export async function renderProfilesPage() {
     selGrid.appendChild(card);
   });
 
+  // Add profile card + inline input panel
+  const addPanel = document.createElement('div');
+  addPanel.style.cssText = 'display:none;margin-bottom:14px';
+
   if (mergedProfiles.length < limit) {
     const addCard = document.createElement('div');
     addCard.className = 'pr-sel-card pr-add';
     addCard.innerHTML = '<span class="pr-add-icon" style="font-size:22px;font-weight:300;line-height:1">+</span><span class="pr-add-lbl">Add profile</span>';
-    addCard.addEventListener('click', () => document.getElementById('add-profile-btn')?.click());
+
+    addPanel.innerHTML = `
+      <div style="background:var(--bg2);border:1px solid rgba(99,102,241,.25);border-radius:16px;padding:22px 24px">
+        <div style="font-size:13px;font-weight:700;color:rgba(240,238,255,.75);margin-bottom:4px">Add Upwork profile</div>
+        <div style="font-size:12px;color:rgba(240,238,255,.3);margin-bottom:16px">Paste your Upwork profile URL. After saving, open the profile and click the <strong style="color:rgba(240,238,255,.45)">"Sync Profile"</strong> pill to read your data.</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <input id="pr-new-url-inp" type="url" placeholder="https://www.upwork.com/freelancers/~..."
+            style="flex:1;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:999px;padding:9px 18px;color:#f0eeff;font-size:12.5px;font-family:inherit;outline:none;min-width:0;transition:border-color .15s">
+          <button id="pr-new-url-save" style="padding:9px 22px;border-radius:999px;background:#6366f1;color:#fff;font-size:12.5px;font-weight:700;border:none;cursor:pointer;font-family:inherit;flex-shrink:0">Save</button>
+          <button id="pr-new-url-cancel" style="padding:8px 16px;border-radius:999px;background:transparent;border:1px solid rgba(255,255,255,.1);color:rgba(240,238,255,.4);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;flex-shrink:0">Cancel</button>
+        </div>
+      </div>`;
+
+    addCard.addEventListener('click', () => {
+      addPanel.style.display = 'block';
+      detailContainer.style.display = 'none';
+      selGrid.querySelectorAll('.pr-sel-card').forEach(c => c.classList.remove('active'));
+      setTimeout(() => addPanel.querySelector('#pr-new-url-inp')?.focus(), 50);
+    });
+
+    addPanel.querySelector('#pr-new-url-cancel')?.addEventListener('click', () => {
+      addPanel.style.display = 'none';
+      detailContainer.style.display = '';
+      if (mergedProfiles.length > 0) switchTo(state.currentSlide || 0);
+    });
+
+    async function saveNewProfile() {
+      const inp = addPanel.querySelector('#pr-new-url-inp');
+      const url = (inp?.value || '').trim();
+      if (!url || !url.includes('upwork.com/freelancers/')) {
+        if (inp) { inp.style.borderColor = 'rgba(248,113,113,.5)'; setTimeout(() => inp.style.borderColor = '', 2000); }
+        return;
+      }
+      const stored = await new Promise(r => chrome.storage.local.get(['registeredProfiles'], r));
+      const profiles = stored.registeredProfiles || [];
+      const id = 'profile_' + (profiles.length + 1) + '_' + Date.now();
+      profiles.push({ url, id, syncEnabled: true });
+      await new Promise(r => chrome.storage.local.set({ registeredProfiles: profiles }, r));
+      renderProfilesPage();
+    }
+
+    addPanel.querySelector('#pr-new-url-save')?.addEventListener('click', saveNewProfile);
+    addPanel.querySelector('#pr-new-url-inp')?.addEventListener('keydown', e => { if (e.key === 'Enter') saveNewProfile(); });
+
     selGrid.appendChild(addCard);
   }
 
   container.appendChild(selGrid);
+  container.appendChild(addPanel);
   container.appendChild(detailContainer);
 
   const initialIdx = Math.min(state.currentSlide || 0, mergedProfiles.length - 1);
   state.currentSlide = initialIdx;
-  renderProfileCard(detailContainer, mergedProfiles[initialIdx], initialIdx, mergedProfiles, primaryProfileId);
+  if (mergedProfiles.length > 0) renderProfileCard(detailContainer, mergedProfiles[initialIdx], initialIdx, mergedProfiles, primaryProfileId);
 }

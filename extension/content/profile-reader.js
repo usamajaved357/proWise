@@ -158,9 +158,12 @@
   // ── Main profile data reader ──────────────────────────────────────────────────
   async function readProfilePic() {
     try {
-      const url = await chrome.runtime.sendMessage({ type: 'GET_PROFILE_PIC' });
-      if (url) return url;
-    } catch(e) {}
+      const url = await Promise.race([
+        chrome.runtime.sendMessage({ type: 'GET_PROFILE_PIC' }),
+        new Promise(resolve => setTimeout(() => resolve(''), 4000))
+      ]);
+      if (typeof url === 'string' && url.startsWith('https://')) return url;
+    } catch(e) { /* non-blocking */ }
     return '';
   }
 

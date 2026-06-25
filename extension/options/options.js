@@ -17,7 +17,10 @@ function switchSection(name) {
   if (sec)  sec.classList.add('active');
 }
 document.querySelectorAll('.sb-item[data-section]').forEach(el =>
-  el.addEventListener('click', () => switchSection(el.dataset.section))
+  el.addEventListener('click', () => {
+    switchSection(el.dataset.section);
+    if (el.dataset.section === 'profiles') renderProfilesPage();
+  })
 );
 const _tab = new URLSearchParams(window.location.search).get('tab');
 if (_tab) switchSection(_tab);
