@@ -30,27 +30,27 @@ a{text-decoration:none;color:inherit}
 .sidebar{width:224px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto}
 .sb-logo-link{display:flex;align-items:center;gap:10px;padding:22px 20px 20px;border-bottom:1px solid var(--border);transition:opacity .15s}
 .sb-logo-link:hover{opacity:.8}
-.sb-icon{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#8a5f10,#c9a84c,#e8c878);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 8px rgba(201,168,76,.3)}
+.sb-icon{width:34px;height:34px;border-radius:9px;background:var(--indigo);display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .sb-brand{display:flex;flex-direction:column}
 .sb-name{font-size:15px;font-weight:700;letter-spacing:-.01em}
 .sb-ver{font-size:10px;color:var(--white3);margin-top:1px}
 .sb-nav{padding:12px 10px;flex:1}
 .sb-item{display:flex;align-items:center;gap:9px;padding:9px 12px;font-size:13px;font-weight:500;color:var(--white3);cursor:pointer;border-radius:var(--radius-sm);transition:all .15s;margin-bottom:1px;border-left:2px solid transparent}
 .sb-item:hover{color:rgba(240,238,234,.75);background:rgba(255,255,255,.04);border-left-color:rgba(255,255,255,.1)}
-.sb-item.active{color:var(--white);background:rgba(201,168,76,.07);font-weight:600;border-left-color:var(--gold)}
+.sb-item.active{color:var(--white);background:rgba(99,102,241,.09);font-weight:600;border-left-color:var(--indigo)}
 .sb-dot{display:none}
 .sb-divider{height:1px;background:var(--border);margin:10px 0}
 /* Sidebar plan widget */
-.sb-plan{margin:auto 12px 16px;padding:14px;background:rgba(255,255,255,.03);border:1px solid var(--border2);border-radius:var(--radius)}
-.sb-plan-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
-.sb-plan-badge{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.06);color:rgba(240,238,234,.5);border:1px solid rgba(255,255,255,.1)}
-.sb-plan-badge.badge-starter{background:rgba(255,255,255,.06);color:rgba(240,238,234,.5);border-color:rgba(255,255,255,.1)}
-.sb-plan-badge.badge-pro{background:var(--gold-bg);color:var(--gold);border-color:var(--gold-border)}
-.sb-plan-badge.badge-agency{background:rgba(255,255,255,.06);color:rgba(240,238,234,.5);border-color:rgba(255,255,255,.1)}
-.sb-plan-rem{font-size:11px;color:var(--white3)}
-.sb-plan-bar-wrap{height:3px;background:rgba(255,255,255,.07);border-radius:2px;margin-bottom:6px;overflow:hidden}
-.sb-plan-bar{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--gold),var(--gold2));transition:width .4s}
-.sb-plan-count{font-size:11px;color:var(--white3)}
+.sb-plan{padding:12px 14px 16px;border-top:1px solid rgba(255,255,255,.05)}
+.sb-plan-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.sb-plan-badge{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:2px 8px;border-radius:20px;background:rgba(255,255,255,.06);color:rgba(240,238,234,.4);border:1px solid rgba(255,255,255,.09)}
+.sb-plan-badge.badge-starter{background:rgba(255,255,255,.06);color:rgba(240,238,234,.4);border-color:rgba(255,255,255,.09)}
+.sb-plan-badge.badge-pro{background:rgba(99,102,241,.12);color:rgba(170,168,252,.85);border-color:rgba(99,102,241,.28)}
+.sb-plan-badge.badge-agency{background:rgba(255,255,255,.06);color:rgba(240,238,234,.4);border-color:rgba(255,255,255,.09)}
+.sb-plan-rem{font-size:10.5px;color:rgba(240,238,234,.3)}
+.sb-plan-bar-wrap{height:2px;background:rgba(255,255,255,.07);border-radius:2px;margin-bottom:5px;overflow:hidden}
+.sb-plan-bar{height:100%;border-radius:2px;background:var(--indigo);transition:width .4s}
+.sb-plan-count{font-size:10px;color:rgba(240,238,234,.25)}
 
 /* ── Section label (UpCat-style uppercase gold tag above headings) ── */
 .sec-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.13em;color:var(--indigo);opacity:.82;margin-bottom:6px}
@@ -104,7 +104,7 @@ a{text-decoration:none;color:inherit}
 .profile-slide{display:none}.profile-slide.active{display:block}
 .slider-controls{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:18px}
 .slider-dot{width:7px;height:7px;border-radius:50%;background:var(--white4);cursor:pointer;transition:all .2s}
-.slider-dot.active{background:var(--gold);width:20px;border-radius:4px}
+.slider-dot.active{background:var(--indigo);width:20px;border-radius:4px}
 .slider-arr{width:30px;height:30px;background:rgba(255,255,255,.05);border:1px solid var(--border2);border-radius:var(--radius-xs);color:var(--white3);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:all .15s;line-height:1}
 .slider-arr:hover{background:rgba(255,255,255,.1);color:var(--white);border-color:var(--border3)}
 
@@ -248,10 +248,10 @@ textarea.edit-val{min-height:38px}
 .plan-btn-current{background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);cursor:default;opacity:.95}
 .plan-btn-current:hover{background:var(--green-bg)!important;transform:none!important;box-shadow:none!important}
 /* sidebar legal links */
-.sb-legal{padding:8px 10px 14px;display:flex;flex-direction:column;gap:1px}
-.sb-legal-title{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--white4);padding:0 12px 6px;margin-top:4px}
-.sb-legal a{display:flex;align-items:center;padding:6px 12px;font-size:11px;font-weight:500;color:var(--white4);border-radius:var(--radius-xs);transition:all .15s;border-left:2px solid transparent}
-.sb-legal a:hover{color:var(--white3);border-left-color:rgba(255,255,255,.1)}
+.sb-legal{padding:6px 10px 0;display:flex;flex-direction:column;gap:0}
+.sb-legal-title{display:none}
+.sb-legal a{display:flex;align-items:center;padding:5px 12px;font-size:10.5px;font-weight:400;color:rgba(240,238,234,.2);border-radius:var(--radius-xs);transition:color .15s;border-left:2px solid transparent;letter-spacing:.01em}
+.sb-legal a:hover{color:rgba(240,238,234,.42)}
 /* Edit-val resize handle */
 textarea.edit-val{min-height:38px}
 .audit-feature-card{background:rgba(167,139,250,.05);border:1px solid rgba(167,139,250,.12);border-radius:var(--radius-sm);padding:12px 14px}
@@ -944,6 +944,11 @@ textarea.edit-val{min-height:38px}
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
         How to use
       </div>
+      <div class="sb-legal">
+        <a href="https://snagai.netlify.app/terms.html" target="_blank">Terms of Service</a>
+        <a href="https://snagai.netlify.app/privacy.html" target="_blank">Privacy Policy</a>
+        <a href="https://snagai.netlify.app/refund.html" target="_blank">Refund Policy</a>
+      </div>
     </nav>
 
     <div class="sb-plan">
@@ -953,12 +958,6 @@ textarea.edit-val{min-height:38px}
       </div>
       <div class="sb-plan-bar-wrap"><div class="sb-plan-bar" id="sb-bar" style="width:0%"></div></div>
       <div class="sb-plan-count" id="sb-count">— / — used</div>
-    </div>
-    <div class="sb-legal">
-      <div class="sb-legal-title">Legal</div>
-      <a href="https://snagai.netlify.app/terms.html" target="_blank">Terms of Service</a>
-      <a href="https://snagai.netlify.app/privacy.html" target="_blank">Privacy Policy</a>
-      <a href="https://snagai.netlify.app/refund.html" target="_blank">Refund Policy</a>
     </div>
   </div><!-- /sidebar -->
 
