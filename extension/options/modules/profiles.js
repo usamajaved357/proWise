@@ -148,6 +148,98 @@ export function renderPortfolioItem(list, p, pi, allProfiles, profileIdx, autoOp
   if (autoOpen) openEdit();
 }
 
+// ── Upwork categories ─────────────────────────────────────────────────────────
+const UPWORK_CATEGORIES = {
+  'Accounting & Consulting': [
+    'Personal & Professional Coaching',
+    'Accounting & Bookkeeping',
+    'Financial Planning',
+    'Recruiting & Human Resources',
+    'Management Consulting & Analysis',
+    'Other - Accounting & Consulting',
+  ],
+  'Admin Support': [
+    'Data Entry & Transcription Services',
+    'Virtual Assistance',
+    'Project Management',
+    'Market Research & Product Reviews',
+  ],
+  'Customer Service': [
+    'Community Management & Tagging',
+    'Customer Service & Tech Support',
+  ],
+  'Data Science & Analytics': [
+    'Data Analysis & Testing',
+    'Data Extraction/ETL',
+    'Data Mining & Management',
+    'AI & Machine Learning',
+  ],
+  'Design & Creative': [
+    'Art & Illustration',
+    'Audio & Music Production',
+    'Branding & Logo Design',
+    'NFT, AR/VR & Game Art',
+    'Graphic, Editorial & Presentation Design',
+    'Performing Arts',
+    'Photography',
+    'Product Design',
+    'Video & Animation',
+  ],
+  'Engineering & Architecture': [
+    'Building & Landscape Architecture',
+    'Chemical Engineering',
+    'Civil & Structural Engineering',
+    'Contract Manufacturing',
+    'Electrical & Electronic Engineering',
+    'Interior & Trade Show Design',
+    'Energy & Mechanical Engineering',
+    'Physical Sciences',
+    '3D Modeling & CAD',
+  ],
+  'IT & Networking': [
+    'Database Management & Administration',
+    'ERP/CRM Software',
+    'Information Security & Compliance',
+    'Network & System Administration',
+    'DevOps & Solution Architecture',
+  ],
+  'Legal': [
+    'Corporate & Contract Law',
+    'International & Immigration Law',
+    'Finance & Tax Law',
+    'Public Law',
+  ],
+  'Sales & Marketing': [
+    'Digital Marketing',
+    'Lead Generation & Telemarketing',
+    'Marketing, PR & Brand Strategy',
+  ],
+  'Translation': [
+    'Language Tutoring & Interpretation',
+    'Translation & Localization Services',
+  ],
+  'Web, Mobile & Software Dev': [
+    'Blockchain, NFT & Cryptocurrency',
+    'AI Apps & Integration',
+    'Desktop Application Development',
+    'Ecommerce Development',
+    'Game Design & Development',
+    'Mobile Development',
+    'Other - Software Development',
+    'Product Management & Scrum',
+    'QA Testing',
+    'Scripts & Utilities',
+    'Web & Mobile Design',
+    'Web Development',
+  ],
+  'Writing': [
+    'Sales & Marketing Copywriting',
+    'Content Writing',
+    'Editing & Proofreading Services',
+    'Professional & Business Writing',
+  ],
+};
+
 // ── Job Filters — defaults, presets, renderer ─────────────────────────────────
 const JF_DEFAULTS = {
   maxProposals: 50, maxInterviewing: 3, maxInvitesSent: 5,
@@ -156,6 +248,7 @@ const JF_DEFAULTS = {
   maxRateMismatch: 50, maxJobAgeDays: 7,
   minSkillMatch: 30, warnLocationFilter: true, warnTierMismatch: true,
   minAlertScore: 60, autoSkipHired: true,
+  categories: [],
 };
 const JF_PRESETS = {
   conservative: { maxProposals: 20, maxInterviewing: 1, maxInvitesSent: 3, minClientRating: 4.5, minHireRate: 50, minClientSpent: 1000, requirePaymentVerified: true, warnZeroSpent: true, maxRateMismatch: 30, maxJobAgeDays: 3, minSkillMatch: 50, warnLocationFilter: true, warnTierMismatch: true, minAlertScore: 70, autoSkipHired: true },
@@ -274,6 +367,22 @@ function renderJobFilters(body, profile) {
       </div>
     </div>
 
+    <div class="jf-category-wrap">
+      <div class="jf-category-label">Your specialties</div>
+      <div class="jf-cat-chips" id="jf-cat-chips"></div>
+      <button class="jf-cat-toggle" id="jf-cat-toggle" type="button">
+        <span id="jf-cat-toggle-lbl">Choose your specialties</span>
+        <svg class="jf-cat-toggle-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      <div class="jf-cat-dropdown" id="jf-cat-dropdown">
+        <div class="jf-cat-search-wrap" style="margin-bottom:6px">
+          <input type="text" class="jf-cat-search" id="jf-cat-search" placeholder="Search subcategories…" autocomplete="off">
+        </div>
+        <div class="jf-cat-list" id="jf-cat-list"></div>
+      </div>
+      <div class="jf-category-hint" style="margin-top:8px">Select all subcategories that apply — the AI uses these to tailor every cover letter to your specific field and expertise.</div>
+    </div>
+
     <div class="jf-filter-footer">
       <button class="btn-reset-plain" id="jf-reset">Reset Filters</button>
       <button class="btn-apply-filters" id="jf-save">
@@ -302,6 +411,7 @@ function renderJobFilters(body, profile) {
       warnTierMismatch:       t('warnTierMismatch'),
       minAlertScore:          s('minAlertScore'),
       autoSkipHired:          t('autoSkipHired'),
+      categories: Array.from(body.querySelectorAll('.jf-cat-chip-tag')).map(el => el.dataset.val).filter(Boolean),
     };
   }
 
@@ -386,6 +496,65 @@ function renderJobFilters(body, profile) {
     body.querySelectorAll('.jf-seg-opt').forEach(b => b.classList.remove('jf-active'));
     save();
   });
+
+  // Multi-select category chip picker
+  (function initCategoryPicker() {
+    const selected = new Set(F.categories || []);
+    const chipsEl  = body.querySelector('#jf-cat-chips');
+    const listEl   = body.querySelector('#jf-cat-list');
+    const searchEl = body.querySelector('#jf-cat-search');
+    if (!chipsEl || !listEl || !searchEl) return;
+
+    function renderChips() {
+      chipsEl.innerHTML = selected.size
+        ? [...selected].map(v => `<span class="jf-cat-chip-tag" data-val="${v}">${v} <button class="jf-cat-chip-rm" data-val="${v}">×</button></span>`).join('')
+        : '<span class="jf-cat-chips-empty">No specialties selected yet</span>';
+      chipsEl.querySelectorAll('.jf-cat-chip-rm').forEach(btn => {
+        btn.addEventListener('click', () => { selected.delete(btn.dataset.val); renderChips(); renderList(searchEl.value); save(); });
+      });
+    }
+
+    function renderList(query) {
+      const q = query.toLowerCase().trim();
+      let html = '';
+      Object.entries(UPWORK_CATEGORIES).forEach(([cat, subs]) => {
+        const matches = subs.filter(s => !q || s.toLowerCase().includes(q) || cat.toLowerCase().includes(q));
+        if (!matches.length) return;
+        html += `<div class="jf-cat-group-lbl">${cat}</div>`;
+        matches.forEach(sub => {
+          const on = selected.has(sub);
+          html += `<div class="jf-cat-option${on ? ' on' : ''}" data-val="${sub}">`
+            + `<div class="jf-cat-opt-ck">${on ? '<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>' : ''}</div>`
+            + `<span>${sub}</span></div>`;
+        });
+      });
+      listEl.innerHTML = html || '<div style="padding:10px 0;font-size:11px;color:rgba(240,238,255,.25)">No matches</div>';
+      listEl.querySelectorAll('.jf-cat-option').forEach(opt => {
+        opt.addEventListener('click', () => {
+          const val = opt.dataset.val;
+          if (selected.has(val)) selected.delete(val); else selected.add(val);
+          renderChips(); renderList(searchEl.value); save();
+        });
+      });
+    }
+
+    // Toggle open/close
+    const toggleBtn  = body.querySelector('#jf-cat-toggle');
+    const dropdown   = body.querySelector('#jf-cat-dropdown');
+    const toggleLbl  = body.querySelector('#jf-cat-toggle-lbl');
+    if (toggleBtn && dropdown) {
+      toggleBtn.addEventListener('click', () => {
+        const isOpen = dropdown.classList.toggle('open');
+        toggleBtn.classList.toggle('open', isOpen);
+        toggleLbl.textContent = isOpen ? 'Close' : 'Choose your specialties';
+        if (isOpen) searchEl?.focus();
+      });
+    }
+
+    searchEl.addEventListener('input', () => renderList(searchEl.value));
+    renderChips();
+    renderList('');
+  })();
 
   // Segment preset buttons
   body.querySelectorAll('.jf-seg-opt').forEach(btn => btn.addEventListener('click', () => applyPreset(btn.dataset.preset)));

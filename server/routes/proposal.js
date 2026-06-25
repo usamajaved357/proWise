@@ -102,6 +102,7 @@ router.post('/', async (req, res) => {
 
     const refineInstruction = req.body.refineInstruction || '';
     const currentLetter     = req.body.currentLetter     || '';
+    const categories        = Array.isArray(req.body.categories) ? req.body.categories : [];
     const freelancerType    = req.body.freelancerType    || 'developer';
     const isRefinement      = !!(refineInstruction && currentLetter);
 
@@ -113,7 +114,7 @@ router.post('/', async (req, res) => {
 
     const hourlyRate = parseFloat((profile.hourlyRate || '0').replace(/[^0-9.]/g, '')) || 0;
     console.log(`[PRICING] jobType=${job.jobStats?.jobType||'unknown'} budget="${job.budget||''}" isOngoing=${/more than 6 months|ongoing|long.?term|part.?time/i.test((job.description||'').toLowerCase())}`);
-    const { msg: userMsg, systemWithLimit } = buildUserMessage({ job, profile, settings, refineInstruction, currentLetter, freelancerType });
+    const { msg: userMsg, systemWithLimit } = buildUserMessage({ job, profile, settings, refineInstruction, currentLetter, freelancerType, categories });
 
     const ptStart = userMsg.indexOf('PORTFOLIO (match');
     const ptEnd   = userMsg.indexOf('\n\n', ptStart);

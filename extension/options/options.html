@@ -850,6 +850,36 @@ textarea.edit-val{min-height:38px}
 .btn-reset-plain:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.18);color:rgba(240,238,234,.7)}
 .jf-sl-compact{width:52px;height:3px;cursor:pointer;flex-shrink:0;accent-color:var(--indigo)}
 
+
+/* ── Job filter category multi-select ─────────────────────────────────────── */
+.jf-category-wrap{border-top:1px solid rgba(255,255,255,.045);padding:14px 0 4px;margin-top:8px}
+.jf-category-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:rgba(240,238,255,.22);margin-bottom:8px}
+.jf-cat-chips{display:flex;flex-wrap:wrap;gap:5px;min-height:20px;margin-bottom:8px}
+.jf-cat-chips-empty{font-size:11px;color:rgba(240,238,255,.2);font-style:italic}
+.jf-cat-chip-tag{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:600;padding:3px 8px;border-radius:20px;background:rgba(99,102,241,.12);color:rgba(170,168,252,.9);border:1px solid rgba(99,102,241,.28)}
+.jf-cat-chip-rm{background:none;border:none;color:rgba(170,168,252,.6);cursor:pointer;font-size:12px;line-height:1;padding:0;margin-left:1px;font-family:inherit}
+.jf-cat-chip-rm:hover{color:rgba(248,113,113,.8)}
+.jf-cat-search-wrap{margin-bottom:6px}
+.jf-cat-search{width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:7px 12px;color:rgba(240,238,255,.72);font-size:12px;font-family:inherit;outline:none;transition:border-color .15s}
+.jf-cat-search:focus{border-color:rgba(99,102,241,.45);box-shadow:0 0 0 3px rgba(99,102,241,.08)}
+.jf-cat-toggle{display:flex;align-items:center;justify-content:space-between;width:100%;padding:7px 12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:8px;color:rgba(240,238,255,.5);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;margin-bottom:8px;transition:all .15s}
+.jf-cat-toggle:hover{border-color:rgba(99,102,241,.35);color:rgba(170,168,252,.85)}
+.jf-cat-toggle-chevron{transition:transform .2s;color:rgba(240,238,255,.35)}
+.jf-cat-toggle.open .jf-cat-toggle-chevron{transform:rotate(180deg)}
+.jf-cat-dropdown{display:none}
+.jf-cat-dropdown.open{display:block}
+.jf-cat-list{max-height:200px;overflow-y:auto;border:1px solid rgba(255,255,255,.07);border-radius:8px;background:#111827;margin-bottom:0}
+.jf-cat-list::-webkit-scrollbar{width:4px}
+.jf-cat-list::-webkit-scrollbar-thumb{background:rgba(99,102,241,.3);border-radius:2px}
+.jf-cat-group-lbl{font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(240,238,255,.25);padding:7px 12px 4px;background:#111827}
+.jf-cat-option{display:flex;align-items:center;gap:8px;padding:7px 12px;cursor:pointer;transition:background .1s;font-size:11.5px;color:rgba(240,238,255,.55)}
+.jf-cat-option:hover{background:rgba(255,255,255,.04);color:rgba(240,238,255,.8)}
+.jf-cat-option.on{color:rgba(170,168,252,.9)}
+.jf-cat-option.on:hover{background:rgba(99,102,241,.06)}
+.jf-cat-opt-ck{width:14px;height:14px;border-radius:4px;border:1px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .1s}
+.jf-cat-option.on .jf-cat-opt-ck{background:rgba(99,102,241,.2);border-color:rgba(99,102,241,.5);color:#8b8cf0}
+.jf-category-hint{font-size:10.5px;color:rgba(240,238,255,.22);line-height:1.55}
+
 /* ── How to Use — clean article / doc style ──────────────────────────────── */
 /* All card color variants → single neutral top line */
 .ht-card-gold::before,.ht-card-green::before,.ht-card-blue::before,

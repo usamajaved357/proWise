@@ -271,8 +271,38 @@ CLIENT: [first name or blank]
 ===END===`;
 
 // ── User message builder ──────────────────────────────────────────────────────
-function buildUserMessage({ job, profile, settings, refineInstruction = '', currentLetter = '', freelancerType = 'developer' }) {
-  const isDeveloper = freelancerType === 'developer';
+function buildUserMessage({ job, profile, settings, refineInstruction = '', currentLetter = '', freelancerType = 'developer', categories = [] }) {
+  // categories = array of Upwork subcategory strings (multi-select, profile-level)
+  // Falls back to legacy freelancerType from settings when categories not yet set
+  const hasCategories = Array.isArray(categories) && categories.length > 0;
+
+  // Map legacy freelancerType → broad Upwork categories for backward compat
+  const legacyMap = {
+    developer: ['Web Development','Mobile Development','Desktop Application Development'],
+    designer:  ['Web & Mobile Design','Branding & Logo Design','Graphic, Editorial & Presentation Design'],
+    writer:    ['Content Writing','Copywriting','Professional & Business Writing'],
+    marketer:  ['Digital Marketing','Marketing, PR & Brand Strategy'],
+    va:        ['Virtual Assistance','Data Entry & Transcription Services'],
+  };
+  const effectiveCats = hasCategories ? categories : (legacyMap[freelancerType] || []);
+
+  // Derive broad field flags from selected subcategories
+  const DEV_SUBS  = new Set(['Web Development','Mobile Development','Desktop Application Development','AI Apps & Integration','Ecommerce Development','Game Design & Development','QA Testing','Scripts & Utilities','Product Management & Scrum','Blockchain, NFT & Cryptocurrency','Other - Software Development','Database Management & Administration','DevOps & Solution Architecture','ERP/CRM Software','Information Security & Compliance','Network & System Administration','AI & Machine Learning','Data Analysis & Testing','Data Extraction/ETL','Data Mining & Management']);
+  const DES_SUBS  = new Set(['Web & Mobile Design','Branding & Logo Design','Graphic, Editorial & Presentation Design','Art & Illustration','Video & Animation','Audio & Music Production','Photography','Product Design','NFT, AR/VR & Game Art','Performing Arts','3D Modeling & CAD','Interior & Trade Show Design','Building & Landscape Architecture']);
+  const WRI_SUBS  = new Set(['Content Writing','Copywriting','Sales & Marketing Copywriting','Editing & Proofreading Services','Professional & Business Writing','Translation & Localization Services','Language Tutoring & Interpretation']);
+  const MKT_SUBS  = new Set(['Digital Marketing','Marketing, PR & Brand Strategy','Lead Generation & Telemarketing']);
+  const ADM_SUBS  = new Set(['Virtual Assistance','Data Entry & Transcription Services','Project Management','Customer Service & Tech Support','Community Management & Tagging','Market Research & Product Reviews']);
+
+  const isDeveloper = effectiveCats.some(s => DEV_SUBS.has(s));
+  const isDesign    = effectiveCats.some(s => DES_SUBS.has(s));
+  const isWriting   = effectiveCats.some(s => WRI_SUBS.has(s));
+  const isMarketing = effectiveCats.some(s => MKT_SUBS.has(s));
+  const isAdmin     = effectiveCats.some(s => ADM_SUBS.has(s));
+
+  // Human-readable label for the prompt
+  const categoryLabel = effectiveCats.length
+    ? effectiveCats.join(', ')
+    : 'General Freelancer';
 
   // Skill matching against job
   const jobText = ((job.title||'')+' '+(job.description||'')+' '+(job.skills||'')).toLowerCase();
@@ -520,6 +550,7 @@ ABSOLUTE RULES — NEVER BREAK THESE:
     '━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━',
     'Full name: ' + profile.name,
     'Sign-off (first name only): ' + firstName,
+    'Freelancer specialties: ' + categoryLabel,
     'Title/Role: ' + (profile.title || 'not set'),
     'Bio: ' + (profile.bio || 'not set'),
     'JSS: ' + (profile.jss || 'not set'),
@@ -576,7 +607,12 @@ ABSOLUTE RULES — NEVER BREAK THESE:
       '3. Portfolio: bold name, explain HOW it matches their specific need, URL on next line. No "Relevant work:" heading.',
       '4. After scope, ask ONE short specific question about their job before the CTA.',
       '5. No emojis anywhere.',
-      isDeveloper ? '6. Tech stack in body: reference the REQUIRED SKILLS from THIS specific job, not the freelancer profile stack. If the job needs Laravel + PHP, say that. Never write Node.js when the job asks for PHP/Laravel.' : '6. In the body, reference the specific deliverables and requirements from THIS job, not your general background.',
+      isDeveloper ? '6. Tech stack in body: reference the REQUIRED SKILLS from THIS specific job, not the freelancer profile stack. If the job needs Laravel + PHP, say that. Never write Node.js when the job asks for PHP/Laravel.'
+        : isDesign ? '6. Reference design-specific deliverables: file formats, tools (Figma, Illustrator, etc.), and the specific design type the client asked for. Match their visual language.'
+        : isWriting ? '6. Reference the specific content type, tone, and audience from the job brief. Mention relevant niches or industries if shown in portfolio.'
+        : isMarketing ? '6. Reference specific marketing channels, platforms, or metrics the client mentioned. Show familiarity with their industry and growth goals.'
+        : isAdmin ? '6. Reference the specific tools, workflows, or tasks from the brief. Emphasise reliability, organisation, and communication style.'
+        : '6. In the body, reference the specific deliverables and requirements from THIS job, not your general background.',
       '7. Pricing: ' + (pricingType === 'HOURLY' ? `Hourly — state $${profile.hourlyRate || '?'}/hr and estimated weeks.` : pricingType === 'FIXED' ? `Fixed — address $${budgetNum || 'the'} budget in the hook.` : 'No clear pricing — focus on CTA.'),
       mandatoryAnswers ? '7. ⚠ MANDATORY — client asked these, MUST answer in scope line:\n' + mandatoryAnswers : '',
       '8. Keep total letter within ' + wordLimit + ' words. Max 2 short body sentences. Never 3+ body paragraphs.',
