@@ -417,6 +417,9 @@ textarea.edit-val{min-height:38px}
 /* ── Plan Cards v2 ────────────────────────────────────────────── */
 .pcv2-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
 .pcv2-card{background:rgba(255,255,255,.025);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px 20px 20px;position:relative;transition:border-color .2s,transform .2s;cursor:pointer}
+.pcv2-card::after{content:'';position:absolute;top:0;right:0;width:180px;height:180px;background:radial-gradient(circle at top right,rgba(99,102,241,.12) 0%,rgba(99,102,241,.04) 50%,transparent 75%);pointer-events:none;z-index:0;border-radius:inherit}
+.pcv2-featured::after{width:220px;height:220px;background:radial-gradient(circle at top right,rgba(99,102,241,.24) 0%,rgba(99,102,241,.1) 40%,rgba(99,102,241,.03) 65%,transparent 80%)}
+.pcv2-card>*{position:relative;z-index:1}
 .pcv2-card:hover{border-color:rgba(255,255,255,.14);transform:translateY(-1px)}
 .pcv2-card.current{border-color:rgba(52,211,153,.3);background:rgba(52,211,153,.02)}
 .pcv2-card.current:hover{border-color:rgba(52,211,153,.4);transform:none}
