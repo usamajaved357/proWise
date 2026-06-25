@@ -487,11 +487,18 @@ function renderPortfolioItemV2(list, p, pi, allProfiles, profileIdx, autoOpen) {
         '<circle cx="12" cy="16" r="0.8" fill="rgba(250,204,21,.75)"/>' +
       '</svg>';
 
+    const firstUrl = hasLinks ? (p.urls || []).find(u => u && u.trim()) : null;
+    const fullUrl  = firstUrl ? (firstUrl.startsWith('http') ? firstUrl : 'https://' + firstUrl) : null;
+    const displayUrl = fullUrl ? fullUrl.replace(/^https?:\/\//, '') : null;
+
     item.innerHTML =
+      (hasLinks
+        ? '<div class="pi-check-ok">' + CHECK_ICON + '</div>'
+        : '<div class="pi-missing-btn">' + WARN_ICON + '</div>') +
       '<div class="pi-name">' + _esc(p.title || 'Untitled') + '</div>' +
       (hasLinks
-        ? '<div class="pi-check-ok" title="URL linked">' + CHECK_ICON + '</div>'
-        : '<div class="pi-missing-btn">' + WARN_ICON + '</div>');
+        ? '<a class="pi-url-text" href="' + _esc(fullUrl) + '" target="_blank">' + _esc(displayUrl) + '</a>'
+        : '<div class="pi-no-url-text">No URL</div>');
 
     if (!hasLinks) {
       const missingBtn = item.querySelector('.pi-missing-btn');
