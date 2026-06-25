@@ -197,7 +197,8 @@ textarea.edit-val{min-height:38px}
 .email-info{flex:1}
 .email-label{font-size:11px;color:var(--white3);margin-bottom:1px}
 .email-val{font-size:13px;font-weight:600}
-.btn-email-toggle{font-size:12px;color:var(--gold);cursor:pointer;background:none;border:none;font-family:inherit;font-weight:600;transition:opacity .15s}
+.btn-email-toggle{font-size:11px;font-weight:700;padding:6px 14px;border-radius:999px;background:rgba(99,102,241,.1);border:1.5px solid rgba(99,102,241,.28);color:rgba(170,168,252,.9);cursor:pointer;font-family:inherit;transition:all .15s}
+.btn-email-toggle:hover{background:rgba(99,102,241,.18);border-color:rgba(99,102,241,.45)}
 .btn-email-toggle:hover{opacity:.7}
 
 /* Profile URL slots */
@@ -1205,35 +1206,19 @@ textarea.edit-val{min-height:38px}
       <!-- Proposal Writing Settings -->
       <div class="card">
         <div class="card-title">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.287 1.288L3 12l5.8 1.9a2 2 0 0 1 1.288 1.287L12 21l1.9-5.8a2 2 0 0 1 1.287-1.288L21 12l-5.8-1.9a2 2 0 0 1-1.288-1.287Z"/></svg>
           Proposal Writing
         </div>
 
         <!-- Tone -->
         <div class="st-group">
-          <div class="st-group-label">Writing Tone</div>
+          <div class="st-group-label" style="display:flex;align-items:center;gap:6px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg> Writing Tone</div>
           <div class="st-group-desc">Controls the voice and personality of your AI-generated proposals.</div>
-          <div class="st-opts st-opts-4" id="st-tone-opts">
-            <div class="st-opt active" data-val="professional">
-              <div class="st-opt-icon">🎯</div>
-              <div class="st-opt-name">Professional</div>
-              <div class="st-opt-sub">Confident &amp; polished</div>
-            </div>
-            <div class="st-opt" data-val="friendly">
-              <div class="st-opt-icon">😊</div>
-              <div class="st-opt-name">Friendly</div>
-              <div class="st-opt-sub">Warm &amp; approachable</div>
-            </div>
-            <div class="st-opt" data-val="direct">
-              <div class="st-opt-icon">⚡</div>
-              <div class="st-opt-name">Direct</div>
-              <div class="st-opt-sub">Results-focused</div>
-            </div>
-            <div class="st-opt" data-val="enthusiastic">
-              <div class="st-opt-icon">🔥</div>
-              <div class="st-opt-name">Enthusiastic</div>
-              <div class="st-opt-sub">Energetic &amp; engaging</div>
-            </div>
+          <div class="jf-seg" id="st-tone-opts" style="grid-template-columns:repeat(4,1fr)">
+            <div class="jf-seg-opt jf-active" data-val="professional"><div class="jf-seg-ck"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="jf-seg-txt"><div class="jf-seg-name">Professional</div><div class="jf-seg-sub">Confident &amp; polished</div></div></div>
+            <div class="jf-seg-opt" data-val="friendly"><div class="jf-seg-ck"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="jf-seg-txt"><div class="jf-seg-name">Friendly</div><div class="jf-seg-sub">Warm &amp; approachable</div></div></div>
+            <div class="jf-seg-opt" data-val="direct"><div class="jf-seg-ck"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="jf-seg-txt"><div class="jf-seg-name">Direct</div><div class="jf-seg-sub">Results-focused</div></div></div>
+            <div class="jf-seg-opt" data-val="enthusiastic"><div class="jf-seg-ck"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="jf-seg-txt"><div class="jf-seg-name">Enthusiastic</div><div class="jf-seg-sub">Energetic &amp; bold</div></div></div>
           </div>
           <input type="hidden" id="tone" value="professional">
         </div>
@@ -1242,75 +1227,14 @@ textarea.edit-val{min-height:38px}
 
         <!-- Length -->
         <div class="st-group">
-          <div class="st-group-label">Proposal Length</div>
-          <div class="st-group-desc">Longer proposals go into more depth but may lose client attention. Medium works best for most jobs.</div>
-          <div class="st-opts st-opts-3" id="st-length-opts">
-            <div class="st-opt" data-val="short">
-              <div class="st-opt-icon">✂️</div>
-              <div class="st-opt-name">Short</div>
-              <div class="st-opt-sub">100–130 words</div>
-            </div>
-            <div class="st-opt active" data-val="medium">
-              <div class="st-opt-icon">📄</div>
-              <div class="st-opt-name">Medium</div>
-              <div class="st-opt-sub">130–160 words</div>
-            </div>
-            <div class="st-opt" data-val="long">
-              <div class="st-opt-icon">📋</div>
-              <div class="st-opt-name">Detailed</div>
-              <div class="st-opt-sub">160–200 words</div>
-            </div>
+          <div class="st-group-label" style="display:flex;align-items:center;gap:6px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="17" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="17" y1="18" x2="3" y2="18"/></svg> Proposal Length</div>
+          <div class="st-group-desc">Longer proposals add depth but may lose client attention. Medium works best for most jobs.</div>
+          <div class="jf-seg" id="st-length-opts">
+            <div class="jf-seg-opt" data-val="short"><div class="jf-seg-ck"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="jf-seg-txt"><div class="jf-seg-name">Short</div><div class="jf-seg-sub">75–100 words</div></div></div>
+            <div class="jf-seg-opt jf-active" data-val="medium"><div class="jf-seg-ck"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="jf-seg-txt"><div class="jf-seg-name">Medium</div><div class="jf-seg-sub">130–160 words</div></div></div>
+            <div class="jf-seg-opt" data-val="long"><div class="jf-seg-ck"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="jf-seg-txt"><div class="jf-seg-name">Detailed</div><div class="jf-seg-sub">160–200 words</div></div></div>
           </div>
           <input type="hidden" id="length" value="medium">
-        </div>
-
-        <!-- Freelancer Type -->
-        <div class="st-group" style="margin-top:20px">
-          <div class="st-group-label">Freelancer Type</div>
-          <div class="st-group-desc">Tailors the AI to your field. More categories coming — Developer is fully supported today.</div>
-          <div class="st-opts st-opts-3" id="st-type-opts">
-            <div class="st-opt active" data-val="developer">
-              <div class="st-opt-icon">💻</div>
-              <div class="st-opt-name">Developer</div>
-              <div class="st-opt-sub">Full-stack, mobile, web</div>
-            </div>
-            <div class="st-opt" data-val="designer">
-              <div class="st-opt-icon">🎨</div>
-              <div class="st-opt-name">Designer</div>
-              <div class="st-opt-sub">UI/UX, graphics, branding</div>
-            </div>
-            <div class="st-opt" data-val="writer">
-              <div class="st-opt-icon">✍️</div>
-              <div class="st-opt-name">Writer</div>
-              <div class="st-opt-sub">Content, copy, SEO</div>
-            </div>
-            <div class="st-opt" data-val="marketer">
-              <div class="st-opt-icon">📈</div>
-              <div class="st-opt-name">Marketer</div>
-              <div class="st-opt-sub">Ads, social, growth</div>
-            </div>
-            <div class="st-opt" data-val="va">
-              <div class="st-opt-icon">🗂️</div>
-              <div class="st-opt-name">VA / Admin</div>
-              <div class="st-opt-sub">Support, data, ops</div>
-            </div>
-            <div class="st-opt" data-val="other">
-              <div class="st-opt-icon">⚡</div>
-              <div class="st-opt-name">Other</div>
-              <div class="st-opt-sub">Finance, legal, etc.</div>
-            </div>
-          </div>
-          <input type="hidden" id="freelancer-type" value="developer">
-          <div style="font-size:11px;color:var(--white3);margin-top:8px;padding:9px 12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.08);border-radius:7px;line-height:1.6">
-            <strong style="color:rgba(240,238,234,.6);display:block;margin-bottom:4px">↗ Get better proposals: add links to your portfolio items</strong>
-            The AI picks the most relevant projects per job and references them directly in the cover letter. Without links it can't showcase your actual work.
-            <span style="color:rgba(240,238,234,.3);margin-top:4px;display:block">Developer → App Store, Play Store, GitHub &nbsp;·&nbsp; Designer → Behance, Dribbble &nbsp;·&nbsp; Writer → live sales pages, articles &nbsp;·&nbsp; Marketer → case study pages, campaign results</span>
-          </div>
-        </div>
-
-        <div style="display:flex;align-items:center;gap:12px;margin-top:16px">
-          <button class="btn-primary" id="save-settings" style="font-size:12px;padding:9px 20px">Save settings</button>
-          <span class="saved-msg" id="saved-settings-msg">✓ Saved</span>
         </div>
       </div>
     </div><!-- /settings -->

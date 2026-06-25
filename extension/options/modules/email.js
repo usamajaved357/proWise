@@ -62,30 +62,33 @@ async function renderVerifyForm() {
   if (!wrap) return;
   const { userEmail } = await chrome.storage.sync.get(['userEmail']);
 
+  const INP  = 'flex:1;padding:9px 18px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:999px;color:#f0eeff;font-size:12.5px;font-family:inherit;outline:none;min-width:0;transition:border-color .15s';
+  const BTN  = 'padding:9px 20px;border-radius:999px;background:#6366f1;color:#fff;font-size:12px;font-weight:700;border:none;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0';
+  const OTP  = 'flex:1;padding:9px 18px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:999px;color:#f0eeff;font-size:18px;font-weight:700;font-family:monospace;letter-spacing:4px;text-align:center;outline:none;min-width:0;transition:border-color .15s';
+  const VFY  = 'padding:9px 20px;border-radius:999px;background:rgba(52,211,153,.1);border:1.5px solid rgba(52,211,153,.28);color:#34d399;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0';
+  const RMVB = 'background:none;border:none;color:rgba(248,113,113,.45);font-size:11px;cursor:pointer;font-family:inherit;text-decoration:underline;padding:0;transition:color .12s';
+
   wrap.innerHTML = `
     <div style="display:flex;flex-direction:column;gap:10px;margin-top:10px">
       <div style="display:flex;gap:8px">
         <input id="email-inp" type="email" placeholder="your@email.com"
-          value="${userEmail || ''}"
-          style="flex:1;padding:8px 12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#f0eeea;font-size:13px;font-family:inherit;outline:none">
-        <button id="send-otp-btn" style="padding:8px 14px;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.3);border-radius:8px;color:#c9a84c;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">
-          Send Code
-        </button>
+          value="${userEmail || ''}" style="${INP}">
+        <button id="send-otp-btn" style="${BTN}">Send Code</button>
       </div>
       <div id="otp-section" style="display:none;flex-direction:column;gap:8px">
-        <div style="font-size:11px;color:rgba(240,238,234,.45)">Enter the 6-digit code sent to your email</div>
+        <div style="font-size:11px;color:rgba(240,238,255,.4)">Enter the 6-digit code sent to your email</div>
         <div style="display:flex;gap:8px">
-          <input id="otp-inp" type="text" inputmode="numeric" maxlength="6" placeholder="000000"
-            style="flex:1;padding:8px 12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#f0eeea;font-size:18px;font-weight:700;font-family:monospace;letter-spacing:4px;text-align:center;outline:none">
-          <button id="verify-otp-btn" style="padding:8px 14px;background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.25);border-radius:8px;color:#4ade80;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap">
-            Verify
-          </button>
+          <input id="otp-inp" type="text" inputmode="numeric" maxlength="6" placeholder="000000" style="${OTP}">
+          <button id="verify-otp-btn" style="${VFY}">Verify</button>
         </div>
-        <button id="resend-otp-btn" style="background:none;border:none;color:rgba(240,238,234,.35);font-size:11px;cursor:pointer;font-family:inherit;text-align:left;padding:0">
+        <button id="resend-otp-btn" style="background:none;border:none;color:rgba(240,238,255,.28);font-size:11px;cursor:pointer;font-family:inherit;text-align:left;padding:0">
           Didn't receive it? Resend code
         </button>
       </div>
-      <div id="email-msg" style="font-size:12px;min-height:16px"></div>
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div id="email-msg" style="font-size:12px;min-height:16px"></div>
+        ${userEmail ? `<button id="remove-email-btn" style="${RMVB}">Remove email</button>` : ''}
+      </div>
     </div>
   `;
 
@@ -94,6 +97,13 @@ async function renderVerifyForm() {
   document.getElementById('resend-otp-btn')?.addEventListener('click', () => sendOTP());
   document.getElementById('otp-inp')?.addEventListener('keydown', e => {
     if (e.key === 'Enter') confirmOTP();
+  });
+  document.getElementById('remove-email-btn')?.addEventListener('click', async () => {
+    if (!confirm('Remove your account email? You will need to re-add and verify it to use Snag AI.')) return;
+    await chrome.storage.sync.remove(['userEmail', 'emailVerified']);
+    renderEmailUI(null, false);
+    const editWrap = document.getElementById('email-edit');
+    if (editWrap) editWrap.style.display = 'none';
   });
 }
 
