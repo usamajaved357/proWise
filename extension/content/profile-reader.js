@@ -211,7 +211,7 @@
       #snagai-sync-btn{display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,#0d1120,#1a2035);color:#f0eeea;border:1px solid rgba(201,168,76,.35);border-radius:50px;padding:11px 20px 11px 14px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 4px 24px rgba(0,0,0,.5),0 0 0 1px rgba(201,168,76,.15);transition:transform .2s,box-shadow .2s;font-family:inherit}
       #snagai-sync-btn:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,.6),0 0 0 1px rgba(201,168,76,.3)}
       #snagai-sync-btn:disabled{opacity:.7;cursor:default;transform:none}
-      .snagai-btn-icon{width:24px;height:24px;background:linear-gradient(135deg,#b8860b,#e8c878);border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+      .snagai-btn-icon{width:24px;height:24px;background:#6366f1;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
       .snagai-live-dot{width:6px;height:6px;background:#34d399;border-radius:50%;animation:snagai-pulse 2s ease-in-out infinite;flex-shrink:0}
       .snagai-spin-icon{display:inline-block;animation:snagai-spin .7s linear infinite}
     `;
@@ -224,9 +224,13 @@
     btn.id = 'snagai-sync-btn';
     btn.innerHTML = `
       <div class="snagai-btn-icon">
-        <svg width="13" height="13" viewBox="0 0 32 32" fill="none">
-          <path d="M10 20.5C10 20.5 11.5 22 14 22C16.5 22 18 20.5 18 18.5C18 16.5 16 15.5 14 14.5C12 13.5 10.5 12.5 10.5 10.5C10.5 8.5 12 7 14.5 7C17 7 18 8.5 18 8.5" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
-          <path d="M16 9L22 9C22 9 24 11 22 13C24 13 26 15 24 17C25 17 26 19 24 21C25 21 25 23 23 24L16 24" stroke="white" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+        <svg width="16" height="16" viewBox="0 0 100 100" fill="none">
+          <rect x="5" y="5" width="64" height="78" rx="10" stroke="white" stroke-width="5.5" fill="none"/>
+          <line x1="14" y1="23" x2="57" y2="23" stroke="white" stroke-width="5" stroke-linecap="round"/>
+          <line x1="14" y1="35" x2="57" y2="35" stroke="white" stroke-width="5" stroke-linecap="round"/>
+          <line x1="14" y1="47" x2="57" y2="47" stroke="white" stroke-width="5" stroke-linecap="round"/>
+          <circle cx="76" cy="77" r="23" fill="#4338ca"/>
+          <polygon points="80,59 70,78 77,78 73,95 88,74 81,74" fill="white"/>
         </svg>
       </div>
       <span>Sync Profile</span>

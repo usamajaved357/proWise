@@ -88,7 +88,7 @@
 .sn-brand { display: flex; align-items: center; gap: 10px; }
 .sn-logo {
   width: 28px; height: 28px;
-  background: linear-gradient(135deg, #b8860b, #e8c878);
+  background: #6366f1;
   border-radius: 8px; display: flex; align-items: center; justify-content: center;
 }
 .sn-title { font-size: 13px; font-weight: 700; color: var(--sn-white); }
