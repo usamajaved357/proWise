@@ -5,74 +5,72 @@
 <title>Snag AI</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{width:320px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0d1120;color:#f0eeea;overflow:hidden}
+body{width:300px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0d1120;color:#f0eeea;overflow:hidden;border-radius:16px}
 
 /* Header */
-.hdr{padding:16px 18px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.07)}
+.hdr{padding:14px 16px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.06)}
 .hdr-brand{display:flex;align-items:center;gap:9px}
-.hdr-logo{width:28px;height:28px;border-radius:7px;background:#6366f1;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.hdr-logo svg{width:16px;height:16px}
-.hdr-name{font-size:14px;font-weight:700;color:#f0eeea;letter-spacing:-.01em}
+.hdr-logo{width:32px;height:32px;border-radius:9px;background:#6366f1;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.hdr-name{font-size:13px;font-weight:700;color:#f0eeea;letter-spacing:-.01em}
 .hdr-sub{font-size:10px;color:rgba(240,238,234,.4);margin-top:1px}
-.settings-btn{width:30px;height:30px;border:1px solid rgba(255,255,255,.1);border-radius:8px;background:transparent;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;color:rgba(240,238,234,.5)}
-.settings-btn:hover{background:rgba(255,255,255,.08);color:#f0eeea;border-color:rgba(255,255,255,.2)}
+.settings-btn{display:none}
 
 /* Usage card */
-.usage-card{margin:14px 16px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:14px 16px}
+.usage-card{margin:12px 14px 0;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:12px;padding:13px 14px}
 .usage-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
-.plan-badge{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:700;padding:3px 10px;border-radius:20px;letter-spacing:.03em}
-.badge-free{background:rgba(251,191,36,.15);color:#fbbf24;border:1px solid rgba(251,191,36,.25)}
-.badge-starter{background:rgba(96,165,250,.15);color:#60a5fa;border:1px solid rgba(96,165,250,.25)}
-.badge-pro{background:rgba(167,139,250,.15);color:#a78bfa;border:1px solid rgba(167,139,250,.25)}
-.badge-agency{background:rgba(52,211,153,.15);color:#34d399;border:1px solid rgba(52,211,153,.25)}
-.usage-count{font-size:12px;color:rgba(240,238,234,.5)}
+.plan-badge{display:inline-flex;align-items:center;font-size:10px;font-weight:700;padding:3px 12px;border-radius:999px;letter-spacing:.04em}
+.badge-free{background:rgba(248,113,113,.12);color:#fca5a5;border:1px solid rgba(248,113,113,.25)}
+.badge-starter{background:rgba(96,165,250,.12);color:#93c5fd;border:1px solid rgba(96,165,250,.25)}
+.badge-pro{background:rgba(99,102,241,.15);color:#a5b4fc;border:1px solid rgba(99,102,241,.3)}
+.badge-agency{background:rgba(52,211,153,.12);color:#6ee7b7;border:1px solid rgba(52,211,153,.25)}
+.usage-count{font-size:11px;color:rgba(240,238,234,.45)}
 .usage-count strong{color:#f0eeea;font-weight:600}
 
 /* Progress bar */
-.bar-wrap{height:5px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden;margin-bottom:6px}
-.bar-fill{height:100%;border-radius:3px;transition:width .4s ease,background .3s}
-.bar-ok{background:linear-gradient(90deg,#c9a84c,#e8c878)}
-.bar-warn{background:linear-gradient(90deg,#f59e0b,#fbbf24)}
-.bar-danger{background:linear-gradient(90deg,#ef4444,#f87171)}
+.bar-wrap{height:4px;background:rgba(255,255,255,.07);border-radius:999px;overflow:hidden;margin-bottom:7px}
+.bar-fill{height:100%;border-radius:999px;transition:width .4s ease,background .3s}
+.bar-ok{background:#6366f1}
+.bar-warn{background:#f59e0b}
+.bar-danger{background:#f87171}
 
 .usage-status{font-size:11px;color:rgba(240,238,234,.4)}
 .usage-status.warn{color:#fbbf24}
-.usage-status.danger{color:#f87171;font-weight:600}
+.usage-status.danger{color:#fca5a5;font-weight:500}
 
 /* Alert banner */
-.alert-banner{margin:0 16px 12px;padding:10px 12px;border-radius:8px;font-size:12px;line-height:1.5;display:none}
-.alert-warn{background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.25);color:#fbbf24}
-.alert-danger{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);color:#f87171}
+.alert-banner{margin:10px 14px 0;padding:9px 12px;border-radius:10px;font-size:11.5px;line-height:1.55;display:none}
+.alert-warn{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);color:#fbbf24}
+.alert-danger{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.2);color:#fca5a5}
 
 /* Email row */
-.email-row{margin:0 16px 12px;padding:10px 12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:10px;display:flex;align-items:center;gap:8px}
-.email-dot{width:7px;height:7px;border-radius:50%;background:#374151;flex-shrink:0}
+.email-row{margin:10px 14px 0;padding:10px 12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:10px;display:flex;align-items:center;gap:8px}
+.email-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.18);flex-shrink:0}
 .email-dot.on{background:#34d399}
 .email-info{flex:1;min-width:0}
-.email-label{font-size:11px;color:rgba(240,238,234,.4);margin-bottom:1px}
-.email-val{font-size:12px;font-weight:500;color:#f0eeea;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.email-edit{font-size:11px;color:#c9a84c;cursor:pointer;white-space:nowrap;flex-shrink:0}
-.email-edit:hover{color:#e8c878}
+.email-label{font-size:10px;color:rgba(240,238,234,.35);margin-bottom:1px}
+.email-val{font-size:11.5px;font-weight:500;color:#f0eeea;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.email-edit{font-size:11px;color:#818cf8;font-weight:700;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.email-edit:hover{color:#a5b4fc}
 
-/* Email input inline */
-.email-input-wrap{margin:0 16px 12px;display:none}
+/* Email input */
+.email-input-wrap{margin:10px 14px 0;display:none}
 .email-input-wrap.show{display:flex;gap:6px}
-.email-inp{flex:1;padding:8px 12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);border-radius:8px;color:#f0eeea;font-size:13px;font-family:inherit;outline:none}
-.email-inp:focus{border-color:#c9a84c}
+.email-inp{flex:1;padding:8px 12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:999px;color:#f0eeea;font-size:12px;font-family:inherit;outline:none}
+.email-inp:focus{border-color:#6366f1}
 .email-inp::placeholder{color:rgba(240,238,234,.25)}
-.email-save-btn{padding:8px 14px;background:#c9a84c;color:#0d1120;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
+.email-save-btn{padding:8px 16px;background:#6366f1;color:#fff;border:none;border-radius:999px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:inherit}
 
-/* Upgrade button */
-.upgrade-btn{display:none;margin:0 16px 12px;width:calc(100% - 32px);padding:11px;background:linear-gradient(135deg,#c9a84c,#e8c878);color:#0d1120;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:.01em;transition:opacity .15s}
-.upgrade-btn:hover{opacity:.9}
+/* Upgrade button — capsule red outline */
+.upgrade-btn{display:none;margin:10px 14px 0;width:calc(100% - 28px);padding:11px 20px;background:rgba(248,113,113,.1);color:#fca5a5;border:1.5px solid rgba(248,113,113,.28);border-radius:999px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;letter-spacing:.01em;text-align:center;transition:all .15s}
+.upgrade-btn:hover{background:rgba(248,113,113,.18);border-color:rgba(248,113,113,.5)}
 
-/* Open settings */
-.open-settings{display:flex;align-items:center;justify-content:center;gap:7px;margin:0 16px;padding:11px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:10px;cursor:pointer;font-size:13px;font-weight:600;color:rgba(240,238,234,.7);transition:all .15s;width:calc(100% - 32px)}
-.open-settings:hover{background:rgba(255,255,255,.09);color:#f0eeea;border-color:rgba(255,255,255,.15)}
-.open-settings svg{opacity:.6}
+/* Open settings — capsule indigo */
+.open-settings{display:flex;align-items:center;justify-content:center;gap:7px;margin:10px 14px 0;width:calc(100% - 28px);padding:11px 20px;background:#6366f1;color:#fff;border:none;border-radius:999px;cursor:pointer;font-size:13px;font-weight:700;font-family:inherit;transition:all .15s;letter-spacing:.01em}
+.open-settings:hover{opacity:.88;transform:translateY(-1px)}
+.open-settings svg{opacity:.9;flex-shrink:0}
 
 /* Footer */
-.ftr{padding:10px 16px;text-align:center;font-size:10px;color:rgba(240,238,234,.2);border-top:1px solid rgba(255,255,255,.05);margin-top:12px}
+.ftr{padding:10px 14px 12px;text-align:center;font-size:10px;color:rgba(240,238,234,.16);margin-top:10px}
 </style>
 </head>
 <body>
@@ -80,7 +78,7 @@ body{width:320px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-se
 <div class="hdr">
   <div class="hdr-brand">
     <div class="hdr-logo">
-      <svg width="22" height="22" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <svg width="20" height="20" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
         <rect x="5" y="5" width="64" height="78" rx="10" stroke="white" stroke-width="5.5" fill="none"/>
         <line x1="14" y1="23" x2="57" y2="23" stroke="white" stroke-width="5" stroke-linecap="round"/>
         <line x1="14" y1="35" x2="57" y2="35" stroke="white" stroke-width="5" stroke-linecap="round"/>
@@ -95,11 +93,8 @@ body{width:320px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-se
       <div class="hdr-sub">Upwork proposal writer</div>
     </div>
   </div>
-  <button class="settings-btn" id="settings-btn" title="Open settings">
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-      <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-    </svg>
-  </button>
+  <!-- settings-btn kept for JS listener, visually hidden -->
+  <button class="settings-btn" id="settings-btn" title="Open settings"></button>
 </div>
 
 <!-- Usage Card -->
@@ -134,13 +129,13 @@ body{width:320px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-se
 <!-- Upgrade button -->
 <button class="upgrade-btn" id="upgrade-btn">⚡ Upgrade Plan</button>
 
-<!-- Open settings -->
+<!-- Dashboard & settings -->
 <button class="open-settings" id="open-settings">
-  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-  Profile, settings & more
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+  Dashboard &amp; settings
 </button>
 
-<div class="ftr">Snag AI v6.0 · Snag the job before anyone else</div>
+<div class="ftr">Snag AI v14.0 · Snag the job before anyone else</div>
 
 <script src="popup.js"></script>
 </body>
