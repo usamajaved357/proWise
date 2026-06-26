@@ -57,7 +57,7 @@
 #sn-panel {
   position: fixed;
   width: 860px;
-  min-width: 560px; min-height: 440px;
+  min-width: 560px; min-height: unset;
   max-height: 90vh;
   background: var(--sn-bg);
   border: 1px solid var(--sn-border2);
@@ -769,28 +769,47 @@
    ════════════════════════════════════════════════════════════════ */
 .sn-alv2-wrap { display:flex; flex-direction:column; }
 
-/* ── Top section: badge + summary only ──────────────────────────── */
-.sn-alb-top {
+/* ── Action bar: verdict pill + capsule buttons ──────────────────── */
+.sn-alb-actionbar {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
-  padding: 13px 14px 11px;
-  border-bottom: 1px solid rgba(255,255,255,.05);
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+  background: rgba(255,255,255,.015);
+}
+.sn-alb-btns { display: flex; align-items: center; gap: 7px; flex-shrink: 0; }
+
+/* ── Top section: summary + inline tip ───────────────────────────── */
+.sn-alb-top {
+  padding: 10px 16px 9px;
+}
+.sn-tip-inline {
+  color: rgba(99,102,241,.8);
+  font-weight: 500;
 }
 
-/* ── Always-visible action tip box ──────────────────────────────── */
-.sn-alb-tip {
+/* ── Tip box (legacy, no longer rendered) ────────────────────────── */
+.sn-alb-tip { display: none; }
+
+/* Alert verdict — plain icon + text, always red */
+.sn-alert-verdict {
   display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  margin: 8px 14px;
-  padding: 8px 12px;
-  background: rgba(255,255,255,.03);
-  border: 1px solid rgba(255,255,255,.06);
-  border-radius: 9px;
-  font-size: 11px;
-  color: rgba(240,238,234,.5);
-  line-height: 1.6;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -.01em;
+  color: #f87171;
+  margin-bottom: 4px;
+}
+.sn-alb-left {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
 }
 
 /* kept for any legacy refs */
@@ -895,44 +914,50 @@
 .sn-bar-track  { height:5px; background:rgba(255,255,255,.07); border-radius:999px; overflow:hidden; }
 .sn-bar-fill   { height:100%; border-radius:999px; transition:width .6s cubic-bezier(.4,0,.2,1); }
 
-/* ── Score cards (Concept B) ─────────────────────────────────────── */
-.sn-score-cards {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+/* ── Score chips ─────────────────────────────────────────────────── */
+.sn-score-chips {
+  display: flex;
+  align-items: center;
   gap: 8px;
-  padding: 9px 14px 8px;
+  padding: 8px 16px;
+  border-bottom: 1px solid rgba(255,255,255,.05);
 }
-.sn-score-card {
+.sn-score-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
   background: rgba(255,255,255,.03);
   border: 1px solid rgba(255,255,255,.07);
-  border-radius: 10px;
-  padding: 10px 12px 9px;
+  border-radius: 999px;
+  flex: 1;
+  min-width: 0;
 }
-.sn-score-card-lbl {
-  font-size: 10px; font-weight: 700; text-transform: uppercase;
-  letter-spacing: .08em; color: rgba(240,238,234,.38); margin-bottom: 7px;
+.sn-chip-num {
+  font-size: 14px; font-weight: 800; line-height: 1; flex-shrink: 0;
 }
-.sn-score-card-num {
-  font-size: 24px; font-weight: 800; letter-spacing: -.04em;
-  line-height: 1; margin-bottom: 7px;
+.sn-chip-lbl {
+  font-size: 10px; color: rgba(240,238,234,.35); flex-shrink: 0; white-space: nowrap;
 }
-.sn-score-card-sub {
-  font-size: 10px; color: rgba(240,238,234,.28); margin-top: 4px;
+.sn-chip-bar {
+  flex: 1; height: 3px; background: rgba(255,255,255,.07); border-radius: 999px; overflow: hidden;
 }
+.sn-chip-fill { height: 100%; border-radius: 999px; }
+.sn-chip-sep { display: none; }
+.sn-score-chips { border-bottom: none; }
 
 /* ── Two-column factor grid ──────────────────────────────────────── */
 .sn-factor-cols {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  border-top: 1px solid rgba(255,255,255,.05);
-  border-bottom: 1px solid rgba(255,255,255,.05);
 }
+.sn-factor-col { padding: 10px 0 12px; }
 .sn-factor-col:first-child { border-right: 1px solid rgba(255,255,255,.05); }
 .sn-col-label {
-  font-size: 10px; font-weight: 700; text-transform: uppercase;
-  letter-spacing: .08em; color: rgba(240,238,234,.4);
-  padding: 8px 12px 6px;
-  border-bottom: 1px solid rgba(255,255,255,.05);
+  font-size: 9px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .09em; color: rgba(240,238,234,.28);
+  padding: 0 14px 7px;
+  margin-bottom: 2px;
 }
 
 /* ── Factor rows ─────────────────────────────────────────────────── */
@@ -941,13 +966,13 @@
   display: flex;
   align-items: flex-start;
   gap: 8px;
-  padding: 6px 12px;
+  padding: 5px 14px;
   border-radius: 0;
-  border-bottom: 1px solid rgba(255,255,255,.04);
+  border-bottom: none;
   background: transparent;
 }
 .sn-af-item:last-child { border-bottom: none; }
-.sn-af-item--filter { border-left: 2px solid rgba(250,204,21,.35); padding-left: 10px; }
+.sn-af-item--filter { border-left: none; padding-left: 14px; }
 .sn-af-dot  { width:5px; height:5px; border-radius:50%; flex-shrink:0; margin-top:5px; }
 .sn-af-body { display:flex; flex-direction:column; gap:1px; flex:1; min-width:0; }
 .sn-af-label { font-size:11.5px; font-weight:600; color:rgba(240,238,234,.88); line-height:1.3; }
@@ -958,31 +983,29 @@
 .sn-af-section-lbl { font-size:9px; font-weight:700; text-transform:uppercase; letter-spacing:.11em; color:rgba(240,238,234,.2); padding:10px 12px 4px; }
 
 /* ── Footer buttons ──────────────────────────────────────────────── */
-.sn-alv2-footer {
-  display: flex; align-items: center; gap: 8px;
-  padding: 9px 14px 13px;
-}
+.sn-alv2-footer { display: flex; align-items: center; gap: 8px; padding: 9px 14px 13px; }
 .sn-alv2-cancel {
-  flex: 1; padding: 11px 8px;
+  padding: 7px 16px;
   background: rgba(255,255,255,.05);
-  border: 1px solid rgba(255,255,255,.11);
-  border-radius: 10px;
-  color: rgba(240,238,234,.52);
-  font-size: 12.5px; font-weight: 600;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 999px;
+  color: rgba(240,238,234,.55);
+  font-size: 12px; font-weight: 600;
   cursor: pointer; font-family: inherit;
-  transition: all .15s;
+  transition: all .15s; white-space: nowrap;
 }
-.sn-alv2-cancel:hover { border-color:rgba(255,255,255,.2); color:rgba(240,238,234,.78); background:rgba(255,255,255,.09); }
+.sn-alv2-cancel:hover { border-color:rgba(255,255,255,.22); color:rgba(240,238,234,.85); background:rgba(255,255,255,.09); }
 .sn-alv2-anyway {
-  flex: 2; padding: 11px 8px;
-  background: #c9a84c;
-  border: none; border-radius: 10px;
-  color: #0a0e1a; font-size: 13px; font-weight: 800;
+  padding: 7px 16px;
+  background: #6366f1;
+  border: none; border-radius: 999px;
+  color: #fff; font-size: 12px; font-weight: 700;
   cursor: pointer; font-family: inherit;
-  transition: background .15s;
-  display: flex; align-items: center; justify-content: center; gap: 6px;
+  transition: opacity .15s;
+  display: flex; align-items: center; justify-content: center; gap: 5px;
+  white-space: nowrap;
 }
-.sn-alv2-anyway:hover { background: #e8c878; }
+.sn-alv2-anyway:hover { opacity: .88; }
 
 /* ── Skip overlay ────────────────────────────────────────────────── */
 .sn-skip-overlay {

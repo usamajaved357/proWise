@@ -30,30 +30,34 @@ window.SnagAI.showProbAlert = function(wp, hired) {
       : combined >= 20 ? 'Poor match — very high competition or profile mismatch. Skip it.'
       : 'Critical mismatch. Your profile does not meet this job. Save your Connects.';
 
-    // Separate + annotate
+    // Separate + annotate — only show negative factors
     const filterNotes  = wp.filterNotes || {};
     const probFactors  = (wp.topProb  || []).map(f => {
-      const n = { ...f }; if (filterNotes[f.label]) n.filterNote = filterNotes[f.label]; return n;
-    }).sort((a, b) => a.delta - b.delta);
+      const n = { ...f };
+      n.value = n.value !== null && typeof n.value === 'object' ? JSON.stringify(n.value) : String(n.value || '');
+      if (filterNotes[f.label]) n.filterNote = filterNotes[f.label]; return n;
+    }).filter(f => f.delta < 0).sort((a, b) => a.delta - b.delta);
     const matchFactors = (wp.topMatch || []).map(f => {
-      const n = { ...f }; if (filterNotes[f.label]) n.filterNote = filterNotes[f.label]; return n;
-    }).sort((a, b) => a.delta - b.delta);
+      const n = { ...f };
+      n.value = n.value !== null && typeof n.value === 'object' ? JSON.stringify(n.value) : String(n.value || '');
+      if (filterNotes[f.label]) n.filterNote = filterNotes[f.label]; return n;
+    }).filter(f => f.delta < 0).sort((a, b) => a.delta - b.delta);
 
-    // Action tip — always visible, based on worst signal
+    // Short inline tip merged into summary line
     const allSorted = [...probFactors, ...matchFactors].sort((a, b) => a.delta - b.delta);
     const top = allSorted[0];
     const topText = ((top?.label || '') + ' ' + (top?.value || '') + ' ' + (top?.note || '')).toLowerCase();
-    let actionTip = '';
-    if (isHired)                               { actionTip = 'Someone is already hired. Skip to save your Connects.'; }
-    else if (topText.includes('proposal'))     { actionTip = '50+ proposals — your first 160 chars are everything. Use a hook with a specific result.'; }
-    else if (topText.includes('skill') || topText.includes('mismatch')) { actionTip = 'Skill gap detected. Acknowledge it early and pivot to what you can deliver.'; }
-    else if (topText.includes('interview'))    { actionTip = 'Someone is interviewing. Speed and specificity in your hook are your only edge.'; }
-    else if (topText.includes('hire rate') || topText.includes('never hires')) { actionTip = "Client rarely hires from proposals. A direct CTA asking for a quick call works best."; }
-    else if (topText.includes('invite'))       { actionTip = 'Client prefers invited freelancers. Open by referencing their specific requirements exactly.'; }
-    else if (combined >= 70)                   { actionTip = 'Strong opportunity. Lead with your most relevant portfolio result in the opening line.'; }
-    else if (combined >= 55)                   { actionTip = 'Worth applying. Stand out by opening with a specific result, not a generic intro.'; }
-    else if (combined >= 35)                   { actionTip = 'Tough odds. Your only chance is an exceptional hook in the first 160 chars.'; }
-    else                                       { actionTip = 'Very low odds. If you apply anyway, focus everything on the opening sentence.'; }
+    let shortTip = '';
+    if (isHired)                                                          { shortTip = 'Skip to save your Connects.'; }
+    else if (topText.includes('proposal'))                                { shortTip = 'Hook them in the first 160 chars.'; }
+    else if (topText.includes('skill') || topText.includes('mismatch'))  { shortTip = 'Acknowledge the gap, pivot to delivery.'; }
+    else if (topText.includes('interview'))                               { shortTip = 'Speed is your only edge now.'; }
+    else if (topText.includes('hire rate') || topText.includes('never')) { shortTip = 'Ask for a quick call directly.'; }
+    else if (topText.includes('invite'))                                  { shortTip = 'Reference their exact requirements.'; }
+    else if (combined >= 70)                                              { shortTip = 'Lead with your most relevant result.'; }
+    else if (combined >= 55)                                              { shortTip = 'Open with a specific result, not a generic intro.'; }
+    else if (combined >= 35)                                              { shortTip = 'Exceptional hook is your only chance.'; }
+    else                                                                  { shortTip = 'Save your Connects.'; }
 
     function factorPill(f) {
       const isNeg = f.delta < 0, isPos = f.delta > 0;
@@ -77,49 +81,47 @@ window.SnagAI.showProbAlert = function(wp, hired) {
     document.getElementById('sn-body').innerHTML = `
       <div class="sn-alv2-wrap">
 
-        <div class="sn-alb-top">
-          <div class="sn-alert-status-badge" style="color:${barColor};background:${barColor}14;border-color:${barColor}30">
-            <span class="sn-alert-status-dot" style="background:${barColor}"></span>
-            ${label}
+        <!-- Action bar: heading + summary stacked left, buttons right -->
+        <div class="sn-alb-actionbar">
+          <div class="sn-alb-left">
+            <div class="sn-alert-verdict">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              Alert
+            </div>
+            <p class="sn-alv2-summary">${summary.replace(/\s*—\s*/g, ' ').trim()}${shortTip ? ' ' + shortTip : ''}</p>
           </div>
-          <p class="sn-alv2-summary">${summary}</p>
-        </div>
-
-        <div class="sn-score-cards">
-          <div class="sn-score-card">
-            <div class="sn-score-card-lbl">Win Probability</div>
-            <div class="sn-score-card-num" style="color:${probColor}">${wp.probScore}%</div>
-            <div class="sn-bar-track"><div class="sn-bar-fill" style="width:${wp.probScore}%;background:${probColor}"></div></div>
-            <div class="sn-score-card-sub">Competition factors</div>
-          </div>
-          <div class="sn-score-card">
-            <div class="sn-score-card-lbl">Profile Match</div>
-            <div class="sn-score-card-num" style="color:${matchColor}">${wp.matchScore}%</div>
-            <div class="sn-bar-track"><div class="sn-bar-fill" style="width:${wp.matchScore}%;background:${matchColor}"></div></div>
-            <div class="sn-score-card-sub">Your profile vs job</div>
+          <div class="sn-alb-btns">
+            <button class="sn-alv2-cancel" id="sn-alert-cancel">Skip this job</button>
+            ${isHired ? '' : '<button class="sn-alv2-anyway" id="sn-alert-anyway">✦ Write proposal</button>'}
           </div>
         </div>
 
+        <!-- Score chips -->
+        <div class="sn-score-chips">
+          <div class="sn-score-chip">
+            <span class="sn-chip-num" style="color:${probColor}">${wp.probScore}%</span>
+            <span class="sn-chip-lbl">Win probability</span>
+            <div class="sn-chip-bar"><div class="sn-chip-fill" style="width:${wp.probScore}%;background:${probColor}"></div></div>
+          </div>
+          <div class="sn-score-chip">
+            <span class="sn-chip-num" style="color:${matchColor}">${wp.matchScore}%</span>
+            <span class="sn-chip-lbl">Profile match</span>
+            <div class="sn-chip-bar"><div class="sn-chip-fill" style="width:${wp.matchScore}%;background:${matchColor}"></div></div>
+          </div>
+        </div>
+
+        <!-- Negative factors — two clean columns -->
         <div class="sn-factor-cols">
           <div class="sn-factor-col">
-            <div class="sn-col-label">Competition</div>
-            ${probFactors.length ? probFactors.map(f => factorPill(f)).join('') : '<div class="sn-af-empty">No data</div>'}
+            <div class="sn-col-label">Risk factors</div>
+            ${probFactors.length ? probFactors.map(f => factorPill(f)).join('') : '<div class="sn-af-empty">No risk factors</div>'}
           </div>
           <div class="sn-factor-col">
-            <div class="sn-col-label">Profile match</div>
-            ${matchFactors.length ? matchFactors.map(f => factorPill(f)).join('') : '<div class="sn-af-empty">No data</div>'}
+            <div class="sn-col-label">Profile gaps</div>
+            ${matchFactors.length ? matchFactors.map(f => factorPill(f)).join('') : '<div class="sn-af-empty">No profile gaps</div>'}
           </div>
         </div>
 
-        <div class="sn-alb-tip">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(201,168,76,.7)" stroke-width="2" style="flex-shrink:0;margin-top:1px"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-          <span>${actionTip}</span>
-        </div>
-
-        <div class="sn-alv2-footer" id="sn-alert-footer">
-          <button class="sn-alv2-cancel" id="sn-alert-cancel">Skip this job</button>
-          ${isHired ? '' : '<button class="sn-alv2-anyway" id="sn-alert-anyway"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2c0 0 .7 5.8 2.1 7.2C15.5 10.6 21 12 21 12s-5.5 1.4-6.9 2.8C12.7 16.2 12 22 12 22s-.7-5.8-2.1-7.2C8.5 13.4 3 12 3 12s5.5-1.4 6.9-2.8C11.3 7.8 12 2 12 2z"/></svg>Write proposal</button>'}
-        </div>
       </div>
     `;
 
