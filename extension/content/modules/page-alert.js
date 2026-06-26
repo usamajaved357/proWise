@@ -78,10 +78,33 @@ window.SnagAI.showProbAlert = function(wp, hired) {
         + '</div>';
     }
 
+    // Move action buttons to panel header (near close button)
+    const headRight = document.querySelector('#sn-panel .sn-head-right');
+    const closeBtn  = document.getElementById('sn-close');
+    if (headRight && closeBtn) {
+      const existing = headRight.querySelectorAll('.sn-alv2-cancel,.sn-alv2-anyway');
+      existing.forEach(el => el.remove());
+      closeBtn.insertAdjacentHTML('beforebegin',
+        `<button class="sn-alv2-cancel" id="sn-alert-cancel">Skip</button>`
+        + (isHired ? '' : `<button class="sn-alv2-anyway" id="sn-alert-anyway">✦ Write</button>`)
+      );
+    }
+
+    // Center panel at compact size for the alert
+    const p  = document.getElementById('sn-panel');
+    const pw = Math.min(620, window.innerWidth * 0.55);
+    p.style.width     = pw + 'px';
+    p.style.height    = 'auto';
+    p.style.maxHeight = '88vh';
+    p.style.left      = Math.round((window.innerWidth - pw) / 2) + 'px';
+    p.style.top       = Math.max(80, Math.round(window.innerHeight * 0.1)) + 'px';
+    p.style.right     = '';
+    p.classList.add('sn-alert-mode');
+
     document.getElementById('sn-body').innerHTML = `
       <div class="sn-alv2-wrap">
 
-        <!-- Action bar: heading + summary stacked left, buttons right -->
+        <!-- Alert heading + summary only, no buttons -->
         <div class="sn-alb-actionbar">
           <div class="sn-alb-left">
             <div class="sn-alert-verdict">
@@ -89,10 +112,6 @@ window.SnagAI.showProbAlert = function(wp, hired) {
               Alert
             </div>
             <p class="sn-alv2-summary">${summary.replace(/\s*—\s*/g, ' ').trim()}${shortTip ? ' ' + shortTip : ''}</p>
-          </div>
-          <div class="sn-alb-btns">
-            <button class="sn-alv2-cancel" id="sn-alert-cancel">Skip this job</button>
-            ${isHired ? '' : '<button class="sn-alv2-anyway" id="sn-alert-anyway">✦ Write proposal</button>'}
           </div>
         </div>
 
@@ -172,6 +191,15 @@ window.SnagAI.showProbAlert = function(wp, hired) {
     });
 
     const ab = document.getElementById('sn-alert-anyway');
-    if (ab) ab.addEventListener('click', () => { SnagAI.showLoading(); resolve(false); });
+    if (ab) ab.addEventListener('click', () => {
+      // Restore panel to full centered size before generating
+      const headRight = document.querySelector('#sn-panel .sn-head-right');
+      headRight?.querySelectorAll('.sn-alv2-cancel,.sn-alv2-anyway').forEach(el => el.remove());
+      const pm = document.getElementById('sn-panel');
+      if (pm) { pm.style.right = ''; pm.classList.remove('sn-alert-mode'); }
+      SnagAI.centerPanel();
+      SnagAI.showLoading();
+      resolve(false);
+    });
   });
 };

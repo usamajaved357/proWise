@@ -147,10 +147,11 @@ window.SnagAI.injectUI = function() {
 
 window.SnagAI.centerPanel = function() {
   const p = document.getElementById('sn-panel');
-  const pw = Math.min(860, window.innerWidth * 0.96);
-  const ph = Math.min(600, window.innerHeight * 0.88);
+  const pw = Math.min(860, window.innerWidth * 0.92);
+  const ph = Math.min(560, window.innerHeight * 0.82);
   p.style.width  = pw + 'px';
   p.style.height = ph + 'px';
+  p.style.right  = '';
   p.style.left   = Math.round((window.innerWidth  - pw) / 2) + 'px';
   p.style.top    = Math.round((window.innerHeight - ph) / 2) + 'px';
   p.style.transform = 'none';
@@ -163,6 +164,10 @@ window.SnagAI.closePanel = function() {
 };
 
 window.SnagAI.showLoading = function() {
+  // Compact height during loading — expand when content is ready
+  const p = document.getElementById('sn-panel');
+  if (p) { p.style.height = 'auto'; p.classList.remove('sn-alert-mode'); }
+
   document.getElementById('sn-body').innerHTML = `
     <div class="sn-loading">
       <div class="sn-spinner"></div>

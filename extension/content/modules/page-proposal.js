@@ -68,6 +68,9 @@ window.SnagAI.renderProposal = function(data) {
     return (el?.innerText || '').trim().split(/\s+/).filter(w => w).length;
   }
 
+  // Restore full panel size when showing proposal
+  SnagAI.centerPanel();
+
   document.getElementById('sn-body').innerHTML = `
     <div class="sn-cl-wrap">
       <div class="sn-cl-left">
