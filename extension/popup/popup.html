@@ -5,7 +5,8 @@
 <title>Snag AI</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{width:300px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0d1120;color:#f0eeea;overflow:hidden;border-radius:16px}
+body{width:300px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0d1120;color:#f0eeea;overflow:hidden;border:0.5px solid #6366f1}
+.popup-wrap{background:#0d1120;border-radius:0;overflow:hidden}
 
 /* Header */
 .hdr{padding:14px 16px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.06)}
@@ -75,6 +76,7 @@ body{width:300px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-se
 </head>
 <body>
 
+<div class="popup-wrap">
 <div class="hdr">
   <div class="hdr-brand">
     <div class="hdr-logo">
@@ -136,6 +138,7 @@ body{width:300px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-se
 </button>
 
 <div class="ftr">Snag AI v14.0 · Snag the job before anyone else</div>
+</div><!-- end popup-wrap -->
 
 <script src="popup.js"></script>
 </body>
