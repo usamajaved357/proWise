@@ -63,3 +63,81 @@ export async function handleGenerate(payload) {
   if (!res.ok) throw new Error(data.error || 'Server error');
   return data;
 }
+
+// ── Cover letter generation from proposal submission page ──────────────────
+export async function handleCoverLetter(msg) {
+  const [syncData, localData] = await Promise.all([
+    chrome.storage.sync.get(['userEmail', 'anonId', 'settings']),
+    chrome.storage.local.get(['registeredProfiles', 'activeProfileId', 'primaryProfileId', 'deviceId'])
+  ]);
+
+  const regProfiles = localData.registeredProfiles || [];
+  const primaryId   = localData.primaryProfileId;
+  const primaryMeta =
+    (primaryId && regProfiles.find(p => p && p.id === primaryId && (p.name || p.jss || p._readAt))) ||
+    regProfiles.find(p => p && (p.name || p.jss || p._readAt)) ||
+    regProfiles[0];
+
+  let profileFull = null;
+  if (primaryMeta?.id) {
+    const localKey = 'profileFull_' + primaryMeta.id;
+    const stored   = await new Promise(r => chrome.storage.local.get([localKey], r));
+    profileFull = stored[localKey] || null;
+  }
+
+  const baseProfile = profileFull || {};
+  const profile = {
+    ...baseProfile,
+    skills:    Array.isArray(baseProfile.skillsArr) && baseProfile.skillsArr.length
+                 ? baseProfile.skillsArr.join(', ')
+                 : (typeof baseProfile.skills === 'string' ? baseProfile.skills : ''),
+    skillsArr: Array.isArray(baseProfile.skillsArr) ? baseProfile.skillsArr : [],
+    portfolio: baseProfile.portfolios || baseProfile.portfolio || [],
+    extra:     baseProfile.extra || '',
+  };
+
+  let anonId = syncData.anonId;
+  if (!anonId) {
+    anonId = 'anon_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+    await chrome.storage.sync.set({ anonId });
+  }
+
+  // Build a refine instruction that includes context about the task
+  const isRefinement = !!(msg.existingCL);
+  const questionCtx  = msg.fillQuestions && msg.questionCount > 0
+    ? `\n\nAlso write answers for ${msg.questionCount} client question(s) on the proposal form. Return them as a JSON array under the key "answers" alongside "coverLetter".`
+    : '';
+
+  const refineInstruction = [
+    msg.instruction || '',
+    questionCtx,
+  ].filter(Boolean).join('\n').trim();
+
+  const res = await fetch(SERVER + '/proposal', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      job:               msg.jobData || {},
+      profile,
+      settings:          syncData.settings || {},
+      email:             syncData.userEmail || null,
+      anonId,
+      refineInstruction,
+      currentLetter:     msg.existingCL || '',
+      categories:        profileFull?.jobFilters?.categories || [],
+      freelancerType:    syncData.settings?.freelancerType || 'developer',
+      deviceId:          localData.deviceId || '',
+      fillQuestions:     !!(msg.fillQuestions && msg.questionCount > 0),
+    })
+  });
+
+  const data = await res.json();
+  if (res.status === 402 || data.showPaywall) return { showPaywall: true, error: data.error };
+  if (!res.ok) throw new Error(data.error || 'Server error');
+
+  // If server returned a plain letter string, wrap it
+  if (typeof data === 'string') return { coverLetter: data };
+  if (data.letter)        return { coverLetter: data.letter,       answers: data.answers || [] };
+  if (data.coverLetter)   return { coverLetter: data.coverLetter,  answers: data.answers || [] };
+  return data;
+}

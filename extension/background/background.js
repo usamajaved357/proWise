@@ -1,5 +1,5 @@
 // ── Snag AI Background — message router ───────────────────────────────────────
-import { handleGenerate } from './modules/generate.js';
+import { handleGenerate, handleCoverLetter } from './modules/generate.js';
 import { getStatus }      from './modules/status.js';
 
 // Generate a stable device UUID on first install
@@ -16,6 +16,10 @@ chrome.runtime.onInstalled.addListener(() => {
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.type === 'GENERATE_PROPOSAL') {
     handleGenerate(msg.payload).then(sendResponse).catch(e => sendResponse({ error: e.message }));
+    return true;
+  }
+  if (msg.type === 'GENERATE_COVER_LETTER') {
+    handleCoverLetter(msg).then(sendResponse).catch(e => sendResponse({ error: e.message }));
     return true;
   }
   if (msg.type === 'GET_STATUS') {

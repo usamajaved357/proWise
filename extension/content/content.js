@@ -5,8 +5,30 @@
 (function () {
   'use strict';
 
+  // ── Sidebar toggle (new primary action on job page) ───────────────────────
   SnagAI.toggle = function() {
-    SnagAI.state.isOpen ? SnagAI.closePanel() : openAndGenerate();
+    const sidebar = document.getElementById('sn-sidebar');
+    if (sidebar) {
+      sidebar.classList.contains('sn-sb-open') ? SnagAI.closeSidebar() : SnagAI.openSidebar();
+    } else {
+      // Fallback: open full panel for CL generation
+      SnagAI.state.isOpen ? SnagAI.closePanel() : openAndGenerate();
+    }
+  };
+
+  SnagAI.openSidebar = function() {
+    const sb = document.getElementById('sn-sidebar');
+    if (!sb) return;
+    sb.classList.add('sn-sb-open');
+    // Populate with latest cached score
+    chrome.storage.local.get([`sn_score_${SnagAI.state.cachedJobId}`], r => {
+      const cached = r[`sn_score_${SnagAI.state.cachedJobId}`];
+      if (cached) renderSidebarScore(cached);
+    });
+  };
+
+  SnagAI.closeSidebar = function() {
+    document.getElementById('sn-sidebar')?.classList.remove('sn-sb-open');
   };
 
   function openAndGenerate() {
@@ -16,6 +38,114 @@
     SnagAI.state.isOpen = true;
     SnagAI.showLoading();
     SnagAI.generate();
+  }
+
+  // ── Silent job scoring on page load ──────────────────────────────────────
+  async function silentScore() {
+    try {
+      await new Promise(r => setTimeout(r, 1200)); // wait for page to settle
+      const job = SnagAI.getJob();
+      if (!job?.title && !job?.description) return;
+
+      // Get enhanced stats from Vuex store
+      try {
+        const storeData = await chrome.runtime.sendMessage({ type: 'GET_JOB_DATA' });
+        if (storeData && job.jobStats) {
+          Object.entries(storeData).forEach(([k, v]) => { if (v !== null && v !== undefined) job.jobStats[k] = v; });
+        }
+      } catch(e) {}
+
+      const localStored = await new Promise(r => chrome.storage.local.get(['registeredProfiles','activeProfileId','primaryProfileId'], r));
+      const regProfiles = localStored.registeredProfiles || [];
+      const primaryId   = localStored.primaryProfileId || localStored.activeProfileId;
+      const primaryMeta = (primaryId && regProfiles.find(p => p?.id === primaryId)) || regProfiles[0];
+      const localKey    = primaryMeta?.id ? 'profileFull_' + primaryMeta.id : null;
+      const localFull   = localKey ? await new Promise(r => chrome.storage.local.get([localKey], r)) : {};
+      const prof        = localFull[localKey] || primaryMeta || {};
+
+      if (prof.skillsArr?.length) prof._skillsForMatching = prof.skillsArr;
+
+      const jobFilters = prof.jobFilters || {};
+      const wp = SnagAI.calcWinProbability(job.jobStats || {}, prof, jobFilters);
+
+      // Extract the numeric ~XXXX job ID (consistent with submission page URL format)
+      const jobIdMatch = location.href.match(/(~[\w]+)/);
+      const jobId = jobIdMatch?.[1] || 'current';
+      SnagAI.state.cachedJobId = jobId;
+
+      // Cache job data for use on the proposal submission page
+      chrome.storage.local.set({
+        [`sn_job_${jobId}`]: {
+          title:       job.title       || '',
+          description: job.description || '',
+          jobStats:    job.jobStats    || {},
+          skills:      job.skills      || [],
+          cachedAt:    Date.now(),
+        },
+        [`sn_score_${jobId}`]: {
+          wp, job, cachedAt: Date.now()
+        }
+      });
+
+      // Update sidebar if it's open
+      renderSidebarScore({ wp, job });
+
+    } catch(e) { /* non-fatal */ }
+  }
+
+  // ── Sidebar rendering ─────────────────────────────────────────────────────
+  function renderSidebarScore({ wp, job }) {
+    const body = document.getElementById('sn-sb-body');
+    if (!body) return;
+
+    const probColor  = wp.probScore  >= 70 ? '#4ade80' : wp.probScore  >= 45 ? '#facc15' : '#f87171';
+    const matchColor = wp.matchScore >= 70 ? '#4ade80' : wp.matchScore >= 45 ? '#e8a020' : '#f87171';
+
+    const negProb  = (wp.topProb  || []).filter(f => f.delta < 0).sort((a,b) => a.delta - b.delta);
+    const negMatch = (wp.topMatch || []).filter(f => f.delta < 0).sort((a,b) => a.delta - b.delta);
+
+    function factorRow(f) {
+      const lbl = f.label + (f.value ? ': ' + (typeof f.value === 'object' ? JSON.stringify(f.value) : f.value) : '');
+      return `<div class="sn-sb-factor">
+        <div class="sn-sb-fdot"></div>
+        <div class="sn-sb-fbody">
+          <div class="sn-sb-fname">${SnagAI.esc(lbl)}</div>
+          ${f.note ? `<div class="sn-sb-fnote">${SnagAI.esc(f.note)}</div>` : ''}
+        </div>
+        <span class="sn-sb-fscore">${f.delta}</span>
+      </div>`;
+    }
+
+    body.innerHTML = `
+      <div class="sn-sb-scores">
+        <div class="sn-sb-score-card">
+          <div class="sn-sb-slbl">Win probability</div>
+          <div class="sn-sb-snum" style="color:${probColor}">${wp.probScore}%</div>
+          <div class="sn-sb-sbar"><div class="sn-sb-sfill" style="width:${wp.probScore}%;background:${probColor}"></div></div>
+        </div>
+        <div class="sn-sb-score-card">
+          <div class="sn-sb-slbl">Profile match</div>
+          <div class="sn-sb-snum" style="color:${matchColor}">${wp.matchScore}%</div>
+          <div class="sn-sb-sbar"><div class="sn-sb-sfill" style="width:${wp.matchScore}%;background:${matchColor}"></div></div>
+        </div>
+      </div>
+      ${negProb.length ? `
+        <div class="sn-sb-section">Risk factors</div>
+        ${negProb.map(factorRow).join('')}
+      ` : ''}
+      ${negMatch.length ? `
+        <div class="sn-sb-section">Profile gaps</div>
+        ${negMatch.map(factorRow).join('')}
+      ` : ''}
+      ${!negProb.length && !negMatch.length ? `
+        <div class="sn-sb-empty">No risk factors — looks good!</div>
+      ` : ''}
+      <div class="sn-sb-apply-row">
+        <a class="sn-sb-apply-btn" href="${job.applyUrl || '#'}" target="_blank" id="sn-sb-apply">
+          Apply on Upwork →
+        </a>
+      </div>
+    `;
   }
 
   SnagAI.generate = async function() {
@@ -157,12 +287,55 @@
     }
   };
 
-  // SPA observer — re-inject on navigation
+  // ── Sidebar injection ─────────────────────────────────────────────────────
+  function injectSidebar() {
+    if (document.getElementById('sn-sidebar')) return;
+    const sb = document.createElement('div');
+    sb.id = 'sn-sidebar';
+    sb.innerHTML = `
+      <div class="sn-sb-head">
+        <div class="sn-sb-logo">
+          <svg width="18" height="18" viewBox="0 0 100 100" fill="none">
+            <rect x="5" y="5" width="64" height="78" rx="10" stroke="white" stroke-width="5.5" fill="none"/>
+            <line x1="14" y1="23" x2="57" y2="23" stroke="white" stroke-width="5" stroke-linecap="round"/>
+            <line x1="14" y1="35" x2="57" y2="35" stroke="white" stroke-width="5" stroke-linecap="round"/>
+            <line x1="14" y1="47" x2="57" y2="47" stroke="white" stroke-width="5" stroke-linecap="round"/>
+            <line x1="14" y1="59" x2="40" y2="59" stroke="white" stroke-width="5" stroke-linecap="round"/>
+            <circle cx="76" cy="77" r="23" fill="#4338ca"/>
+            <polygon points="80,59 70,78 77,78 73,95 88,74 81,74" fill="white"/>
+          </svg>
+        </div>
+        <div class="sn-sb-head-text">
+          <div class="sn-sb-title">Snag AI</div>
+          <div class="sn-sb-sub">Job score</div>
+        </div>
+        <button class="sn-sb-close" id="sn-sb-close">✕</button>
+      </div>
+      <div class="sn-sb-body" id="sn-sb-body">
+        <div class="sn-sb-loading">Analyzing job…</div>
+      </div>
+    `;
+    document.body.appendChild(sb);
+    document.getElementById('sn-sb-close')?.addEventListener('click', SnagAI.closeSidebar);
+  }
+
+  // ── SPA observer — re-inject on navigation ────────────────────────────────
+  let _lastUrl = location.href;
   new MutationObserver(() => {
-    if (location.href.includes('/jobs/') || location.href.includes('/proposals/')) {
-      SnagAI.injectUI();
+    const cur = location.href;
+    if (cur !== _lastUrl) {
+      _lastUrl = cur;
+      if (cur.includes('/jobs/') || cur.includes('/ab/proposals/')) {
+        SnagAI.injectUI();
+        injectSidebar();
+        setTimeout(silentScore, 500);
+      }
     }
   }).observe(document.body, { childList: true, subtree: true });
 
-  setTimeout(() => SnagAI.injectUI(), 1500);
+  setTimeout(() => {
+    SnagAI.injectUI();
+    injectSidebar();
+    silentScore();
+  }, 1500);
 })();
