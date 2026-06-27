@@ -12,9 +12,14 @@ window.SnagAI.injectUI = function() {
     <div class="sn-head">
       <div class="sn-brand">
         <div class="sn-logo">
-          <svg width="14" height="14" viewBox="0 0 32 32" fill="none">
-            <path d="M10 20.5C10 20.5 11.5 22 14 22C16.5 22 18 20.5 18 18.5C18 16.5 16 15.5 14 14.5C12 13.5 10.5 12.5 10.5 10.5C10.5 8.5 12 7 14.5 7C17 7 18 8.5 18 8.5" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
-            <path d="M16 9L22 9C22 9 24 11 22 13C24 13 26 15 24 17C25 17 26 19 24 21C25 21 25 23 23 24L16 24" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          <svg width="20" height="20" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="5" y="5" width="64" height="78" rx="10" stroke="white" stroke-width="5.5" fill="none"/>
+            <line x1="14" y1="23" x2="57" y2="23" stroke="white" stroke-width="5" stroke-linecap="round"/>
+            <line x1="14" y1="35" x2="57" y2="35" stroke="white" stroke-width="5" stroke-linecap="round"/>
+            <line x1="14" y1="47" x2="57" y2="47" stroke="white" stroke-width="5" stroke-linecap="round"/>
+            <line x1="14" y1="59" x2="40" y2="59" stroke="white" stroke-width="5" stroke-linecap="round"/>
+            <circle cx="76" cy="77" r="23" fill="#4338ca"/>
+            <polygon points="80,59 70,78 77,78 73,95 88,74 81,74" fill="white"/>
           </svg>
         </div>
         <div>
@@ -44,9 +49,14 @@ window.SnagAI.injectUI = function() {
   trig.innerHTML = `
     <button id="sn-btn">
       <div class="sn-btn-icon">
-        <svg width="13" height="13" viewBox="0 0 32 32" fill="none">
-          <path d="M10 20.5C10 20.5 11.5 22 14 22C16.5 22 18 20.5 18 18.5C18 16.5 16 15.5 14 14.5C12 13.5 10.5 12.5 10.5 10.5C10.5 8.5 12 7 14.5 7C17 7 18 8.5 18 8.5" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
-          <path d="M16 9L22 9C22 9 24 11 22 13C24 13 26 15 24 17C25 17 26 19 24 21C25 21 25 23 23 24L16 24" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <svg width="18" height="18" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="5" y="5" width="64" height="78" rx="10" stroke="white" stroke-width="5.5" fill="none"/>
+          <line x1="14" y1="23" x2="57" y2="23" stroke="white" stroke-width="5" stroke-linecap="round"/>
+          <line x1="14" y1="35" x2="57" y2="35" stroke="white" stroke-width="5" stroke-linecap="round"/>
+          <line x1="14" y1="47" x2="57" y2="47" stroke="white" stroke-width="5" stroke-linecap="round"/>
+          <line x1="14" y1="59" x2="40" y2="59" stroke="white" stroke-width="5" stroke-linecap="round"/>
+          <circle cx="76" cy="77" r="23" fill="#4338ca"/>
+          <polygon points="80,59 70,78 77,78 73,95 88,74 81,74" fill="white"/>
         </svg>
       </div>
       <span>Write Proposal</span>
@@ -137,10 +147,11 @@ window.SnagAI.injectUI = function() {
 
 window.SnagAI.centerPanel = function() {
   const p = document.getElementById('sn-panel');
-  const pw = Math.min(860, window.innerWidth * 0.96);
-  const ph = Math.min(600, window.innerHeight * 0.88);
+  const pw = Math.min(860, window.innerWidth * 0.92);
+  const ph = Math.min(560, window.innerHeight * 0.82);
   p.style.width  = pw + 'px';
   p.style.height = ph + 'px';
+  p.style.right  = '';
   p.style.left   = Math.round((window.innerWidth  - pw) / 2) + 'px';
   p.style.top    = Math.round((window.innerHeight - ph) / 2) + 'px';
   p.style.transform = 'none';
@@ -153,6 +164,10 @@ window.SnagAI.closePanel = function() {
 };
 
 window.SnagAI.showLoading = function() {
+  // Compact height during loading — expand when content is ready
+  const p = document.getElementById('sn-panel');
+  if (p) { p.style.height = 'auto'; p.classList.remove('sn-alert-mode'); }
+
   document.getElementById('sn-body').innerHTML = `
     <div class="sn-loading">
       <div class="sn-spinner"></div>

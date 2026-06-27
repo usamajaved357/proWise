@@ -97,7 +97,13 @@ window.SnagAI.getJob = function() {
     const parts = sectionSelectors
       .map(s => document.querySelector(s)?.innerText || '')
       .filter(Boolean);
-    return parts.length ? parts.join('\n') : document.body.innerText.slice(-4000);
+    if (parts.length) return parts.join('\n');
+
+    // Smarter fallback: anchor on where the stats actually live in page text
+    const full = document.body.innerText;
+    const statsIdx = full.search(/\n(?:Proposals|Interviewing|Activity on this job|About the client)[:\s]/i);
+    if (statsIdx > -1) return full.slice(Math.max(0, statsIdx - 200), statsIdx + 4000);
+    return full.slice(-5000);
   })();
 
   function extractNum(label) {

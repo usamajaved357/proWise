@@ -120,9 +120,17 @@ function updateStatusUI(data) {
   }
 }
 
-// Init
+// Close popup when it loses focus (clicking outside)
+window.addEventListener('blur', () => window.close());
+
+// Init — show cached data instantly, then refresh from server
 (async () => {
-  const { userEmail } = await chrome.storage.sync.get(['userEmail']);
-  updateEmailUI(userEmail || '');
+  const cached = await chrome.storage.sync.get(['userEmail','userPlan','usageCount','usageLimit']);
+  updateEmailUI(cached.userEmail || '');
+  if (cached.userPlan) {
+    const limit = cached.usageLimit || 2;
+    const used  = cached.usageCount || 0;
+    updateStatusUI({ plan: cached.userPlan, used, limit, remaining: Math.max(0, limit - used) });
+  }
   await loadStatus();
 })();

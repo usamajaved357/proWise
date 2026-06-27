@@ -60,4 +60,10 @@ async function upsertAnon(anonId, data) {
   return supabase('POST', 'anon_users', { anon_id: anonId, ...data }, '?on_conflict=anon_id');
 }
 
-module.exports = { supabase, getUser, upsertUser, updateUser, getAnon, upsertAnon };
+async function getAnonByDevice(deviceId) {
+  if (!deviceId) return null;
+  const rows = await supabase('GET', 'anon_users', null, `?device_id=eq.${encodeURIComponent(deviceId)}&limit=1`);
+  return Array.isArray(rows) ? rows[0] || null : null;
+}
+
+module.exports = { supabase, getUser, upsertUser, updateUser, getAnon, upsertAnon, getAnonByDevice };

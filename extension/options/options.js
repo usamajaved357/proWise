@@ -17,7 +17,10 @@ function switchSection(name) {
   if (sec)  sec.classList.add('active');
 }
 document.querySelectorAll('.sb-item[data-section]').forEach(el =>
-  el.addEventListener('click', () => switchSection(el.dataset.section))
+  el.addEventListener('click', () => {
+    switchSection(el.dataset.section);
+    if (el.dataset.section === 'profiles') renderProfilesPage();
+  })
 );
 const _tab = new URLSearchParams(window.location.search).get('tab');
 if (_tab) switchSection(_tab);
@@ -28,7 +31,18 @@ chrome.storage.onChanged.addListener((changes, area) => {
     const hasProfile = Object.keys(changes).some(k =>
       k.startsWith('profileFull_') || k === 'primaryProfileId' || k === 'registeredProfiles' || k === 'activeProfileId'
     );
-    if (hasProfile) { renderProfilesPage(); return; }
+    if (hasProfile) {
+      // Skip re-render if only jobFilters changed — avoids collapsing the filter panel on every save
+      const onlyFilters = Object.keys(changes).every(k => {
+        if (!k.startsWith('profileFull_')) return false;
+        const changed = Object.keys(changes[k].newValue || {}).filter(f =>
+          JSON.stringify((changes[k].newValue || {})[f]) !== JSON.stringify((changes[k].oldValue || {})[f])
+        );
+        return changed.length === 1 && changed[0] === 'jobFilters';
+      });
+      if (!onlyFilters) renderProfilesPage();
+      return;
+    }
   }
   if (area !== 'sync') return;
   if (changes.registeredProfiles || changes.profile) {

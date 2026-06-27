@@ -2,6 +2,7 @@
 
 const { PLANS, currentMonth } = require('./config');
 const { getUser, updateUser, upsertUser, getAnon, upsertAnon } = require('./db');
+const { getPaddleSubscription } = require('./paddle');
 
 async function getUserStatus(email) {
   const u = await getUser(email);
@@ -10,6 +11,24 @@ async function getUserStatus(email) {
   let plan  = u.plan || 'free';
   let limit = PLANS[plan]?.limit ?? 2;
   let used  = u.used || 0;
+
+  // Auto-heal: fetch billing dates from Paddle if missing for a paid active user
+  if (!u.next_billed_at && u.sub_id && plan !== 'free' && u.active !== false && !u.cancels_at) {
+    try {
+      const sub = await getPaddleSubscription(u.sub_id);
+      if (sub) {
+        const nextBilledAt       = sub.next_billed_at || null;
+        const currentPeriodStart = sub.current_billing_period?.starts_at || null;
+        if (nextBilledAt || currentPeriodStart) {
+          await updateUser(email, { next_billed_at: nextBilledAt, current_period_start: currentPeriodStart });
+          u.next_billed_at       = nextBilledAt;
+          u.current_period_start = currentPeriodStart;
+        }
+      }
+    } catch (e) {
+      // non-fatal — continue with what we have
+    }
+  }
 
   // Cancellation check: downgrade once access period expires
   if (u.cancels_at) {

@@ -5,7 +5,7 @@ const SERVER = 'https://prowise-4e5t.onrender.com'; // Production
 export async function handleGenerate(payload) {
   const [syncData, localData] = await Promise.all([
     chrome.storage.sync.get(['userEmail', 'anonId', 'settings']),
-    chrome.storage.local.get(['registeredProfiles', 'activeProfileId', 'primaryProfileId'])
+    chrome.storage.local.get(['registeredProfiles', 'activeProfileId', 'primaryProfileId', 'deviceId'])
   ]);
 
   const regProfiles = localData.registeredProfiles || [];
@@ -50,7 +50,11 @@ export async function handleGenerate(payload) {
       settings:          syncData.settings || {},
       email:             syncData.userEmail || null,
       anonId,
-      refineInstruction: payload.refineInstruction || ''
+      refineInstruction: payload.refineInstruction || '',
+      currentLetter:     payload.currentLetter     || '',
+      categories:        profileFull?.jobFilters?.categories   || [],
+      freelancerType:    syncData.settings?.freelancerType || 'developer',
+      deviceId:          localData.deviceId        || ''
     })
   });
 

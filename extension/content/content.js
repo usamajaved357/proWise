@@ -93,14 +93,33 @@
 
       await new Promise(r => setTimeout(r, 800));
       const job = SnagAI.getJob();
+
+      // Enrich jobStats from Vuex store — more reliable than DOM parsing for all activity stats
+      try {
+        const storeData = await chrome.runtime.sendMessage({ type: 'GET_JOB_DATA' });
+        if (storeData && job.jobStats) {
+          Object.entries(storeData).forEach(([k, v]) => {
+            if (v !== null && v !== undefined) job.jobStats[k] = v;
+          });
+          console.log('[SnagAI] Job stats from store:', storeData);
+        }
+      } catch(e) { /* fall back to DOM-parsed stats */ }
+
       const refineInstruction = SnagAI.state.refineInstruction || '';
 
       if (!refineInstruction) {
-        const preProfile = stored.profile || {};
-        const preWp = SnagAI.calcWinProbability(job.jobStats || {}, preProfile);
-        const hired = job.jobStats?.hiredCount;
+        const jobFilters   = prof.jobFilters || {};
+        const autoSkip     = jobFilters.autoSkipHired !== false;
+        const minScore     = jobFilters.minAlertScore ?? 60;
+        const hired        = job.jobStats?.hiredCount || 0;
+
+        // Auto-skip immediately if hired and user enabled that filter
+        if (hired > 0 && autoSkip) { SnagAI.closePanel(); return; }
+
+        const preWp   = SnagAI.calcWinProbability(job.jobStats || {}, prof, jobFilters);
         const hasRisk = (preWp.riskItems || []).length > 0;
-        if (hired > 0 || preWp.probScore < 60 || hasRisk) {
+
+        if (hired > 0 || preWp.combined < minScore || hasRisk) {
           const blocked = await SnagAI.showProbAlert(preWp, hired);
           if (blocked) return;
         }
@@ -118,10 +137,12 @@
       const jobWithReviews = SnagAI.getJob();
       Object.assign(job, { clientName: jobWithReviews.clientName, reviewText: jobWithReviews.reviewText });
 
+      const currentLetter = SnagAI.state.currentLetter || '';
       SnagAI.state.refineInstruction = '';
+      SnagAI.state.currentLetter = '';
       const response = await chrome.runtime.sendMessage({
         type: 'GENERATE_PROPOSAL',
-        payload: { job, refineInstruction }
+        payload: { job, refineInstruction, currentLetter }
       });
 
       SnagAI.state.jobStats = job.jobStats;

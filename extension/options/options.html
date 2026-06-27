@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Snag AI</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.24.0/dist/tabler-icons.min.css">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -12,8 +13,9 @@
   --green:#34d399;--green-bg:rgba(52,211,153,.1);--green-border:rgba(52,211,153,.2);
   --red:#f87171;--yellow:#fbbf24;--purple:#a78bfa;--blue:#60a5fa;
   --white:#f0eeea;--white2:rgba(240,238,234,.65);--white3:rgba(240,238,234,.38);--white4:rgba(240,238,234,.15);
-  --radius:12px;--radius-sm:8px;--radius-xs:6px;
+  --radius:16px;--radius-sm:10px;--radius-xs:7px;--radius-lg:20px;
   --shadow:0 4px 24px rgba(0,0,0,.4);
+  --indigo:#6366f1;--indigo-bg:rgba(99,102,241,.08);--indigo-border:rgba(99,102,241,.25);
 }
 html,body{height:100%}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--white);font-size:14px;line-height:1.5;min-height:100vh}
@@ -21,42 +23,44 @@ a{text-decoration:none;color:inherit}
 
 /* ── Layout ── */
 .layout{display:flex;min-height:100vh}
-.main{flex:1;padding:40px 52px;max-width:820px;overflow-y:auto}
+.main{flex:1;padding:44px 56px;max-width:860px;overflow-y:auto}
 .section{display:none}.section.active{display:block}
 
 /* ── Sidebar ── */
 .sidebar{width:224px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto}
 .sb-logo-link{display:flex;align-items:center;gap:10px;padding:22px 20px 20px;border-bottom:1px solid var(--border);transition:opacity .15s}
 .sb-logo-link:hover{opacity:.8}
-.sb-icon{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,#8a5f10,#c9a84c,#e8c878);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 2px 8px rgba(201,168,76,.3)}
+.sb-icon{width:34px;height:34px;border-radius:9px;background:var(--indigo);display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .sb-brand{display:flex;flex-direction:column}
 .sb-name{font-size:15px;font-weight:700;letter-spacing:-.01em}
 .sb-ver{font-size:10px;color:var(--white3);margin-top:1px}
-.sb-nav{padding:14px 10px;flex:1}
-.sb-item{display:flex;align-items:center;gap:9px;padding:9px 10px;font-size:13px;font-weight:500;color:var(--white3);cursor:pointer;border-radius:var(--radius-sm);transition:all .15s;margin-bottom:2px}
-.sb-item:hover{color:var(--white);background:rgba(255,255,255,.05)}
-.sb-item.active{color:var(--white);background:rgba(201,168,76,.1);font-weight:600}
-.sb-item.active .sb-dot{background:var(--gold)}
-.sb-dot{width:5px;height:5px;border-radius:50%;background:transparent;transition:.15s;flex-shrink:0}
-.sb-divider{height:1px;background:var(--border);margin:8px 0}
+.sb-nav{padding:12px 10px;flex:1}
+.sb-item{display:flex;align-items:center;gap:9px;padding:9px 12px;font-size:13px;font-weight:500;color:var(--white3);cursor:pointer;border-radius:var(--radius-sm);transition:all .15s;margin-bottom:1px;border-left:2px solid transparent}
+.sb-item:hover{color:rgba(240,238,234,.75);background:rgba(255,255,255,.04);border-left-color:rgba(255,255,255,.1)}
+.sb-item.active{color:var(--white);background:rgba(99,102,241,.09);font-weight:600;border-left-color:var(--indigo)}
+.sb-dot{display:none}
+.sb-divider{height:1px;background:var(--border);margin:10px 0}
 /* Sidebar plan widget */
-.sb-plan{margin:auto 12px 16px;padding:14px;background:rgba(255,255,255,.03);border:1px solid var(--border2);border-radius:var(--radius)}
-.sb-plan-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
-.sb-plan-badge{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:3px 9px;border-radius:20px;background:rgba(251,191,36,.12);color:var(--yellow);border:1px solid rgba(251,191,36,.2)}
-.sb-plan-badge.badge-starter{background:rgba(96,165,250,.1);color:var(--blue);border-color:rgba(96,165,250,.2)}
-.sb-plan-badge.badge-pro{background:var(--gold-bg);color:var(--gold);border-color:var(--gold-border)}
-.sb-plan-badge.badge-agency{background:rgba(167,139,250,.1);color:var(--purple);border-color:rgba(167,139,250,.2)}
-.sb-plan-rem{font-size:11px;color:var(--white3)}
-.sb-plan-bar-wrap{height:3px;background:rgba(255,255,255,.07);border-radius:2px;margin-bottom:6px;overflow:hidden}
-.sb-plan-bar{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--gold),var(--gold2));transition:width .4s}
-.sb-plan-count{font-size:11px;color:var(--white3)}
+.sb-plan{padding:12px 14px 16px;border-top:1px solid rgba(255,255,255,.05)}
+.sb-plan-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.sb-plan-badge{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:2px 8px;border-radius:20px;background:rgba(255,255,255,.06);color:rgba(240,238,234,.4);border:1px solid rgba(255,255,255,.09)}
+.sb-plan-badge.badge-starter{background:rgba(255,255,255,.06);color:rgba(240,238,234,.4);border-color:rgba(255,255,255,.09)}
+.sb-plan-badge.badge-pro{background:rgba(99,102,241,.12);color:rgba(170,168,252,.85);border-color:rgba(99,102,241,.28)}
+.sb-plan-badge.badge-agency{background:rgba(255,255,255,.06);color:rgba(240,238,234,.4);border-color:rgba(255,255,255,.09)}
+.sb-plan-rem{font-size:10.5px;color:rgba(240,238,234,.3)}
+.sb-plan-bar-wrap{height:2px;background:rgba(255,255,255,.07);border-radius:2px;margin-bottom:5px;overflow:hidden}
+.sb-plan-bar{height:100%;border-radius:2px;background:var(--indigo);transition:width .4s}
+.sb-plan-count{font-size:10px;color:rgba(240,238,234,.25)}
+
+/* ── Section label (UpCat-style uppercase gold tag above headings) ── */
+.sec-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.13em;color:var(--indigo);opacity:.82;margin-bottom:6px}
 
 /* ── Section headers ── */
-.section-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:28px;gap:16px}
-.section-header-left .section-title{font-size:22px;font-weight:700;letter-spacing:-.025em;margin-bottom:3px}
-.section-header-left .section-sub{font-size:13px;color:var(--white3)}
-.section-title-solo{font-size:22px;font-weight:700;letter-spacing:-.025em;margin-bottom:4px}
-.section-sub-solo{font-size:13px;color:var(--white3);margin-bottom:28px}
+.section-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:32px;gap:16px}
+.section-header-left .section-title{font-size:24px;font-weight:800;letter-spacing:-.03em;margin-bottom:4px}
+.section-header-left .section-sub{font-size:13px;color:var(--white3);line-height:1.6}
+.section-title-solo{font-size:24px;font-weight:800;letter-spacing:-.03em;margin-bottom:4px}
+.section-sub-solo{font-size:13px;color:var(--white3);margin-bottom:32px;line-height:1.6}
 
 /* ── Buttons ── */
 .btn-primary{padding:9px 20px;background:var(--gold);color:#0a0e1a;border:none;border-radius:var(--radius-sm);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s;letter-spacing:-.01em}
@@ -84,12 +88,12 @@ a{text-decoration:none;color:inherit}
 
 /* ── No profiles empty state ── */
 .empty-state{text-align:center;padding:60px 32px;background:var(--bg2);border:1px solid var(--border);border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,.2)}
-.empty-icon{font-size:46px;margin-bottom:20px;display:block}
+.empty-icon{width:64px;height:64px;margin:0 auto 24px;display:flex;align-items:center;justify-content:center;background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.2);border-radius:50%}
 .empty-title{font-size:17px;font-weight:700;margin-bottom:10px;letter-spacing:-.025em;color:var(--white)}
 .empty-desc{font-size:13px;color:var(--white3);line-height:1.75;margin-bottom:24px;max-width:340px;margin-left:auto;margin-right:auto}
 .empty-url-form{display:flex;gap:8px;max-width:420px;margin:0 auto 14px}
 .empty-url-input{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:10px 14px;font-size:12px;color:var(--white);font-family:inherit;outline:none;transition:border-color .15s,box-shadow .15s}
-.empty-url-input:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,168,76,.12)}
+.empty-url-input:focus{border-color:rgba(99,102,241,.5);box-shadow:0 0 0 3px rgba(99,102,241,.08)}
 .empty-url-input::placeholder{color:var(--white4)}
 .empty-url-hint{font-size:11px;color:var(--white4);line-height:1.6;max-width:360px;margin:0 auto}
 .empty-url-hint strong{color:var(--white3)}
@@ -100,15 +104,14 @@ a{text-decoration:none;color:inherit}
 .profile-slide{display:none}.profile-slide.active{display:block}
 .slider-controls{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:18px}
 .slider-dot{width:7px;height:7px;border-radius:50%;background:var(--white4);cursor:pointer;transition:all .2s}
-.slider-dot.active{background:var(--gold);width:20px;border-radius:4px}
+.slider-dot.active{background:var(--indigo);width:20px;border-radius:4px}
 .slider-arr{width:30px;height:30px;background:rgba(255,255,255,.05);border:1px solid var(--border2);border-radius:var(--radius-xs);color:var(--white3);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px;transition:all .15s;line-height:1}
 .slider-arr:hover{background:rgba(255,255,255,.1);color:var(--white);border-color:var(--border3)}
 
 /* ── Profile card ── */
-.profile-card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:20px;box-shadow:0 2px 20px rgba(0,0,0,.22);transition:box-shadow .2s,border-color .2s}
-.profile-card:hover{border-color:rgba(201,168,76,.14);box-shadow:0 6px 32px rgba(0,0,0,.3)}
-.profile-card::before{content:'';display:block;height:3px;background:linear-gradient(90deg,var(--gold),var(--gold2),rgba(232,200,120,.3),transparent)}
-.profile-card-hdr{display:flex;align-items:flex-start;gap:16px;padding:22px 22px 18px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,rgba(255,255,255,.025) 0%,transparent 100%)}
+.profile-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:20px;transition:border-color .2s}
+.profile-card:hover{border-color:rgba(255,255,255,.1)}
+.profile-card-hdr{display:flex;align-items:flex-start;gap:16px;padding:24px 24px 20px;border-bottom:1px solid var(--border)}
 .profile-avatar{width:52px;height:52px;border-radius:14px;background:linear-gradient(145deg,#5c3d08,#c9a84c,#e8c878);display:flex;align-items:center;justify-content:center;font-size:21px;font-weight:800;color:#0a0e1a;flex-shrink:0;box-shadow:0 4px 18px rgba(201,168,76,.32);letter-spacing:-.02em}
 .profile-avatar-pending{background:var(--bg3);color:rgba(240,238,234,.25);border:2px dashed rgba(255,255,255,.1);box-shadow:none}
 .profile-info{flex:1;min-width:0;padding-top:2px}
@@ -125,17 +128,17 @@ a{text-decoration:none;color:inherit}
 .toggle-slider:before{content:'';position:absolute;width:12px;height:12px;left:3px;bottom:3px;background:rgba(255,255,255,.4);border-radius:50%;transition:.2s}
 .toggle-switch input:checked + .toggle-slider{background:var(--gold)}
 .toggle-switch input:checked + .toggle-slider:before{transform:translateX(14px);background:#0a0e1a}
-.btn-delete{width:32px;height:32px;background:rgba(248,113,113,.07);border:1px solid rgba(248,113,113,.14);border-radius:9px;color:var(--red);cursor:pointer;font-size:17px;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;line-height:1}
-.btn-delete:hover{background:rgba(248,113,113,.16);border-color:rgba(248,113,113,.32)}
+.btn-delete{width:28px;height:28px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:8px;color:rgba(240,238,234,.3);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0;line-height:1}
+.btn-delete:hover{background:rgba(248,113,113,.12);border-color:rgba(248,113,113,.28);color:var(--red)}
 
 /* Profile card body */
-.profile-body{padding:22px}
+.profile-body{padding:24px}
 
 /* Stats row */
-.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:22px}
-.stat-box{background:rgba(255,255,255,.028);border:1px solid var(--border);border-radius:11px;padding:14px 10px 12px;text-align:center;transition:border-color .15s,background .15s}
-.stat-box:hover{border-color:rgba(201,168,76,.25);background:rgba(201,168,76,.04)}
-.stat-val{font-size:18px;font-weight:800;color:var(--gold);letter-spacing:-.04em;line-height:1;margin-bottom:6px}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px}
+.stat-box{background:rgba(255,255,255,.025);border:1px solid var(--border);border-radius:12px;padding:16px 10px 14px;text-align:center;transition:border-color .15s}
+.stat-box:hover{border-color:rgba(255,255,255,.1)}
+.stat-val{font-size:20px;font-weight:800;color:var(--white);letter-spacing:-.04em;line-height:1;margin-bottom:6px}
 .stat-lbl{font-size:9px;color:rgba(240,238,234,.28);text-transform:uppercase;letter-spacing:.1em;font-weight:700}
 
 /* Tier badge */
@@ -162,8 +165,8 @@ textarea.edit-val{min-height:38px}
 .skills-wrap{display:flex;flex-wrap:wrap;gap:5px}
 .skill-chip{font-size:11px;padding:4px 11px;background:rgba(52,211,153,.08);color:#4ade80;border:1px solid rgba(74,222,128,.18);border-radius:20px;font-weight:600;transition:background .12s}
 .skill-chip:hover{background:rgba(74,222,128,.13)}
-.skills-toggle{font-size:11px;padding:4px 11px;background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:20px;color:var(--white3);cursor:pointer;font-family:inherit;transition:all .15s}
-.skills-toggle:hover{background:rgba(255,255,255,.09);color:var(--white);border-color:var(--border3)}
+.skills-toggle{font-size:11px;padding:4px 11px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:20px;color:rgba(240,238,234,.38);cursor:pointer;font-family:inherit;font-weight:600;transition:all .15s}
+.skills-toggle:hover{background:rgba(255,255,255,.08);color:rgba(240,238,234,.6);border-color:rgba(255,255,255,.14)}
 .skills-hint{font-size:11px;color:var(--white3);font-style:italic}
 
 /* Portfolio section */
@@ -194,7 +197,8 @@ textarea.edit-val{min-height:38px}
 .email-info{flex:1}
 .email-label{font-size:11px;color:var(--white3);margin-bottom:1px}
 .email-val{font-size:13px;font-weight:600}
-.btn-email-toggle{font-size:12px;color:var(--gold);cursor:pointer;background:none;border:none;font-family:inherit;font-weight:600;transition:opacity .15s}
+.btn-email-toggle{font-size:11px;font-weight:700;padding:6px 14px;border-radius:999px;background:rgba(99,102,241,.1);border:1.5px solid rgba(99,102,241,.28);color:rgba(170,168,252,.9);cursor:pointer;font-family:inherit;transition:all .15s}
+.btn-email-toggle:hover{background:rgba(99,102,241,.18);border-color:rgba(99,102,241,.45)}
 .btn-email-toggle:hover{opacity:.7}
 
 /* Profile URL slots */
@@ -245,18 +249,20 @@ textarea.edit-val{min-height:38px}
 .plan-btn-current{background:var(--green-bg);border:1px solid var(--green-border);color:var(--green);cursor:default;opacity:.95}
 .plan-btn-current:hover{background:var(--green-bg)!important;transform:none!important;box-shadow:none!important}
 /* sidebar legal links */
-.sb-legal{padding:8px 10px 14px;display:flex;flex-direction:column;gap:1px}
-.sb-legal-title{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--white4);padding:0 10px 6px;margin-top:4px}
-.sb-legal a{display:flex;align-items:center;gap:8px;padding:7px 10px;font-size:11px;font-weight:500;color:var(--white3);border-radius:var(--radius-xs);transition:all .15s}
-.sb-legal a:hover{color:var(--white2);background:rgba(255,255,255,.04)}
-.sb-legal-icon{font-size:12px;width:14px;text-align:center;flex-shrink:0;opacity:.7}
+/* ── Legal pages ─────────────────────────────────────────────────────────── */
+.legal-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+.legal-section{padding:22px 28px;border-bottom:1px solid rgba(255,255,255,.04)}
+.legal-section:last-child{border-bottom:none}
+.legal-section-title{font-size:13px;font-weight:700;color:var(--white);letter-spacing:-.015em;margin-bottom:10px}
+.legal-section p{font-size:13px;color:rgba(240,238,234,.45);line-height:1.8}
+.legal-section p strong{color:rgba(240,238,234,.7);font-weight:600}
 /* Edit-val resize handle */
 textarea.edit-val{min-height:38px}
 .audit-feature-card{background:rgba(167,139,250,.05);border:1px solid rgba(167,139,250,.12);border-radius:var(--radius-sm);padding:12px 14px}
 .audit-feature-icon{font-size:18px;margin-bottom:6px}
 .audit-feature-title{font-size:12px;font-weight:700;margin-bottom:4px;color:var(--white)}
 .audit-feature-desc{font-size:11px;color:var(--white3);line-height:1.6}
-.badge-primary{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;background:linear-gradient(135deg,rgba(201,168,76,.2),rgba(232,200,120,.15));color:var(--gold);border:1px solid var(--gold-border);white-space:nowrap;flex-shrink:0}
+.badge-primary{display:inline-flex;align-items:center;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:2px 8px;border-radius:20px;background:rgba(99,102,241,.15);color:rgba(176,174,252,.9);border:1px solid rgba(99,102,241,.3);white-space:nowrap;flex-shrink:0}
 .btn-set-primary{padding:4px 10px;background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:20px;font-size:10px;font-weight:600;color:var(--white3);cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap;flex-shrink:0}
 .btn-set-primary:hover{border-color:var(--gold-border);color:var(--gold);background:var(--gold-bg)}
 .port-item-meta{padding:0 14px 10px;display:flex;flex-direction:column;gap:6px}
@@ -390,36 +396,37 @@ textarea.edit-val{min-height:38px}
 
 /* ── Usage Stats Grid ─────────────────────────────────────────── */
 .us-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
-.us-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px 20px 18px;position:relative;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.18);transition:border-color .2s}
+.us-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:22px 22px 20px;position:relative;overflow:hidden;transition:border-color .2s}
 .us-card:hover{border-color:rgba(255,255,255,.1)}
-.us-card::before{content:'';display:block;height:3px;background:linear-gradient(90deg,var(--gold),var(--gold2),transparent);position:absolute;top:0;left:0;right:0}
-.us-card-dim::before{background:linear-gradient(90deg,var(--purple),transparent);opacity:.45}
 .us-card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
-.us-icon{width:34px;height:34px;border-radius:9px;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.2);display:flex;align-items:center;justify-content:center;color:var(--gold)}
-.us-icon-blue{background:rgba(96,165,250,.1);border-color:rgba(96,165,250,.2);color:var(--blue)}
-.us-icon-purple{background:rgba(167,139,250,.1);border-color:rgba(167,139,250,.2);color:var(--purple)}
-.us-plan-badge{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;padding:3px 9px;border-radius:20px;background:rgba(251,191,36,.12);color:var(--yellow);border:1px solid rgba(251,191,36,.2)}
-.us-plan-badge.badge-starter{background:rgba(96,165,250,.1);color:var(--blue);border-color:rgba(96,165,250,.2)}
-.us-plan-badge.badge-pro{background:var(--gold-bg);color:var(--gold);border-color:var(--gold-border)}
-.us-plan-badge.badge-agency{background:rgba(167,139,250,.1);color:var(--purple);border-color:rgba(167,139,250,.2)}
-.us-soon-tag{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:3px 9px;border-radius:20px;background:rgba(167,139,250,.1);color:var(--purple);border:1px solid rgba(167,139,250,.2)}
-.us-big-num{font-size:40px;font-weight:800;line-height:1;letter-spacing:-.05em;color:var(--gold);margin-bottom:3px}
+.us-icon{width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;color:rgba(240,238,234,.4)}
+.us-icon-blue{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.08);color:rgba(240,238,234,.4)}
+.us-icon-purple{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.08);color:rgba(240,238,234,.4)}
+.us-plan-badge{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.06);color:rgba(240,238,234,.5);border:1px solid rgba(255,255,255,.1)}
+.us-plan-badge.badge-starter{background:rgba(255,255,255,.06);color:rgba(240,238,234,.55);border-color:rgba(255,255,255,.1)}
+.us-plan-badge.badge-pro{background:rgba(99,102,241,.12);color:rgba(170,168,252,.9);border-color:rgba(99,102,241,.28)}
+.us-plan-badge.badge-agency{background:rgba(255,255,255,.06);color:rgba(240,238,234,.55);border-color:rgba(255,255,255,.1)}
+.us-soon-tag{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.04);color:rgba(240,238,234,.35);border:1px solid rgba(255,255,255,.08)}
+.us-big-num{font-size:42px;font-weight:800;line-height:1;letter-spacing:-.05em;color:var(--white);margin-bottom:3px}
 .us-num-dim{color:var(--white4)}
 .us-big-label{font-size:11px;color:rgba(240,238,234,.45);margin-bottom:14px}
 .us-bar-track{height:5px;background:rgba(255,255,255,.06);border-radius:999px;overflow:hidden;margin-bottom:9px}
-.us-bar{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--gold),var(--gold2));transition:width .6s cubic-bezier(.4,0,.2,1)}
+.us-bar{height:100%;border-radius:999px;background:var(--indigo);transition:width .6s cubic-bezier(.4,0,.2,1)}
 .us-footnote{font-size:10.5px;color:rgba(240,238,234,.38);line-height:1.55}
 .us-footnote strong{color:rgba(240,238,234,.65);font-weight:600}
 
 /* ── Plan Cards v2 ────────────────────────────────────────────── */
-.pcv2-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.pcv2-card{background:rgba(255,255,255,.03);border:1px solid var(--border2);border-radius:var(--radius);padding:22px 18px 18px;position:relative;transition:border-color .2s,transform .2s,box-shadow .2s;cursor:pointer}
-.pcv2-card:hover{border-color:rgba(201,168,76,.35);transform:translateY(-2px);box-shadow:0 10px 30px rgba(0,0,0,.3)}
-.pcv2-card.current{border-color:var(--green);background:rgba(52,211,153,.02)}
-.pcv2-card.current:hover{border-color:var(--green);transform:none}
-.pcv2-featured{border-color:rgba(201,168,76,.4);background:rgba(201,168,76,.04)}
-.pcv2-featured:hover{border-color:rgba(201,168,76,.6)}
-.pcv2-pop{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,var(--gold),var(--gold2));color:#0a0e1a;font-size:9px;font-weight:700;padding:4px 14px;border-radius:20px;white-space:nowrap;letter-spacing:.07em}
+.pcv2-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.pcv2-card{background:rgba(255,255,255,.025);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px 20px 20px;position:relative;transition:border-color .2s,transform .2s;cursor:pointer}
+.pcv2-card::after{content:'';position:absolute;top:0;right:0;width:180px;height:180px;background:radial-gradient(circle at top right,rgba(99,102,241,.12) 0%,rgba(99,102,241,.04) 50%,transparent 75%);pointer-events:none;z-index:0;border-radius:inherit}
+.pcv2-featured::after{width:220px;height:220px;background:radial-gradient(circle at top right,rgba(99,102,241,.24) 0%,rgba(99,102,241,.1) 40%,rgba(99,102,241,.03) 65%,transparent 80%)}
+.pcv2-card>*{position:relative;z-index:1}
+.pcv2-card:hover{border-color:rgba(255,255,255,.14);transform:translateY(-1px)}
+.pcv2-card.current{border-color:rgba(52,211,153,.3);background:rgba(52,211,153,.02)}
+.pcv2-card.current:hover{border-color:rgba(52,211,153,.4);transform:none}
+.pcv2-featured{border-color:rgba(99,102,241,.35);background:rgba(99,102,241,.04)}
+.pcv2-featured:hover{border-color:rgba(99,102,241,.55)}
+.pcv2-pop{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--indigo);color:#fff;font-size:9px;font-weight:700;padding:4px 14px;border-radius:20px;white-space:nowrap;letter-spacing:.07em}
 .pcv2-tier{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--white3);margin-bottom:8px}
 .pcv2-price{font-size:34px;font-weight:800;line-height:1;letter-spacing:-.04em;color:var(--white);margin-bottom:16px}
 .pcv2-price span{font-size:13px;font-weight:400;color:var(--white3)}
@@ -427,29 +434,29 @@ textarea.edit-val{min-height:38px}
 .pcv2-list{list-style:none;display:flex;flex-direction:column;gap:9px;margin-bottom:20px}
 .pcv2-list li{display:flex;align-items:flex-start;gap:9px;font-size:12px;font-weight:500;color:var(--white2);line-height:1.4}
 .pcv2-check{width:17px;height:17px;border-radius:50%;background:rgba(52,211,153,.13);border:1px solid rgba(52,211,153,.28);color:#4ade80;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;flex-shrink:0;margin-top:1px}
-.pcv2-check-gold{background:rgba(201,168,76,.14);border-color:rgba(201,168,76,.35);color:var(--gold)}
-.pcv2-btn{width:100%;padding:10px;border-radius:var(--radius-sm);font-size:12px;font-weight:700;cursor:pointer;border:none;font-family:inherit;transition:all .15s;letter-spacing:.01em}
+.pcv2-check-gold{background:rgba(99,102,241,.14);border-color:rgba(99,102,241,.35);color:rgba(170,168,252,.9)}
+.pcv2-btn{width:100%;padding:10px;border-radius:999px;font-size:12px;font-weight:700;cursor:pointer;border:none;font-family:inherit;transition:all .15s;letter-spacing:.01em}
 .pcv2-btn-outline{background:transparent;border:1px solid var(--border2);color:var(--white2)}
-.pcv2-btn-outline:hover{border-color:var(--gold);color:var(--gold)}
-.pcv2-btn-gold{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#0a0e1a}
-.pcv2-btn-gold:hover{filter:brightness(1.08);transform:translateY(-1px)}
+.pcv2-btn-outline:hover{border-color:var(--indigo);color:rgba(170,168,252,.9);background:rgba(99,102,241,.06)}
+.pcv2-btn-gold{background:var(--indigo);color:#fff}
+.pcv2-btn-gold:hover{opacity:.88;transform:translateY(-1px)}
 .pcv2-btn-current{background:transparent;border:none;color:var(--green);font-size:12.5px;font-weight:700;cursor:default;letter-spacing:.01em}
 .pcv2-btn-current:hover{transform:none;filter:none}
 @keyframes pcv2-pulse{0%{box-shadow:0 0 0 0 rgba(201,168,76,.55)}65%{box-shadow:0 0 0 10px rgba(201,168,76,0)}100%{box-shadow:0 0 0 0 rgba(201,168,76,0)}}
 .pcv2-card.plan-selecting{animation:pcv2-pulse .55s ease-out}
 
 /* ── Billing card ─────────────────────────────────────────────── */
-.billing-card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:14px;box-shadow:0 4px 24px rgba(0,0,0,.25);transition:box-shadow .2s}
-.billing-card::before{content:'';display:block;height:3px;background:linear-gradient(90deg,var(--gold),var(--gold2),rgba(232,200,120,.25),transparent)}
+.billing-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:14px;transition:border-color .2s}
+.billing-card:hover{border-color:rgba(255,255,255,.1)}
 
 /* Header */
-.bc-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:20px 22px 18px;background:linear-gradient(180deg,rgba(255,255,255,.025) 0%,transparent 100%)}
+.bc-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:22px 24px 20px}
 .bc-header-left{display:flex;flex-direction:column;gap:5px}
 .bc-badges-row{display:flex;align-items:center;gap:9px;margin-bottom:3px}
 .bc-plan-badge{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;padding:3px 10px;border-radius:20px}
-.bc-plan-badge.badge-starter{background:rgba(96,165,250,.12);color:var(--blue);border:1px solid rgba(96,165,250,.25)}
-.bc-plan-badge.badge-pro{background:rgba(201,168,76,.14);color:var(--gold);border:1px solid var(--gold-border)}
-.bc-plan-badge.badge-agency{background:rgba(167,139,250,.12);color:var(--purple);border:1px solid rgba(167,139,250,.25)}
+.bc-plan-badge.badge-starter{background:rgba(255,255,255,.06);color:rgba(240,238,234,.55);border:1px solid rgba(255,255,255,.1)}
+.bc-plan-badge.badge-pro{background:rgba(99,102,241,.12);color:rgba(170,168,252,.9);border:1px solid rgba(99,102,241,.28)}
+.bc-plan-badge.badge-agency{background:rgba(255,255,255,.06);color:rgba(240,238,234,.55);border:1px solid rgba(255,255,255,.1)}
 .bc-status{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600}
 .bc-status-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
 .bc-active{color:#4ade80}.bc-active .bc-status-dot{background:#4ade80;box-shadow:0 0 7px rgba(74,222,128,.65)}
@@ -459,7 +466,7 @@ textarea.edit-val{min-height:38px}
 .bc-plan-price{font-size:14px;font-weight:500;color:rgba(240,238,234,.4);margin-left:4px}
 .bc-plan-quota{font-size:11.5px;color:rgba(240,238,234,.35);margin-top:1px}
 .bc-header-right{display:flex;align-items:flex-start;flex-shrink:0;padding-top:2px}
-.bc-manage-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.11);border-radius:8px;color:rgba(240,238,234,.65);font-size:12px;font-weight:600;transition:all .15s;font-family:inherit;cursor:pointer;white-space:nowrap}
+.bc-manage-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:999px;color:rgba(240,238,234,.6);font-size:12px;font-weight:600;transition:all .15s;font-family:inherit;cursor:pointer;white-space:nowrap}
 .bc-manage-btn:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);color:var(--white)}
 .bc-manage-btn:disabled{opacity:.4;cursor:default}
 .bc-body-divider{height:1px;background:var(--border);margin:0}
@@ -470,8 +477,9 @@ textarea.edit-val{min-height:38px}
 .bc-sdiv{width:1px;height:52px;background:var(--border);align-self:center}
 .bc-slabel{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(240,238,234,.28)}
 .bc-sval{font-size:15px;font-weight:700;color:var(--white);letter-spacing:-.02em;line-height:1}
-.bc-sval-gold{color:var(--gold)}
+.bc-sval-gold{color:rgba(170,168,252,.85)}
 .bc-sval-amber{color:#facc15}
+.bc-sval-indigo{color:rgba(170,168,252,.88)}
 .bc-sval-red{color:var(--red)}
 .bc-ssub{font-size:10px;color:rgba(240,238,234,.28);font-weight:500;line-height:1.3}
 .bc-stats-pending{display:flex;align-items:center;gap:8px;padding:16px 22px;font-size:11.5px;color:rgba(240,238,234,.28);font-style:italic;background:rgba(0,0,0,.12)}
@@ -479,49 +487,40 @@ textarea.edit-val{min-height:38px}
 /* ── Usage stats grid ──────────────────────────────────────────── */
 
 /* ── How to Use page ──────────────────────────────────────────── */
-.ht-hero{background:linear-gradient(135deg,rgba(201,168,76,.07) 0%,rgba(0,0,0,0) 65%);border:1px solid rgba(201,168,76,.15);border-radius:16px;padding:28px 32px 26px;margin-bottom:20px;position:relative;overflow:hidden}
-.ht-hero::after{content:'';position:absolute;top:-50px;right:-50px;width:200px;height:200px;background:radial-gradient(circle,rgba(201,168,76,.1) 0%,transparent 70%);pointer-events:none}
-.ht-hero-badge{display:inline-flex;align-items:center;gap:5px;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--gold);background:rgba(201,168,76,.1);border:1px solid var(--gold-border);border-radius:20px;padding:3px 10px;margin-bottom:12px}
-.ht-hero-title{font-size:26px;font-weight:800;letter-spacing:-.04em;color:var(--white);margin-bottom:7px;line-height:1.1}
-.ht-hero-sub{font-size:13px;color:rgba(240,238,234,.45);line-height:1.65;max-width:480px}
-.ht-section-card{background:var(--bg2);border:1px solid var(--border);border-radius:16px;overflow:hidden;margin-bottom:16px;box-shadow:0 2px 16px rgba(0,0,0,.2)}
+.ht-hero{background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:var(--radius-lg);padding:30px 32px 28px;margin-bottom:16px}
+.ht-hero-title{font-size:26px;font-weight:800;letter-spacing:-.04em;color:var(--white);margin-bottom:8px;line-height:1.1}
+.ht-hero-sub{font-size:13px;color:rgba(240,238,234,.42);line-height:1.68;max-width:500px}
+.ht-section-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:14px}
 .ht-section-card::before{content:'';display:block;height:3px}
-.ht-card-gold::before{background:linear-gradient(90deg,var(--gold),var(--gold2),transparent)}
-.ht-card-green::before{background:linear-gradient(90deg,#34d399,rgba(52,211,153,.3),transparent)}
-.ht-card-blue::before{background:linear-gradient(90deg,var(--blue),rgba(96,165,250,.3),transparent)}
-.ht-card-red::before{background:linear-gradient(90deg,var(--red),rgba(248,113,113,.3),transparent)}
-.ht-card-purple::before{background:linear-gradient(90deg,var(--purple),rgba(167,139,250,.3),transparent)}
-.ht-card-amber::before{background:linear-gradient(90deg,#facc15,rgba(250,204,21,.3),transparent)}
-.ht-card-header{display:flex;align-items:center;gap:14px;padding:20px 22px 18px;border-bottom:1px solid var(--border);background:linear-gradient(180deg,rgba(255,255,255,.02) 0%,transparent 100%)}
-.ht-card-icon{width:40px;height:40px;border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ht-card-header{display:flex;align-items:center;gap:14px;padding:22px 24px 20px;border-bottom:1px solid var(--border)}
+.ht-card-icon{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .ht-icon-gold{background:rgba(201,168,76,.12);border:1px solid var(--gold-border);color:var(--gold)}
 .ht-icon-green{background:rgba(52,211,153,.1);border:1px solid var(--green-border);color:var(--green)}
 .ht-icon-blue{background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.25);color:var(--blue)}
 .ht-icon-red{background:rgba(248,113,113,.1);border:1px solid rgba(248,113,113,.25);color:var(--red)}
 .ht-icon-purple{background:rgba(167,139,250,.1);border:1px solid rgba(167,139,250,.25);color:var(--purple)}
 .ht-icon-amber{background:rgba(250,204,21,.1);border:1px solid rgba(250,204,21,.28);color:#facc15}
-.ht-card-title-text{font-size:15px;font-weight:700;letter-spacing:-.02em;color:var(--white)}
-.ht-card-title-sub{font-size:11.5px;color:rgba(240,238,234,.38);margin-top:2px}
-.ht-steps-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;background:var(--border)}
-.ht-step{padding:20px 22px;background:var(--bg2);display:flex;gap:14px;align-items:flex-start;transition:background .15s}
-.ht-step:hover{background:rgba(255,255,255,.018)}
-@keyframes ht-pulse{0%,100%{box-shadow:0 0 0 0 rgba(201,168,76,0)}50%{box-shadow:0 0 0 5px rgba(201,168,76,.12)}}
-.ht-step-num{width:34px;height:34px;border-radius:10px;background:rgba(201,168,76,.1);border:1px solid var(--gold-border);color:var(--gold);font-size:15px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;letter-spacing:-.02em;animation:ht-pulse 4s ease-in-out infinite}
-.ht-step-title{font-size:13px;font-weight:700;color:var(--white);margin-bottom:5px;letter-spacing:-.01em}
-.ht-step-desc{font-size:12px;color:rgba(240,238,234,.48);line-height:1.65}
-.ht-step-desc strong{color:rgba(240,238,234,.82);font-weight:600}
-.ht-step-desc code{color:var(--gold);font-size:10.5px;background:rgba(201,168,76,.1);padding:1px 6px;border-radius:4px;font-family:monospace;font-style:normal}
-.ht-step-page{display:inline-flex;align-items:center;gap:4px;font-size:9.5px;font-weight:700;color:var(--gold);background:rgba(201,168,76,.1);border:1px solid var(--gold-border);padding:2px 8px;border-radius:20px;margin-top:7px;letter-spacing:.04em}
+.ht-card-title-text{font-size:15px;font-weight:700;letter-spacing:-.025em;color:var(--white)}
+.ht-card-title-sub{font-size:12px;color:rgba(240,238,234,.35);margin-top:3px;line-height:1.5}
+.ht-steps-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border)}
+.ht-step{padding:26px 28px;background:var(--bg2);display:flex;flex-direction:column;gap:0;transition:background .15s}
+.ht-step:hover{background:rgba(255,255,255,.015)}
+.ht-step-num{font-size:30px;font-weight:800;color:var(--gold);letter-spacing:-.04em;line-height:1;margin-bottom:14px;opacity:.65}
+.ht-step-title{font-size:13px;font-weight:700;color:var(--white);margin-bottom:7px;letter-spacing:-.015em}
+.ht-step-desc{font-size:12px;color:rgba(240,238,234,.45);line-height:1.72}
+.ht-step-desc strong{color:rgba(240,238,234,.78);font-weight:600}
+.ht-step-desc code{color:var(--gold);font-size:10.5px;background:rgba(201,168,76,.08);padding:1px 6px;border-radius:4px;font-family:monospace;font-style:normal}
+.ht-step-page{display:inline-flex;align-items:center;gap:4px;font-size:9.5px;font-weight:700;color:rgba(240,238,234,.38);background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);padding:2px 8px;border-radius:20px;margin-top:9px;letter-spacing:.04em}
 .ht-features{padding:4px 0}
-.ht-feature{display:flex;gap:14px;padding:18px 22px;border-bottom:1px solid rgba(255,255,255,.045)}
+.ht-feature{display:flex;gap:14px;padding:20px 24px;border-bottom:1px solid rgba(255,255,255,.04)}
 .ht-feature:last-child{border-bottom:none}
 .ht-feature-icon{width:36px;height:36px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:17px;margin-top:1px}
-.ht-feature-title{font-size:13px;font-weight:700;color:var(--white);margin-bottom:5px;letter-spacing:-.01em;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
-.ht-feature-desc{font-size:12px;color:rgba(240,238,234,.48);line-height:1.72}
-.ht-feature-desc strong{color:rgba(240,238,234,.82);font-weight:600}
+.ht-feature-title{font-size:13px;font-weight:700;color:var(--white);margin-bottom:6px;letter-spacing:-.015em;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.ht-feature-desc{font-size:12px;color:rgba(240,238,234,.45);line-height:1.75}
+.ht-feature-desc strong{color:rgba(240,238,234,.8);font-weight:600}
 .ht-feature-desc em{color:var(--gold);font-style:normal;font-weight:600}
-.ht-feature-desc code{color:var(--gold);font-size:10.5px;background:rgba(201,168,76,.1);padding:1px 6px;border-radius:4px;font-family:monospace}
-.ht-callout{display:flex;gap:12px;padding:12px 16px;border-radius:10px;margin:0 22px 16px;font-size:12px;line-height:1.7;align-items:flex-start}
+.ht-feature-desc code{color:var(--gold);font-size:10.5px;background:rgba(201,168,76,.08);padding:1px 6px;border-radius:4px;font-family:monospace}
+.ht-callout{display:flex;gap:12px;padding:13px 16px;border-radius:8px;margin:0 24px 16px;font-size:12px;line-height:1.72;align-items:flex-start}
 .ht-callout-critical{background:rgba(248,113,113,.08);border:1px solid rgba(248,113,113,.25);color:rgba(248,113,113,.92)}
 .ht-callout-warn{background:rgba(250,204,21,.07);border:1px solid rgba(250,204,21,.22);color:#facc15}
 .ht-callout-tip{background:rgba(201,168,76,.07);border:1px solid var(--gold-border);color:var(--gold)}
@@ -535,18 +534,18 @@ textarea.edit-val{min-height:38px}
 .ht-tag-green{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
 .ht-tag-purple{background:rgba(167,139,250,.1);color:var(--purple);border:1px solid rgba(167,139,250,.25)}
 .ht-tag-blue{background:rgba(96,165,250,.1);color:var(--blue);border:1px solid rgba(96,165,250,.25)}
-.ht-flags-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:4px 22px 20px}
+.ht-flags-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:4px 24px 22px}
 .ht-flag{display:flex;align-items:center;gap:9px;padding:9px 12px;background:rgba(255,255,255,.025);border:1px solid var(--border);border-radius:9px;font-size:11.5px;color:rgba(240,238,234,.6)}
 .ht-flag-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
 .ht-flag-red .ht-flag-dot{background:var(--red);box-shadow:0 0 6px rgba(248,113,113,.5)}
 .ht-flag-amber .ht-flag-dot{background:#facc15;box-shadow:0 0 6px rgba(250,204,21,.45)}
-.ht-hooks-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:4px 22px 20px}
+.ht-hooks-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:4px 24px 22px}
 .ht-hook{padding:13px 15px;background:rgba(255,255,255,.025);border:1px solid var(--border);border-radius:10px;transition:border-color .15s}
 .ht-hook:hover{border-color:rgba(201,168,76,.25)}
 .ht-hook-num{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:var(--gold);opacity:.8;margin-bottom:4px}
 .ht-hook-name{font-size:12.5px;font-weight:700;color:var(--white);margin-bottom:4px;letter-spacing:-.01em}
 .ht-hook-desc{font-size:11px;color:rgba(240,238,234,.42);line-height:1.55}
-.ht-tips-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:4px 22px 20px}
+.ht-tips-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:4px 24px 22px}
 .ht-tip{display:flex;gap:11px;padding:13px 14px;background:rgba(255,255,255,.025);border:1px solid var(--border);border-radius:10px;align-items:flex-start;transition:border-color .15s}
 .ht-tip:hover{border-color:rgba(255,255,255,.1)}
 .ht-tip-icon{font-size:19px;flex-shrink:0;line-height:1.2;margin-top:1px}
@@ -569,14 +568,14 @@ textarea.edit-val{min-height:38px}
 .st-opts{display:grid;gap:8px}
 .st-opts-4{grid-template-columns:repeat(4,1fr)}
 .st-opts-3{grid-template-columns:repeat(3,1fr)}
-.st-opt{background:rgba(255,255,255,.03);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:14px 10px;text-align:center;cursor:pointer;transition:all .18s;user-select:none}
-.st-opt:hover{border-color:rgba(201,168,76,.4);background:rgba(201,168,76,.05);transform:translateY(-1px)}
-.st-opt.active{border-color:var(--gold);background:rgba(201,168,76,.1);box-shadow:0 0 0 1px rgba(201,168,76,.25)}
-.st-opt-icon{font-size:20px;margin-bottom:7px;line-height:1}
-.st-opt-name{font-size:12px;font-weight:700;color:var(--white);margin-bottom:2px}
-.st-opt-sub{font-size:10px;color:var(--white3);line-height:1.4}
+.st-opt{background:rgba(255,255,255,.025);border:1px solid var(--border);border-radius:var(--radius-sm);padding:16px 10px;text-align:center;cursor:pointer;transition:all .15s;user-select:none}
+.st-opt:hover{border-color:rgba(255,255,255,.14);background:rgba(255,255,255,.04)}
+.st-opt.active{border-color:rgba(201,168,76,.4);background:rgba(201,168,76,.06)}
+.st-opt-icon{display:none}
+.st-opt-name{font-size:12px;font-weight:700;color:var(--white2);margin-bottom:3px}
+.st-opt-sub{font-size:10px;color:var(--white4);line-height:1.4}
 .st-opt.active .st-opt-name{color:var(--gold)}
-.st-opt.active .st-opt-sub{color:rgba(201,168,76,.7)}
+.st-opt.active .st-opt-sub{color:rgba(201,168,76,.6)}
 .st-divider{height:1px;background:var(--border);margin:24px 0}
 /* Email card redesign for settings */
 .st-email-card{display:flex;align-items:center;gap:14px;padding:16px;background:rgba(255,255,255,.03);border:1px solid var(--border2);border-radius:var(--radius-sm)}
@@ -585,6 +584,363 @@ textarea.edit-val{min-height:38px}
 .st-email-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--white3);margin-bottom:3px}
 .st-email-val{font-size:13px;font-weight:600;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .st-email-edit{margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
+#email-verified-badge{line-height:0;flex-shrink:0;display:inline-flex;align-items:center;margin-top:2px}
+
+/* ── Job Filters ─────────────────────────────────────────────────────────── */
+.jf-section-hdr{display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;padding:2px 0}
+.jf-section-hdr:hover .jf-expand-btn{color:var(--gold)}
+.jf-badge{font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px;background:rgba(201,168,76,.1);color:var(--gold);border:1px solid var(--gold-border);white-space:nowrap;flex-shrink:0;transition:all .2s}
+.jf-badge.jf-default{background:rgba(255,255,255,.04);color:var(--white3);border-color:var(--border)}
+.jf-expand-btn{font-size:10px;font-weight:700;color:var(--white3);background:none;border:none;cursor:pointer;font-family:inherit;padding:0;transition:color .15s;white-space:nowrap}
+
+/* Prominent open button (closed state) */
+.jf-open-btn{width:100%;display:flex;align-items:center;gap:14px;padding:14px 16px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.09);border-radius:12px;cursor:pointer;font-family:inherit;text-align:left;transition:all .18s;color:var(--white)}
+.jf-open-btn:hover{background:rgba(201,168,76,.06);border-color:rgba(201,168,76,.3)}
+.jf-open-btn--active{background:rgba(201,168,76,.07);border-color:rgba(201,168,76,.35)}
+.jf-open-icon{width:34px;height:34px;border-radius:9px;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.22);display:flex;align-items:center;justify-content:center;color:var(--gold);flex-shrink:0}
+.jf-open-text{flex:1;min-width:0}
+.jf-open-title{display:block;font-size:13px;font-weight:700;color:var(--white);margin-bottom:2px;letter-spacing:-.01em}
+.jf-open-sub{display:block;font-size:11px;color:rgba(240,238,234,.35);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.jf-open-chevron{flex-shrink:0;color:rgba(240,238,234,.3);transition:transform .2s}
+
+/* Presets row */
+.jf-presets-row{display:flex;align-items:center;gap:6px;margin-bottom:18px;flex-wrap:wrap}
+.jf-presets-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--white3);margin-right:2px}
+.jf-preset-btn{padding:5px 14px;background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:20px;font-size:11px;font-weight:600;color:var(--white3);cursor:pointer;font-family:inherit;transition:all .15s}
+.jf-preset-btn:hover{border-color:var(--gold-border);color:var(--gold);background:var(--gold-bg)}
+.jf-preset-btn.active{border-color:var(--gold);color:var(--gold);background:var(--gold-bg)}
+.jf-reset-btn{margin-left:auto;font-size:10px;font-weight:600;color:var(--white3);background:none;border:none;cursor:pointer;font-family:inherit;padding:4px 0;transition:color .15s}
+.jf-reset-btn:hover{color:var(--red)}
+
+/* Section labels */
+.jf-section-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:rgba(240,238,234,.25);margin:18px 0 10px;padding-bottom:8px;border-bottom:1px solid rgba(255,255,255,.05)}
+.jf-section-lbl:first-of-type{margin-top:0}
+
+/* Slider rows */
+.jf-sl-row{margin-bottom:14px}
+.jf-sl-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px}
+.jf-sl-name{font-size:12.5px;font-weight:600;color:var(--white2)}
+.jf-sl-val{font-size:11px;font-weight:700;color:var(--gold);background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.22);padding:2px 10px;border-radius:20px;min-width:46px;text-align:center;transition:all .15s}
+.jf-sl-hint{font-size:10.5px;color:rgba(240,238,234,.28);margin-top:6px;line-height:1.5}
+.jf-sl{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:2px;outline:none;cursor:pointer;display:block;border:none}
+.jf-sl::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;border-radius:50%;background:#6366f1;cursor:pointer;box-shadow:0 0 0 2px rgba(99,102,241,.25),0 2px 6px rgba(0,0,0,.4);transition:box-shadow .15s}
+.jf-sl::-webkit-slider-thumb:hover{box-shadow:0 0 0 4px rgba(99,102,241,.2),0 2px 8px rgba(0,0,0,.5)}
+.jf-sl::-moz-range-thumb{width:13px;height:13px;border-radius:50%;background:#6366f1;cursor:pointer;border:none;box-shadow:0 0 0 2px rgba(99,102,241,.25)}
+
+/* Select */
+.jf-select{width:100%;padding:8px 11px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:9px;color:var(--white);font-size:12px;font-family:inherit;outline:none;cursor:pointer;transition:border-color .2s;margin-top:4px}
+.jf-select:focus{border-color:rgba(201,168,76,.4);box-shadow:0 0 0 3px rgba(201,168,76,.06)}
+.jf-select option{background:#111827}
+
+/* Toggles — 2-column grid */
+.jf-togs-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:4px}
+.jf-tog-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:11px 13px;background:rgba(255,255,255,.025);border:1px solid var(--border);border-radius:10px;cursor:pointer;transition:border-color .15s}
+.jf-tog-item:hover{border-color:rgba(255,255,255,.12)}
+.jf-tog-text{flex:1;min-width:0}
+.jf-tog-name{display:block;font-size:11.5px;font-weight:600;color:var(--white2);margin-bottom:2px}
+.jf-tog-hint{display:block;font-size:10px;color:rgba(240,238,234,.3);line-height:1.4}
+
+/* ── Profile Card v2 (Option B) ──────────────────────────────────── */
+.profile-card{background:var(--bg2);border:1px solid var(--border);border-radius:18px;overflow:hidden;margin-bottom:20px;transition:box-shadow .2s,border-color .2s}
+.profile-card::before{content:'';display:block;height:3px;background:linear-gradient(90deg,var(--gold),var(--gold2),rgba(232,200,120,.3),transparent)}
+.profile-card:hover{border-color:rgba(201,168,76,.14);box-shadow:0 6px 32px rgba(0,0,0,.3)}
+
+/* Header */
+.pcv2-hdr{padding:20px 22px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:16px}
+.pcv2-ring{position:relative;width:68px;height:68px;flex-shrink:0}
+.pcv2-ring svg{width:68px;height:68px}
+.pcv2-ring-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800}
+.pcv2-info{flex:1;min-width:0}
+.pcv2-name-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:5px}
+.pcv2-name{font-size:17px;font-weight:700;color:var(--white);letter-spacing:-.02em}
+.pcv2-meta{font-size:12px;color:rgba(240,238,234,.4);margin-bottom:8px}
+.pcv2-str-row{display:flex;align-items:center;gap:10px}
+.pcv2-str-bar{flex:1;height:4px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden}
+.pcv2-str-fill{height:100%;border-radius:2px;transition:width .6s cubic-bezier(.4,0,.2,1)}
+.pcv2-str-pct{font-size:12px;font-weight:700;white-space:nowrap}
+.pcv2-str-lbl{font-size:10px;color:rgba(240,238,234,.28);white-space:nowrap}
+.pcv2-actions{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.pcv2-tier{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap;background:rgba(255,255,255,.05);color:rgba(240,238,234,.45);border:1px solid rgba(255,255,255,.09)}
+.pcv2-tier-gold{background:rgba(201,168,76,.1);color:var(--gold);border-color:var(--gold-border)}
+.pcv2-tier-green{background:rgba(255,255,255,.05);color:rgba(240,238,234,.45);border-color:rgba(255,255,255,.09)}
+.pcv2-tier-purple{background:rgba(255,255,255,.05);color:rgba(240,238,234,.45);border-color:rgba(255,255,255,.09)}
+.pcv2-tier-blue{background:rgba(255,255,255,.05);color:rgba(240,238,234,.45);border-color:rgba(255,255,255,.09)}
+
+/* Info strip */
+.pcv2-strip{display:grid;grid-template-columns:1fr 1px 1fr 1px 1fr 1px 1fr;background:rgba(0,0,0,.18);border-bottom:1px solid var(--border)}
+.pcv2-strip-item{padding:10px 14px;text-align:center}
+.pcv2-strip-div{background:var(--border)}
+.pcv2-strip-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:rgba(240,238,234,.28);margin-bottom:4px}
+.pcv2-strip-val{font-size:12.5px;font-weight:600;color:rgba(240,238,234,.82);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* Sections */
+.pcv2-section{padding:14px 22px;border-bottom:1px solid var(--border)}
+.pcv2-section:last-child{border-bottom:none}
+.pcv2-sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.pcv2-sec-title{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(240,238,234,.3)}
+
+/* Skills — blue chips */
+.skill-chip{font-size:11px;padding:3px 10px;background:rgba(255,255,255,.05);color:rgba(240,238,234,.55);border:1px solid rgba(255,255,255,.1);border-radius:20px;font-weight:600;transition:background .12s}
+.skill-chip:hover{background:rgba(255,255,255,.09);color:rgba(240,238,234,.75)}
+.skills-hint{font-size:11px;color:var(--white3);font-style:italic}
+
+/* Portfolio grid v2 — 3 cols */
+.pcv2-port-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.port-v2-card{background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.07);border-radius:18px;overflow:hidden;position:relative;transition:border-color .15s}
+.port-v2-card:hover{border-color:rgba(255,255,255,.14)}
+.port-v2-card.editing{border-color:rgba(201,168,76,.35);background:rgba(201,168,76,.04)}
+.port-v2-card.port-has-link::before,.port-v2-card.port-no-link::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;border-radius:18px 18px 0 0;pointer-events:none;z-index:1}
+.port-v2-card.port-has-link::before{background:linear-gradient(90deg,var(--gold),var(--gold2),rgba(232,200,120,.3),transparent)}
+.port-v2-card.port-no-link::before{background:linear-gradient(90deg,rgba(96,165,250,.45),rgba(96,165,250,.15),transparent)}
+.port-v2-body{padding:12px 12px 13px;display:flex;flex-direction:column;gap:14px}
+.port-v2-title{font-size:12px;font-weight:400;color:rgba(240,238,234,.6);padding-right:22px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.4;letter-spacing:-.01em}
+.port-v2-meta-row{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.port-v2-link-lbl{font-size:10px;color:rgba(201,168,76,.7);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.port-v2-skill-count{font-size:10px;color:rgba(240,238,234,.3);background:rgba(255,255,255,.05);border-radius:20px;padding:1px 7px;white-space:nowrap;flex-shrink:0}
+.port-v2-menu{position:absolute;top:10px;right:10px;width:20px;height:20px;border:1px solid rgba(255,255,255,.09);border-radius:5px;background:rgba(255,255,255,.04);display:flex;align-items:center;justify-content:center;gap:2px;cursor:pointer;transition:all .15s;z-index:1}
+.port-v2-menu:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2)}
+.port-v2-mdot{width:3px;height:3px;border-radius:50%;background:rgba(240,238,234,.45)}
+.port-v2-drop{background:#1a2035;border:1px solid rgba(255,255,255,.12);border-radius:9px;padding:4px;min-width:100px;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+.port-v2-drop-item{display:flex;align-items:center;gap:7px;width:100%;padding:6px 10px;background:none;border:none;border-radius:5px;font-size:11.5px;font-weight:600;color:rgba(240,238,234,.7);cursor:pointer;font-family:inherit;transition:background .12s;text-align:left}
+.port-v2-drop-item:hover{background:rgba(255,255,255,.07)}
+.port-v2-drop-del{color:var(--red)}
+.port-v2-drop-del:hover{background:rgba(248,113,113,.1)}
+/* Edit mode */
+.port-v2-edit-hdr{display:flex;align-items:center;gap:8px;padding:10px 13px 0}
+.port-v2-title-inp{flex:1;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:7px;padding:6px 9px;font-size:12.5px;font-weight:700;color:var(--white);font-family:inherit;outline:none;min-width:0}
+.port-v2-title-inp:focus{border-color:rgba(201,168,76,.4)}
+.port-v2-done{flex-shrink:0;padding:5px 12px;background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.3);border-radius:7px;font-size:11px;font-weight:700;color:var(--gold);cursor:pointer;font-family:inherit;white-space:nowrap}
+.port-v2-edit-body{padding:8px 13px 12px}
+.port-v2-edit-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:rgba(240,238,234,.3);display:block;margin:8px 0 5px}
+.port-v2-edit-lbl:first-child{margin-top:0}
+.port-v2-url-row{display:flex;gap:5px;margin-bottom:5px}
+.port-v2-url-inp{flex:1;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:7px;padding:5px 9px;font-size:11.5px;color:var(--white);font-family:inherit;outline:none;min-width:0}
+.port-v2-url-inp:focus{border-color:rgba(201,168,76,.38)}
+.port-v2-url-del{width:28px;border:1px solid rgba(248,113,113,.18);background:rgba(248,113,113,.07);border-radius:7px;color:var(--red);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.port-v2-add-url{font-size:11px;color:rgba(201,168,76,.65);background:rgba(201,168,76,.04);border:1px dashed rgba(201,168,76,.2);border-radius:7px;padding:5px 9px;cursor:pointer;width:100%;font-family:inherit;text-align:left;margin-top:2px;display:block;transition:all .15s}
+.port-v2-add-url:hover{background:rgba(201,168,76,.09)}
+.port-v2-desc-inp{width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:7px;padding:7px 9px;font-size:11.5px;color:var(--white);font-family:inherit;outline:none;resize:none;line-height:1.5;min-height:52px}
+.port-v2-desc-inp:focus{border-color:rgba(201,168,76,.38)}
+.port-v2-skills-ro{display:flex;flex-wrap:wrap;gap:4px;padding:7px 9px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.06);border-radius:7px;min-height:28px}
+.port-v2-skill-tag{font-size:10px;padding:2px 8px;background:rgba(96,165,250,.09);color:#93c5fd;border:1px solid rgba(96,165,250,.18);border-radius:20px;font-weight:600}
+
+/* Pending state v2 */
+.pcv2-pending{padding:32px 24px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px}
+.pcv2-pending-icon{width:48px;height:48px;border-radius:13px;background:rgba(255,255,255,.04);border:1px dashed rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:22px}
+.pcv2-pending-title{font-size:15px;font-weight:700;color:var(--white)}
+.pcv2-pending-desc{font-size:12.5px;color:var(--white2);line-height:1.7;max-width:320px}
+
+/* ── Profile selector grid ─────────────────────────────────────────────────── */
+.pr-sel-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:14px}
+.pr-sel-card{background:var(--bg2);border:1.5px solid var(--border);border-radius:13px;padding:14px 16px;cursor:pointer;transition:all .15s;position:relative}
+.pr-sel-card:hover{border-color:rgba(255,255,255,.14);background:rgba(255,255,255,.03)}
+.pr-sel-card.active{background:rgba(99,102,241,.08);border-color:rgba(99,102,241,.45)}
+.pr-sel-card.pr-add{background:transparent;border:1.5px dashed rgba(255,255,255,.1);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:90px}
+.pr-sel-card.pr-add:hover{border-color:rgba(99,102,241,.4);background:rgba(99,102,241,.04)}
+.pr-sel-av{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;margin-bottom:10px;overflow:hidden;flex-shrink:0}
+.pr-sel-av img{width:100%;height:100%;object-fit:cover;display:block}
+.pr-sel-card.active .pr-sel-av{background:var(--indigo)}
+.pr-sel-card:not(.active) .pr-sel-av{background:rgba(255,255,255,.1);color:rgba(240,238,234,.4)}
+.pr-sel-card.pr-add .pr-sel-av{display:none}
+.pr-sel-name{font-size:12.5px;font-weight:700;letter-spacing:-.015em;margin-bottom:3px}
+.pr-sel-card.active .pr-sel-name{color:rgba(196,194,248,.9)}
+.pr-sel-card:not(.active) .pr-sel-name{color:rgba(240,238,234,.42)}
+.pr-sel-meta{font-size:10.5px}
+.pr-sel-card.active .pr-sel-meta{color:rgba(180,178,248,.45)}
+.pr-sel-card:not(.active) .pr-sel-meta{color:rgba(240,238,234,.22)}
+.pr-sel-tag{position:absolute;top:10px;right:10px;font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:2px 7px;border-radius:20px;background:rgba(99,102,241,.15);color:#8b8cf0;border:1px solid rgba(99,102,241,.28)}
+.pr-add-icon{font-size:20px;color:rgba(240,238,234,.22)}
+.pr-add-lbl{font-size:11px;font-weight:600;color:rgba(240,238,234,.22)}
+.pr-sel-card.pr-add:hover .pr-add-icon,.pr-sel-card.pr-add:hover .pr-add-lbl{color:var(--indigo)}
+
+/* ── Profile detail card ───────────────────────────────────────────────────── */
+.pr-detail{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:14px}
+.pr-hdr{padding:20px 22px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:14px}
+.pr-av{width:48px;height:48px;border-radius:50%;background:var(--indigo);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:#fff;flex-shrink:0;letter-spacing:-.02em;overflow:hidden}
+.pr-av img{width:100%;height:100%;object-fit:cover;display:block}
+.pr-av-pending{background:rgba(255,255,255,.06);color:rgba(240,238,234,.2)}
+.pr-info{flex:1;min-width:0}
+.pr-name-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:3px}
+.pr-name{font-size:17px;font-weight:800;color:var(--white);letter-spacing:-.035em}
+.pr-tier-badge{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:3px 8px;border-radius:20px;background:rgba(52,211,153,.08);color:#34d399;border:1px solid rgba(52,211,153,.18)}
+.pr-meta{font-size:11.5px;color:var(--white3);margin-bottom:11px;line-height:1.5}
+.pr-acts{display:flex;align-items:center;gap:7px}
+.pr-hdr-right{display:flex;align-items:center;gap:7px;flex-shrink:0;align-self:flex-start;padding-top:2px}
+.pr-card-block{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px 22px;margin-bottom:16px}
+.pr-card-block-lbl{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.13em;color:rgba(240,238,234,.25);margin-bottom:12px}
+.btn-make-primary{background:none;border:none;font-family:inherit;cursor:pointer;font-size:11px;color:rgba(99,102,241,.6);padding:0;margin-top:5px;display:inline-block;transition:color .12s;letter-spacing:-.01em}
+.btn-make-primary:hover{color:rgba(99,102,241,.9)}
+.btn-indigo{display:inline-flex;align-items:center;gap:5px;padding:8px 18px;border-radius:999px;background:var(--indigo);color:#fff;font-size:12px;font-weight:700;border:none;cursor:pointer;font-family:inherit;transition:opacity .12s;letter-spacing:-.01em;white-space:nowrap}
+.btn-indigo:hover{opacity:.86}
+.btn-indigo i{font-size:12px}
+.btn-indigo-outline{display:inline-flex;align-items:center;gap:5px;padding:7px 16px;border-radius:999px;background:transparent;color:rgba(99,102,241,.85);font-size:12px;font-weight:600;border:1.5px solid rgba(99,102,241,.32);cursor:pointer;font-family:inherit;transition:all .12s;white-space:nowrap}
+.btn-indigo-outline:hover{background:var(--indigo-bg);border-color:rgba(99,102,241,.55)}
+.btn-indigo-outline i{font-size:12px}
+.btn-icon-del{width:30px;height:30px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,.1);color:rgba(240,238,234,.35);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
+.btn-icon-del:hover{background:rgba(248,113,113,.1);border-color:rgba(248,113,113,.35);color:var(--red)}
+
+/* ── Profile stats ─────────────────────────────────────────────────────────── */
+.pr-stats{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid rgba(255,255,255,.04)}
+.pr-stat{padding:16px 0;text-align:center;border-right:1px solid rgba(255,255,255,.03)}
+.pr-stat:last-child{border-right:none}
+.pr-stat-n{font-size:17px;font-weight:700;color:rgba(240,238,234,.88);letter-spacing:-.03em;line-height:1;margin-bottom:5px}
+.pr-stat-l{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(240,238,234,.18)}
+.pr-foot{padding:9px 22px;border-top:1px solid rgba(255,255,255,.04);display:flex;align-items:center;gap:6px}
+.pr-sync-dot{width:5px;height:5px;border-radius:50%;background:#34d399;flex-shrink:0}
+.pr-sync-txt{font-size:11px;color:rgba(240,238,234,.2)}
+
+/* ── Profile sections (portfolio, filters) ─────────────────────────────────── */
+.pr-section{border-top:1px solid var(--border);padding:16px 22px}
+.pr-sec-hdr{margin-bottom:10px}
+.pr-sec-lbl{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.13em;color:rgba(240,238,234,.25)}
+
+/* ── Portfolio item row (new design) ───────────────────────────────────────── */
+.pi-list{display:flex;flex-direction:column}
+.port-v2-card:not(.editing){display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.035);background:transparent;border-top:none;border-left:none;border-right:none;border-radius:0;overflow:visible;cursor:default}
+.port-v2-card:not(.editing):last-child{border-bottom:none}
+.port-v2-card:not(.editing)::before{display:none!important}
+.pi-name{flex:1;font-size:11px;font-weight:400;color:rgba(240,238,234,.45);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pi-check-ok{width:16px;height:16px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.pi-missing-btn{width:16px;height:16px;flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:50%;transition:background .12s}
+.pi-missing-btn:hover{background:rgba(250,204,21,.06)}
+.pi-url-text{font-size:10.5px;color:rgba(99,102,241,.65);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;flex-shrink:0;text-decoration:none;cursor:pointer;transition:color .12s}
+.pi-url-text:hover{color:rgba(99,102,241,1);text-decoration:underline}
+.pi-no-url-text{font-size:10.5px;color:rgba(240,238,234,.22);flex-shrink:0;white-space:nowrap;font-style:italic}
+
+/* ── Filter segmented control ──────────────────────────────────────────────── */
+.jf-seg{background:transparent;border-radius:0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
+.jf-seg-opt{padding:13px 16px;border-radius:14px;text-align:left;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:10px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.025);user-select:none}
+.jf-seg-opt.jf-active{background:rgba(99,102,241,.1);border-color:rgba(99,102,241,.45)}
+.jf-seg-opt:not(.jf-active):hover{background:rgba(255,255,255,.045);border-color:rgba(255,255,255,.14)}
+.jf-seg-ck{width:14px;height:14px;border-radius:50%;border:1.5px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
+.jf-seg-opt.jf-active .jf-seg-ck{background:rgba(99,102,241,.2);border-color:rgba(99,102,241,.5)}
+.jf-seg-ck svg{display:none;color:#8b8cf0}
+.jf-seg-opt.jf-active .jf-seg-ck svg{display:block}
+.jf-seg-txt{display:flex;flex-direction:column;gap:1px}
+.jf-seg-name{font-size:11.5px;font-weight:700}
+.jf-seg-opt.jf-active .jf-seg-name{color:#c4c2f8}
+.jf-seg-opt:not(.jf-active) .jf-seg-name{color:rgba(240,238,234,.28)}
+.jf-seg-sub{font-size:9.5px}
+.jf-seg-opt.jf-active .jf-seg-sub{color:rgba(180,178,248,.4)}
+.jf-seg-opt:not(.jf-active) .jf-seg-sub{color:rgba(240,238,234,.18)}
+
+/* ── Filter groups 2×2 ─────────────────────────────────────────────────────── */
+.jf-groups{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:0}
+.jf-group{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);border-radius:10px;padding:12px 14px}
+.jf-group-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.11em;color:rgba(240,238,234,.22);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.jf-group-lbl svg{flex-shrink:0;opacity:.7}
+.jf-select{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:7px;color:rgba(240,238,234,.7);font-size:11px;font-weight:600;padding:3px 8px;font-family:inherit;cursor:pointer;outline:none;transition:border-color .15s}
+.jf-select:focus{border-color:rgba(99,102,241,.4)}
+.jf-toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(6px);background:#111827;border:1px solid rgba(99,102,241,.35);color:rgba(240,238,234,.85);font-size:12.5px;font-weight:600;padding:10px 20px;border-radius:10px;z-index:999999;pointer-events:none;opacity:0;transition:opacity .2s,transform .2s;display:flex;align-items:center;gap:8px;white-space:nowrap;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+.jf-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.jf-group-lbl i{font-size:12px}
+.jf-row2{display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.035)}
+.jf-row2:last-child{border-bottom:none}
+.jf-row2-name{font-size:11px;color:rgba(240,238,234,.42)}
+.jf-row2-right{display:flex;align-items:center;gap:6px}
+.jf-row2-val{font-size:11px;font-weight:700;color:rgba(240,238,234,.78);min-width:26px;text-align:right}
+.jf-tog-sm{width:24px;height:14px;border-radius:10px;position:relative;cursor:pointer;flex-shrink:0;transition:background .15s}
+.jf-tok{position:absolute;top:2px;left:2px;width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.9);transition:transform .15s}
+.jf-tog-sm.on{background:var(--indigo)}.jf-tog-sm.on .jf-tok{transform:translateX(10px)}
+.jf-tog-sm.off{background:rgba(255,255,255,.1)}
+.jf-filter-footer{display:flex;align-items:center;justify-content:space-between;padding:14px 0 2px}
+.btn-apply-filters{display:inline-flex;align-items:center;gap:6px;padding:10px 24px;border-radius:999px;background:var(--indigo);color:#fff;font-size:13px;font-weight:700;border:none;cursor:pointer;font-family:inherit;letter-spacing:-.01em;transition:opacity .12s}
+.btn-apply-filters:hover{opacity:.87}
+.btn-apply-filters i{font-size:15px}
+.btn-reset-plain{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:999px;font-family:inherit;cursor:pointer;font-size:12px;font-weight:600;color:rgba(240,238,234,.45);transition:all .15s;padding:9px 18px}
+.btn-reset-plain:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.18);color:rgba(240,238,234,.7)}
+.jf-sl-compact{width:52px;height:3px;cursor:pointer;flex-shrink:0;accent-color:var(--indigo)}
+
+
+/* ── Job filter category multi-select ─────────────────────────────────────── */
+.jf-category-wrap{border-top:1px solid rgba(255,255,255,.045);padding:14px 0 4px;margin-top:8px}
+.jf-category-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:rgba(240,238,255,.22);margin-bottom:8px}
+.jf-cat-chips{display:flex;flex-wrap:wrap;gap:5px;min-height:20px;margin-bottom:8px}
+.jf-cat-chips-empty{font-size:11px;color:rgba(240,238,255,.2);font-style:italic}
+.jf-cat-chip-tag{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:600;padding:3px 8px;border-radius:20px;background:rgba(99,102,241,.12);color:rgba(170,168,252,.9);border:1px solid rgba(99,102,241,.28)}
+.jf-cat-chip-rm{background:none;border:none;color:rgba(170,168,252,.6);cursor:pointer;font-size:12px;line-height:1;padding:0;margin-left:1px;font-family:inherit}
+.jf-cat-chip-rm:hover{color:rgba(248,113,113,.8)}
+.jf-cat-search-wrap{margin-bottom:6px}
+.jf-cat-search{width:100%;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:8px;padding:7px 12px;color:rgba(240,238,255,.72);font-size:12px;font-family:inherit;outline:none;transition:border-color .15s}
+.jf-cat-search:focus{border-color:rgba(99,102,241,.45);box-shadow:0 0 0 3px rgba(99,102,241,.08)}
+.jf-cat-toggle{display:flex;align-items:center;justify-content:space-between;width:100%;padding:7px 12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.09);border-radius:8px;color:rgba(240,238,255,.5);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;margin-bottom:8px;transition:all .15s}
+.jf-cat-toggle:hover{border-color:rgba(99,102,241,.35);color:rgba(170,168,252,.85)}
+.jf-cat-toggle-chevron{transition:transform .2s;color:rgba(240,238,255,.35)}
+.jf-cat-toggle.open .jf-cat-toggle-chevron{transform:rotate(180deg)}
+.jf-cat-dropdown{display:none}
+.jf-cat-dropdown.open{display:block}
+.jf-cat-list{max-height:200px;overflow-y:auto;border:1px solid rgba(255,255,255,.07);border-radius:8px;background:#111827;margin-bottom:0}
+.jf-cat-list::-webkit-scrollbar{width:4px}
+.jf-cat-list::-webkit-scrollbar-thumb{background:rgba(99,102,241,.3);border-radius:2px}
+.jf-cat-group-lbl{font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(240,238,255,.25);padding:7px 12px 4px;background:#111827}
+.jf-cat-option{display:flex;align-items:center;gap:8px;padding:7px 12px;cursor:pointer;transition:background .1s;font-size:11.5px;color:rgba(240,238,255,.55)}
+.jf-cat-option:hover{background:rgba(255,255,255,.04);color:rgba(240,238,255,.8)}
+.jf-cat-option.on{color:rgba(170,168,252,.9)}
+.jf-cat-option.on:hover{background:rgba(99,102,241,.06)}
+.jf-cat-opt-ck{width:14px;height:14px;border-radius:4px;border:1px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .1s}
+.jf-cat-option.on .jf-cat-opt-ck{background:rgba(99,102,241,.2);border-color:rgba(99,102,241,.5);color:#8b8cf0}
+.jf-category-hint{font-size:10.5px;color:rgba(240,238,255,.22);line-height:1.55}
+
+/* ── How to Use — clean article / doc style ──────────────────────────────── */
+/* All card color variants → single neutral top line */
+.ht-card-gold::before,.ht-card-green::before,.ht-card-blue::before,
+.ht-card-red::before,.ht-card-purple::before,.ht-card-amber::before,
+.ht-card-yellow::before{background:rgba(255,255,255,.05)!important}
+
+/* Unified neutral icon box (remove colour theming) */
+.ht-icon-gold,.ht-icon-green,.ht-icon-blue,.ht-icon-red,
+.ht-icon-purple,.ht-icon-amber,.ht-icon-yellow{
+  background:rgba(255,255,255,.04)!important;
+  border-color:rgba(255,255,255,.08)!important;
+  color:rgba(240,238,234,.4)!important
+}
+
+/* Hero — strip gold gradient */
+.ht-hero{background:rgba(255,255,255,.02)!important;border-color:rgba(255,255,255,.06)!important}
+.ht-hero::after{display:none!important}
+.ht-hero-badge{background:rgba(255,255,255,.04)!important;border-color:rgba(255,255,255,.07)!important;color:rgba(240,238,234,.38)!important}
+
+/* Step page tag */
+.ht-step-page{background:rgba(255,255,255,.04)!important;border-color:rgba(255,255,255,.07)!important;color:rgba(240,238,234,.38)!important}
+
+/* Callouts — left-border strip, not full coloured box */
+.ht-callout{border-radius:5px!important;border:none!important;border-left:2px solid rgba(255,255,255,.14)!important;background:rgba(255,255,255,.025)!important;color:rgba(240,238,234,.68)!important;gap:0!important}
+.ht-callout-critical{border-left-color:rgba(248,113,113,.5)!important;background:rgba(248,113,113,.03)!important}
+.ht-callout-warn{border-left-color:rgba(250,204,21,.38)!important;background:rgba(250,204,21,.02)!important}
+.ht-callout-success{border-left-color:rgba(52,211,153,.38)!important;background:rgba(52,211,153,.02)!important}
+.ht-callout-tip{border-left-color:rgba(201,168,76,.38)!important;background:rgba(201,168,76,.02)!important}
+.ht-callout-info{border-left-color:rgba(96,165,250,.38)!important;background:rgba(96,165,250,.02)!important}
+.ht-callout-icon{display:none!important}
+.ht-callout strong{color:rgba(240,238,234,.82)!important}
+
+/* Tips grid — clean plain rows, no emoji icon, no card box */
+.ht-tips-grid{gap:0!important;padding:0 24px 22px!important}
+.ht-tip{background:transparent!important;border:none!important;border-radius:0!important;border-bottom:1px solid rgba(255,255,255,.04)!important;padding:11px 0!important;gap:0!important}
+.ht-tip:last-child{border-bottom:none!important}
+.ht-tip-icon{display:none!important}
+
+/* Feature icons — hide emoji boxes */
+.ht-feature-icon{display:none!important}
+.ht-feature{gap:0!important}
+
+/* Hooks grid — neutral on hover */
+.ht-hook:hover{border-color:rgba(255,255,255,.09)!important}
+.ht-hook-num{color:rgba(240,238,234,.38)!important}
+
+/* Flag dots — keep colour but drop glow */
+.ht-flag-red .ht-flag-dot,.ht-flag-amber .ht-flag-dot{box-shadow:none!important}
+
+/* Tags — neutral */
+.ht-tag-gold,.ht-tag-blue,.ht-tag-red,.ht-tag-green,.ht-tag-purple{
+  background:rgba(255,255,255,.05)!important;
+  color:rgba(240,238,234,.5)!important;
+  border-color:rgba(255,255,255,.08)!important
+}
+
+/* Audit cards — neutral */
+.ht-audit-card{background:rgba(255,255,255,.025)!important;border-color:rgba(255,255,255,.06)!important}
+.ht-audit-icon{display:none!important}
+.ht-cs-badge{background:rgba(255,255,255,.04)!important;color:rgba(240,238,234,.4)!important;border-color:rgba(255,255,255,.07)!important}
 </style>
 </head>
 <body>
@@ -594,9 +950,14 @@ textarea.edit-val{min-height:38px}
   <div class="sidebar">
     <a href="https://snagai.netlify.app" target="_blank" class="sb-logo-link">
       <div class="sb-icon">
-        <svg width="18" height="18" viewBox="0 0 32 32" fill="none">
-          <path d="M10 20.5C10 20.5 11.5 22 14 22C16.5 22 18 20.5 18 18.5C18 16.5 16 15.5 14 14.5C12 13.5 10.5 12.5 10.5 10.5C10.5 8.5 12 7 14.5 7C17 7 18 8.5 18 8.5" stroke="white" stroke-width="2.2" stroke-linecap="round"/>
-          <path d="M16 9L22 9C22 9 24 11 22 13C24 13 26 15 24 17C25 17 26 19 24 21C25 21 25 23 23 24L16 24" stroke="white" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+        <svg width="24" height="24" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="5" y="5" width="64" height="78" rx="10" stroke="white" stroke-width="5.5" fill="none"/>
+          <line x1="14" y1="23" x2="57" y2="23" stroke="white" stroke-width="5" stroke-linecap="round"/>
+          <line x1="14" y1="35" x2="57" y2="35" stroke="white" stroke-width="5" stroke-linecap="round"/>
+          <line x1="14" y1="47" x2="57" y2="47" stroke="white" stroke-width="5" stroke-linecap="round"/>
+          <line x1="14" y1="59" x2="40" y2="59" stroke="white" stroke-width="5" stroke-linecap="round"/>
+          <circle cx="76" cy="77" r="23" fill="#4338ca"/>
+          <polygon points="80,59 70,78 77,78 73,95 88,74 81,74" fill="white"/>
         </svg>
       </div>
       <div class="sb-brand">
@@ -624,8 +985,20 @@ textarea.edit-val{min-height:38px}
       <div class="sb-divider"></div>
       <div class="sb-item" data-section="howto">
         <div class="sb-dot"></div>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
         How to use
+      </div>
+      <div class="sb-item" data-section="terms">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        Terms of Service
+      </div>
+      <div class="sb-item" data-section="privacy">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Privacy Policy
+      </div>
+      <div class="sb-item" data-section="refund">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><path d="M1 10h22"/><path d="M8 15h.01M12 15h4"/></svg>
+        Refund Policy
       </div>
     </nav>
 
@@ -637,18 +1010,6 @@ textarea.edit-val{min-height:38px}
       <div class="sb-plan-bar-wrap"><div class="sb-plan-bar" id="sb-bar" style="width:0%"></div></div>
       <div class="sb-plan-count" id="sb-count">— / — used</div>
     </div>
-    <div class="sb-legal">
-      <div class="sb-legal-title">Legal</div>
-      <a href="https://snagai.netlify.app/terms.html" target="_blank">
-        <span class="sb-legal-icon">📄</span>Terms of Service
-      </a>
-      <a href="https://snagai.netlify.app/privacy.html" target="_blank">
-        <span class="sb-legal-icon">🔒</span>Privacy Policy
-      </a>
-      <a href="https://snagai.netlify.app/refund.html" target="_blank">
-        <span class="sb-legal-icon">↩</span>Refund Policy
-      </a>
-    </div>
   </div><!-- /sidebar -->
 
   <!-- ── Main content ── -->
@@ -658,8 +1019,9 @@ textarea.edit-val{min-height:38px}
     <div class="section active" id="section-profiles">
       <div class="section-header">
         <div class="section-header-left">
+          <div class="sec-label">Profiles</div>
           <div class="section-title">Your Profiles</div>
-          <div class="section-sub">Click "Sync to Snag AI" on your Upwork profile to sync your data. Portfolio links added manually.</div>
+          <div class="section-sub">Paste your Upwork profile URL, then click "Sync Profile" on your profile page to read your data.</div>
         </div>
         <button class="btn-add-profile" id="add-profile-btn">Manage Profile</button>
       </div>
@@ -680,9 +1042,11 @@ textarea.edit-val{min-height:38px}
 
       <div id="no-profiles-msg" style="display:none">
         <div class="empty-state">
-          <div class="empty-icon">👤</div>
+          <div class="empty-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(139,140,240,.7)" stroke-width="1.5" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </div>
           <div class="empty-title">Add your Upwork profile</div>
-          <div class="empty-desc">Paste your Upwork profile URL below. After saving, open your profile and click <strong style="color:rgba(240,238,234,.75)">"Sync to Snag AI"</strong> to read your skills, tier, and data.</div>
+          <div class="empty-desc">Paste your Upwork profile URL. After saving, open your profile page and click the <strong style="color:rgba(240,238,255,.7)">"Sync Profile"</strong> pill that appears in the bottom-right corner.</div>
           <div class="empty-url-form">
             <input
               id="empty-profile-url-inp"
@@ -692,16 +1056,17 @@ textarea.edit-val{min-height:38px}
               autocomplete="off"
               spellcheck="false"
             />
-            <button class="btn-primary" id="empty-save-profile-btn">Save &amp; Sync →</button>
+            <button class="btn-indigo" id="empty-save-profile-btn">Save &amp; Sync →</button>
           </div>
-          <div class="empty-url-hint">After saving, click <strong>Open profile</strong> then click <strong>Sync to Snag AI</strong> on the Upwork page — takes about 5 seconds.</div>
+          <div class="empty-url-hint">After saving, click <strong>Open &amp; Sync</strong> in the profile card, then click <strong>Sync Profile</strong> on the Upwork page — takes about 5 seconds.</div>
         </div>
       </div>
     </div><!-- /profiles -->
 
     <!-- ══ SUBSCRIPTION ══ -->
     <div class="section" id="section-subscription">
-      <div class="section-title-solo">Subscription</div>
+      <div class="sec-label">Subscription</div>
+      <div class="section-title-solo">Plan &amp; Billing</div>
       <div class="section-sub-solo">Track your usage and manage your plan.</div>
 
       <!-- Usage Stats Grid -->
@@ -710,7 +1075,7 @@ textarea.edit-val{min-height:38px}
         <div class="us-card">
           <div class="us-card-head">
             <div class="us-icon">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
             </div>
             <div class="us-plan-badge" id="ud-plan-badge">Free</div>
           </div>
@@ -730,7 +1095,7 @@ textarea.edit-val{min-height:38px}
           </div>
           <div class="us-big-num" id="ud-profiles-used">0</div>
           <div class="us-big-label">profiles added</div>
-          <div class="us-bar-track"><div class="us-bar" id="ud-profiles-bar" style="width:0%;background:var(--blue)"></div></div>
+          <div class="us-bar-track"><div class="us-bar" id="ud-profiles-bar" style="width:0%"></div></div>
           <div class="us-footnote">of <strong id="ud-profiles-limit">1</strong> allowed on your plan</div>
         </div>
 
@@ -744,8 +1109,8 @@ textarea.edit-val{min-height:38px}
           </div>
           <div class="us-big-num us-num-dim">—</div>
           <div class="us-big-label">profile audits</div>
-          <div class="us-bar-track"><div class="us-bar" style="width:0%;background:var(--purple)"></div></div>
-          <div class="us-footnote" style="color:var(--purple)">Coming in next update</div>
+          <div class="us-bar-track"><div class="us-bar" style="width:0%"></div></div>
+          <div class="us-footnote">Coming in next update</div>
         </div>
       </div>
 
@@ -766,27 +1131,27 @@ textarea.edit-val{min-height:38px}
             <div class="pcv2-price">$19<span>/mo</span></div>
             <div class="pcv2-sep"></div>
             <ul class="pcv2-list">
-              <li><span class="pcv2-check">✓</span>150 proposals / month</li>
-              <li><span class="pcv2-check">✓</span>1 Upwork profile</li>
-              <li><span class="pcv2-check">✓</span>AI cover letters</li>
-              <li><span class="pcv2-check">✓</span>Job analysis &amp; risk alerts</li>
-              <li><span class="pcv2-check">✓</span>Win probability scoring</li>
+              <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;margin-top:1px"><path d="M12 2C13.5 2 14.2 3.5 15.5 4C16.8 4.5 18.5 3.8 19.3 4.7C20.2 5.5 19.5 7.2 20 8.5C20.5 9.8 22 10.5 22 12C22 13.5 20.5 14.2 20 15.5C19.5 16.8 20.2 18.5 19.3 19.3C18.5 20.2 16.8 19.5 15.5 20C14.2 20.5 13.5 22 12 22C10.5 22 9.8 20.5 8.5 20C7.2 19.5 5.5 20.2 4.7 19.3C3.8 18.5 4.5 16.8 4 15.5C3.5 14.2 2 13.5 2 12C2 10.5 3.5 9.8 4 8.5C4.5 7.2 3.8 5.5 4.7 4.7C5.5 3.8 7.2 4.5 8.5 4C9.8 3.5 10.5 2 12 2Z" fill="#6366f1"/><path d="M8.5 12.5L11 15L15.5 9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>150 proposals / month</li>
+              <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;margin-top:1px"><path d="M12 2C13.5 2 14.2 3.5 15.5 4C16.8 4.5 18.5 3.8 19.3 4.7C20.2 5.5 19.5 7.2 20 8.5C20.5 9.8 22 10.5 22 12C22 13.5 20.5 14.2 20 15.5C19.5 16.8 20.2 18.5 19.3 19.3C18.5 20.2 16.8 19.5 15.5 20C14.2 20.5 13.5 22 12 22C10.5 22 9.8 20.5 8.5 20C7.2 19.5 5.5 20.2 4.7 19.3C3.8 18.5 4.5 16.8 4 15.5C3.5 14.2 2 13.5 2 12C2 10.5 3.5 9.8 4 8.5C4.5 7.2 3.8 5.5 4.7 4.7C5.5 3.8 7.2 4.5 8.5 4C9.8 3.5 10.5 2 12 2Z" fill="#6366f1"/><path d="M8.5 12.5L11 15L15.5 9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>1 Upwork profile</li>
+              <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;margin-top:1px"><path d="M12 2C13.5 2 14.2 3.5 15.5 4C16.8 4.5 18.5 3.8 19.3 4.7C20.2 5.5 19.5 7.2 20 8.5C20.5 9.8 22 10.5 22 12C22 13.5 20.5 14.2 20 15.5C19.5 16.8 20.2 18.5 19.3 19.3C18.5 20.2 16.8 19.5 15.5 20C14.2 20.5 13.5 22 12 22C10.5 22 9.8 20.5 8.5 20C7.2 19.5 5.5 20.2 4.7 19.3C3.8 18.5 4.5 16.8 4 15.5C3.5 14.2 2 13.5 2 12C2 10.5 3.5 9.8 4 8.5C4.5 7.2 3.8 5.5 4.7 4.7C5.5 3.8 7.2 4.5 8.5 4C9.8 3.5 10.5 2 12 2Z" fill="#6366f1"/><path d="M8.5 12.5L11 15L15.5 9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>AI cover letters</li>
+              <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;margin-top:1px"><path d="M12 2C13.5 2 14.2 3.5 15.5 4C16.8 4.5 18.5 3.8 19.3 4.7C20.2 5.5 19.5 7.2 20 8.5C20.5 9.8 22 10.5 22 12C22 13.5 20.5 14.2 20 15.5C19.5 16.8 20.2 18.5 19.3 19.3C18.5 20.2 16.8 19.5 15.5 20C14.2 20.5 13.5 22 12 22C10.5 22 9.8 20.5 8.5 20C7.2 19.5 5.5 20.2 4.7 19.3C3.8 18.5 4.5 16.8 4 15.5C3.5 14.2 2 13.5 2 12C2 10.5 3.5 9.8 4 8.5C4.5 7.2 3.8 5.5 4.7 4.7C5.5 3.8 7.2 4.5 8.5 4C9.8 3.5 10.5 2 12 2Z" fill="#6366f1"/><path d="M8.5 12.5L11 15L15.5 9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Job analysis &amp; risk alerts</li>
+              <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;margin-top:1px"><path d="M12 2C13.5 2 14.2 3.5 15.5 4C16.8 4.5 18.5 3.8 19.3 4.7C20.2 5.5 19.5 7.2 20 8.5C20.5 9.8 22 10.5 22 12C22 13.5 20.5 14.2 20 15.5C19.5 16.8 20.2 18.5 19.3 19.3C18.5 20.2 16.8 19.5 15.5 20C14.2 20.5 13.5 22 12 22C10.5 22 9.8 20.5 8.5 20C7.2 19.5 5.5 20.2 4.7 19.3C3.8 18.5 4.5 16.8 4 15.5C3.5 14.2 2 13.5 2 12C2 10.5 3.5 9.8 4 8.5C4.5 7.2 3.8 5.5 4.7 4.7C5.5 3.8 7.2 4.5 8.5 4C9.8 3.5 10.5 2 12 2Z" fill="#6366f1"/><path d="M8.5 12.5L11 15L15.5 9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Win probability scoring</li>
             </ul>
             <button class="pcv2-btn pcv2-btn-outline" data-plan="starter">Get Starter →</button>
           </div>
 
           <!-- Pro -->
           <div class="pcv2-card pcv2-featured" id="plan-pro">
-            <div class="pcv2-pop">⭐ BEST VALUE</div>
-            <div class="pcv2-tier" style="color:var(--gold)">PRO</div>
-            <div class="pcv2-price" style="color:var(--gold)">$39<span>/mo</span></div>
+            <div class="pcv2-pop">Best Value</div>
+            <div class="pcv2-tier" style="color:rgba(170,168,252,.85)">PRO</div>
+            <div class="pcv2-price" style="color:rgba(196,194,248,.95)">$39<span>/mo</span></div>
             <div class="pcv2-sep"></div>
             <ul class="pcv2-list">
-              <li><span class="pcv2-check pcv2-check-gold">✓</span>400 proposals / month</li>
-              <li><span class="pcv2-check pcv2-check-gold">✓</span>3 Upwork profiles</li>
-              <li><span class="pcv2-check pcv2-check-gold">✓</span>Everything in Starter</li>
-              <li><span class="pcv2-check pcv2-check-gold">✓</span>Portfolio auto-matching</li>
-              <li><span class="pcv2-check pcv2-check-gold">✓</span>Profile strength analysis</li>
+              <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;margin-top:1px"><path d="M12 2C13.5 2 14.2 3.5 15.5 4C16.8 4.5 18.5 3.8 19.3 4.7C20.2 5.5 19.5 7.2 20 8.5C20.5 9.8 22 10.5 22 12C22 13.5 20.5 14.2 20 15.5C19.5 16.8 20.2 18.5 19.3 19.3C18.5 20.2 16.8 19.5 15.5 20C14.2 20.5 13.5 22 12 22C10.5 22 9.8 20.5 8.5 20C7.2 19.5 5.5 20.2 4.7 19.3C3.8 18.5 4.5 16.8 4 15.5C3.5 14.2 2 13.5 2 12C2 10.5 3.5 9.8 4 8.5C4.5 7.2 3.8 5.5 4.7 4.7C5.5 3.8 7.2 4.5 8.5 4C9.8 3.5 10.5 2 12 2Z" fill="#6366f1"/><path d="M8.5 12.5L11 15L15.5 9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>400 proposals / month</li>
+              <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;margin-top:1px"><path d="M12 2C13.5 2 14.2 3.5 15.5 4C16.8 4.5 18.5 3.8 19.3 4.7C20.2 5.5 19.5 7.2 20 8.5C20.5 9.8 22 10.5 22 12C22 13.5 20.5 14.2 20 15.5C19.5 16.8 20.2 18.5 19.3 19.3C18.5 20.2 16.8 19.5 15.5 20C14.2 20.5 13.5 22 12 22C10.5 22 9.8 20.5 8.5 20C7.2 19.5 5.5 20.2 4.7 19.3C3.8 18.5 4.5 16.8 4 15.5C3.5 14.2 2 13.5 2 12C2 10.5 3.5 9.8 4 8.5C4.5 7.2 3.8 5.5 4.7 4.7C5.5 3.8 7.2 4.5 8.5 4C9.8 3.5 10.5 2 12 2Z" fill="#6366f1"/><path d="M8.5 12.5L11 15L15.5 9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>3 Upwork profiles</li>
+              <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;margin-top:1px"><path d="M12 2C13.5 2 14.2 3.5 15.5 4C16.8 4.5 18.5 3.8 19.3 4.7C20.2 5.5 19.5 7.2 20 8.5C20.5 9.8 22 10.5 22 12C22 13.5 20.5 14.2 20 15.5C19.5 16.8 20.2 18.5 19.3 19.3C18.5 20.2 16.8 19.5 15.5 20C14.2 20.5 13.5 22 12 22C10.5 22 9.8 20.5 8.5 20C7.2 19.5 5.5 20.2 4.7 19.3C3.8 18.5 4.5 16.8 4 15.5C3.5 14.2 2 13.5 2 12C2 10.5 3.5 9.8 4 8.5C4.5 7.2 3.8 5.5 4.7 4.7C5.5 3.8 7.2 4.5 8.5 4C9.8 3.5 10.5 2 12 2Z" fill="#6366f1"/><path d="M8.5 12.5L11 15L15.5 9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Everything in Starter</li>
+              <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;margin-top:1px"><path d="M12 2C13.5 2 14.2 3.5 15.5 4C16.8 4.5 18.5 3.8 19.3 4.7C20.2 5.5 19.5 7.2 20 8.5C20.5 9.8 22 10.5 22 12C22 13.5 20.5 14.2 20 15.5C19.5 16.8 20.2 18.5 19.3 19.3C18.5 20.2 16.8 19.5 15.5 20C14.2 20.5 13.5 22 12 22C10.5 22 9.8 20.5 8.5 20C7.2 19.5 5.5 20.2 4.7 19.3C3.8 18.5 4.5 16.8 4 15.5C3.5 14.2 2 13.5 2 12C2 10.5 3.5 9.8 4 8.5C4.5 7.2 3.8 5.5 4.7 4.7C5.5 3.8 7.2 4.5 8.5 4C9.8 3.5 10.5 2 12 2Z" fill="#6366f1"/><path d="M8.5 12.5L11 15L15.5 9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Portfolio auto-matching</li>
+              <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;margin-top:1px"><path d="M12 2C13.5 2 14.2 3.5 15.5 4C16.8 4.5 18.5 3.8 19.3 4.7C20.2 5.5 19.5 7.2 20 8.5C20.5 9.8 22 10.5 22 12C22 13.5 20.5 14.2 20 15.5C19.5 16.8 20.2 18.5 19.3 19.3C18.5 20.2 16.8 19.5 15.5 20C14.2 20.5 13.5 22 12 22C10.5 22 9.8 20.5 8.5 20C7.2 19.5 5.5 20.2 4.7 19.3C3.8 18.5 4.5 16.8 4 15.5C3.5 14.2 2 13.5 2 12C2 10.5 3.5 9.8 4 8.5C4.5 7.2 3.8 5.5 4.7 4.7C5.5 3.8 7.2 4.5 8.5 4C9.8 3.5 10.5 2 12 2Z" fill="#6366f1"/><path d="M8.5 12.5L11 15L15.5 9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Profile strength analysis</li>
             </ul>
             <button class="pcv2-btn pcv2-btn-gold" data-plan="pro">Get Pro →</button>
           </div>
@@ -797,11 +1162,11 @@ textarea.edit-val{min-height:38px}
             <div class="pcv2-price">$69<span>/mo</span></div>
             <div class="pcv2-sep"></div>
             <ul class="pcv2-list">
-              <li><span class="pcv2-check">✓</span>900 proposals / month</li>
-              <li><span class="pcv2-check">✓</span>5 Upwork profiles</li>
-              <li><span class="pcv2-check">✓</span>Everything in Pro</li>
-              <li><span class="pcv2-check">✓</span>Team &amp; multi-freelancer use</li>
-              <li><span class="pcv2-check">✓</span>Priority processing</li>
+              <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;margin-top:1px"><path d="M12 2C13.5 2 14.2 3.5 15.5 4C16.8 4.5 18.5 3.8 19.3 4.7C20.2 5.5 19.5 7.2 20 8.5C20.5 9.8 22 10.5 22 12C22 13.5 20.5 14.2 20 15.5C19.5 16.8 20.2 18.5 19.3 19.3C18.5 20.2 16.8 19.5 15.5 20C14.2 20.5 13.5 22 12 22C10.5 22 9.8 20.5 8.5 20C7.2 19.5 5.5 20.2 4.7 19.3C3.8 18.5 4.5 16.8 4 15.5C3.5 14.2 2 13.5 2 12C2 10.5 3.5 9.8 4 8.5C4.5 7.2 3.8 5.5 4.7 4.7C5.5 3.8 7.2 4.5 8.5 4C9.8 3.5 10.5 2 12 2Z" fill="#6366f1"/><path d="M8.5 12.5L11 15L15.5 9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>900 proposals / month</li>
+              <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;margin-top:1px"><path d="M12 2C13.5 2 14.2 3.5 15.5 4C16.8 4.5 18.5 3.8 19.3 4.7C20.2 5.5 19.5 7.2 20 8.5C20.5 9.8 22 10.5 22 12C22 13.5 20.5 14.2 20 15.5C19.5 16.8 20.2 18.5 19.3 19.3C18.5 20.2 16.8 19.5 15.5 20C14.2 20.5 13.5 22 12 22C10.5 22 9.8 20.5 8.5 20C7.2 19.5 5.5 20.2 4.7 19.3C3.8 18.5 4.5 16.8 4 15.5C3.5 14.2 2 13.5 2 12C2 10.5 3.5 9.8 4 8.5C4.5 7.2 3.8 5.5 4.7 4.7C5.5 3.8 7.2 4.5 8.5 4C9.8 3.5 10.5 2 12 2Z" fill="#6366f1"/><path d="M8.5 12.5L11 15L15.5 9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>5 Upwork profiles</li>
+              <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;margin-top:1px"><path d="M12 2C13.5 2 14.2 3.5 15.5 4C16.8 4.5 18.5 3.8 19.3 4.7C20.2 5.5 19.5 7.2 20 8.5C20.5 9.8 22 10.5 22 12C22 13.5 20.5 14.2 20 15.5C19.5 16.8 20.2 18.5 19.3 19.3C18.5 20.2 16.8 19.5 15.5 20C14.2 20.5 13.5 22 12 22C10.5 22 9.8 20.5 8.5 20C7.2 19.5 5.5 20.2 4.7 19.3C3.8 18.5 4.5 16.8 4 15.5C3.5 14.2 2 13.5 2 12C2 10.5 3.5 9.8 4 8.5C4.5 7.2 3.8 5.5 4.7 4.7C5.5 3.8 7.2 4.5 8.5 4C9.8 3.5 10.5 2 12 2Z" fill="#6366f1"/><path d="M8.5 12.5L11 15L15.5 9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Everything in Pro</li>
+              <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;margin-top:1px"><path d="M12 2C13.5 2 14.2 3.5 15.5 4C16.8 4.5 18.5 3.8 19.3 4.7C20.2 5.5 19.5 7.2 20 8.5C20.5 9.8 22 10.5 22 12C22 13.5 20.5 14.2 20 15.5C19.5 16.8 20.2 18.5 19.3 19.3C18.5 20.2 16.8 19.5 15.5 20C14.2 20.5 13.5 22 12 22C10.5 22 9.8 20.5 8.5 20C7.2 19.5 5.5 20.2 4.7 19.3C3.8 18.5 4.5 16.8 4 15.5C3.5 14.2 2 13.5 2 12C2 10.5 3.5 9.8 4 8.5C4.5 7.2 3.8 5.5 4.7 4.7C5.5 3.8 7.2 4.5 8.5 4C9.8 3.5 10.5 2 12 2Z" fill="#6366f1"/><path d="M8.5 12.5L11 15L15.5 9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Team &amp; multi-freelancer use</li>
+              <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;margin-top:1px"><path d="M12 2C13.5 2 14.2 3.5 15.5 4C16.8 4.5 18.5 3.8 19.3 4.7C20.2 5.5 19.5 7.2 20 8.5C20.5 9.8 22 10.5 22 12C22 13.5 20.5 14.2 20 15.5C19.5 16.8 20.2 18.5 19.3 19.3C18.5 20.2 16.8 19.5 15.5 20C14.2 20.5 13.5 22 12 22C10.5 22 9.8 20.5 8.5 20C7.2 19.5 5.5 20.2 4.7 19.3C3.8 18.5 4.5 16.8 4 15.5C3.5 14.2 2 13.5 2 12C2 10.5 3.5 9.8 4 8.5C4.5 7.2 3.8 5.5 4.7 4.7C5.5 3.8 7.2 4.5 8.5 4C9.8 3.5 10.5 2 12 2Z" fill="#6366f1"/><path d="M8.5 12.5L11 15L15.5 9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Priority processing</li>
             </ul>
             <button class="pcv2-btn pcv2-btn-outline" data-plan="agency">Get Agency →</button>
           </div>
@@ -814,6 +1179,7 @@ textarea.edit-val{min-height:38px}
 
     <!-- ══ SETTINGS ══ -->
     <div class="section" id="section-settings">
+      <div class="sec-label">Settings</div>
       <div class="section-title-solo">Settings</div>
       <div class="section-sub-solo">Customize how Snag AI works for you.</div>
 
@@ -829,9 +1195,11 @@ textarea.edit-val{min-height:38px}
           </div>
           <div class="st-email-info">
             <div class="st-email-label">Subscription email</div>
-            <div class="st-email-val" id="email-val">Not set</div>
+            <div style="display:flex;align-items:center;gap:4px">
+              <div class="st-email-val" id="email-val">Not set</div>
+              <span id="email-verified-badge" style="display:none"></span>
+            </div>
           </div>
-          <div class="email-dot" id="email-dot" style="background:#374151;width:9px;height:9px;border-radius:50%;flex-shrink:0"></div>
           <button class="btn-email-toggle" id="email-toggle">Add</button>
         </div>
         <div class="st-email-edit" id="email-edit" style="display:none">
@@ -843,35 +1211,19 @@ textarea.edit-val{min-height:38px}
       <!-- Proposal Writing Settings -->
       <div class="card">
         <div class="card-title">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.287 1.288L3 12l5.8 1.9a2 2 0 0 1 1.288 1.287L12 21l1.9-5.8a2 2 0 0 1 1.287-1.288L21 12l-5.8-1.9a2 2 0 0 1-1.288-1.287Z"/></svg>
           Proposal Writing
         </div>
 
         <!-- Tone -->
         <div class="st-group">
-          <div class="st-group-label">Writing Tone</div>
+          <div class="st-group-label" style="display:flex;align-items:center;gap:6px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg> Writing Tone</div>
           <div class="st-group-desc">Controls the voice and personality of your AI-generated proposals.</div>
-          <div class="st-opts st-opts-4" id="st-tone-opts">
-            <div class="st-opt active" data-val="professional">
-              <div class="st-opt-icon">🎯</div>
-              <div class="st-opt-name">Professional</div>
-              <div class="st-opt-sub">Confident &amp; polished</div>
-            </div>
-            <div class="st-opt" data-val="friendly">
-              <div class="st-opt-icon">😊</div>
-              <div class="st-opt-name">Friendly</div>
-              <div class="st-opt-sub">Warm &amp; approachable</div>
-            </div>
-            <div class="st-opt" data-val="direct">
-              <div class="st-opt-icon">⚡</div>
-              <div class="st-opt-name">Direct</div>
-              <div class="st-opt-sub">Results-focused</div>
-            </div>
-            <div class="st-opt" data-val="enthusiastic">
-              <div class="st-opt-icon">🔥</div>
-              <div class="st-opt-name">Enthusiastic</div>
-              <div class="st-opt-sub">Energetic &amp; engaging</div>
-            </div>
+          <div class="jf-seg" id="st-tone-opts" style="grid-template-columns:repeat(4,1fr)">
+            <div class="jf-seg-opt jf-active" data-val="professional"><div class="jf-seg-ck"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="jf-seg-txt"><div class="jf-seg-name">Professional</div><div class="jf-seg-sub">Confident &amp; polished</div></div></div>
+            <div class="jf-seg-opt" data-val="friendly"><div class="jf-seg-ck"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="jf-seg-txt"><div class="jf-seg-name">Friendly</div><div class="jf-seg-sub">Warm &amp; approachable</div></div></div>
+            <div class="jf-seg-opt" data-val="direct"><div class="jf-seg-ck"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="jf-seg-txt"><div class="jf-seg-name">Direct</div><div class="jf-seg-sub">Results-focused</div></div></div>
+            <div class="jf-seg-opt" data-val="enthusiastic"><div class="jf-seg-ck"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="jf-seg-txt"><div class="jf-seg-name">Enthusiastic</div><div class="jf-seg-sub">Energetic &amp; bold</div></div></div>
           </div>
           <input type="hidden" id="tone" value="professional">
         </div>
@@ -880,336 +1232,332 @@ textarea.edit-val{min-height:38px}
 
         <!-- Length -->
         <div class="st-group">
-          <div class="st-group-label">Proposal Length</div>
-          <div class="st-group-desc">Longer proposals go into more depth but may lose client attention. Medium works best for most jobs.</div>
-          <div class="st-opts st-opts-3" id="st-length-opts">
-            <div class="st-opt" data-val="short">
-              <div class="st-opt-icon">✂️</div>
-              <div class="st-opt-name">Short</div>
-              <div class="st-opt-sub">100–130 words</div>
-            </div>
-            <div class="st-opt active" data-val="medium">
-              <div class="st-opt-icon">📄</div>
-              <div class="st-opt-name">Medium</div>
-              <div class="st-opt-sub">130–160 words</div>
-            </div>
-            <div class="st-opt" data-val="long">
-              <div class="st-opt-icon">📋</div>
-              <div class="st-opt-name">Detailed</div>
-              <div class="st-opt-sub">160–200 words</div>
-            </div>
+          <div class="st-group-label" style="display:flex;align-items:center;gap:6px"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="17" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="17" y1="18" x2="3" y2="18"/></svg> Proposal Length</div>
+          <div class="st-group-desc">Longer proposals add depth but may lose client attention. Medium works best for most jobs.</div>
+          <div class="jf-seg" id="st-length-opts">
+            <div class="jf-seg-opt" data-val="short"><div class="jf-seg-ck"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="jf-seg-txt"><div class="jf-seg-name">Short</div><div class="jf-seg-sub">75–100 words</div></div></div>
+            <div class="jf-seg-opt jf-active" data-val="medium"><div class="jf-seg-ck"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="jf-seg-txt"><div class="jf-seg-name">Medium</div><div class="jf-seg-sub">130–160 words</div></div></div>
+            <div class="jf-seg-opt" data-val="long"><div class="jf-seg-ck"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg></div><div class="jf-seg-txt"><div class="jf-seg-name">Detailed</div><div class="jf-seg-sub">160–200 words</div></div></div>
           </div>
           <input type="hidden" id="length" value="medium">
-        </div>
-
-        <div style="display:flex;align-items:center;gap:12px;margin-top:8px">
-          <button class="btn-primary" id="save-settings" style="font-size:12px;padding:9px 20px">Save settings</button>
-          <span class="saved-msg" id="saved-settings-msg">✓ Saved</span>
         </div>
       </div>
     </div><!-- /settings -->
 
     <!-- ══ HOW TO USE ══ -->
     <div class="section" id="section-howto">
+      <div class="sec-label">Documentation</div>
+      <div class="section-title-solo">How Snag AI works</div>
+      <div class="section-sub-solo">Everything you need — from first setup to writing proposals that win. Read this once, apply it every session.</div>
 
-      <!-- Hero -->
-      <div class="ht-hero">
-        <div class="ht-hero-badge">✦ Documentation</div>
-        <div class="ht-hero-title">How Snag AI works</div>
-        <div class="ht-hero-sub">Everything you need — from first setup to writing proposals that win. Read this once, apply it every day.</div>
-      </div>
-
-      <!-- 1. QUICK START -->
-      <div class="ht-section-card ht-card-gold">
-        <div class="ht-card-header">
-          <div class="ht-card-icon ht-icon-gold">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 8 12 12 14 14"/></svg>
-          </div>
-          <div>
-            <div class="ht-card-title-text">Quick Start</div>
-            <div class="ht-card-title-sub">Up and running in under 3 minutes</div>
-          </div>
+      <div class="legal-card">
+        <div class="legal-section">
+          <div class="legal-section-title">Quick Start — Up and running in 5 minutes</div>
+          <p><strong>01 — Add your email and verify it</strong><br>Go to Settings → Account Email. Enter the same email you used or plan to use on Paddle. Click Send code — a 6-digit OTP arrives in your inbox. Enter it to verify. This step is required before any proposal can be generated.</p>
+          <p style="margin-top:12px"><strong>02 — Add your Upwork profile URL</strong><br>Go to Subscription and paste your Upwork profile URL into the slot. Both standard URLs (upwork.com/freelancers/~xxx) and custom profile URLs work. A Sync button appears next to the slot — click it to open your profile in a new tab.</p>
+          <p style="margin-top:12px"><strong>03 — Click "Sync Profile" on your Upwork profile page</strong><br>Once your profile page loads, a "Sync Profile" pill button appears in the bottom-right corner. Click it. Snag AI reads your name, JSS %, tier badge, hourly rate, total earnings, skills, bio, employment history, and portfolio items all in one pass. The button turns green when done.</p>
+          <p style="margin-top:12px"><strong>04 — Add live URLs to portfolio items, then open any job</strong><br>Go to Profiles → Portfolio. Items with a green dot already have URLs and will be referenced in proposals. Items with an amber dot are missing a URL — click ··· → Edit to add one. Then open any Upwork job and click Write Proposal.</p>
         </div>
-        <div class="ht-steps-grid">
-          <div class="ht-step">
-            <div class="ht-step-num">1</div>
-            <div>
-              <div class="ht-step-title">Add your Upwork profile URL</div>
-              <div class="ht-step-desc">Go to <strong>Subscription</strong> and paste your Upwork profile link. Both standard URLs (<code>upwork.com/freelancers/~xxx</code>) and custom usernames work. Click Sync to open it.</div>
-              <div class="ht-step-page">→ Subscription page</div>
-            </div>
-          </div>
-          <div class="ht-step">
-            <div class="ht-step-num">2</div>
-            <div>
-              <div class="ht-step-title">Visit your profile once to sync</div>
-              <div class="ht-step-desc">Snag AI reads your <strong>name, JSS, tier, rate, skills, earnings, and employment history</strong> automatically when the page loads. A gold toast confirms the sync.</div>
-              <div class="ht-step-page">→ Auto on your Upwork profile</div>
-            </div>
-          </div>
-          <div class="ht-step">
-            <div class="ht-step-num">3</div>
-            <div>
-              <div class="ht-step-title">Sync your portfolios</div>
-              <div class="ht-step-desc">In <strong>Profiles → Portfolio</strong> click <strong>⟳ Sync portfolios</strong>. Snag AI opens your profile, reads every project's title, skills, and links automatically. Then add URLs to any project missing them.</div>
-              <div class="ht-step-page">→ Profiles page</div>
-            </div>
-          </div>
-          <div class="ht-step">
-            <div class="ht-step-num">4</div>
-            <div>
-              <div class="ht-step-title">Add your email &amp; open any job</div>
-              <div class="ht-step-desc">Go to <strong>Settings → Account Email</strong> and enter the same email you used to subscribe on Paddle. Then open any Upwork job and click <strong>Write Proposal</strong>.</div>
-              <div class="ht-step-page">→ Settings page</div>
-            </div>
-          </div>
+        <div class="legal-section">
+          <div class="legal-section-title">Profile &amp; Portfolio Setup</div>
+          <p>Syncing is not automatic — it happens when you click the "Sync Profile" pill that appears in the bottom-right corner of your Upwork profile page. One click reads everything in one pass: name, professional title, JSS %, hourly rate, tier badge, total earnings, jobs completed, hours worked, skills list, bio, employment history, education, languages, and all portfolio items.</p>
+          <p style="margin-top:10px">To re-sync after changes on Upwork, open your profile page again using the ⟳ Sync button on the profile card in the Profiles page, then click the pill again.</p>
+          <p style="margin-top:10px">After syncing, open Profiles → Portfolio. Each item shows a dot in the top-left of its card. A green dot means the item has a live URL — the AI selects the most relevant ones per job and links to them directly in the proposal. An amber dot means no URL is attached — the AI knows the project exists but cannot reference it with a link, which significantly reduces how useful it is as evidence.</p>
+          <p style="margin-top:10px">Click ··· → Edit on any amber-dot item to add a live URL. Re-sync after Upwork profile changes. If you update your title, skills, tier, or add new portfolio items on Upwork, visit your profile page again so Snag AI picks up the latest data. Proposals use whatever was last synced.</p>
+          <p style="margin-top:10px">Pro supports up to 3 Upwork profiles. Agency supports 5. Add each profile URL in the Subscription page. In Profiles, click Set primary on the profile you want to use as the default for proposals. You can switch the primary at any time without re-syncing.</p>
         </div>
-      </div>
-
-      <!-- 2. PROFILE & PORTFOLIO -->
-      <div class="ht-section-card ht-card-blue">
-        <div class="ht-card-header">
-          <div class="ht-card-icon ht-icon-blue">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          </div>
-          <div>
-            <div class="ht-card-title-text">Profile &amp; Portfolio Setup</div>
-            <div class="ht-card-title-sub">The foundation of every strong proposal</div>
-          </div>
+        <div class="legal-section">
+          <div class="legal-section-title">Settings</div>
+          <p><strong>Tone</strong> — Controls the voice of every proposal. Conversational is warm and direct, best for most jobs. Professional uses a more formal structure, better for enterprise clients or agency roles. Aggressive is bold with no hedging, good for competitive niches where you need to stand out hard.</p>
+          <p style="margin-top:10px"><strong>Length</strong> — Controls the target word count. Tight (75–100 words) is hook, one proof point, CTA — best for high-volume applying. Standard (130–160 words) adds context, portfolio reference, scope note, and CTA — the default for most situations. Detailed (160–200 words) adds more depth for complex technical jobs. Shorter usually converts better.</p>
+          <p style="margin-top:10px"><strong>Freelancer Type</strong> — Tells the AI your field so it can tailor how it describes your work and which portfolio items it prioritises. Options: Developer, Designer, Writer, Marketer, VA / Admin, Other. Set this once and it applies to every proposal. All types use the same core proposal structure — the difference is in how the AI phrases your experience and picks up on job signals.</p>
+          <p style="margin-top:10px">Settings apply immediately after clicking Save. Refinements use the same settings as the original proposal — changing settings mid-refinement has no effect until the next fresh generation.</p>
         </div>
-        <div class="ht-features">
-          <div class="ht-feature">
-            <div class="ht-feature-icon ht-icon-blue">🔗</div>
-            <div>
-              <div class="ht-feature-title">What gets auto-synced from Upwork</div>
-              <div class="ht-feature-desc">When you visit your profile URL, Snag AI reads: <strong>full name, professional title, JSS %, hourly rate, tier badge (Top Rated / Rising Talent etc.), total earnings, jobs completed, hours worked, skills list, bio, employment history, education, and languages.</strong> All of this feeds into every proposal.</div>
-            </div>
-          </div>
-          <div class="ht-feature">
-            <div class="ht-feature-icon ht-icon-blue">🗂️</div>
-            <div>
-              <div class="ht-feature-title">Portfolio sync — must be done manually <span class="ht-tag ht-tag-gold">Important</span></div>
-              <div class="ht-feature-desc">Portfolios are <strong>not</strong> read during the passive profile sync. You must click <em>⟳ Sync portfolios</em> in the Profiles page. This opens your Upwork profile and reads each portfolio item one by one — title, description, skills, and links. Takes 30–60 seconds.<br><br>After syncing, <strong>add or verify the URLs</strong> for each project (App Store, Play Store, GitHub, live demo). Snag AI uses these links inside every proposal as proof of your work.</div>
-            </div>
-          </div>
-          <div class="ht-feature">
-            <div class="ht-feature-icon ht-icon-blue">⭐</div>
-            <div>
-              <div class="ht-feature-title">Multiple profiles <span class="ht-tag ht-tag-blue">Pro &amp; Agency</span></div>
-              <div class="ht-feature-desc">Pro supports up to 3 Upwork profiles. Agency supports 5. Add each profile URL in the Subscription page. In <strong>Profiles</strong>, click <em>Set primary</em> on the profile you want to use as the default. You can switch the primary at any time.</div>
-            </div>
-          </div>
+        <div class="legal-section">
+          <div class="legal-section-title">Subscription &amp; Billing</div>
+          <p>Your email in Settings must match your Paddle purchase email. This is how Snag AI links your subscription to your account and unlocks your proposal quota. If the emails don't match, you'll be treated as a free user regardless of payment.</p>
+          <p style="margin-top:10px">Your quota resets on your exact subscription anniversary date — not the 1st of each month. If you subscribed on June 15, proposals reset on July 15. The exact reset date is shown in Subscription → Next billing date. Refinements (changing an existing proposal) do not count against your quota — only fresh generations do.</p>
+          <p style="margin-top:10px">To upgrade or downgrade, go to Subscription → Upgrade your plan and select a different tier. Snag AI modifies your existing subscription in place — no second subscription is created. Paddle prorates the difference immediately.</p>
+          <p style="margin-top:10px">Cancelling stops the next charge but does not cut off access immediately. Your plan stays active until the current billing period ends. The billing card shows an amber "Cancels [date]" notice. After expiry you revert to the free plan (2 proposals total). Click Manage billing to update your card, view invoices, or reactivate.</p>
         </div>
-        <div class="ht-callout ht-callout-warn" style="margin-top:0">
-          <div class="ht-callout-icon">⚠️</div>
-          <div><strong>Re-sync after Upwork profile changes.</strong> If you update your title, skills, tier, or add new portfolio items on Upwork, click Sync again so Snag AI picks up the latest data. Proposals use whatever was last synced.</div>
+        <div class="legal-section">
+          <div class="legal-section-title">Job Analysis &amp; Filters</div>
+          <p>When you open a job, Snag AI reads live data from Upwork's internal store — proposal count, interviews in progress, client hire rate, payment status, client spend, and more — then shows two scores side by side.</p>
+          <p style="margin-top:10px"><strong>Win Probability</strong> — How competitive is this slot right now. Based on time since posting, how many proposals are in, how many interviews are active, and whether the client is a reliable hirer.</p>
+          <p style="margin-top:10px"><strong>Profile Match</strong> — How well your profile fits this specific job. Based on skill overlap, your JSS vs the job's minimum, your rate vs the listed budget, and any tier or location requirements.</p>
+          <p style="margin-top:10px">Below the scores, every factor that went into both scores is listed with its individual contribution. Red factors mean skip or think twice, green factors confirm a good fit.</p>
+          <p style="margin-top:10px">In Profiles → Job Filters, three presets are available. Conservative is for protecting Connects — tight limits on proposal count, hire rate, and minimum score. Balanced is the default with sensible thresholds. Aggressive applies minimal filtering so you decide manually. Individual sliders let you fine-tune: max proposals, max interviewing, min hire rate, min client rating, min client spend, rate mismatch tolerance, job age, and skill match. Toggle auto-skip if hired to dismiss closed listings without a prompt. The alert is a guide, not a gatekeeper — click Write Proposal on any job regardless of what the scores show.</p>
         </div>
-      </div>
-
-      <!-- 3. SUBSCRIPTION & BILLING -->
-      <div class="ht-section-card ht-card-amber">
-        <div class="ht-card-header">
-          <div class="ht-card-icon ht-icon-amber">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-          </div>
-          <div>
-            <div class="ht-card-title-text">Subscription &amp; Billing</div>
-            <div class="ht-card-title-sub">How your plan and usage work</div>
-          </div>
+        <div class="legal-section">
+          <div class="legal-section-title">AI Proposal Writing</div>
+          <p>Every proposal opens with one of 7 hook patterns. Snag AI picks which one fits based on the job type (fixed vs hourly), budget size, duration, and client signals — not randomly.</p>
+          <p style="margin-top:10px"><strong>Hook 1 — Proof:</strong> Lead with a specific result from your portfolio. Uses your most relevant project. Best when you have a direct match.</p>
+          <p style="margin-top:10px"><strong>Hook 2 — Relatability:</strong> "I've handled this exact type of work across N projects." Good for ongoing or part-time roles where experience rhythm matters.</p>
+          <p style="margin-top:10px"><strong>Hook 3 — Guarantee:</strong> Price and timeline stated upfront. Used on fixed-price jobs where clients want certainty fast.</p>
+          <p style="margin-top:10px"><strong>Hook 4 — Extra Value:</strong> "I'll handle the brief — and also [extra thing they haven't asked for but need]." Differentiates from freelancers who only answer the literal question.</p>
+          <p style="margin-top:10px"><strong>Hook 5 — Call:</strong> Invite a 15-minute call right now. Works well for jobs where trust or scope clarity matters more than price.</p>
+          <p style="margin-top:10px"><strong>Hook 6 — Numbers:</strong> Lead with your track record stats — JSS %, jobs delivered, hours available. Works when client-side filters and social proof matter.</p>
+          <p style="margin-top:10px"><strong>Hook 7 — Client First:</strong> Restate their need better than they wrote it. Used on large-budget or complex jobs where showing comprehension is the differentiator.</p>
+          <p style="margin-top:10px"><strong>Screening keywords</strong> — Many clients hide a test phrase in the job description ("include the word 'pineapple' in your reply"). Snag AI reads the full description before generating and includes the required word naturally. You will never fail a hidden screening test.</p>
+          <p style="margin-top:10px"><strong>Right panel while writing</strong> — Win Probability and Profile Match scores refresh for the current job. Writing Tips show contextual notes based on job data (timezone overlap, budget mismatch, competition level, skill gap). Job Signals are AI-generated observations about this specific job drawn from the description and client history.</p>
+          <p style="margin-top:10px"><strong>Refining proposals</strong> — Four quick chips appear below the proposal: Shorter, More confident, Add my rate, Adjust for budget. Clicking one immediately sends the current proposal back to the AI with that specific instruction. You can also type any custom instruction in the text box. Press Cmd Enter (Mac) or Ctrl Enter (Windows) or click Regenerate. Refinements do not count against your monthly proposal quota.</p>
+          <p style="margin-top:10px"><strong>Live editing</strong> — The proposal text box is fully editable. The word count indicator turns amber above 120 words and red above 160 words. Shorter proposals have meaningfully higher read rates on Upwork.</p>
         </div>
-        <div class="ht-callout ht-callout-critical" style="margin-top:18px">
-          <div class="ht-callout-icon">🔑</div>
-          <div><strong>Your subscription email must match your Paddle email.</strong> After purchasing a plan, go to <strong>Settings → Account Email</strong> and enter the exact same email address. This is how Snag AI verifies your active plan and unlocks your proposal quota. If the emails don't match, you'll show as free.</div>
+        <div class="legal-section">
+          <div class="legal-section-title">Portfolio Links — by Category</div>
+          <p>Snag AI selects the most relevant portfolio items for each job and references them by name in the proposal. This only works when items have live URLs. Items with a green dot are used; amber dots are skipped.</p>
+          <p style="margin-top:10px"><strong>Developer</strong> — Link to the live product: App Store listing, Play Store listing, web app URL, or GitHub repo. Avoid linking to a single code file — link where a client can see or use the thing you built.</p>
+          <p style="margin-top:10px"><strong>Designer</strong> — Use Behance, Dribbble, or Figma Community links, or a hosted case study page. A specific project page converts better than a generic portfolio homepage.</p>
+          <p style="margin-top:10px"><strong>Writer / Copywriter</strong> — Link to live sales pages, published articles, or landing pages. Medium, Substack, and client websites work well. Avoid Google Docs — they often require login and clients won't bother.</p>
+          <p style="margin-top:10px"><strong>Marketer / VA</strong> — Link to case study pages or campaign result summaries. If the results are confidential, a stripped-down overview page without client names is still better than no link at all.</p>
+          <p style="margin-top:10px">To add a URL: go to Profiles → Portfolio, click ··· on any item, then Edit. Paste the live link and save. The dot on the card updates immediately.</p>
         </div>
-        <div class="ht-features">
-          <div class="ht-feature">
-            <div class="ht-feature-icon ht-icon-amber">📅</div>
-            <div>
-              <div class="ht-feature-title">When your proposals reset</div>
-              <div class="ht-feature-desc">Your quota resets on your <strong>exact subscription anniversary</strong> — not the 1st of each month. If you subscribed on June 15, proposals reset on July 15. The exact reset date is shown in <em>Subscription → Next billing date</em>.</div>
-            </div>
-          </div>
-          <div class="ht-feature">
-            <div class="ht-feature-icon ht-icon-amber">⬆️</div>
-            <div>
-              <div class="ht-feature-title">Upgrading or downgrading your plan</div>
-              <div class="ht-feature-desc">Go to <strong>Subscription → Upgrade your plan</strong> and click a different plan. If you already have an active subscription, Snag AI <strong>modifies your existing subscription</strong> — no new subscription is created. Paddle charges or credits the prorated difference immediately.</div>
-            </div>
-          </div>
-          <div class="ht-feature">
-            <div class="ht-feature-icon ht-icon-amber">🚫</div>
-            <div>
-              <div class="ht-feature-title">Cancellation — you keep access until period ends</div>
-              <div class="ht-feature-desc">If you cancel, <strong>your plan stays active until your current billing period ends</strong>. You won't be charged again and keep your full quota until the end of the period. The billing card shows an amber <em>"Cancels [date]"</em> status. After that you revert to the free plan (2 proposals).</div>
-            </div>
-          </div>
-          <div class="ht-feature">
-            <div class="ht-feature-icon ht-icon-amber">🏦</div>
-            <div>
-              <div class="ht-feature-title">Manage billing, update card, view invoices</div>
-              <div class="ht-feature-desc">Click <strong>Manage billing →</strong> in the Subscription page. This opens your Paddle customer portal where you can update your payment method, view invoices, and reactivate a canceled subscription.</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 4. JOB INTELLIGENCE -->
-      <div class="ht-section-card ht-card-red">
-        <div class="ht-card-header">
-          <div class="ht-card-icon ht-icon-red">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-          </div>
-          <div>
-            <div class="ht-card-title-text">Smart Job Analysis &amp; Connect Saver</div>
-            <div class="ht-card-title-sub">Never waste a Connect on a bad-fit job again</div>
-          </div>
-        </div>
-        <div class="ht-features">
-          <div class="ht-feature">
-            <div class="ht-feature-icon" style="background:rgba(74,222,128,.1);border:1px solid rgba(74,222,128,.2);border-radius:9px">📊</div>
-            <div>
-              <div class="ht-feature-title">Win Probability Score</div>
-              <div class="ht-feature-desc">Scores the <strong>job activity</strong>: time since posting, number of proposals already sent, client hire rate, and how many freelancers are actively interviewing. <em>A job posted 30 minutes ago with 3 proposals scores far higher than one posted 3 days ago with 40.</em></div>
-            </div>
-          </div>
-          <div class="ht-feature">
-            <div class="ht-feature-icon" style="background:rgba(96,165,250,.1);border:1px solid rgba(96,165,250,.2);border-radius:9px">🎯</div>
-            <div>
-              <div class="ht-feature-title">Profile Match Score</div>
-              <div class="ht-feature-desc">Compares your <strong>skills, JSS, hourly rate, and tier</strong> against the job's requirements. 75%+ skill overlap is green. A severe mismatch caps your win score and shows a warning. This is why keeping your skills list synced and accurate matters.</div>
-            </div>
-          </div>
-        </div>
-        <div style="padding:0 22px 6px;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:rgba(240,238,234,.28)">10 Risk flags — red means skip, amber means think twice</div>
-        <div class="ht-flags-grid">
-          <div class="ht-flag ht-flag-red"><div class="ht-flag-dot"></div>Already hired — job is closed</div>
-          <div class="ht-flag ht-flag-red"><div class="ht-flag-dot"></div>50+ proposals submitted</div>
-          <div class="ht-flag ht-flag-red"><div class="ht-flag-dot"></div>Client rating below 4.0★</div>
-          <div class="ht-flag ht-flag-red"><div class="ht-flag-dot"></div>Payment method unverified</div>
-          <div class="ht-flag ht-flag-red"><div class="ht-flag-dot"></div>$0 total spent by client</div>
-          <div class="ht-flag ht-flag-amber"><div class="ht-flag-dot"></div>Client hired 0–10% of proposals</div>
-          <div class="ht-flag ht-flag-amber"><div class="ht-flag-dot"></div>3+ freelancers already interviewing</div>
-          <div class="ht-flag ht-flag-amber"><div class="ht-flag-dot"></div>Job posted 3+ days with interviews</div>
-          <div class="ht-flag ht-flag-amber"><div class="ht-flag-dot"></div>Client sent 5+ invites (invite-only)</div>
-          <div class="ht-flag ht-flag-amber"><div class="ht-flag-dot"></div>Your JSS below job requirement</div>
-        </div>
-        <div class="ht-callout ht-callout-tip" style="margin-top:0">
-          <div class="ht-callout-icon">💡</div>
-          <div><strong>You can always override the alert.</strong> If a risky job still looks right for you, click <em>Write proposal</em> anyway. The alert is a guide, not a blocker.</div>
-        </div>
-      </div>
-
-      <!-- 5. AI PROPOSAL WRITING -->
-      <div class="ht-section-card ht-card-green">
-        <div class="ht-card-header">
-          <div class="ht-card-icon ht-icon-green">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-          </div>
-          <div>
-            <div class="ht-card-title-text">AI Proposal Writing</div>
-            <div class="ht-card-title-sub">Targeted, personal, different every time</div>
-          </div>
-        </div>
-        <div class="ht-features">
-          <div class="ht-feature">
-            <div class="ht-feature-icon ht-icon-green">✦</div>
-            <div>
-              <div class="ht-feature-title">7 Opening Hooks — selected per job</div>
-              <div class="ht-feature-desc">Every proposal opens with one of 7 proven hook patterns. Snag AI picks the best one based on the job type, budget, timeline, and client signals — not randomly.</div>
-            </div>
-          </div>
-        </div>
-        <div class="ht-hooks-grid">
-          <div class="ht-hook"><div class="ht-hook-num">Hook 1 — Proof</div><div class="ht-hook-name">Specific result you shipped</div><div class="ht-hook-desc">"I built X for [client type]. I'd like to do the same for you." Uses your top portfolio project.</div></div>
-          <div class="ht-hook"><div class="ht-hook-num">Hook 2 — Relatability</div><div class="ht-hook-name">I've done this exact thing</div><div class="ht-hook-desc">"I've shipped 4 Flutter apps to both stores. Here's how I'd approach yours:" Good for ongoing roles.</div></div>
-          <div class="ht-hook"><div class="ht-hook-num">Hook 3 — Guarantee</div><div class="ht-hook-name">Price + timeline up front</div><div class="ht-hook-desc">"I can deliver X in 2 weeks at $1,500, backed by 4 live apps." Used on fixed-price jobs.</div></div>
-          <div class="ht-hook"><div class="ht-hook-num">Hook 4 — Extra Value</div><div class="ht-hook-name">I'll do more than asked</div><div class="ht-hook-desc">"I'll not only build your features — I'll also set up crash monitoring." Differentiates from the crowd.</div></div>
-          <div class="ht-hook"><div class="ht-hook-num">Hook 5 — Call</div><div class="ht-hook-name">Jump on a call today</div><div class="ht-hook-desc">"Let's jump on a quick call today — I'll walk you through my exact approach in 15 minutes."</div></div>
-          <div class="ht-hook"><div class="ht-hook-num">Hook 6 — Numbers</div><div class="ht-hook-name">Lead with your stats</div><div class="ht-hook-desc">"Here are my numbers: 4 apps shipped, 100% JSS, 30+ hrs/week available."</div></div>
-          <div class="ht-hook" style="grid-column:1/-1"><div class="ht-hook-num">Hook 7 — Client First</div><div class="ht-hook-name">Restate their need better than they wrote it</div><div class="ht-hook-desc">"My understanding: you need a developer who owns the full mobile lifecycle — not just code, but store submissions, crash monitoring, and AI workflows." For large-budget jobs.</div></div>
-        </div>
-        <div class="ht-features" style="border-top:1px solid var(--border)">
-          <div class="ht-feature">
-            <div class="ht-feature-icon ht-icon-green">🔍</div>
-            <div>
-              <div class="ht-feature-title">Screening keywords — detected automatically</div>
-              <div class="ht-feature-desc">Many clients hide a test phrase in the job description like <em>"include the word 'pineapple' in your reply"</em>. Snag AI detects these patterns and includes the exact word naturally. You never miss a screening test.</div>
-            </div>
-          </div>
-          <div class="ht-feature">
-            <div class="ht-feature-icon ht-icon-green">↻</div>
-            <div>
-              <div class="ht-feature-title">Refine without re-generating the full proposal</div>
-              <div class="ht-feature-desc">After a proposal is ready, use the <strong>quick chips</strong> — <em>Shorter</em>, <em>More confident</em>, <em>Add my rate</em>, <em>Adjust for budget</em> — or type your own instruction. Press <span class="ht-kbd">⌘ Enter</span> or click <em>Regenerate</em>. Only what you asked changes.</div>
-            </div>
-          </div>
-          <div class="ht-feature">
-            <div class="ht-feature-icon ht-icon-green">❓</div>
-            <div>
-              <div class="ht-feature-title">Client Q&amp;A answers included</div>
-              <div class="ht-feature-desc">If the job has screening questions, Snag AI writes thoughtful 2–4 sentence answers in the right panel. Copy them directly into Upwork's question fields. Written in your voice, not AI-generic.</div>
-            </div>
-          </div>
-          <div class="ht-feature">
-            <div class="ht-feature-icon ht-icon-green">✏️</div>
-            <div>
-              <div class="ht-feature-title">Live editing before you copy</div>
-              <div class="ht-feature-desc">The proposal text box is <strong>fully editable</strong>. Make any quick changes directly before copying. The word count indicator turns amber above 120 words and red above 160 to keep proposals tight.</div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- 6. PRO TIPS -->
-      <div class="ht-section-card ht-card-purple">
-        <div class="ht-card-header">
-          <div class="ht-card-icon ht-icon-purple">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-          </div>
-          <div>
-            <div class="ht-card-title-text">Tips for Winning More Jobs</div>
-            <div class="ht-card-title-sub">What actually makes the difference</div>
-          </div>
-        </div>
-        <div class="ht-tips-grid" style="margin-top:16px">
-          <div class="ht-tip"><div class="ht-tip-icon">⚡</div><div><div class="ht-tip-title">Apply within 30 minutes</div><div class="ht-tip-desc">Being among the first 5 proposals dramatically increases your chances. Check the "Posted X minutes ago" indicator — jobs under 1 hour score highest.</div></div></div>
-          <div class="ht-tip"><div class="ht-tip-icon">🔗</div><div><div class="ht-tip-title">Keep portfolio URLs updated</div><div class="ht-tip-desc">Proposals without real links rarely convert. After syncing, open each portfolio item and add the live URL — App Store, GitHub, demo site. These are inserted automatically.</div></div></div>
-          <div class="ht-tip"><div class="ht-tip-icon">📏</div><div><div class="ht-tip-title">Shorter usually wins</div><div class="ht-tip-desc">Clients read the first 160 characters before deciding to expand. Keep proposals under 130 words. Use the <em>Shorter</em> chip if a proposal runs long.</div></div></div>
-          <div class="ht-tip"><div class="ht-tip-icon">🎯</div><div><div class="ht-tip-title">Refine for the specific client</div><div class="ht-tip-desc">Use the refinement box to mention something specific from the job — "mention their FarmOS requirement" or "reference their May 28 deadline". Personal beats generic.</div></div></div>
-          <div class="ht-tip"><div class="ht-tip-icon">🚩</div><div><div class="ht-tip-title">Respect the red flags</div><div class="ht-tip-desc">Clients with 0% hire rate or unverified payment almost never hire. Those Connects are real money — skip and spend them on a job that will respond.</div></div></div>
-          <div class="ht-tip"><div class="ht-tip-icon">💼</div><div><div class="ht-tip-title">Your tier badge matters</div><div class="ht-tip-desc">Top Rated and Rising Talent badges appear in every proposal. Make sure your Upwork profile reflects your current tier and re-sync so Snag AI includes it.</div></div></div>
-        </div>
-        <div class="ht-callout ht-callout-success" style="margin-top:8px">
-          <div class="ht-callout-icon">🏆</div>
-          <div><strong>The compound effect:</strong> Apply early + strong hook + real portfolio links + tight word count = consistently higher response rates. Each element alone helps — all four together is how you snag jobs before anyone else.</div>
-        </div>
-      </div>
-
-      <!-- 7. PROFILE AUDIT — COMING SOON -->
-      <div class="ht-section-card ht-card-purple ht-coming-soon">
-        <div class="ht-cs-badge">Coming soon</div>
-        <div class="ht-card-header" style="border-bottom:1px solid var(--border)">
-          <div class="ht-card-icon ht-icon-purple">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          </div>
-          <div>
-            <div class="ht-card-title-text">Profile Audit</div>
-            <div class="ht-card-title-sub">AI-powered score and actionable improvements for your Upwork profile</div>
-          </div>
-        </div>
-        <div class="ht-callout ht-callout-info" style="margin-top:18px">
-          <div class="ht-callout-icon">🔮</div>
-          <div>Using your synced profile data, Snag AI will run a full audit and give you an actionable improvement plan — specific rewrites, keyword gaps, and a profile strength score broken down by section.</div>
-        </div>
-        <div class="ht-audit-grid">
-          <div class="ht-audit-card"><div class="ht-audit-icon">🎯</div><div class="ht-audit-title">Profile Score</div><div class="ht-audit-desc">Overall completeness and strength out of 100, broken down by section — title, bio, skills, portfolio.</div></div>
-          <div class="ht-audit-card"><div class="ht-audit-icon">🔑</div><div class="ht-audit-title">Keyword Positioning</div><div class="ht-audit-desc">AI checks if your title, bio, and skills match high-value search terms in your niche.</div></div>
-          <div class="ht-audit-card"><div class="ht-audit-icon">⚡</div><div class="ht-audit-title">Gap Detection</div><div class="ht-audit-desc">Identifies weak sections — thin bio, missing skills, low-impact title — and explains exactly why they're hurting you.</div></div>
-          <div class="ht-audit-card"><div class="ht-audit-icon">💡</div><div class="ht-audit-title">Smart Suggestions</div><div class="ht-audit-desc">Specific, rewrite-ready suggestions for every flagged section. Not vague advice — actual improved copy.</div></div>
+        <div class="legal-section">
+          <div class="legal-section-title">Tips for Winning More Jobs</div>
+          <p><strong>Apply within the first hour</strong> — Being among the first 5 proposals gives a significant advantage. Jobs with fewer than 5 submissions and posted under 1 hour score highest in Win Probability. Speed matters more than perfection at this stage.</p>
+          <p style="margin-top:10px"><strong>Portfolio URLs are what make the proof real</strong> — The AI references your portfolio projects by name and links to them in the proposal. Without a live URL, it can mention the project but cannot prove it exists. A proposal with two verified links reads completely differently from one without any.</p>
+          <p style="margin-top:10px"><strong>Shorter almost always wins</strong> — Clients decide in the first 160 characters whether to read further. Keep proposals under 130 words unless the job explicitly asks for detailed answers. Use the Shorter chip when a proposal runs long.</p>
+          <p style="margin-top:10px"><strong>Use the refine box for one specific thing</strong> — The most effective refinements are narrow: "mention their Python background", "cut the last sentence", "make the opening more direct". Vague instructions like "make it better" rarely improve the letter — specific ones almost always do.</p>
+          <p style="margin-top:10px"><strong>Unverified payment and 0% hire rate are hard no's</strong> — Clients with no payment method on file or who have never hired from any of their posted jobs almost never result in a hire. The alert flags these — take the flag seriously and move on.</p>
+          <p style="margin-top:10px"><strong>Keep your profile synced after Upwork changes</strong> — If you earn a new badge, update your rate, or add portfolio items on Upwork, re-visit your profile page and click Sync Profile again. Proposals use stale data silently — there's no warning if your sync is old.</p>
         </div>
       </div>
 
     </div><!-- /howto -->
+
+    <!-- ══ TERMS OF SERVICE ══ -->
+    <div class="section" id="section-terms">
+      <div class="sec-label">Legal</div>
+      <div class="section-title-solo">Terms of Service</div>
+      <div class="section-sub-solo">Last updated June 2025 &nbsp;·&nbsp; Snag AI Chrome Extension</div>
+
+      <div class="legal-card">
+        <div class="legal-section">
+          <div class="legal-section-title">1. Acceptance of Terms</div>
+          <p>By installing, accessing, or using the Snag AI Chrome Extension and associated services (collectively, the "Service"), you confirm that you are at least 18 years old, have the legal authority to enter into this agreement, and agree to be bound by these Terms of Service and our Privacy Policy. If you do not agree with any part of these terms, you must not use the Service. These terms apply to all users, including free-tier users and paid subscribers.</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">2. Description of Service</div>
+          <p>Snag AI is a browser extension that assists freelancers on the Upwork platform by providing AI-powered tools to improve their job application process. Specifically, the Service enables you to:</p>
+          <p style="margin-top:8px">— Sync publicly available information from your Upwork profile page (when you explicitly initiate the sync action) including your name, professional title, job success score, hourly rate, tier badge, earnings history, skills, bio, employment history, languages, education, and portfolio items.</p>
+          <p style="margin-top:8px">— Read live job listing data from Upwork job pages you visit, including publicly visible statistics such as proposal counts, client hiring rates, client ratings, and job requirements, to calculate a win probability and profile match score.</p>
+          <p style="margin-top:8px">— Generate personalised AI cover letters and proposal drafts using the Anthropic Claude API, based on the combination of your synced profile data and the job listing you are viewing.</p>
+          <p style="margin-top:8px">— Receive AI-generated writing tips, job signal analysis, and screening question answers displayed within the extension panel.</p>
+          <p style="margin-top:8px">The Service is a drafting and analysis tool only. It does not submit applications, send messages, interact with Upwork on your behalf, or perform any automated actions. All actions on the Upwork platform are taken solely by you. You are entirely responsible for reviewing, editing, and deciding whether to use any AI-generated content before submitting it.</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">3. User Accounts & Eligibility</div>
+          <p>To access paid features, you must provide a valid email address and maintain an active subscription processed through Paddle. You are responsible for maintaining the confidentiality of your account credentials and for all activity that occurs under your account. You must notify us immediately at support@snagai.app if you suspect any unauthorised use of your account.</p>
+          <p style="margin-top:10px">You represent that your use of Snag AI does not violate any applicable laws or regulations in your jurisdiction, including but not limited to employment laws, data protection laws, and any applicable platform terms. You must have an active Upwork account in good standing. Snag AI is not affiliated with, endorsed by, or officially connected to Upwork in any way.</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">4. Subscriptions & Payment</div>
+          <p>Snag AI offers free and paid subscription plans. All payments for paid plans are processed by Paddle, who acts as the Merchant of Record for all transactions. By subscribing to a paid plan, you authorise Paddle to charge the applicable fees to your chosen payment method on a recurring basis at the start of each billing period.</p>
+          <p style="margin-top:10px">Subscription fees are charged in advance. Your plan's proposal quota resets on your billing anniversary date, not the first of each month. Unused proposals do not roll over to the next billing period. We reserve the right to change pricing with reasonable notice — price changes will be communicated via the extension or email at least 14 days in advance and will apply to your next renewal.</p>
+          <p style="margin-top:10px">Upgrades take effect immediately, with charges prorated for the remainder of the billing period. Downgrades take effect at the next renewal. You may cancel your subscription at any time — your access continues until the end of the current paid period and you will not be charged again unless you resubscribe.</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">5. Acceptable Use & Prohibited Activities</div>
+          <p>You agree to use the Service only for its intended purpose of assisting with legitimate freelance job applications. You must not use Snag AI to:</p>
+          <p style="margin-top:8px">— Submit proposals that misrepresent your qualifications, experience, skills, or identity in any material way.</p>
+          <p style="margin-top:8px">— Generate or submit content that is fraudulent, defamatory, harassing, discriminatory, or violates any applicable law.</p>
+          <p style="margin-top:8px">— Attempt to reverse engineer, decompile, disassemble, or extract the source code of the extension or its backend services.</p>
+          <p style="margin-top:8px">— Circumvent, disable, or interfere with subscription limits, security features, or access controls.</p>
+          <p style="margin-top:8px">— Share, sell, or transfer your account or subscription to another person.</p>
+          <p style="margin-top:8px">— Use automated scripts, bots, or any other means to access or interact with the Service beyond normal human use.</p>
+          <p style="margin-top:8px">— Violate the Terms of Service, Community Guidelines, or any other policies of Upwork or any other platform where you use content generated by Snag AI.</p>
+          <p style="margin-top:10px">We reserve the right to determine, in our sole discretion, what constitutes a violation of this acceptable use policy. Violations may result in immediate suspension or termination of your access without refund.</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">6. AI-Generated Content</div>
+          <p>The cover letters, proposals, and other text generated by Snag AI are produced by a large language model (Anthropic's Claude) and are intended as drafts and starting points only. You acknowledge that AI-generated content may contain inaccuracies, may not reflect your actual experience or skills, and should always be reviewed and edited before use. Snag AI makes no representations about the accuracy, completeness, or suitability of generated content for any particular job application.</p>
+          <p style="margin-top:10px">You retain full ownership of any content you create by editing or building upon AI-generated drafts. Snag AI does not claim ownership of proposal content generated through the Service.</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">7. Intellectual Property</div>
+          <p>The Snag AI extension, including its code, design, interface, algorithms, branding, and documentation, is the exclusive property of Snag AI and is protected by copyright, trademark, trade secret, and other intellectual property laws. Nothing in these Terms grants you any right, title, or interest in the Service except for the limited licence to use it as described herein.</p>
+          <p style="margin-top:10px">You are granted a personal, non-exclusive, non-transferable, revocable licence to use the extension solely for your own freelancing activities in accordance with these Terms. This licence terminates immediately upon cancellation or termination of your account.</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">8. Service Availability & Modifications</div>
+          <p>We strive to keep Snag AI available at all times but do not guarantee uninterrupted access. The Service may be temporarily unavailable due to maintenance, updates, technical issues, or circumstances beyond our control including third-party API outages (e.g., the Anthropic Claude API). We are not liable for any losses caused by Service unavailability.</p>
+          <p style="margin-top:10px">We reserve the right to modify, update, or discontinue features of the Service at any time with or without notice. Material changes that significantly reduce core functionality will be communicated with reasonable notice. Continued use of the Service after modifications constitutes your acceptance of the changes.</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">9. Disclaimer of Warranties</div>
+          <p>The Service is provided "as is" and "as available" without any warranties of any kind, express or implied, including but not limited to warranties of merchantability, fitness for a particular purpose, non-infringement, or accuracy. We do not warrant that the Service will be error-free, that defects will be corrected, or that the Service or the servers that make it available are free of viruses or other harmful components. Use of the Service is at your own risk.</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">10. Limitation of Liability</div>
+          <p>To the fullest extent permitted by applicable law, Snag AI, its owners, employees, and agents shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including but not limited to loss of profits, loss of data, loss of business opportunities, missed job applications, account restrictions imposed by Upwork, or any other losses arising from your use of or inability to use the Service, even if we have been advised of the possibility of such damages.</p>
+          <p style="margin-top:10px">Our total cumulative liability to you for any claims arising under or related to these Terms shall not exceed the total amount you paid to Snag AI in the 90 days immediately preceding the event giving rise to the claim.</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">11. Indemnification</div>
+          <p>You agree to indemnify, defend, and hold harmless Snag AI and its owners, officers, employees, and agents from and against any and all claims, damages, losses, costs, and expenses (including reasonable legal fees) arising from: (a) your use of the Service; (b) your violation of these Terms; (c) your violation of any third-party rights, including Upwork's Terms of Service; or (d) any content you submit, transmit, or make available through the Service.</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">12. Governing Law & Disputes</div>
+          <p>These Terms are governed by and construed in accordance with applicable law. Any disputes arising from or relating to these Terms or the Service shall first be attempted to be resolved through good-faith negotiation. If a dispute cannot be resolved informally, it shall be submitted to binding arbitration or the courts of competent jurisdiction in the territory where Snag AI is registered.</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">13. Contact</div>
+          <p>For any questions regarding these Terms of Service, please contact us at <span style="color:var(--indigo)">support@snagai.app</span>. We aim to respond to all enquiries within 2 business days.</p>
+        </div>
+      </div>
+    </div><!-- /terms -->
+
+    <!-- ══ PRIVACY POLICY ══ -->
+    <div class="section" id="section-privacy">
+      <div class="sec-label">Legal</div>
+      <div class="section-title-solo">Privacy Policy</div>
+      <div class="section-sub-solo">Last updated June 2025 &nbsp;·&nbsp; Snag AI Chrome Extension</div>
+
+      <div class="legal-card">
+        <div class="legal-section">
+          <div class="legal-section-title">1. Introduction & Data Controller</div>
+          <p>This Privacy Policy explains how Snag AI ("we", "us", "our") collects, uses, stores, and protects information when you use the Snag AI Chrome Extension and associated backend services. We are committed to protecting your privacy and handling your data with transparency and care.</p>
+          <p style="margin-top:10px">By using Snag AI, you acknowledge that you have read and understood this Privacy Policy. If you have questions or concerns, you may contact us at <span style="color:var(--indigo)">support@snagai.app</span> at any time.</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">2. Data We Collect and How</div>
+          <p><strong>Profile data (user-initiated sync)</strong> — When you click the "Sync Profile" button on your Upwork profile page, the extension reads publicly visible information from that page including: your display name, professional title, Job Success Score, hourly rate, Upwork tier badge, total earnings, total jobs completed, total hours worked, skills list, professional bio/overview, employment history, education, spoken languages, profile photo URL, availability status, and portfolio project titles, descriptions, skills, and attached links. This data is stored exclusively in your browser's local Chrome storage on your device. It is transmitted to our backend server only when you generate a proposal, and only as part of that request.</p>
+          <p style="margin-top:10px"><strong>Account email address</strong> — When you add your email in Settings, it is stored in Chrome's sync storage (which Chrome may synchronise across your devices if you are signed into Chrome). Your email is sent to our backend to verify your subscription plan status and to track your proposal usage count against your plan limit. It is not used for unsolicited marketing communications.</p>
+          <p style="margin-top:10px"><strong>Job listing data</strong> — When you visit an Upwork job page, the extension automatically reads publicly available job data from the page, including job title, description, budget, posted time, client statistics (hire rate, rating, spend, payment verification status), and current proposal/interview counts. This data is processed locally in your browser and is transmitted to our backend only when you click "Write Proposal" to generate a cover letter for that specific job.</p>
+          <p style="margin-top:10px"><strong>Proposal usage count</strong> — We record the number of proposals you generate in each billing period to enforce your plan's monthly limit. This count is stored on our servers associated with your email address. We do not store the content of generated proposals on our servers.</p>
+          <p style="margin-top:10px"><strong>Device ID</strong> — A random identifier is generated and stored locally in your browser to prevent abuse of free trial limits on a single device. This ID is not linked to your identity and is not transmitted to our servers.</p>
+          <p style="margin-top:10px"><strong>Technical usage data</strong> — We may log basic server-side request metadata (timestamps, error codes) for the purpose of debugging and maintaining service stability. We do not log the content of proposals or profile data beyond what is necessary to process requests.</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">3. Legal Basis for Processing (GDPR)</div>
+          <p>For users in the European Economic Area, United Kingdom, or Switzerland, we process your personal data on the following legal bases:</p>
+          <p style="margin-top:8px">— <strong>Contract performance</strong> — Processing your email and usage data is necessary to provide you with the subscription service you have purchased, verify your plan, and enforce usage limits.</p>
+          <p style="margin-top:8px">— <strong>Legitimate interests</strong> — We process technical metadata to maintain the security and stability of the Service. We do not override your fundamental rights in doing so.</p>
+          <p style="margin-top:8px">— <strong>Consent</strong> — Profile data is processed based on your explicit action of clicking "Sync Profile". You can withdraw this by clearing the extension's storage at any time.</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">4. How We Use Your Data</div>
+          <p>All data collected is used solely for the following purposes:</p>
+          <p style="margin-top:8px">— <strong>Proposal generation</strong> — Your profile data and the job listing data are combined and sent to the Anthropic Claude API to generate a personalised cover letter draft.</p>
+          <p style="margin-top:8px">— <strong>Job analysis</strong> — Job listing statistics are processed locally and on our server to produce win probability scores and profile match scores shown in the extension panel.</p>
+          <p style="margin-top:8px">— <strong>Plan verification</strong> — Your email is used to look up your subscription status via Paddle's billing system to determine which features and proposal limits apply to you.</p>
+          <p style="margin-top:8px">— <strong>Usage enforcement</strong> — We track how many proposals you have generated in the current billing period to enforce the limits of your plan.</p>
+          <p style="margin-top:10px">We do not sell your data to any third party. We do not use your data for advertising purposes. We do not share your Upwork profile data or job data with any party other than Anthropic (for proposal generation) and our hosting infrastructure providers.</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">5. Third-Party Services & Data Sharing</div>
+          <p><strong>Anthropic (Claude API)</strong> — When you generate a proposal, your profile data and job description are transmitted to Anthropic's API to produce the AI response. Anthropic processes this data in accordance with their API usage policies. We have configured our API settings to opt out of data use for model training. Anthropic's privacy policy is available at anthropic.com/privacy.</p>
+          <p style="margin-top:10px"><strong>Paddle</strong> — All subscription payments are processed by Paddle, who acts as the Merchant of Record. Paddle collects and processes billing information, payment card details, and transaction records directly. We do not receive or store your payment card information. Paddle's privacy policy governs the handling of payment data and is available at paddle.com/legal/privacy.</p>
+          <p style="margin-top:10px"><strong>Supabase</strong> — User account records (email address, subscription plan, usage count, billing status) are stored in a Supabase PostgreSQL database. Data is hosted on servers in the EU region with encryption at rest and in transit.</p>
+          <p style="margin-top:10px"><strong>Render.com</strong> — Our backend API server is hosted on Render. Request processing occurs on Render's infrastructure. Render's infrastructure is SOC 2 compliant.</p>
+          <p style="margin-top:10px">We do not share your data with any other third parties except as required by law (e.g., in response to a valid court order or legal process).</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">6. Local Storage & Cookies</div>
+          <p>Snag AI uses Chrome's built-in storage APIs exclusively — specifically <code style="font-family:monospace;font-size:12px;background:rgba(255,255,255,.06);padding:1px 6px;border-radius:4px">chrome.storage.local</code> and <code style="font-family:monospace;font-size:12px;background:rgba(255,255,255,.06);padding:1px 6px;border-radius:4px">chrome.storage.sync</code>. We do not set browser cookies. All profile data, portfolio items, settings, and preferences are stored locally in your browser and are not accessible to websites or other extensions.</p>
+          <p style="margin-top:10px"><code style="font-family:monospace;font-size:12px;background:rgba(255,255,255,.06);padding:1px 6px;border-radius:4px">chrome.storage.local</code> data stays on your device only. <code style="font-family:monospace;font-size:12px;background:rgba(255,255,255,.06);padding:1px 6px;border-radius:4px">chrome.storage.sync</code> data (your email address and basic settings) may be synchronised by Chrome to other devices where you are signed in, subject to Google's policies for Chrome sync data.</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">7. Data Retention</div>
+          <p><strong>Local data</strong> — Profile data, portfolio, settings, and filters stored in Chrome's local storage are retained until you clear the extension's storage or uninstall it.</p>
+          <p style="margin-top:10px"><strong>Server-side data</strong> — Account records (email, plan status, usage count) are retained for as long as your account is active and for a reasonable period thereafter for legal and accounting purposes. If you request deletion, we will remove your personal data from our servers within 30 days, except where retention is required by law.</p>
+          <p style="margin-top:10px"><strong>Proposal request logs</strong> — Basic server logs (timestamps, response codes) may be retained for up to 90 days for debugging and security purposes. Proposal content is not stored on our servers.</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">8. International Data Transfers</div>
+          <p>Snag AI operates globally. When you use the Service, your data may be processed in countries outside your own, including the United States and EU member states. We ensure that any international data transfers are carried out with appropriate safeguards in place, including where applicable the use of standard contractual clauses or equivalent mechanisms recognised by applicable data protection law.</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">9. Your Rights</div>
+          <p>Depending on your location, you may have the following rights regarding your personal data:</p>
+          <p style="margin-top:8px">— <strong>Right of access</strong> — You may request a copy of the personal data we hold about you.</p>
+          <p style="margin-top:8px">— <strong>Right to rectification</strong> — You may request correction of inaccurate or incomplete data.</p>
+          <p style="margin-top:8px">— <strong>Right to erasure</strong> — You may request deletion of your personal data, subject to certain exceptions.</p>
+          <p style="margin-top:8px">— <strong>Right to restrict processing</strong> — You may request that we limit how we use your data in certain circumstances.</p>
+          <p style="margin-top:8px">— <strong>Right to data portability</strong> — You may request your data in a structured, machine-readable format.</p>
+          <p style="margin-top:8px">— <strong>Right to object</strong> — You may object to processing based on legitimate interests.</p>
+          <p style="margin-top:10px">To exercise any of these rights, contact us at <span style="color:var(--indigo)">support@snagai.app</span>. We will respond within 30 days. You also have the right to lodge a complaint with the data protection authority in your jurisdiction if you believe your data has been processed unlawfully.</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">10. Children's Privacy</div>
+          <p>Snag AI is not directed at individuals under the age of 18. We do not knowingly collect personal data from anyone under 18. If we become aware that we have collected data from a person under 18 without appropriate consent, we will take immediate steps to delete that data.</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">11. Changes to This Policy</div>
+          <p>We may update this Privacy Policy from time to time to reflect changes in our practices, technology, or legal requirements. When we make material changes, we will update the "Last updated" date at the top of this page and, where appropriate, notify you through the extension interface or by email. We encourage you to review this policy periodically.</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">12. Contact Us</div>
+          <p>If you have any questions, concerns, or requests regarding this Privacy Policy or how we handle your data, please contact us at <span style="color:var(--indigo)">support@snagai.app</span>. We take all privacy enquiries seriously and aim to respond within 2 business days.</p>
+        </div>
+      </div>
+    </div><!-- /privacy -->
+
+    <!-- ══ REFUND POLICY ══ -->
+    <div class="section" id="section-refund">
+      <div class="sec-label">Legal</div>
+      <div class="section-title-solo">Refund Policy</div>
+      <div class="section-sub-solo">Last updated June 2025 &nbsp;·&nbsp; Snag AI Chrome Extension</div>
+
+      <div class="legal-card">
+        <div class="legal-section">
+          <div class="legal-section-title">Merchant of Record</div>
+          <p>All payments for Snag AI subscriptions are processed by <strong>Paddle</strong>, who acts as the authorised Merchant of Record and reseller for all transactions. This means Paddle is the seller of record for billing and tax purposes, and all charges appear under Paddle's name on your payment statements. By purchasing a Snag AI subscription, you are entering into a purchase agreement with Paddle, subject to Paddle's terms and this Refund Policy.</p>
+          <p style="margin-top:10px">Refunds are issued by Paddle back to your original payment method. To initiate a refund, you may contact Snag AI at <span style="color:var(--indigo)">support@snagai.app</span> or access Paddle's buyer support directly at <span style="color:var(--indigo)">paddle.net/contact</span>.</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">Statutory Rights — EU, EEA, UK & Switzerland</div>
+          <p>If you are located in the European Union, European Economic Area, United Kingdom, or Switzerland, you have a statutory right to withdraw from your purchase within <strong>14 days</strong> of the date of subscription without providing any reason. This is your legal right under the EU Consumer Rights Directive and equivalent UK consumer law.</p>
+          <p style="margin-top:10px"><strong>Important — digital content exception:</strong> The 14-day withdrawal right does not apply if you have already begun using the digital service — specifically, if you have generated one or more AI proposals using Snag AI before requesting the withdrawal. By clicking "Write Proposal" and using the Service, you expressly consent to the immediate performance of the digital service and acknowledge that you thereby waive your right of withdrawal for that session's usage.</p>
+          <p style="margin-top:10px">If you have not yet generated any proposals, your 14-day withdrawal right remains fully intact. Contact us at <span style="color:var(--indigo)">support@snagai.app</span> within 14 days of your subscription start to exercise this right.</p>
+          <p style="margin-top:10px"><strong>Annual subscriptions (UK users):</strong> If you are a UK resident on an annual plan, a fresh 14-day withdrawal window opens at each auto-renewal date, in accordance with UK consumer law requirements.</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">Statutory Rights — Other Regions</div>
+          <p>Customers in additional regions have the following statutory cancellation rights regardless of usage:</p>
+          <p style="margin-top:8px">— <strong>Turkey & Israel</strong> — 14-day cancellation window from date of purchase.</p>
+          <p style="margin-top:8px">— <strong>South Korea, Brazil, Canada, China</strong> — 7-day cancellation window from date of purchase.</p>
+          <p style="margin-top:8px">— <strong>Singapore</strong> — 5-day cancellation window from date of purchase.</p>
+          <p style="margin-top:10px">These statutory rights exist in addition to any rights granted under our voluntary refund policy below. To exercise these rights, contact us before the applicable deadline at <span style="color:var(--indigo)">support@snagai.app</span>.</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">Voluntary Refund Policy</div>
+          <p>In addition to your statutory rights, we offer the following voluntary refund terms for all customers worldwide:</p>
+          <p style="margin-top:10px"><strong>New subscriber guarantee</strong> — If you subscribed within the last 7 days and have generated fewer than 5 proposals, you may request a full refund without explanation. We will process your refund within 5 business days without any questions.</p>
+          <p style="margin-top:10px"><strong>Technical failure</strong> — If the Service was materially unavailable or broken due to issues on our end for a significant portion of your billing period (48+ hours of continuous unavailability), you may request a pro-rated refund for the affected period. We will review each case fairly and respond within 3 business days.</p>
+          <p style="margin-top:10px"><strong>Billing errors</strong> — If you were charged incorrectly — for example, charged at the wrong rate, charged twice, or charged after a confirmed cancellation — you are entitled to a full refund of the incorrect amount. Contact us immediately at <span style="color:var(--indigo)">support@snagai.app</span> and we will resolve the error within 5 business days.</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">Non-Refundable Circumstances</div>
+          <p>Unless required by applicable statutory law, refunds will not be issued in the following circumstances:</p>
+          <p style="margin-top:8px">— Change of mind after actively using the Service (generating proposals).</p>
+          <p style="margin-top:8px">— Dissatisfaction with AI output quality, writing style, or proposal effectiveness.</p>
+          <p style="margin-top:8px">— Failure to cancel before an auto-renewal date after the statutory withdrawal period has expired.</p>
+          <p style="margin-top:8px">— Account suspension or termination due to violation of our Terms of Service.</p>
+          <p style="margin-top:8px">— Proposal quota already consumed during the billing period.</p>
+          <p style="margin-top:8px">— Requests made more than 30 days after the charge date (outside statutory periods).</p>
+          <p style="margin-top:10px">We reserve the right to refuse refund requests that appear to abuse this policy, such as repeated refund requests across multiple subscription periods.</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">Cancellations</div>
+          <p>You may cancel your Snag AI subscription at any time from the Subscription page in the extension by clicking "Manage Billing" and following the prompts in the Paddle customer portal. Cancellation stops future automatic charges but does not immediately terminate your access — you retain full access to your plan's features until the end of your current paid billing period. No refund is issued for the unused portion of the current period upon cancellation, except where required by law.</p>
+          <p style="margin-top:10px">After cancellation, your account automatically reverts to the free plan (limited to 2 lifetime proposals). Your synced profile data remains stored locally in your browser and is not deleted by cancellation.</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">How to Request a Refund</div>
+          <p>To request a refund, email us at <span style="color:var(--indigo)">support@snagai.app</span> with the following information:</p>
+          <p style="margin-top:8px">— The email address associated with your Snag AI account.</p>
+          <p style="margin-top:8px">— The approximate date of the charge you are disputing.</p>
+          <p style="margin-top:8px">— A brief description of the reason for your refund request.</p>
+          <p style="margin-top:10px">We aim to respond to all refund requests within 1–2 business days. Once approved, refunds are processed by Paddle and returned to your original payment method. Processing times vary by bank and payment method — typically 5–10 business days, but may take up to 15 business days in some cases.</p>
+          <p style="margin-top:10px">You may also contact Paddle's buyer support directly at <span style="color:var(--indigo)">paddle.net/contact</span> if you have questions about a charge or wish to initiate a refund request directly with the Merchant of Record.</p>
+        </div>
+        <div class="legal-section">
+          <div class="legal-section-title">Changes to This Policy</div>
+          <p>We may update this Refund Policy from time to time. Any changes will be effective from the date of publication. Material changes that affect your refund rights will be communicated via the extension or by email with reasonable notice before taking effect.</p>
+        </div>
+      </div>
+    </div><!-- /refund -->
 
   </div><!-- /main -->
 </div>
