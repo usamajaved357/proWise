@@ -102,22 +102,24 @@ export async function handleCoverLetter(msg) {
     await chrome.storage.sync.set({ anonId });
   }
 
-  // Build a refine instruction that includes context about the task
-  const isRefinement = !!(msg.existingCL);
-  const questionCtx  = msg.fillQuestions && msg.questionCount > 0
-    ? `\n\nAlso write answers for ${msg.questionCount} client question(s) on the proposal form. Return them as a JSON array under the key "answers" alongside "coverLetter".`
-    : '';
+  const questions = msg.questions || [];
+  const hasQs     = questions.length > 0;
+  console.log('[SnagAI] handleCoverLetter — questions received:', questions.length, questions.map(q => q.label?.slice(0, 50)));
 
-  const refineInstruction = [
-    msg.instruction || '',
-    questionCtx,
-  ].filter(Boolean).join('\n').trim();
+  const jobData          = { ...(msg.jobData || {}) };
+  const refineInstruction = (msg.instruction || '').trim();
+
+  // Clean question labels (strip "1. " prefix Upwork puts in the label text)
+  const cleanedQs = questions.map((q, i) => {
+    const label = q.label.replace(/^\d+[\.\)]\s*/, '').trim();
+    return { label, index: i };
+  });
 
   const res = await fetch(SERVER + '/proposal', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      job:               msg.jobData || {},
+      job:               jobData,
       profile,
       settings:          syncData.settings || {},
       email:             syncData.userEmail || null,
@@ -135,9 +137,40 @@ export async function handleCoverLetter(msg) {
   if (res.status === 402 || data.showPaywall) return { showPaywall: true, error: data.error };
   if (!res.ok) throw new Error(data.error || 'Server error');
 
-  // If server returned a plain letter string, wrap it
-  if (typeof data === 'string') return { coverLetter: data };
-  if (data.letter)        return { coverLetter: data.letter,       answers: data.answers || [] };
-  if (data.coverLetter)   return { coverLetter: data.coverLetter,  answers: data.answers || [] };
-  return data;
+  const coverLetter = (data.letter || data.coverLetter || (typeof data === 'string' ? data : '')).trim();
+
+  // If questions + existingCL present → this is a Phase 2 (answers only) call
+  if (hasQs && msg.existingCL) {
+    const qInstruction = `Do not change the cover letter. The proposal form has ${cleanedQs.length} separate Q&A screening question(s). Answer each one concisely (2-3 sentences) in the ===QUESTIONS=== block, numbered to match:\n`
+      + cleanedQs.map((q, i) => `${i + 1}. ${q.label}`).join('\n');
+
+    const res2 = await fetch(SERVER + '/proposal', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        job:               jobData,
+        profile,
+        settings:          syncData.settings || {},
+        email:             syncData.userEmail || null,
+        anonId,
+        refineInstruction: qInstruction,
+        currentLetter:     msg.existingCL,
+        categories:        profileFull?.jobFilters?.categories || [],
+        freelancerType:    syncData.settings?.freelancerType || 'developer',
+        deviceId:          localData.deviceId || '',
+      })
+    });
+
+    const data2 = await res2.json();
+    console.log('[SnagAI] Phase 2 questions field:', JSON.stringify(data2?.questions)?.slice(0, 150));
+
+    const answers = (data2?.questions || '')
+      .split('\n')
+      .map(line => line.replace(/^\s*\d+[\.\)]\s*/, '').trim())
+      .filter(Boolean);
+
+    return { coverLetter: msg.existingCL, answers };
+  }
+
+  return { coverLetter, answers: [] };
 }

@@ -169,6 +169,9 @@ router.post('/', async (req, res) => {
         result.letter = result.letter
           .replace(/\{\{PRICE\}\}/g, priceStr)
           .replace(/\{\{TIMELINE\}\}/g, timeline);
+        if (result.questions) result.questions = result.questions
+          .replace(/\{\{PRICE\}\}/g, priceStr)
+          .replace(/\{\{TIMELINE\}\}/g, timeline);
 
         console.log(`[SCOPE] Claude estimated ${loHrs}-${hiHrs} hrs → ${priceStr}, ${timeline}`);
       }

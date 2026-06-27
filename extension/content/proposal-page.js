@@ -47,6 +47,27 @@
     return [...document.querySelectorAll('.questions-area textarea')];
   }
 
+  // Read question labels + fields together
+  // All Q&A textareas live inside ONE .questions-area container — iterate textareas directly
+  function getQuestions() {
+    return getQuestionFields().map((field, i) => {
+      // Walk up to find the question block that wraps this specific textarea
+      const block = field.closest('[class*="question-block"], [class*="QuestionBlock"]')
+                 || field.parentElement?.parentElement
+                 || field.parentElement;
+
+      const rawLabel = (
+        block?.querySelector('label')?.innerText ||
+        block?.querySelector('h4, h3, h2')?.innerText ||
+        block?.querySelector('p')?.innerText ||
+        `Question ${i + 1}`
+      ).trim().replace(/\s+/g, ' ');
+
+      const label = rawLabel.replace(/^\d+[\.\)]\s*/, '').trim();
+      return { label, field, existing: field.value || '' };
+    });
+  }
+
   // Wait for the cover letter field to appear (SPA lazy render)
   function waitForCLField(cb, timeout = 15000) {
     const start = Date.now();
@@ -229,10 +250,8 @@
     const instruction  = inp?.value?.trim() || '';
     const clField      = getCLField();
     const existingCL   = clField?.value || '';
-    const qFields      = getQuestionFields();
-    const hasQuestions = qFields.length > 0 && (
-      !instruction || instruction.toLowerCase().includes('question') || instruction.toLowerCase().includes('fill') || !existingCL
-    );
+    const questions    = getQuestions();
+    const qFields      = questions.map(q => q.field);
 
     // Show progress only on the relevant element for each flow
     if (isInline) {
@@ -254,45 +273,73 @@
       // Re-fetch job data fresh in case it was updated
       const freshJob = await getCachedJob();
 
+      // Phase 1 — generate cover letter (no questions, fast)
       const result = await chrome.runtime.sendMessage({
-        type: 'GENERATE_COVER_LETTER',
-        jobData:       freshJob || jobData,
+        type:      'GENERATE_COVER_LETTER',
+        jobData:   freshJob || jobData,
         instruction,
         existingCL,
-        fillQuestions: hasQuestions,
-        questionCount: qFields.length,
+        questions: [], // questions handled separately after CL injection
       });
 
       if (result?.error) throw new Error(result.error);
 
-      // Inject cover letter
-      if (result?.coverLetter && clField) {
-        vueInject(clField, result.coverLetter);
-      }
+      // Inject cover letter immediately
+      const generatedCL = result?.coverLetter || '';
+      if (generatedCL && clField) vueInject(clField, generatedCL);
 
-      // Inject question answers
-      if (result?.answers && Array.isArray(result.answers)) {
-        const fields = getQuestionFields();
-        result.answers.forEach((ans, i) => {
-          if (fields[i] && ans) vueInject(fields[i], ans);
-        });
-      }
-
-      // Done — update only the relevant indicator
-      if (isInline) {
-        if (clIcon) {
-          clIcon.classList.remove('sn-cl-spinning');
-          clIcon.classList.add('sn-cl-done');
-          setTimeout(() => clIcon.classList.remove('sn-cl-done'), 2500);
+      // Helper to mark generation as done (called after all phases complete)
+      function markDone() {
+        if (isInline) {
+          if (clIcon) {
+            clIcon.classList.remove('sn-cl-spinning');
+            clIcon.classList.add('sn-cl-done');
+            setTimeout(() => clIcon.classList.remove('sn-cl-done'), 2500);
+          }
+        } else {
+          btn.classList.remove('sn-pp-loading');
+          btn.classList.add('sn-pp-done');
+          setTimeout(() => btn.classList.remove('sn-pp-done'), 2000);
         }
-      } else {
-        btn.classList.remove('sn-pp-loading');
-        btn.classList.add('sn-pp-done');
-        setTimeout(() => btn.classList.remove('sn-pp-done'), 2000);
+        if (statusEl) statusEl.textContent = 'Done — cover letter inserted';
+        if (dotEl) dotEl.className = 'sn-pp-status-dot';
       }
 
-      if (statusEl) statusEl.textContent = 'Done — cover letter inserted';
-      if (dotEl) dotEl.className = 'sn-pp-status-dot';
+      // Phase 2 — answer questions after DOM settles; keep spinner until complete
+      setTimeout(async () => {
+        const freshQs = getQuestions();
+
+        if (!freshQs.length) {
+          // No questions — done immediately
+          markDone();
+          return;
+        }
+
+        console.log('[SnagAI] Phase 2 — answering', freshQs.length, 'questions');
+
+        try {
+          const ansResult = await chrome.runtime.sendMessage({
+            type:        'GENERATE_COVER_LETTER',
+            jobData:     freshJob || jobData,
+            instruction: '',
+            existingCL:  generatedCL,
+            questions:   freshQs.map(q => ({ label: q.label, existing: '' })),
+          });
+
+          if (ansResult?.answers?.length) {
+            const freshFields = getQuestions().map(q => q.field);
+            ansResult.answers.forEach((ans, i) => {
+              if (freshFields[i] && ans) vueInject(freshFields[i], ans);
+            });
+            console.log('[SnagAI] Injected', ansResult.answers.length, 'answers');
+          }
+        } catch(e) {
+          console.error('[SnagAI] Phase 2 error:', e.message);
+        }
+
+        // Done after Phase 2 regardless of outcome
+        markDone();
+      }, 800);
 
     } catch (err) {
       if (isInline) {
