@@ -1223,7 +1223,7 @@
 .sn-sb-summary { font-size: 11.5px; color: rgba(240,238,234,.5); line-height: 1.65; margin: 12px 0 0; padding: 10px 12px; background: rgba(255,255,255,.025); border-radius: 8px; border: 1px solid rgba(255,255,255,.06); }
 
 .sn-sb-hook { font-size: 11px; color: rgba(99,102,241,.9); line-height: 1.55; margin: 10px 0 0; padding: 8px 11px; background: rgba(99,102,241,.07); border-radius: 8px; border: 1px solid rgba(99,102,241,.2); }
-.sn-sb-hook-label { display: block; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .09em; color: rgba(99,102,241,.6); margin-bottom: 4px; }
+.sn-sb-hook-label { display: block; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .09em; color: rgba(240,238,234,.35); margin-bottom: 6px; }
 
 .sn-sb-cache-note { font-size: 9px; color: rgba(240,238,234,.2); text-align: center; margin-top: 8px; }
 

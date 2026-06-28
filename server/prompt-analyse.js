@@ -104,7 +104,8 @@ RULES
 → hookSuggestion: max 2 SHORT sentences, 30-40 words total. Confident expert. Name their actual portfolio project. No hedging.
 → verdictReason: ONE sentence only
 → competitionPressure: honest read after all signals
-→ profileFit: how well THIS person matches THIS job's actual requirements`;
+→ profileFit: how well THIS person matches THIS job's actual requirements
+→ NEVER use em dashes (—) or en dashes (–) anywhere in the output. Use a period or comma instead.`;
 
 
 function buildAnalyseMessage({ job, profile, filters }) {
