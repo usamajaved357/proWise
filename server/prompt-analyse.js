@@ -155,7 +155,7 @@ function buildAnalyseMessage({ job, profile, filters }) {
     'Client avg hourly: '   + (clientAvgRate != null ? '$' + (Math.round(clientAvgRate * 100) / 100) + '/hr' : 'unknown'),
     'Rating: '              + (s.clientRating != null ? s.clientRating + '/5.0' : 'no rating yet'),
     'Payment verified: '    + (s.paymentVerified ? 'YES' : 'NO — financial risk'),
-    'Phone verified: '      + (s.clientPhoneVerified ? 'YES' : 'unknown'),
+    'Phone verified: '      + (s.phoneVerified || s.clientPhoneVerified ? 'YES' : 'not shown — do NOT flag as unverified, just omit'),
     'Client location: '     + (s.clientLocation || 'unknown'),
     'Region required: '     + (s.hasLocationFilter ? 'YES — ' + JSON.stringify(s.reqCountries || s.reqRegions || 'see filters') : 'No restriction'),
     'JSS required: '        + (s.reqJSS || 'none'),

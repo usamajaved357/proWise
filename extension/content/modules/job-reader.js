@@ -200,6 +200,7 @@ window.SnagAI.getJob = function() {
   if (engM) reqEnglish = engM[1].trim();
 
   const paymentVerified = pageText2.includes('Payment method verified');
+  const phoneVerified   = pageText2.includes('Phone number verified') || pageText2.includes('Phone verified');
   let clientSpentNum = 0;
   if (clientTotalSpent) {
     const spRaw = clientTotalSpent.replace(/[,$]/g, '');
@@ -209,7 +210,7 @@ window.SnagAI.getJob = function() {
   const jobStats = {
     proposalCount, lastViewed, interviewingCount, invitesSent, unansweredInvites, hiredCount,
     timePosted, timePostedMinutes, clientAvgRate, clientHireRate, clientTotalSpent, clientRating,
-    reqJSS, reqTalentType, reqEnglish, paymentVerified, clientSpentNum,
+    reqJSS, reqTalentType, reqEnglish, paymentVerified, phoneVerified, clientSpentNum,
     jobSkills: skillsSet || []
   };
   console.log('Job stats:', JSON.stringify(jobStats));
