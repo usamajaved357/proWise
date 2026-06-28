@@ -76,7 +76,32 @@ window.SnagAI.getJob = function() {
   const skillsSet = [...new Set(skillsArr)];
   const skills = skillsSet.join(', ');
 
-  const budget   = document.querySelector('[data-test="budget"] strong, [data-test="Budget"] strong')?.innerText?.trim() || '';
+  const budget = (() => {
+    // Try multiple selectors Upwork uses for budget/price across job types
+    const selectors = [
+      '[data-test="budget"] strong',
+      '[data-test="Budget"] strong',
+      '[data-test="budget"]',
+      '[data-test="Budget"]',
+      '[class*="BudgetAmount"]',
+      '[class*="budget-amount"]',
+      '[data-test="fixed-price"] strong',
+      '[data-test="hourly-rate"] strong',
+    ];
+    for (const s of selectors) {
+      const el = document.querySelector(s);
+      if (el?.innerText?.trim()) return el.innerText.trim();
+    }
+    // Fallback: scan page text — handles $350.00\n\nFixed-price format
+    const allText = document.body.innerText;
+    const fixedMatch = allText.match(/\$[\d,]+\.?\d*[\s\S]{0,15}Fixed[\s-]price/i)
+                    || allText.match(/Fixed[\s-]price[\s\S]{0,5}\n[\s\S]{0,5}\$[\d,]+\.?\d*/i);
+    if (fixedMatch) {
+      const priceOnly = fixedMatch[0].match(/\$[\d,]+\.?\d*/);
+      if (priceOnly) return priceOnly[0];
+    }
+    return '';
+  })();
   const location = document.querySelector('[data-test="client-location"] strong')?.innerText?.trim() || '';
   const jobType  = document.querySelector('[data-test="job-type"], [class*="jobType"]')?.innerText?.trim() || '';
 

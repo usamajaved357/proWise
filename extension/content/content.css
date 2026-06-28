@@ -1161,14 +1161,13 @@
 /* Score row — side by side */
 .sn-sb-score-row {
   display: flex; align-items: stretch; gap: 0;
-  background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.07);
-  border-radius: 12px; overflow: hidden; margin-bottom: 16px;
+  margin-bottom: 14px;
 }
-.sn-sb-score-cell { flex: 1; padding: 12px 14px; }
-.sn-sb-sdivider { width: 1px; background: rgba(255,255,255,.07); flex-shrink: 0; }
+.sn-sb-score-cell { flex: 1; padding: 10px 14px; }
+.sn-sb-sdivider { width: 1px; background: rgba(255,255,255,.06); flex-shrink: 0; }
 .sn-sb-slbl { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: rgba(240,238,234,.3); margin-bottom: 5px; }
 .sn-sb-snum { font-size: 24px; font-weight: 800; letter-spacing: -.04em; line-height: 1; margin-bottom: 6px; }
-.sn-sb-sbar { height: 3px; background: rgba(255,255,255,.07); border-radius: 999px; overflow: hidden; }
+.sn-sb-sbar { height: 5px; background: rgba(255,255,255,.07); border-radius: 999px; overflow: hidden; }
 .sn-sb-sfill { height: 100%; border-radius: 999px; transition: width .6s cubic-bezier(.4,0,.2,1); }
 
 /* Section labels */
@@ -1186,10 +1185,10 @@
   border-bottom: 1px solid rgba(255,255,255,.04);
 }
 .sn-sb-factor:last-of-type { border-bottom: none; }
-.sn-sb-fdot { width: 5px; height: 5px; border-radius: 50%; background: #f87171; flex-shrink: 0; margin-top: 5px; }
+.sn-sb-fdot { width: 8px; height: 8px; border-radius: 50%; background: #f87171; flex-shrink: 0; margin-top: 4px; }
 .sn-sb-fbody { flex: 1; min-width: 0; }
-.sn-sb-fname { font-size: 11.5px; font-weight: 600; color: rgba(240,238,234,.88); line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.sn-sb-fnote { font-size: 10px; color: rgba(240,238,234,.4); margin-top: 1px; }
+.sn-sb-fname { font-size: 11.5px; font-weight: 600; color: rgba(240,238,234,.88); line-height: 1.4; }
+.sn-sb-fnote { font-size: 10px; color: rgba(240,238,234,.4); margin-top: 2px; line-height: 1.5; }
 .sn-sb-fscore { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 999px; background: rgba(248,113,113,.14); color: #f87171; flex-shrink: 0; margin-top: 2px; }
 
 .sn-sb-empty { font-size: 12px; color: #4ade80; text-align: center; padding: 16px 0; }
@@ -1202,7 +1201,45 @@
   background: #6366f1; color: #fff;
   border-radius: 999px;
   font-size: 12px; font-weight: 700;
-  text-decoration: none;
+  text-decoration: none !important;
   transition: opacity .15s;
+  cursor: pointer;
 }
-.sn-sb-apply-btn:hover { opacity: .88; }
+.sn-sb-apply-btn:hover { opacity: .88; text-decoration: none !important; }
+
+/* ── Sidebar new states (Claude analysis) ────────────────────────────────── */
+.sn-sb-placeholder { font-size: 12px; color: rgba(240,238,234,.35); text-align: center; padding: 24px 16px; line-height: 1.7; }
+
+.sn-sb-loading-state { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 32px 16px; }
+.sn-sb-spinner { width: 28px; height: 28px; border: 2.5px solid rgba(255,255,255,.1); border-top-color: #6366f1; border-radius: 50%; animation: sn-sb-spin .7s linear infinite; }
+@keyframes sn-sb-spin { to { transform: rotate(360deg); } }
+.sn-sb-loading-text { font-size: 13px; font-weight: 600; color: #f0eeea; }
+.sn-sb-loading-sub  { font-size: 11px; color: rgba(240,238,234,.4); text-align: center; }
+
+.sn-sb-error-state { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 28px 16px; }
+.sn-sb-error-icon  { font-size: 22px; color: #f87171; }
+.sn-sb-error-msg   { font-size: 12px; color: rgba(248,113,113,.8); text-align: center; line-height: 1.6; }
+
+.sn-sb-summary { font-size: 11.5px; color: rgba(240,238,234,.5); line-height: 1.65; margin: 12px 0 0; padding: 10px 12px; background: rgba(255,255,255,.025); border-radius: 8px; border: 1px solid rgba(255,255,255,.06); }
+
+.sn-sb-hook { font-size: 11px; color: rgba(99,102,241,.9); line-height: 1.55; margin: 10px 0 0; padding: 8px 11px; background: rgba(99,102,241,.07); border-radius: 8px; border: 1px solid rgba(99,102,241,.2); }
+.sn-sb-hook-label { display: block; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .09em; color: rgba(99,102,241,.6); margin-bottom: 4px; }
+
+.sn-sb-cache-note { font-size: 9px; color: rgba(240,238,234,.2); text-align: center; margin-top: 8px; }
+
+/* Button spinner animation */
+.sn-btn-spin { animation: sn-sb-spin .7s linear infinite; }
+
+/* ── Sidebar verdict hero ────────────────────────────────────────────────── */
+.sn-sb-verdict-hero { padding:18px 16px 16px; }
+.sn-sb-score-row { margin-top: 10px; }
+.sn-sb-verdict-word { font-size:28px; font-weight:900; letter-spacing:-.04em; line-height:1; margin-bottom:8px; }
+.sn-sb-verdict-reason { font-size:11.5px; line-height:1.6; color:rgba(240,238,234,.6); }
+
+/* Score inline: number + word side by side */
+.sn-sb-score-inline { display:flex; align-items:baseline; gap:6px; margin-bottom:5px; }
+.sn-sb-sword { font-size:11px; font-weight:700; opacity:.85; }
+
+/* Insight rows (free-reasoning analysis) */
+.sn-sb-insight { display:flex; align-items:flex-start; gap:8px; padding:6px 14px; border-bottom:1px solid rgba(255,255,255,.04); }
+.sn-sb-insight:last-child { border-bottom:none; }
