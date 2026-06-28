@@ -47,20 +47,11 @@ window.SnagAI.injectUI = function() {
   const trig = document.createElement('div');
   trig.id = 'sn-trigger';
   trig.innerHTML = `
-    <button id="sn-btn">
-      <div class="sn-btn-icon">
-        <svg width="18" height="18" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="5" y="5" width="64" height="78" rx="10" stroke="white" stroke-width="5.5" fill="none"/>
-          <line x1="14" y1="23" x2="57" y2="23" stroke="white" stroke-width="5" stroke-linecap="round"/>
-          <line x1="14" y1="35" x2="57" y2="35" stroke="white" stroke-width="5" stroke-linecap="round"/>
-          <line x1="14" y1="47" x2="57" y2="47" stroke="white" stroke-width="5" stroke-linecap="round"/>
-          <line x1="14" y1="59" x2="40" y2="59" stroke="white" stroke-width="5" stroke-linecap="round"/>
-          <circle cx="76" cy="77" r="23" fill="#4338ca"/>
-          <polygon points="80,59 70,78 77,78 73,95 88,74 81,74" fill="white"/>
-        </svg>
-      </div>
-      <span>Write Proposal</span>
-      <span class="sn-live-dot"></span>
+    <button id="sn-btn" title="Analyse job">
+      <svg width="22" height="15" viewBox="0 0 20 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polyline points="0,7 3,7 5,1 7,13 9,4 11,10 13,7 20,7"
+          stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      </svg>
     </button>
   `;
   document.body.appendChild(trig);

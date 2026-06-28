@@ -100,49 +100,89 @@
 
     const probColor  = wp.probScore  >= 70 ? '#4ade80' : wp.probScore  >= 45 ? '#facc15' : '#f87171';
     const matchColor = wp.matchScore >= 70 ? '#4ade80' : wp.matchScore >= 45 ? '#e8a020' : '#f87171';
+    const combined   = wp.combined ?? wp.probScore;
+    const verdict    = combined >= 70 ? 'Good opportunity' : combined >= 50 ? 'Proceed with caution' : 'High risk';
+    const verdictCol = combined >= 70 ? '#4ade80'          : combined >= 50 ? '#facc15'              : '#f87171';
+
+    // Build correct apply URL from cached jobId
+    const jobId    = SnagAI.state.cachedJobId;
+    const applyUrl = jobId && jobId !== 'current'
+      ? `https://www.upwork.com/nx/proposals/job/${jobId}/apply/`
+      : '#';
 
     const negProb  = (wp.topProb  || []).filter(f => f.delta < 0).sort((a,b) => a.delta - b.delta);
     const negMatch = (wp.topMatch || []).filter(f => f.delta < 0).sort((a,b) => a.delta - b.delta);
 
-    function factorRow(f) {
-      const lbl = f.label + (f.value ? ': ' + (typeof f.value === 'object' ? JSON.stringify(f.value) : f.value) : '');
+    function factorRow(f, positive) {
+      const lbl  = f.label + (f.value ? ': ' + (typeof f.value === 'object' ? JSON.stringify(f.value) : f.value) : '');
+      const dot  = positive ? '#4ade80' : '#f87171';
+      const dcol = positive ? 'rgba(74,222,128,.9)' : 'rgba(248,113,113,.9)';
+      const dbg  = positive ? 'rgba(74,222,128,.12)' : 'rgba(248,113,113,.14)';
+      const sign = positive ? '+' + f.delta : f.delta;
       return `<div class="sn-sb-factor">
-        <div class="sn-sb-fdot"></div>
+        <div class="sn-sb-fdot" style="background:${dot}"></div>
         <div class="sn-sb-fbody">
           <div class="sn-sb-fname">${SnagAI.esc(lbl)}</div>
           ${f.note ? `<div class="sn-sb-fnote">${SnagAI.esc(f.note)}</div>` : ''}
         </div>
-        <span class="sn-sb-fscore">${f.delta}</span>
+        <span class="sn-sb-fscore" style="color:${dcol};background:${dbg}">${sign}</span>
       </div>`;
     }
 
+    const isClean   = !negProb.length && !negMatch.length;
+    const posProb   = (wp.topProb  || []).filter(f => f.delta > 0).sort((a,b) => b.delta - a.delta).slice(0, 4);
+    const posMatch  = (wp.topMatch || []).filter(f => f.delta > 0).sort((a,b) => b.delta - a.delta).slice(0, 3);
+
     body.innerHTML = `
-      <div class="sn-sb-scores">
-        <div class="sn-sb-score-card">
+      <!-- Verdict pill -->
+      <div class="sn-sb-verdict" style="color:${verdictCol};border-color:${verdictCol}22;background:${verdictCol}12">
+        <span class="sn-sb-vdot" style="background:${verdictCol}"></span>
+        ${verdict}
+      </div>
+
+      <!-- Score row: side by side -->
+      <div class="sn-sb-score-row">
+        <div class="sn-sb-score-cell">
           <div class="sn-sb-slbl">Win probability</div>
           <div class="sn-sb-snum" style="color:${probColor}">${wp.probScore}%</div>
           <div class="sn-sb-sbar"><div class="sn-sb-sfill" style="width:${wp.probScore}%;background:${probColor}"></div></div>
         </div>
-        <div class="sn-sb-score-card">
+        <div class="sn-sb-sdivider"></div>
+        <div class="sn-sb-score-cell">
           <div class="sn-sb-slbl">Profile match</div>
           <div class="sn-sb-snum" style="color:${matchColor}">${wp.matchScore}%</div>
           <div class="sn-sb-sbar"><div class="sn-sb-sfill" style="width:${wp.matchScore}%;background:${matchColor}"></div></div>
         </div>
       </div>
-      ${negProb.length ? `
-        <div class="sn-sb-section">Risk factors</div>
-        ${negProb.map(factorRow).join('')}
-      ` : ''}
-      ${negMatch.length ? `
-        <div class="sn-sb-section">Profile gaps</div>
-        ${negMatch.map(factorRow).join('')}
-      ` : ''}
-      ${!negProb.length && !negMatch.length ? `
-        <div class="sn-sb-empty">No risk factors — looks good!</div>
-      ` : ''}
+
+      ${isClean ? `
+        <!-- Green light: flip to show WHY it's good -->
+        ${posProb.length ? `
+          <div class="sn-sb-section sn-sb-section-green">Why you'll win</div>
+          ${posProb.map(f => factorRow(f, true)).join('')}
+        ` : ''}
+        ${posMatch.length ? `
+          <div class="sn-sb-section sn-sb-section-green">Profile strengths</div>
+          ${posMatch.map(f => factorRow(f, true)).join('')}
+        ` : ''}
+        ${!posProb.length && !posMatch.length ? `
+          <div class="sn-sb-empty">✓ All signals clear — apply with confidence!</div>
+        ` : ''}
+      ` : `
+        <!-- Has negatives: show risk factors as usual -->
+        ${negProb.length ? `
+          <div class="sn-sb-section">Risk factors</div>
+          ${negProb.map(f => factorRow(f, false)).join('')}
+        ` : ''}
+        ${negMatch.length ? `
+          <div class="sn-sb-section">Profile gaps</div>
+          ${negMatch.map(f => factorRow(f, false)).join('')}
+        ` : ''}
+      `}
+
       <div class="sn-sb-apply-row">
-        <a class="sn-sb-apply-btn" href="${job.applyUrl || '#'}" target="_blank" id="sn-sb-apply">
-          Apply on Upwork →
+        <a class="sn-sb-apply-btn" href="${applyUrl}" target="_blank">
+          Apply Now →
         </a>
       </div>
     `;
@@ -317,6 +357,16 @@
     `;
     document.body.appendChild(sb);
     document.getElementById('sn-sb-close')?.addEventListener('click', SnagAI.closeSidebar);
+
+    // Close sidebar when clicking outside it
+    document.addEventListener('click', (e) => {
+      const sidebar = document.getElementById('sn-sidebar');
+      const trigger = document.getElementById('sn-trigger');
+      if (!sidebar || !sidebar.classList.contains('sn-sb-open')) return;
+      if (!sidebar.contains(e.target) && !trigger.contains(e.target)) {
+        SnagAI.closeSidebar();
+      }
+    }, true);
   }
 
   // ── SPA observer — re-inject on navigation ────────────────────────────────
