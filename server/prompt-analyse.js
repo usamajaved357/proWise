@@ -34,23 +34,36 @@ ALREADY HIRED — CHECK THIS FIRST, BEFORE ANYTHING ELSE
 → This single signal overrides EVERY other positive factor — good skills, low competition, great client, doesn't matter
 → Exception only if numberOfPositions > 1 (multiple hires needed) — but still flag it as a strong concern
 
-COMPETITION — read ALL signals together, don't cherry-pick
-→ Posted time: < 1 hr = huge edge. > 3 days = shortlisting underway
-→ Proposals: 5 = open. 20-50 = hard. 50+ = very hard
-→ Unanswered invites MATTER: if 20 invites sent but 12 unanswered, only ~8 responded. Real competition = much lower than raw numbers. Always calculate this.
-→ Interviewing count — read it against the job SCOPE:
-   - Short task (< 1 month, focused deliverable): 5+ interviewing = High pressure. 10+ = Extreme. Client is close to deciding.
-   - Long/complex project (3+ months): 10-15 interviewing is normal exploration. Still concerning but not fatal.
-   - For short tasks, interviewing count is the MOST important signal — weight it heavily.
-→ competitionPressure = honest read after weighting all signals. For short tasks, let interviewing count dominate.
+COMPETITION — TWO SEPARATE SIGNALS, DON'T MIX THEM UP:
+
+Signal 1 — PROPOSALS + INVITES (how crowded is the applicant pool):
+→ Use unanswered invites to reduce effective proposal count. If 20 invites sent, 12 unanswered = only ~8 invite-responses. Real proposal pool = smaller.
+→ Proposals: 5 = open. 20-50 = hard. 50+ = very hard.
+
+Signal 2 — INTERVIEWING COUNT (how far along is the client's decision):
+→ Interviewing count is INDEPENDENT of proposal math. Don't reduce it.
+→ For SHORT tasks (< 1 month, focused deliverable like "add StoreKit 2"):
+   - 1-4 interviewing = Low/Moderate
+   - 5-9 interviewing = High. Client is already deep in evaluation.
+   - 10+ interviewing = High/Extreme. Client is comparing finalists.
+→ For LONG projects (3+ months): 10-15 interviewing is normal.
+→ competitionPressure = driven by WHICHEVER signal is worse (proposals OR interviewing).
+→ NEVER let unanswered invites math lower the pressure if interviewing count is high.
 
 CLIENT SERIOUSNESS — as important as competition
-→ Phone verified + payment verified = highest Upwork trust tier. Strong positive — put in STRENGTHS.
-→ Detailed numbered spec, attached documents = organized, serious client = likely to hire. Put in STRENGTHS.
-→ NEW client + payment verified + phone verified = NOT a risk. Do NOT list in concerns. Do NOT mention zero hire history as a concern. They simply haven't hired yet — that's normal for a new account.
-→ NEW client + payment verified + phone verified = put "Verified new client" in STRENGTHS, not concerns.
-→ NEW client + NO verification = genuine risk, flag in concerns.
-→ Established + low hire rate = tyre-kicker, flag in concerns.
+→ Phone verified + payment verified = highest Upwork trust tier. Put in STRENGTHS.
+→ Detailed numbered spec, attached documents = organized client. Put in STRENGTHS.
+
+⚠ ABSOLUTE RULE — zero exceptions:
+Check the raw data: is payment_verified YES? Is phone_verified YES?
+If BOTH are YES:
+  → You are FORBIDDEN from writing any concern containing these words: "hire history", "prior hires", "new account", "feedback signal", "zero hires", "no track record", "new client risk".
+  → Scan your concerns before outputting. If any concern contains those words AND both verifications are YES — delete that concern entirely.
+  → Instead put "Verified, organized client" in strengths.
+If either is NO:
+  → Flag as a genuine concern.
+
+→ Established + low hire rate + vague spec = tyre-kicker. Flag in concerns.
 → Client country matters: UK/US/AU/DE = reliable payers. Mention if relevant.
 
 PORTFOLIO MATCHING — look for IMPLICIT skill connections, not just keyword matches
@@ -90,10 +103,12 @@ SCENARIO C — No explicit budget, but clientAvgRate available:
 → If client historically pays $8.96/hr avg and freelancer charges $20/hr = flag: "Client's avg hourly spend is $8.96 — your $20/hr is 2x their norm. Budget conversation will happen."
 → Only mention if the gap is > 50%
 
-GLOBAL CONTEXT
-→ Native iOS specialists: far fewer than web devs — 50 proposals doesn't mean 50 real iOS specialists
-→ StoreKit/IAP specific: very niche skill, maybe 5-10% of iOS devs have shipped it
-→ Hybrid/Capacitor bridge work: even fewer native devs have this — major differentiator if present
+GLOBAL CONTEXT — be realistic, don't flatter
+→ StoreKit/IAP: this is a standard iOS skill. Most experienced iOS developers have done it. Do NOT call it "rare". It is NOT rare.
+→ What IS rare: shipping StoreKit on an app with 1M+ downloads (proves scale and production hardening). That specific proof is the edge, not the skill itself.
+→ Capacitor/WebView bridge: reasonably common among hybrid app developers. Don't overstate.
+→ Native iOS devs: less common than web devs — but for iOS-specific jobs, the applicant pool IS iOS-focused. Don't assume proposals are mostly generalists when the job requires native iOS.
+→ Be honest about competitive edges. Overstating rarity makes the analysis untrustworthy.
 
 DEDUPLICATION — CRITICAL RULE
 → Each concern must address a COMPLETELY DIFFERENT aspect. Never mention the same signal twice.
@@ -103,6 +118,12 @@ DEDUPLICATION — CRITICAL RULE
 CLIENT SERIOUSNESS — if positive, it MUST appear in strengths
 → If client has phone + payment verified + detailed spec: this is a strength. Mention it explicitly.
 → Example: "Serious, verified UK client" as a strength — phone + payment verified + 18-point spec = they know exactly what they want and are ready to hire.
+
+VERDICT THRESHOLDS — follow these, don't override them:
+→ competitionPressure = Extreme: verdict MUST be "Skip this." or "Apply carefully." — never "Apply."
+→ competitionPressure = High: verdict MUST be "Apply carefully." UNLESS profileFit = Excellent AND freelancer has a clear rare niche advantage (e.g. direct proven experience with the exact skill required). Only then can it be "Apply."
+→ competitionPressure = Moderate or Low: verdict can be any of the three based on full picture
+→ If "already hired on this job" > 0: always "Skip this." regardless of everything else
 
 RULES
 → concerns: max 3, each a UNIQUE point. Fewer is fine if real concerns are limited.
