@@ -1225,7 +1225,24 @@
 .sn-sb-hook { font-size: 11px; color: rgba(99,102,241,.9); line-height: 1.55; margin: 10px 0 0; padding: 8px 11px; background: rgba(99,102,241,.07); border-radius: 8px; border: 1px solid rgba(99,102,241,.2); }
 .sn-sb-hook-label { display: block; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .09em; color: rgba(240,238,234,.35); margin-bottom: 6px; }
 
-.sn-sb-cache-note { font-size: 9px; color: rgba(240,238,234,.2); text-align: center; margin-top: 8px; }
+.sn-sb-footer-row { margin-top: 10px; text-align: center; }
+.sn-sb-reanalyse-btn {
+  background: none;
+  border: 1px solid rgba(255,255,255,.12);
+  color: rgba(240,238,234,.4);
+  font-size: 10px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: border-color .2s, color .2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: inherit;
+}
+.sn-sb-reanalyse-btn:hover { border-color: rgba(99,102,241,.5); color: rgba(240,238,234,.7); }
+.sn-sb-recount { font-size: 9px; opacity: .55; }
+.sn-sb-reanalyse-locked { font-size: 9px; color: rgba(240,238,234,.18); }
 
 /* Button spinner animation */
 .sn-btn-spin { animation: sn-sb-spin .7s linear infinite; }

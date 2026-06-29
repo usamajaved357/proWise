@@ -174,6 +174,21 @@ window.SnagAI.renderAnalysis = function(analysis) {
     <div class="sn-sb-apply-row">
       <a class="sn-sb-apply-btn" href="${applyUrl}" target="_blank" style="${vm.btnStyle}">${vm.btnLabel}</a>
     </div>
-    ${analysis.fromCache ? '<div class="sn-sb-cache-note">Cached · click to re-analyse</div>' : ''}
+    <div class="sn-sb-footer-row" id="sn-sb-footer"></div>
   `;
+
+  // Populate footer with re-analyse button after render
+  SnagAI.getReAnalyseStatus().then(status => {
+    const footer = document.getElementById('sn-sb-footer');
+    if (!footer) return;
+    if (status.locked) {
+      footer.innerHTML = `<span class="sn-sb-reanalyse-locked">Re-analyse limit reached (3/3)</span>`;
+    } else {
+      const remaining = status.remaining;
+      footer.innerHTML = `<button class="sn-sb-reanalyse-btn" id="sn-sb-reanalyse">↺ Re-analyse <span class="sn-sb-recount">${remaining} left</span></button>`;
+      document.getElementById('sn-sb-reanalyse')?.addEventListener('click', () => {
+        if (typeof SnagAI.reAnalyse === 'function') SnagAI.reAnalyse();
+      });
+    }
+  });
 };

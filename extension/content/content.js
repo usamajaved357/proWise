@@ -82,7 +82,6 @@
       SnagAI.renderAnalysis(analysis);
       SnagAI.openSidebar();
 
-      // Green checkmark — persists until 12-hour cache expires
       _setBtnState('done');
 
     } catch(err) {
@@ -90,6 +89,44 @@
       SnagAI.showSidebarError(err.message || 'Analysis failed. Check your profile is set up.');
       SnagAI.openSidebar();
       _setBtnState('idle');
+    }
+  };
+
+  // ── Re-analyse (manual refresh, max 3 times per job) ─────────────────────
+  SnagAI.reAnalyse = async function() {
+    const status = await SnagAI.getReAnalyseStatus();
+    if (status.locked) return;
+
+    // Swap footer to loading state immediately
+    const footer = document.getElementById('sn-sb-footer');
+    if (footer) footer.innerHTML = `<span class="sn-sb-reanalyse-locked" style="opacity:.5">Re-analysing…</span>`;
+
+    SnagAI.showSidebarLoading();
+
+    try {
+      const job = SnagAI.getJob();
+      try {
+        const storeData = await chrome.runtime.sendMessage({ type: 'GET_JOB_DATA' });
+        if (storeData && job.jobStats) {
+          Object.entries(storeData).forEach(([k, v]) => { if (v !== null && v !== undefined) job.jobStats[k] = v; });
+        }
+      } catch(e) {}
+
+      const localStored = await new Promise(r => chrome.storage.local.get(['registeredProfiles','activeProfileId','primaryProfileId'], r));
+      const regProfiles = localStored.registeredProfiles || [];
+      const primaryId   = localStored.primaryProfileId || localStored.activeProfileId;
+      const primaryMeta = (primaryId && regProfiles.find(p => p?.id === primaryId)) || regProfiles[0];
+      const localKey    = primaryMeta?.id ? 'profileFull_' + primaryMeta.id : null;
+      const localFull   = localKey ? await new Promise(r => chrome.storage.local.get([localKey], r)) : {};
+      const prof        = localFull[localKey] || primaryMeta || {};
+      const filters     = prof.jobFilters || {};
+
+      const analysis = await SnagAI.analyseJob(job, filters, true); // forceRefresh = true
+      SnagAI.renderAnalysis(analysis);
+
+    } catch(err) {
+      console.error('[SnagAI] Re-analyse error:', err.message);
+      SnagAI.showSidebarError(err.message || 'Re-analysis failed.');
     }
   };
 
