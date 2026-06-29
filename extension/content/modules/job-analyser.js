@@ -6,8 +6,8 @@ window.SnagAI = window.SnagAI || {};
 
 // Cache key prefix for analysis results
 const CACHE_PREFIX = 'sn_analysis_';
-// How long a cached analysis is considered fresh (6 hours)
-const CACHE_TTL_MS = 6 * 60 * 60 * 1000;
+// How long a cached analysis is considered fresh (12 hours)
+const CACHE_TTL_MS = 12 * 60 * 60 * 1000;
 
 // ── Public API ──────────────────────────────────────────────────────────────
 
@@ -21,7 +21,7 @@ window.SnagAI.analyseJob = async function(jobData, filters = {}) {
   const jobId    = SnagAI.state.cachedJobId;
   const cacheKey = jobId && jobId !== 'current' ? CACHE_PREFIX + jobId : null;
 
-  // TESTING: cache disabled — remove this comment to re-enable
+  // TESTING: TTL disabled — re-enable by uncommenting
   // if (cacheKey) {
   //   const stored = await new Promise(r => chrome.storage.local.get([cacheKey], r));
   //   const cached = stored[cacheKey];
@@ -56,10 +56,11 @@ window.SnagAI.analyseJob = async function(jobData, filters = {}) {
  * Check if this job has already been analysed (cache hit).
  */
 window.SnagAI.isJobAnalysed = async function() {
-  const jobId    = SnagAI.state.cachedJobId;
-  const cacheKey = jobId && jobId !== 'current' ? CACHE_PREFIX + jobId : null;
-  if (!cacheKey) return false;
-  const stored = await new Promise(r => chrome.storage.local.get([cacheKey], r));
-  const cached = stored[cacheKey];
-  return !!(cached && cached.analysis && (Date.now() - (cached.cachedAt || 0)) < CACHE_TTL_MS);
+  return false; // TESTING: always re-analyse — remove this line to restore cache
+  // const jobId    = SnagAI.state.cachedJobId;
+  // const cacheKey = jobId && jobId !== 'current' ? CACHE_PREFIX + jobId : null;
+  // if (!cacheKey) return false;
+  // const stored = await new Promise(r => chrome.storage.local.get([cacheKey], r));
+  // const cached = stored[cacheKey];
+  // return !!(cached && cached.analysis && (Date.now() - (cached.cachedAt || 0)) < CACHE_TTL_MS);
 };

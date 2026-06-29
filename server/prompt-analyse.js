@@ -26,22 +26,32 @@ Return ONLY valid JSON — no markdown, no + prefix on numbers, just raw JSON:
 WHAT TO REASON ABOUT
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
+ALREADY HIRED — CHECK THIS FIRST, BEFORE ANYTHING ELSE
+→ Look at "Already hired on this job" in the data
+→ If the number is 1 or more: the job is FILLED. Do not apply. Period.
+→ verdict MUST be "Skip this."
+→ verdictReason MUST say the job is already filled
+→ This single signal overrides EVERY other positive factor — good skills, low competition, great client, doesn't matter
+→ Exception only if numberOfPositions > 1 (multiple hires needed) — but still flag it as a strong concern
+
 COMPETITION — read ALL signals together, don't cherry-pick
 → Posted time: < 1 hr = huge edge. > 3 days = shortlisting underway
 → Proposals: 5 = open. 20-50 = hard. 50+ = very hard
-→ Unanswered invites MATTER: if 20 invites sent but 12 unanswered, only ~8 invited people actually responded. Real active competition = much lower than raw numbers suggest. Always calculate and mention this.
-→ Interviewing count: 10 interviewing is serious — but for short-scope tasks this means client is close to deciding. For large multi-month projects it's normal and stays open longer.
-→ competitionPressure = your honest read after weighing ALL signals. Don't just look at proposal count.
+→ Unanswered invites MATTER: if 20 invites sent but 12 unanswered, only ~8 responded. Real competition = much lower than raw numbers. Always calculate this.
+→ Interviewing count — read it against the job SCOPE:
+   - Short task (< 1 month, focused deliverable): 5+ interviewing = High pressure. 10+ = Extreme. Client is close to deciding.
+   - Long/complex project (3+ months): 10-15 interviewing is normal exploration. Still concerning but not fatal.
+   - For short tasks, interviewing count is the MOST important signal — weight it heavily.
+→ competitionPressure = honest read after weighting all signals. For short tasks, let interviewing count dominate.
 
-CLIENT SERIOUSNESS — this is as important as competition
-→ Phone verified + payment verified = highest Upwork trust tier. Rare. Strong positive signal — mention it.
-→ Detailed, specific spec with numbered deliverables = organized client who knows what they want = likely to follow through
-→ Attached documents (SRS, design files, wireframes) = serious client who has invested time
-→ Well-written job description with precise technical requirements = they'll recognize quality work
-→ NEW client + all of the above = very likely to hire, just no history yet. NOT a red flag.
-→ NEW client + vague spec + no verification = genuine risk
-→ Established + low hire rate + vague specs = tyre-kicker pattern
-→ Client country: UK/US/AU/DE = generally pay well and complete projects. Mention if relevant.
+CLIENT SERIOUSNESS — as important as competition
+→ Phone verified + payment verified = highest Upwork trust tier. Strong positive — put in STRENGTHS.
+→ Detailed numbered spec, attached documents = organized, serious client = likely to hire. Put in STRENGTHS.
+→ NEW client + payment verified + phone verified = NOT a risk. Do NOT list in concerns. Do NOT mention zero hire history as a concern. They simply haven't hired yet — that's normal for a new account.
+→ NEW client + payment verified + phone verified = put "Verified new client" in STRENGTHS, not concerns.
+→ NEW client + NO verification = genuine risk, flag in concerns.
+→ Established + low hire rate = tyre-kicker, flag in concerns.
+→ Client country matters: UK/US/AU/DE = reliable payers. Mention if relevant.
 
 PORTFOLIO MATCHING — look for IMPLICIT skill connections, not just keyword matches
 → "In-App Subscription" in portfolio = StoreKit experience (Apple IAP IS StoreKit)
@@ -99,8 +109,8 @@ RULES
 → strengths: max 3, each a distinct genuine edge on THIS job
 → detail text per concern/strength: EXACTLY 1-2 short sentences. Target 15-25 words total. If you need more than 25 words to explain it, you're padding — cut it.
 → Good competition signals go in STRENGTHS, not concerns
-→ NEVER say "payment unverified" if the raw data shows payment_verified = YES/true. Double-check before writing.
-→ Never list new client as concern if payment + phone verified
+→ NEVER say "payment unverified" or "no hire history" as a concern if payment + phone are verified. This is a hard rule — no exceptions.
+→ NEW client + payment verified + phone verified = goes in STRENGTHS. Never in concerns.
 → hookSuggestion: max 2 SHORT sentences, 30-40 words total. Confident expert. Name their actual portfolio project. No hedging.
 → verdictReason: ONE sentence only
 → competitionPressure: honest read after all signals
@@ -145,7 +155,7 @@ function buildAnalyseMessage({ job, profile, filters }) {
     'Already interviewing: '+ (s.interviewingCount ?? 'unknown'),
     'Invites sent by client:'+ (s.invitesSent     ?? 0),
     'Unanswered invites: '  + (s.unansweredInvites ?? 0),
-    'Already hired: '       + (s.hiredCount        ?? 0),
+    'Already hired on this job: ' + (s.hiredCount ?? 0) + (s.hiredCount > 0 ? ' ← JOB IS FILLED — verdict must be Skip this.' : ' (nobody hired yet)'),
     '',
     '━━ CLIENT SIGNALS ━━',
     'Account type: '        + (isNewClient ? `NEW CLIENT — member since ${s.clientMemberSince || 'recently'}, only ${totalJobs} job(s) posted` : `Established — ${totalJobs} jobs posted`),

@@ -5,6 +5,31 @@
 (function () {
   'use strict';
 
+  // ── Button state helpers ──────────────────────────────────────────────────
+  const _SVG_BEAT  = `<svg width="22" height="15" viewBox="0 0 20 14" fill="none"><polyline points="0,7 3,7 5,1 7,13 9,4 11,10 13,7 20,7" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+  const _SVG_SPIN  = `<svg class="sn-btn-spin" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>`;
+  const _SVG_CHECK = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+
+  function _setBtnState(state) {
+    const btn = document.getElementById('sn-btn');
+    if (!btn) return;
+    if (state === 'loading') {
+      btn.innerHTML = _SVG_SPIN; btn.disabled = true;
+      btn.style.background = ''; btn.classList.remove('sn-btn-done');
+    } else if (state === 'done') {
+      btn.innerHTML = _SVG_CHECK; btn.disabled = false;
+      btn.style.background = '#059669'; btn.classList.add('sn-btn-done');
+    } else {
+      btn.innerHTML = _SVG_BEAT; btn.disabled = false;
+      btn.style.background = ''; btn.classList.remove('sn-btn-done');
+    }
+  }
+
+  // Restore green button if job was already analysed (on page load)
+  function _restoreBtnIfAnalysed() {
+    SnagAI.isJobAnalysed().then(done => { if (done) _setBtnState('done'); });
+  }
+
   // ── Sidebar toggle — main action on job page ──────────────────────────────
   SnagAI.toggle = async function() {
     const sidebar = document.getElementById('sn-sidebar');
@@ -16,42 +41,32 @@
       return;
     }
 
-    const btn = document.getElementById('sn-btn');
-
-    // TESTING: cache disabled — uncomment to re-enable
-    // const alreadyDone = await SnagAI.isJobAnalysed();
-    // if (alreadyDone) {
-    //   SnagAI.openSidebar();
-    //   const cacheKey = 'sn_analysis_' + SnagAI.state.cachedJobId;
-    //   chrome.storage.local.get([cacheKey], r => {
-    //     const cached = r[cacheKey];
-    //     if (cached?.analysis) SnagAI.renderAnalysis({ ...cached.analysis, fromCache: true });
-    //   });
-    //   return;
-    // }
-
-    // First time — run analysis
-    // Show loading: spinner on button + open sidebar with loading state
-    if (btn) {
-      btn.innerHTML = `<svg class="sn-btn-spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>`;
-      btn.disabled = true;
+    // Already analysed — open instantly with cached data, no API call
+    const alreadyDone = await SnagAI.isJobAnalysed();
+    if (alreadyDone) {
+      const cacheKey = 'sn_analysis_' + SnagAI.state.cachedJobId;
+      chrome.storage.local.get([cacheKey], r => {
+        const cached = r[cacheKey];
+        if (cached?.analysis) SnagAI.renderAnalysis({ ...cached.analysis, fromCache: true });
+        SnagAI.openSidebar();
+      });
+      _setBtnState('done');
+      return;
     }
 
-    SnagAI.openSidebar();
-    SnagAI.showSidebarLoading();
+    // Fresh analysis — spinner on button, sidebar stays CLOSED until ready
+    _setBtnState('loading');
 
     try {
-      // Read enriched job data
-      await new Promise(r => setTimeout(r, 600)); // let page settle
+      await new Promise(r => setTimeout(r, 600));
       const job = SnagAI.getJob();
       try {
         const storeData = await chrome.runtime.sendMessage({ type: 'GET_JOB_DATA' });
         if (storeData && job.jobStats) {
           Object.entries(storeData).forEach(([k, v]) => { if (v !== null && v !== undefined) job.jobStats[k] = v; });
         }
-      } catch(e) { /* fall back to DOM stats */ }
+      } catch(e) {}
 
-      // Read profile filters
       const localStored = await new Promise(r => chrome.storage.local.get(['registeredProfiles','activeProfileId','primaryProfileId'], r));
       const regProfiles = localStored.registeredProfiles || [];
       const primaryId   = localStored.primaryProfileId || localStored.activeProfileId;
@@ -62,26 +77,19 @@
       const filters     = prof.jobFilters || {};
 
       const analysis = await SnagAI.analyseJob(job, filters);
-      SnagAI.renderAnalysis(analysis);
 
-      // Button: show done state (green check), then restore
-      if (btn) {
-        btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>`;
-        btn.style.background = '#059669';
-        setTimeout(() => {
-          btn.innerHTML = `<svg width="22" height="15" viewBox="0 0 20 14" fill="none"><polyline points="0,7 3,7 5,1 7,13 9,4 11,10 13,7 20,7" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-          btn.style.background = '';
-          btn.disabled = false;
-        }, 2000);
-      }
+      // Render then open sidebar — user sees result immediately, no loading state
+      SnagAI.renderAnalysis(analysis);
+      SnagAI.openSidebar();
+
+      // Green checkmark — persists until 12-hour cache expires
+      _setBtnState('done');
 
     } catch(err) {
       console.error('[SnagAI] Analysis error:', err.message);
       SnagAI.showSidebarError(err.message || 'Analysis failed. Check your profile is set up.');
-      if (btn) {
-        btn.innerHTML = `<svg width="22" height="15" viewBox="0 0 20 14" fill="none"><polyline points="0,7 3,7 5,1 7,13 9,4 11,10 13,7 20,7" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-        btn.disabled = false;
-      }
+      SnagAI.openSidebar();
+      _setBtnState('idle');
     }
   };
 
@@ -95,7 +103,7 @@
   }
 
   // ── Silently cache job data on page load (for proposal submission page) ────
-  async function cacheJobData() {
+  async function cacheJobData() { // returns promise — callers can .then()
     try {
       await new Promise(r => setTimeout(r, 1200));
       const job = SnagAI.getJob();
@@ -275,7 +283,7 @@
       if (cur.includes('/jobs/') || cur.includes('/ab/proposals/')) {
         SnagAI.injectUI();
         SnagAI.injectSidebar();
-        setTimeout(cacheJobData, 500);
+        setTimeout(() => cacheJobData().then(() => _restoreBtnIfAnalysed()), 500);
       }
     }
   }).observe(document.body, { childList: true, subtree: true });
@@ -283,6 +291,6 @@
   setTimeout(() => {
     SnagAI.injectUI();
     SnagAI.injectSidebar();
-    cacheJobData();
+    cacheJobData().then(() => _restoreBtnIfAnalysed());
   }, 1500);
 })();

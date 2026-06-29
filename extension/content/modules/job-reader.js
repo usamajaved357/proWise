@@ -156,7 +156,7 @@ window.SnagAI.getJob = function() {
   if (invM) invitesSent = parseInt(invM[1]);
   const unM = pageText2.match(/Unanswered invites[:\s]+(\d+)/i);
   if (unM) unansweredInvites = parseInt(unM[1]);
-  const hirM = pageText2.match(/Hired[:\s]+(\d+)/i);
+  const hirM = pageText2.match(/Hires?[:\s]+(\d+)/i) || pageText2.match(/(\d+)\s+hires?\b/i);
   if (hirM) hiredCount = parseInt(hirM[1]);
 
   let timePosted = null, timePostedMinutes = null;
