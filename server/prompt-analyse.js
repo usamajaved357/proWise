@@ -13,7 +13,7 @@ Return ONLY valid JSON — no markdown, no + prefix on numbers, no em/en dashes:
   "profileFit": "Poor" | "Moderate" | "Good" | "Strong" | "Excellent",
   "concerns": [{ "title": "<4-6 words>", "detail": "<max 2 sentences, 15-25 words>" }],
   "strengths": [{ "title": "<4-6 words>", "detail": "<max 2 sentences, 15-25 words>" }],
-  "hookSuggestion": "<max 2 sentences, 30-40 words total>"
+  "hookSuggestion": "Hook [N] — <the complete opening line, under 160 chars, ready to paste>"
 }
 
 ══════════════════════════════════════════════
@@ -47,10 +47,10 @@ BEFORE any budget math: check if job description contains "first milestone", "fi
 STEP 3 — COMPETITION (two independent signals)
 ══════════════════════════════════════════════
 
-Signal A — Proposals (use the STATED proposal count, not your estimate):
-< 5 = Low | 5-20 = Moderate | 20-50 = High | 50+ = Extreme
+Signal A — Proposals (use the displayed RANGE provided, never invent an exact number):
+Less than 5 = Low | 5-20 = Moderate | 20-50 = High | 50+ = Extreme
+IMPORTANT: Always refer to proposals using the range shown (e.g. "20-50 proposals") — NEVER state an exact number like "39 proposals". Upwork only shows ranges to freelancers; exact counts are not disclosed.
 Unanswered invites reduce effective pool — mention in verdictReason if relevant, but do NOT change the proposal signal level based on this.
-40 proposals = High. Always. Not Moderate. Do not downgrade based on 0 interviewing.
 
 Signal B — Interviewing count (independent — never reduce this number):
 Short task < 1 month:
@@ -78,6 +78,10 @@ CLIENT CONCERN GENERATION RULE — you may only write a concern about client rel
   payment_verified = NO, OR phone_verified = NO.
 If BOTH payment AND phone are verified: you are NOT ALLOWED to write any concern about the client being new, lacking hire history, being unproven, or having no track record. These concerns are forbidden when both verifications are present.
 
+If payment IS verified but phone is NOT — check if the client is established (high total spend, many hires, good rating):
+  → Established client (> $10K spent, many hires, good rating): phone verification is irrelevant. Do NOT flag it as a concern. Their track record is the proof.
+  → New client with low spend: mention phone unverified cautiously only on fixed-price jobs.
+
 If both verified: instead write a STRENGTH — "Verified, organized client" — payment + phone verified, clear spec.
 
 Premium client signal (put in STRENGTHS — HIGH PRIORITY):
@@ -89,7 +93,10 @@ Established client warning:
 If clientHireRate < 30% AND totalJobsPosted > 5: chronic non-hirer. Flag in concerns.
 
 Avg spend per hire = totalSpent / totalHires:
-< $200 = underpays | $200-2000 = normal | > $2000 = fair payer. Use this to assess budget expectations.
+< $200/hire = underpays systematically — this MUST appear as a concern. Do NOT put this client in strengths.
+$200-2000 = normal
+> $2000 = fair payer — mention in strengths.
+A client with 5.0 rating AND $37/hire is still an underpayer — rating does not cancel out the spend signal.
 
 Fresh opportunity signal (put in STRENGTHS when true):
 If interviewing = 0 AND invitesSent = 0 AND postedMinutes < 2880 (48 hrs):
@@ -109,10 +116,11 @@ Hourly with stated range:
 → If freelancer_rate > 1.5x the TOP of the stated range, flag with math.
 
 No budget but clientAvgRate available:
-→ If gap > 50% between clientAvgRate and freelancer_rate, flag it.
-→ If client pays MORE than freelancer's rate (e.g. client avg $74/hr, freelancer charges $20): flag that freelancer may be underpricing themselves.
+→ Rate gap > 50% = its OWN dedicated concern. Never combine with another concern.
+→ "$7.82/hr client avg vs your $20/hr = 2.56x mismatch" gets its own concern slot.
+→ If client pays MORE than freelancer's rate: flag underpricing. Own concern.
 
-No budget, no rate data: note that budget discussion is needed. Don't fabricate.
+No budget, no rate data: note budget discussion needed. Don't fabricate.
 
 ══════════════════════════════════════════════
 STEP 6 — PROFILE AND PORTFOLIO FIT
@@ -130,6 +138,13 @@ What IS noteworthy: proof of shipping at production scale with real users and re
 JSS + Tier = algorithm visibility. High earnings = platform trust. Both belong in STRENGTHS.
 
 Title mismatch: if freelancer's profile title emphasizes the wrong discipline for this job, flag in concerns.
+
+FRAMEWORK HONESTY RULE — applies to both concerns AND hookSuggestion:
+→ Only claim a framework in the hook if it EXPLICITLY appears in the portfolio or skills list.
+→ Flutter and React Native are DIFFERENT frameworks. Do not claim one if the portfolio only shows the other.
+→ If job requires React Native but portfolio only shows Flutter: flag it as a concern AND do not claim "React Native experience" in the hook.
+→ Hook must reflect actual portfolio — if portfolio shows Flutter + Node.js for a React Native job, say "cross-platform mobile with Flutter + Node.js" not "React Native."
+→ Same rule applies to: Swift vs Kotlin, SwiftUI vs UIKit, Vue vs React, etc.
 
 ══════════════════════════════════════════════
 STEP 7 — VERDICT THRESHOLDS
@@ -149,13 +164,51 @@ STEP 8 — OUTPUT RULES
 concerns: max 3. Each must address a COMPLETELY different aspect. No overlap.
 strengths: max 3. Each a distinct, separate genuine edge.
 
-hookSuggestion:
-→ When verdict = "Apply." or "Apply carefully.": confident pitch FROM FREELANCER'S PERSPECTIVE. Names their portfolio project. References client's specific need. Ready to paste as-is.
-→ When verdict = "Skip this." for a FILLED JOB: write "Not applicable — job is already filled."
-→ When verdict = "Skip this." for DISCIPLINE MISMATCH: write a brief honest redirect FROM FREELANCER'S PERSPECTIVE — e.g. "I noticed this role focuses on [marketing/growth], not development. I can help if the scope shifts to [relevant technical work], but happy to step aside if you need a [correct specialist]."
-→ NEVER write the hook as advice to the client ("Consider reposting..."). It is always the freelancer's words.
+hookSuggestion — CHOOSE ONE OF THESE 7 HOOKS, WRITE THE ACTUAL OPENING LINE:
 
-No em/en dashes. No placeholders. No hedging in hook. Scores in text use % format (82%, not 82).`;
+HOOK 1 — PROOF: "I [shipped/built] [specific result]. I'd do the same for you."
+  Best when: competitive niche, client needs trust fast, wants results not promises.
+
+HOOK 2 — RELATABILITY: "I've [done exactly this]. Here's how I'd approach [their project]:"
+  Best when: niche stack, long-term role, they want someone who deeply gets it.
+
+HOOK 3 — GUARANTEE: "I can [deliverable] in [timeframe] — [one proof point backing it up]."
+  Best when: fixed budget/deadline, client burned before, timeline is their main fear.
+
+HOOK 4 — EXTRA VALUE: "I'll not only [their main need], I'll also [adjacent thing they'll definitely need]."
+  Best when: clear main need + obvious gap they haven't thought of.
+
+HOOK 5 — CALL: "Let's jump on a 15-min call today — I'll walk you through my exact approach."
+  Best when: vague scope, high complexity, 50+ proposals — a call beats any pitch.
+
+HOOK 6 — NUMBERS: "[Key stat 1], [key stat 2] — both directly relevant to what you need."
+  Best when: client is analytical, listed specific metrics, freelancer has dominant stats.
+
+HOOK 7 — CLIENT FIRST: "My understanding: you need [restate their problem MORE precisely than they wrote it]."
+  Best when: long detailed post, complex vision, client wants to feel truly understood.
+
+SELECTION RULE:
+→ IF freelancer has direct production proof matching this job: use Hook 1 (PROOF). Always. Hook 7 is NOT better than direct proof.
+→ IF no direct proof but strong adjacent experience: Hook 2 (RELATABILITY).
+→ IF job is vague or 50+ proposals: Hook 5 (CALL).
+→ IF fixed budget/deadline is the client's main concern: Hook 3 (GUARANTEE).
+→ Hook 7 is only for long, complex posts where rephrasing shows deep understanding — NOT for straightforward dev jobs.
+→ NEVER pick the same hook type just because it sounds smart. Match client's actual primary fear.
+
+WRITING RULES:
+→ Write the COMPLETE opening line — ready to paste, no blanks, no placeholders.
+→ STRICTLY under 160 characters. Count: "I shipped FamilyTime (1M+ downloads) with StoreKit — same iOS subscription architecture you need." = 94 chars. That is the TARGET length.
+→ Name ONE specific portfolio project and ONE result. Not a list of three things.
+→ CRITICAL: Pick the MOST RELEVANT portfolio project for THIS job — not always the biggest one. FamilyTime has 1M+ downloads but if the job is about food delivery, FansMunch is more relevant. If the job is about e-commerce, Canzy is more relevant. Match domain first, scale second.
+→ NEVER transfer stats between projects. FamilyTime has 1M+ downloads — FansMunch does not. Canzy is e-commerce — FamilyTime is not. Only use a stat if it belongs to that specific project.
+→ NEVER say "ready to learn", "willing to learn", "excited to try".
+→ If skill gap: "No shipped X yet — [transferable strength] transfers directly."
+→ Output format: "Hook [N] — [the actual opening line under 160 chars]"
+
+When verdict = "Skip this." (filled): write "Not applicable — job is already filled."
+When verdict = "Skip this." (mismatch): one honest sentence from freelancer's perspective.
+NEVER write as advice to the client. Always the freelancer's words.`;
+
 
 
 function buildAnalyseMessage({ job, profile, filters }) {
@@ -176,6 +229,16 @@ function buildAnalyseMessage({ job, profile, filters }) {
   const totalJobs      = s.clientTotalJobs || 0;
   const isNewClient    = totalJobs <= 2;
 
+  // Convert exact proposal count to Upwork's displayed range — never expose exact hidden data
+  function proposalRange(n) {
+    if (n == null) return 'unknown';
+    if (n < 5)  return 'Less than 5';
+    if (n < 10) return '5-10';
+    if (n < 20) return '10-20';
+    if (n < 50) return '20-50';
+    return '50+';
+  }
+
   const lines = [
     '━━ JOB ━━',
     'Title: '              + (job.title       || 'not provided'),
@@ -190,7 +253,7 @@ function buildAnalyseMessage({ job, profile, filters }) {
     '',
     '━━ COMPETITION ━━',
     'Posted: '                  + (s.timePosted || 'unknown') + (s.timePostedMinutes != null ? ` (${s.timePostedMinutes} min ago)` : ''),
-    'Proposals received: '      + (s.proposalCount    ?? 'unknown'),
+    'Proposals received: '      + proposalRange(s.proposalCount) + ' (Upwork displayed range)',
     'Already interviewing: '    + (s.interviewingCount ?? 'unknown'),
     'Invites sent: '            + (s.invitesSent      ?? 0),
     'Unanswered invites: '      + (s.unansweredInvites ?? 0),

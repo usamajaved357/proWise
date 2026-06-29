@@ -159,9 +159,14 @@ window.SnagAI.renderAnalysis = function(analysis) {
     ` : ''}
 
     <!-- Hook -->
-    ${analysis.hookSuggestion ? `
+    ${analysis.hookSuggestion && !analysis.hookSuggestion.toLowerCase().includes('not applicable') ? `
       <div class="sn-sb-hook">
-        <span class="sn-sb-hook-label">${analysis.verdict === 'Skip this.' ? 'If you apply anyway, open with' : 'Open your cover letter with'}</span>
+        <span class="sn-sb-hook-label">Open your first 160 chars with</span>
+        ${esc(analysis.hookSuggestion.replace(/^Hook\s*\d+\s*[—\-]\s*/i, ''))}
+      </div>
+    ` : analysis.hookSuggestion ? `
+      <div class="sn-sb-hook" style="opacity:.6">
+        <span class="sn-sb-hook-label">Note</span>
         ${esc(analysis.hookSuggestion)}
       </div>
     ` : ''}

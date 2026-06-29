@@ -78,6 +78,27 @@ router.post('/', async (req, res) => {
       }
     }
 
+    // ── RULE 4 ENFORCEMENT — unverified payment on fixed-price (server-side) ──
+    const isFixedPrice    = req.body.job?.jobStats?.jobType === 'fixed'
+                         || /fixed/i.test(req.body.job?.budget || '');
+    const paymentOk       = req.body.job?.jobStats?.paymentVerified;
+    if (isFixedPrice && !paymentOk && analysis.verdict === 'Apply.') {
+      console.log('[ANALYSE] Rule 4: unverified payment on fixed-price → forced to Apply carefully.');
+      analysis.verdict = 'Apply carefully.';
+      // Add concern if not already present
+      const hasPaymentConcern = analysis.concerns.some(c =>
+        (c.title + c.detail).toLowerCase().includes('payment') ||
+        (c.title + c.detail).toLowerCase().includes('verif')
+      );
+      if (!hasPaymentConcern) {
+        analysis.concerns.unshift({
+          title: 'Payment unverified — financial risk',
+          detail: 'Client has not verified payment on a fixed-price contract. Higher risk of non-payment or disputes.'
+        });
+        analysis.concerns = analysis.concerns.slice(0, 3);
+      }
+    }
+
     // ── RULE 10 ENFORCEMENT (server-side — deterministic, Claude-proof) ──────
     // If both payment + phone are verified, remove any concern about new client track record
     const paymentVerified = req.body.job?.jobStats?.paymentVerified;
@@ -96,6 +117,33 @@ router.post('/', async (req, res) => {
         if (banned) removedConcerns.push(c.title);
         return !banned;
       });
+      // Rule 14: if avg spend per hire < $200, remove any strength that praises client spending
+      const _totalSpent = req.body.job?.jobStats?.clientSpentNum || 0;
+      const _totalHires = req.body.job?.jobStats?.clientTotalHires || req.body.job?.jobStats?.hiredCount || 0;
+      const avgPerHireCheck = _totalHires > 0 ? Math.round(_totalSpent / _totalHires) : null;
+      if (avgPerHireCheck !== null && avgPerHireCheck < 200) {
+        analysis.strengths = analysis.strengths.filter(s => {
+          const t = ((s.title || '') + ' ' + (s.detail || '')).toLowerCase();
+          const praisesSpend = (t.includes('pay') || t.includes('spend') || t.includes('invest') || t.includes('budget'))
+                            && (t.includes('fair') || t.includes('well') || t.includes('good') || t.includes('reliable') || t.includes('quality'));
+          if (praisesSpend) console.log('[ANALYSE] Rule 14: removed spend-praise strength for low avg/hire client ($' + avgPerHireCheck + '/hire)');
+          return !praisesSpend;
+        });
+      }
+
+      // Rule 11: remove phone verification concern on established clients
+      const totalSpentNum2 = req.body.job?.jobStats?.clientSpentNum
+        || parseFloat(String(req.body.job?.jobStats?.clientTotalSpent || '0').replace(/[^0-9.KkMm]/g, '').replace(/[Kk]$/, '000').replace(/[Mm]$/, '000000')) || 0;
+      const totalHires2    = req.body.job?.jobStats?.clientTotalHires || req.body.job?.jobStats?.hiredCount || 0;
+      if (totalSpentNum2 > 10000 && totalHires2 > 5) {
+        analysis.concerns = analysis.concerns.filter(c => {
+          const t = ((c.title || '') + ' ' + (c.detail || '')).toLowerCase();
+          const isPhone = t.includes('phone') && (t.includes('verif') || t.includes('missing') || t.includes('unverif'));
+          if (isPhone) console.log('[ANALYSE] Rule 11: removed phone concern for established client');
+          return !isPhone;
+        });
+      }
+
       if (removedConcerns.length > 0) {
         console.log('[ANALYSE] Rule 10: removed banned concerns:', removedConcerns);
         // Add verified client to strengths if not already there
@@ -129,7 +177,11 @@ router.post('/', async (req, res) => {
 
     // ── COMPETITION LEVEL ENFORCEMENT (server-side — Claude-proof) ───────────
     const jobStats      = req.body.job?.jobStats || {};
-    const proposals     = jobStats.proposalCount ?? 0;
+    // Parse proposalCount — Upwork sometimes returns "50+" as string
+    const rawProposals  = jobStats.proposalCount;
+    const proposals     = typeof rawProposals === 'string'
+      ? (rawProposals.includes('+') ? parseInt(rawProposals) + 1 : parseInt(rawProposals) || 0)
+      : (rawProposals ?? 0);
     const interviewing  = jobStats.interviewingCount ?? 0;
     const isShortTask   = !/3\+\s*month|long.term|ongoing/i.test(req.body.job?.description || '');
 
@@ -163,6 +215,26 @@ router.post('/', async (req, res) => {
     // Cap arrays
     analysis.concerns  = analysis.concerns.slice(0, 3);
     analysis.strengths = analysis.strengths.slice(0, 3);
+
+    // ── HOOK LENGTH ENFORCEMENT — hard cap at 160 chars ──────────────────────
+    if (analysis.hookSuggestion) {
+      // Strip the "Hook N — " prefix
+      let hook = analysis.hookSuggestion.replace(/^Hook\s*\d+\s*[—\-]\s*/i, '').trim();
+      if (hook.length > 160) {
+        // Cut at the last sentence boundary within 160 chars
+        const within = hook.slice(0, 160);
+        const lastStop = Math.max(within.lastIndexOf('.'), within.lastIndexOf('!'), within.lastIndexOf('?'));
+        if (lastStop > 80) {
+          hook = hook.slice(0, lastStop + 1);
+        } else {
+          // Fall back to last word boundary
+          const lastSpace = within.lastIndexOf(' ');
+          hook = hook.slice(0, lastSpace > 80 ? lastSpace : 157);
+        }
+        console.log('[ANALYSE] Hook trimmed to:', hook.length, 'chars');
+      }
+      analysis.hookSuggestion = hook;
+    }
 
     console.log(`[ANALYSE] Result: ${analysis.verdict} | competition=${analysis.competitionPressure} fit=${analysis.profileFit} | concerns:${analysis.concerns.length} strengths:${analysis.strengths.length}`);
 

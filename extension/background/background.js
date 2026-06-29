@@ -105,7 +105,9 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
           return {
             // Activity
-            proposalCount:       activity.totalApplicants          ?? null,
+            // NOTE: proposalCount intentionally omitted — Upwork shows ranges to freelancers,
+            // reading the exact count from the store would expose hidden data (ToS risk).
+            // We use the DOM-parsed range value from job-reader.js instead.
             hiredCount:          activity.totalHired               ?? 0,
             interviewingCount:   activity.totalInvitedToInterview  ?? null,
             invitesSent:         activity.invitationsSent          ?? null,
