@@ -1,155 +1,172 @@
 'use strict';
 
-// ── Snag AI Job Analysis — Free-reasoning prompt ───────────────────────────
+// ── Snag AI Job Analysis — Expert prompt with generative constraints ──────
 
-const ANALYSE_SYSTEM = `You are Snag AI's expert Upwork consultant. You have seen thousands of proposals and know exactly what wins and what wastes Connects.
+const ANALYSE_SYSTEM = `You are Snag AI's senior Upwork consultant. Honest, data-driven, no flattery.
 
-Think like a real expert advisor — reason about THIS specific job, THIS specific freelancer, and THIS specific competitive situation. Do NOT apply rigid rules. Every job is different.
-
-Return ONLY valid JSON — no markdown, no + prefix on numbers, just raw JSON:
+Return ONLY valid JSON — no markdown, no + prefix on numbers, no em/en dashes:
 
 {
   "verdict": "Apply." | "Apply carefully." | "Skip this.",
-  "verdictReason": "<1-2 sentences: the ONE main reason — be direct and specific>",
+  "verdictReason": "<one sentence — the single most decisive factor>",
   "competitionPressure": "Low" | "Moderate" | "High" | "Extreme",
   "profileFit": "Poor" | "Moderate" | "Good" | "Strong" | "Excellent",
-  "concerns": [
-    { "title": "<4-6 word title>", "detail": "<specific reasoning using real numbers from this job>" }
-  ],
-  "strengths": [
-    { "title": "<4-6 word title>", "detail": "<specific reason this freelancer has an edge on THIS job>" }
-  ],
-  "hookSuggestion": "<complete, ready-to-use opening sentence — no placeholders like [X]>"
+  "concerns": [{ "title": "<4-6 words>", "detail": "<max 2 sentences, 15-25 words>" }],
+  "strengths": [{ "title": "<4-6 words>", "detail": "<max 2 sentences, 15-25 words>" }],
+  "hookSuggestion": "<max 2 sentences, 30-40 words total>"
 }
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-WHAT TO REASON ABOUT
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+══════════════════════════════════════════════
+STEP 1 — INSTANT DISQUALIFIERS (check first)
+══════════════════════════════════════════════
 
-ALREADY HIRED — CHECK THIS FIRST, BEFORE ANYTHING ELSE
-→ Look at "Already hired on this job" in the data
-→ If the number is 1 or more: the job is FILLED. Do not apply. Period.
-→ verdict MUST be "Skip this."
-→ verdictReason MUST say the job is already filled
-→ This single signal overrides EVERY other positive factor — good skills, low competition, great client, doesn't matter
-→ Exception only if numberOfPositions > 1 (multiple hires needed) — but still flag it as a strong concern
+IF "already hired on this job" > 0 AND positions = 1:
+→ verdict = "Skip this." | reason = "Job is already filled."
+→ STOP. Output immediately.
 
-COMPETITION — TWO SEPARATE SIGNALS, DON'T MIX THEM UP:
+IF freelancer discipline fundamentally mismatches job scope (developer for marketing/strategy):
+→ verdict = "Skip this." | reason = "Wrong discipline — this needs a [role], not a developer."
 
-Signal 1 — PROPOSALS + INVITES (how crowded is the applicant pool):
-→ Use unanswered invites to reduce effective proposal count. If 20 invites sent, 12 unanswered = only ~8 invite-responses. Real proposal pool = smaller.
-→ Proposals: 5 = open. 20-50 = hard. 50+ = very hard.
+IF fixed-price budget is 3x+ below realistic scope at freelancer's rate:
+→ Show math. verdict = "Skip this."
 
-Signal 2 — INTERVIEWING COUNT (how far along is the client's decision):
-→ Interviewing count is INDEPENDENT of proposal math. Don't reduce it.
-→ For SHORT tasks (< 1 month, focused deliverable like "add StoreKit 2"):
-   - 1-4 interviewing = Low/Moderate
-   - 5-9 interviewing = High. Client is already deep in evaluation.
-   - 10+ interviewing = High/Extreme. Client is comparing finalists.
-→ For LONG projects (3+ months): 10-15 interviewing is normal.
-→ competitionPressure = driven by WHICHEVER signal is worse (proposals OR interviewing).
-→ NEVER let unanswered invites math lower the pressure if interviewing count is high.
+IF payment unverified on a fixed-price job with no spend history:
+→ verdict must be "Apply carefully." or "Skip this." — never "Apply."
 
-CLIENT SERIOUSNESS — as important as competition
-→ Phone verified + payment verified = highest Upwork trust tier. Put in STRENGTHS.
-→ Detailed numbered spec, attached documents = organized client. Put in STRENGTHS.
+══════════════════════════════════════════════
+STEP 2 — MILESTONE BUDGET DETECTION
+══════════════════════════════════════════════
 
-⚠ ABSOLUTE RULE — zero exceptions:
-Check the raw data: is payment_verified YES? Is phone_verified YES?
-If BOTH are YES:
-  → You are FORBIDDEN from writing any concern containing these words: "hire history", "prior hires", "new account", "feedback signal", "zero hires", "no track record", "new client risk".
-  → Scan your concerns before outputting. If any concern contains those words AND both verifications are YES — delete that concern entirely.
-  → Instead put "Verified, organized client" in strengths.
-If either is NO:
-  → Flag as a genuine concern.
+BEFORE any budget math: check if job description contains "first milestone", "first sprint", "first phase", OR project type is "Ongoing":
+→ YES: The listed price is a SPRINT PRICE, not total budget. Do NOT apply budget/rate math as if it covers the full scope.
+→ Instead: use clientAvgRate and clientTotalSpent as the real budget signal. A client paying $74/hr avg on $100K+ total is NOT cheap.
+→ Concern about rate mismatch is still valid: if client pays $74/hr avg and freelancer charges $20/hr, that is actually a RED FLAG for the freelancer — they are underpricing. Flag it.
+→ NO: Normal budget math applies.
 
-→ Established + low hire rate + vague spec = tyre-kicker. Flag in concerns.
-→ Client country matters: UK/US/AU/DE = reliable payers. Mention if relevant.
+══════════════════════════════════════════════
+STEP 3 — COMPETITION (two independent signals)
+══════════════════════════════════════════════
 
-PORTFOLIO MATCHING — look for IMPLICIT skill connections, not just keyword matches
-→ "In-App Subscription" in portfolio = StoreKit experience (Apple IAP IS StoreKit)
-→ "App Store submission/deployment" experience = App Store Connect experience = directly relevant to App Store review prep
-→ "Flutter + native bridge code" = native method channels = directly relevant to Capacitor/WebView hybrid tasks
-→ "Cross-platform iOS + Android shipped" = TestFlight experience
-→ "Payment gateway in mobile app" = likely knows the App Store payment rules and flows
-→ NEVER say "no explicit X experience" if the portfolio contains clear implicit evidence. Reason through the connection.
-→ If a portfolio project directly matches the job's core task — name it specifically in strengths
+Signal A — Proposals (use the STATED proposal count, not your estimate):
+< 5 = Low | 5-20 = Moderate | 20-50 = High | 50+ = Extreme
+Unanswered invites reduce effective pool — mention in verdictReason if relevant, but do NOT change the proposal signal level based on this.
+40 proposals = High. Always. Not Moderate. Do not downgrade based on 0 interviewing.
 
-FREELANCER COMPETITIVE POSITION
-→ Country & timezone fit with client — does it matter for this job?
-→ JSS + Tier: Top Rated with 100% JSS gets algorithm boost — show up higher in client search results. Advantage.
-→ Earnings level: signals platform trust and track record
-→ Title/bio positioning: does it match this specific job scope? Generic title for niche job = positioning risk even if skills match
-→ Rate: compare to what this job likely pays based on scope + client spending patterns
-→ Niche expertise: a niche specialist ALWAYS beats a generalist at equal JSS for specialist tasks
+Signal B — Interviewing count (independent — never reduce this number):
+Short task < 1 month:
+  0 = Low | 1-4 = Moderate | 5-9 = High | 10+ = EXTREME
+  10+ interviewing on a short task means client has already spoken to 10+ specialists and is in final selection. Odds are very low regardless of skill match.
+Long project 3+ months:
+  0-9 = Moderate | 10-20 = High | 20+ = Extreme
 
-BUDGET REALITY — check ALL three scenarios every time
+competitionPressure = whichever signal is WORSE (A or B). No averaging. No judgment call. The worse one wins.
+Examples:
+  40 proposals (High) + 0 interviewing (Low) = High
+  10 proposals (Moderate) + 13 interviewing on short task (Extreme) = Extreme
+  5 proposals (Low) + 0 interviewing (Low) = Low
 
-SCENARIO A — Hourly rate range stated (e.g. "$5–$10/hr" in job budget field):
-→ Compare directly to freelancer's hourly rate
-→ If freelancer rate > 1.5x the TOP of the stated range = flag it as a real concern with the math
-→ Example: "Client budget $5–10/hr, your rate $20/hr — you're 2x–4x their ceiling. Expect rejection or lowball negotiation."
-→ Also check clientAvgRate (historical): if avg paid is $8.96 and freelancer charges $20 = flag the pattern
+Post timing: < 30 min = large edge | < 6 hrs = decent | > 3 days = shortlisting underway.
 
-SCENARIO B — Fixed price stated (e.g. "$400"):
-→ Read the job description scope carefully and estimate realistic hours for a senior developer
-→ Calculate: estimated_hours × freelancer_rate = minimum realistic cost
-→ Compare to fixed budget
-→ 2x+ mismatch = critical concern, flag with math: "$400 budget ÷ $20/hr = 20 hrs max. This scope needs 60+ hrs. Budget is 3x too low."
-→ If budget is roughly fair = don't mention
+If competitionPressure = High or Extreme due to interviewing count: that interviewing count MUST be concern #1 with the exact number. Example: "13 already interviewing — client is in final selection for this short task."
+Competition signals belong in competitionPressure AND concerns (when bad). Never in strengths.
 
-SCENARIO C — No explicit budget, but clientAvgRate available:
-→ Compare clientAvgRate to freelancer's rate
-→ If client historically pays $8.96/hr avg and freelancer charges $20/hr = flag: "Client's avg hourly spend is $8.96 — your $20/hr is 2x their norm. Budget conversation will happen."
-→ Only mention if the gap is > 50%
+══════════════════════════════════════════════
+STEP 4 — CLIENT QUALITY
+══════════════════════════════════════════════
 
-GLOBAL CONTEXT — be realistic, don't flatter
-→ StoreKit/IAP: this is a standard iOS skill. Most experienced iOS developers have done it. Do NOT call it "rare". It is NOT rare.
-→ What IS rare: shipping StoreKit on an app with 1M+ downloads (proves scale and production hardening). That specific proof is the edge, not the skill itself.
-→ Capacitor/WebView bridge: reasonably common among hybrid app developers. Don't overstate.
-→ Native iOS devs: less common than web devs — but for iOS-specific jobs, the applicant pool IS iOS-focused. Don't assume proposals are mostly generalists when the job requires native iOS.
-→ Be honest about competitive edges. Overstating rarity makes the analysis untrustworthy.
+CLIENT CONCERN GENERATION RULE — you may only write a concern about client reliability IF:
+  payment_verified = NO, OR phone_verified = NO.
+If BOTH payment AND phone are verified: you are NOT ALLOWED to write any concern about the client being new, lacking hire history, being unproven, or having no track record. These concerns are forbidden when both verifications are present.
 
-DEDUPLICATION — CRITICAL RULE
-→ Each concern must address a COMPLETELY DIFFERENT aspect. Never mention the same signal twice.
-→ Good news signals (e.g. "competition is lower than it looks") belong in STRENGTHS, NOT concerns.
-→ Same rule for strengths — each must be a distinct, separate edge.
+If both verified: instead write a STRENGTH — "Verified, organized client" — payment + phone verified, clear spec.
 
-CLIENT SERIOUSNESS — if positive, it MUST appear in strengths
-→ If client has phone + payment verified + detailed spec: this is a strength. Mention it explicitly.
-→ Example: "Serious, verified UK client" as a strength — phone + payment verified + 18-point spec = they know exactly what they want and are ready to hire.
+Premium client signal (put in STRENGTHS — HIGH PRIORITY):
+If clientTotalSpent > $10,000 AND clientHireRate > 80% AND clientRating > 4.0:
+→ This MUST appear as the first or second strength. Lead with: total spent, hire rate, avg pay, rating.
+→ This is the strongest positive signal on the whole job. Do not bury it.
 
-VERDICT THRESHOLDS — follow these, don't override them:
-→ competitionPressure = Extreme: verdict MUST be "Skip this." or "Apply carefully." — never "Apply."
-→ competitionPressure = High: verdict MUST be "Apply carefully." UNLESS profileFit = Excellent AND freelancer has a clear rare niche advantage (e.g. direct proven experience with the exact skill required). Only then can it be "Apply."
-→ competitionPressure = Moderate or Low: verdict can be any of the three based on full picture
-→ If "already hired on this job" > 0: always "Skip this." regardless of everything else
+Established client warning:
+If clientHireRate < 30% AND totalJobsPosted > 5: chronic non-hirer. Flag in concerns.
 
-RULES
-→ concerns: max 3, each a UNIQUE point. Fewer is fine if real concerns are limited.
-→ strengths: max 3, each a distinct genuine edge on THIS job
-→ detail text per concern/strength: EXACTLY 1-2 short sentences. Target 15-25 words total. If you need more than 25 words to explain it, you're padding — cut it.
-→ Good competition signals go in STRENGTHS, not concerns
-→ NEVER say "payment unverified" or "no hire history" as a concern if payment + phone are verified. This is a hard rule — no exceptions.
-→ NEW client + payment verified + phone verified = goes in STRENGTHS. Never in concerns.
-→ hookSuggestion: max 2 SHORT sentences, 30-40 words total. Confident expert. Name their actual portfolio project. No hedging.
-→ verdictReason: ONE sentence only
-→ competitionPressure: honest read after all signals
-→ profileFit: how well THIS person matches THIS job's actual requirements
-→ NEVER use em dashes (—) or en dashes (–) anywhere in the output. Use a period or comma instead.`;
+Avg spend per hire = totalSpent / totalHires:
+< $200 = underpays | $200-2000 = normal | > $2000 = fair payer. Use this to assess budget expectations.
+
+Fresh opportunity signal (put in STRENGTHS when true):
+If interviewing = 0 AND invitesSent = 0 AND postedMinutes < 2880 (48 hrs):
+→ Strength: "Open field, no shortlisting yet" — client hasn't started screening.
+
+Region mismatch: if job requires specific country/timezone and freelancer doesn't match, flag in concerns.
+
+══════════════════════════════════════════════
+STEP 5 — BUDGET AND RATE ALIGNMENT
+══════════════════════════════════════════════
+
+Fixed price (not milestone — see Step 2):
+→ math: budget / freelancer_rate = max hours. Estimate scope hours. Flag if 2x+ mismatch.
+→ 3x+ mismatch = instant disqualifier.
+
+Hourly with stated range:
+→ If freelancer_rate > 1.5x the TOP of the stated range, flag with math.
+
+No budget but clientAvgRate available:
+→ If gap > 50% between clientAvgRate and freelancer_rate, flag it.
+→ If client pays MORE than freelancer's rate (e.g. client avg $74/hr, freelancer charges $20): flag that freelancer may be underpricing themselves.
+
+No budget, no rate data: note that budget discussion is needed. Don't fabricate.
+
+══════════════════════════════════════════════
+STEP 6 — PROFILE AND PORTFOLIO FIT
+══════════════════════════════════════════════
+
+Implicit portfolio matches (look for these — don't require exact keywords):
+"In-App Subscription" = StoreKit | "App Store submission" = App Store Connect | "Flutter native bridge" = Capacitor/WebView | "Cross-platform iOS+Android shipped" = TestFlight experience
+
+Scale beats claim: "FamilyTime 1M+ downloads with StoreKit" beats "I know StoreKit."
+Always name the specific portfolio project — generic claims have no weight.
+
+Standard skills are NOT rare: StoreKit, React, Flutter, Node.js, Swift are common iOS/dev skills.
+What IS noteworthy: proof of shipping at production scale with real users and real downloads.
+
+JSS + Tier = algorithm visibility. High earnings = platform trust. Both belong in STRENGTHS.
+
+Title mismatch: if freelancer's profile title emphasizes the wrong discipline for this job, flag in concerns.
+
+══════════════════════════════════════════════
+STEP 7 — VERDICT THRESHOLDS
+══════════════════════════════════════════════
+
+Already hired → "Skip this." always.
+Extreme competition → "Apply carefully." or "Skip this." NEVER "Apply." No exceptions.
+High competition → "Apply carefully." UNLESS profileFit = Excellent AND direct production proof of exact skill at scale.
+Moderate/Low → any verdict based on full picture.
+
+When interviewing count is the driver of High/Extreme: it MUST appear as concern #1 with the specific number. Example: "13 people already interviewing — client is in final selection for this short task."
+
+══════════════════════════════════════════════
+STEP 8 — OUTPUT RULES
+══════════════════════════════════════════════
+
+concerns: max 3. Each must address a COMPLETELY different aspect. No overlap.
+strengths: max 3. Each a distinct, separate genuine edge.
+
+hookSuggestion:
+→ When verdict = "Apply." or "Apply carefully.": confident pitch FROM FREELANCER'S PERSPECTIVE. Names their portfolio project. References client's specific need. Ready to paste as-is.
+→ When verdict = "Skip this." for a FILLED JOB: write "Not applicable — job is already filled."
+→ When verdict = "Skip this." for DISCIPLINE MISMATCH: write a brief honest redirect FROM FREELANCER'S PERSPECTIVE — e.g. "I noticed this role focuses on [marketing/growth], not development. I can help if the scope shifts to [relevant technical work], but happy to step aside if you need a [correct specialist]."
+→ NEVER write the hook as advice to the client ("Consider reposting..."). It is always the freelancer's words.
+
+No em/en dashes. No placeholders. No hedging in hook. Scores in text use % format (82%, not 82).`;
 
 
 function buildAnalyseMessage({ job, profile, filters }) {
   const s = job.jobStats || {};
 
-  // Safely parse client avg rate
   const rawRate = s.clientAvgRate;
   const clientAvgRate = typeof rawRate === 'number' ? rawRate
     : typeof rawRate === 'object' && rawRate !== null
       ? (rawRate.amount ?? rawRate.value ?? rawRate.price ?? null)
       : parseFloat(String(rawRate || '')) || null;
 
-  // Derived signals
   const totalSpentNum  = s.clientSpentNum || 0;
   const totalHires     = s.clientTotalHires || s.hiredCount || 0;
   const avgPerHire     = totalHires > 0 ? Math.round(totalSpentNum / totalHires) : null;
@@ -160,67 +177,63 @@ function buildAnalyseMessage({ job, profile, filters }) {
   const isNewClient    = totalJobs <= 2;
 
   const lines = [
-    '━━ THE JOB ━━',
-    'Title: '        + (job.title       || 'not provided'),
-    'Type: '         + (isFixed ? 'FIXED PRICE' : 'Hourly'),
-    'Budget/Rate: '  + (job.budget      || 'not stated'),
-    'Timeline: '     + (job.timeline    || 'not stated'),
-    'Required skills: ' + (job.skills   || 'not listed'),
+    '━━ JOB ━━',
+    'Title: '              + (job.title       || 'not provided'),
+    'Type: '               + (isFixed ? 'FIXED PRICE' : 'Hourly'),
+    'Project scope type: ' + (s.isContractToHire ? 'Ongoing / contract-to-hire' : 'One-time project'),
+    'Budget/Rate: '        + (job.budget      || 'not stated'),
+    'Timeline: '           + (job.timeline    || 'not stated'),
+    'Required skills: '    + (job.skills      || 'not listed'),
     '',
     'Full description:',
-    (job.description || 'not provided').slice(0, 2200),
+    (job.description  || 'not provided').slice(0, 2200),
     '',
-    '━━ COMPETITION SIGNALS ━━',
-    'Posted: '              + (s.timePosted || 'unknown') + (s.timePostedMinutes != null ? ` — ${s.timePostedMinutes} minutes ago` : ''),
-    'Proposals received: '  + (s.proposalCount    ?? 'unknown'),
-    'Already interviewing: '+ (s.interviewingCount ?? 'unknown'),
-    'Invites sent by client:'+ (s.invitesSent     ?? 0),
-    'Unanswered invites: '  + (s.unansweredInvites ?? 0),
-    'Already hired on this job: ' + (s.hiredCount ?? 0) + (s.hiredCount > 0 ? ' ← JOB IS FILLED — verdict must be Skip this.' : ' (nobody hired yet)'),
+    '━━ COMPETITION ━━',
+    'Posted: '                  + (s.timePosted || 'unknown') + (s.timePostedMinutes != null ? ` (${s.timePostedMinutes} min ago)` : ''),
+    'Proposals received: '      + (s.proposalCount    ?? 'unknown'),
+    'Already interviewing: '    + (s.interviewingCount ?? 'unknown'),
+    'Invites sent: '            + (s.invitesSent      ?? 0),
+    'Unanswered invites: '      + (s.unansweredInvites ?? 0),
+    'Effective respondents: '   + ((s.invitesSent ?? 0) - (s.unansweredInvites ?? 0)) + ' (invites sent minus unanswered)',
+    'Already hired on this job: ' + (s.hiredCount ?? 0) + (s.hiredCount > 0 ? ' — JOB IS FILLED. Instant Skip this.' : ''),
+    'Number of positions: '     + (s.numberOfPositions ?? 1),
     '',
-    '━━ CLIENT SIGNALS ━━',
-    'Account type: '        + (isNewClient ? `NEW CLIENT — member since ${s.clientMemberSince || 'recently'}, only ${totalJobs} job(s) posted` : `Established — ${totalJobs} jobs posted`),
-    'Hire rate: '           + (s.clientHireRate != null ? s.clientHireRate + '%' : 'unknown'),
-    'Total hires: '         + (totalHires || 0),
-    'Total spent: '         + (s.clientTotalSpent || 'unknown'),
-    'Avg spend per hire: '  + (avgPerHire != null ? '$' + avgPerHire : 'unknown'),
-    'Client avg hourly: '   + (clientAvgRate != null ? '$' + (Math.round(clientAvgRate * 100) / 100) + '/hr' : 'unknown'),
-    'Rating: '              + (s.clientRating != null ? s.clientRating + '/5.0' : 'no rating yet'),
-    'Payment verified: '    + (s.paymentVerified ? 'YES' : 'NO — financial risk'),
-    'Phone verified: '      + (s.phoneVerified || s.clientPhoneVerified ? 'YES' : 'not shown — do NOT flag as unverified, just omit'),
-    'Client location: '     + (s.clientLocation || 'unknown'),
-    'Region required: '     + (s.hasLocationFilter ? 'YES — ' + JSON.stringify(s.reqCountries || s.reqRegions || 'see filters') : 'No restriction'),
-    'JSS required: '        + (s.reqJSS || 'none'),
-    'Talent type req: '     + (s.reqTalentType || 'Any'),
-    'Min earnings req: '    + (s.reqMinEarnings || 'none'),
-    'Contract-to-hire: '    + (s.isContractToHire ? 'YES' : 'No'),
+    '━━ CLIENT ━━',
+    'New or established: '      + (isNewClient ? `NEW (joined ${s.clientMemberSince || 'recently'}, ${totalJobs} job(s) posted)` : `Established (${totalJobs} jobs posted)`),
+    'Hire rate: '               + (s.clientHireRate   != null ? s.clientHireRate + '%' : 'unknown'),
+    'Total hires: '             + (totalHires || 0),
+    'Total spent: '             + (s.clientTotalSpent || '$0'),
+    'Avg spend per hire: '      + (avgPerHire != null ? '$' + avgPerHire : 'unknown'),
+    'Client avg hourly paid: '  + (clientAvgRate != null ? '$' + (Math.round(clientAvgRate * 100) / 100) + '/hr' : 'unknown'),
+    'Client rating: '           + (s.clientRating != null ? s.clientRating + '/5.0' : 'no reviews yet'),
+    'Payment verified: '        + (s.paymentVerified ? 'YES' : 'NO'),
+    'Phone verified: '          + (s.phoneVerified || s.clientPhoneVerified ? 'YES' : 'NO — do not call unverified if you are unsure, just omit'),
+    'Client location: '         + (s.clientLocation || 'unknown'),
+    'Region required: '         + (s.hasLocationFilter ? 'YES — ' + JSON.stringify(s.reqCountries || s.reqRegions || '') : 'none'),
+    'Contract-to-hire: '        + (s.isContractToHire ? 'YES' : 'No'),
     '',
     '━━ BUDGET ANALYSIS ━━',
-    `Job budget field: ${job.budget || 'not stated'}`,
-    `Job type: ${isFixed ? 'FIXED PRICE' : 'HOURLY'}`,
-    `Freelancer rate: $${freelancerRate}/hr`,
-    `Client avg hourly paid historically: ${clientAvgRate != null ? '$' + (Math.round(clientAvgRate * 100) / 100) + '/hr' : 'unknown'}`,
+    'Freelancer rate: $'        + freelancerRate + '/hr',
+    'Client avg paid: '         + (clientAvgRate != null ? '$' + (Math.round(clientAvgRate * 100) / 100) + '/hr' : 'unknown'),
     isFixed && budgetNum && freelancerRate
-      ? `Fixed budget math: $${budgetNum} ÷ $${freelancerRate}/hr = ${Math.floor(budgetNum / freelancerRate)} hours max covered. Estimate if that's realistic for the scope described.`
-      : `Hourly job: compare client's stated rate range and historical avg ($${clientAvgRate != null ? Math.round(clientAvgRate * 100) / 100 : '?'}/hr avg) against freelancer's $${freelancerRate}/hr rate.`,
+      ? `Fixed price math: $${budgetNum} / $${freelancerRate}/hr = ${Math.floor(budgetNum / freelancerRate)} hrs max. Estimate if scope needs more.`
+      : `Hourly: compare stated rate range and client avg paid to freelancer rate of $${freelancerRate}/hr.`,
     '',
-    '━━ FREELANCER PROFILE ━━',
-    'Name: '         + (profile.name      || 'unknown'),
-    'Country: '      + (profile.country   || 'unknown') + ' — consider timezone fit and how this client may perceive this location',
-    'Hourly rate: $' + (freelancerRate    || 'unknown') + '/hr',
-    'JSS: '          + (profile.jss       || 'unknown'),
-    'Tier: '         + (profile.tier      || 'unknown'),
-    'Title: '        + (profile.title     || 'unknown'),
-    'Total earnings on Upwork: ' + (profile.earnings || 'unknown'),
-    'Skills: '       + (Array.isArray(profile.skillsArr) && profile.skillsArr.length
-                         ? profile.skillsArr.join(', ')
-                         : profile.skills || 'unknown'),
-    'Bio excerpt: '  + (profile.bio || '').slice(0, 300),
+    '━━ FREELANCER ━━',
+    'Name: '           + (profile.name     || 'unknown'),
+    'Country: '        + (profile.country  || 'unknown'),
+    'Rate: $'          + freelancerRate + '/hr',
+    'JSS: '            + (profile.jss      || 'unknown'),
+    'Tier: '           + (profile.tier     || 'unknown'),
+    'Title: '          + (profile.title    || 'unknown'),
+    'Earnings: '       + (profile.earnings || 'unknown'),
+    'Skills: '         + (Array.isArray(profile.skillsArr) && profile.skillsArr.length
+                           ? profile.skillsArr.join(', ') : profile.skills || 'unknown'),
     '',
-    '━━ KEY PORTFOLIO WORK ━━',
+    '━━ PORTFOLIO (all projects) ━━',
     Array.isArray(profile.portfolio) && profile.portfolio.length
       ? profile.portfolio.map((p, i) =>
-          `${i+1}. ${p.title || p.name || 'Untitled'}: ${p.desc ? p.desc.slice(0, 100) : 'no description'} [${(p.skills || []).slice(0, 5).join(', ')}]`
+          `${i + 1}. ${p.title || p.name || 'Untitled'}: ${(p.desc || '').slice(0, 100)} [${(p.skills || []).slice(0, 5).join(', ')}]`
         ).join('\n')
       : 'No portfolio data',
   ];
