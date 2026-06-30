@@ -153,6 +153,16 @@
   border-radius: 50%; animation: sn-spin .7s linear infinite;
 }
 @keyframes sn-spin { to { transform: rotate(360deg); } }
+
+/* Travelling highlight along the ECG wave — stroke-dashoffset moves the cyan segment */
+@keyframes sn-beat-travel {
+  from { stroke-dashoffset:  7; }
+  to   { stroke-dashoffset: -51; }
+}
+.sn-beat-travel {
+  animation: sn-beat-travel 1.6s linear infinite;
+  filter: drop-shadow(0 0 2px rgba(103,232,249,.9));
+}
 .sn-loading-text { font-size: 14px; font-weight: 600; color: var(--sn-white); }
 .sn-loading-sub { font-size: 12px; color: var(--sn-white3); }
 

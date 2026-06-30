@@ -48,13 +48,22 @@ window.SnagAI.injectUI = function() {
   trig.id = 'sn-trigger';
   trig.innerHTML = `
     <button id="sn-btn" title="Analyse job">
-      <svg width="22" height="15" viewBox="0 0 20 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <polyline points="0,7 3,7 5,1 7,13 9,4 11,10 13,7 20,7"
-          stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+      <svg width="32" height="22" viewBox="0 0 20 14" fill="none">
+        <path d="M0,7 L3,7 L5,1 L7,13 L9,4 L11,10 L13,7 L20,7" stroke="rgba(196,210,255,0.28)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <path id="sn-beat-dot" d="M0,7 L3,7 L5,1 L7,13 L9,4 L11,10 L13,7 L20,7" stroke="#ffffff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" fill="none" stroke-dasharray="1.5 56.5" stroke-dashoffset="4"/>
       </svg>
     </button>
   `;
   document.body.appendChild(trig);
+
+  // Start travelling dot animation via Web Animations API — no CSS/stylesheet needed
+  const dot = document.getElementById('sn-beat-dot');
+  if (dot) {
+    dot.animate(
+      [{ strokeDashoffset: '4' }, { strokeDashoffset: '-58' }],
+      { duration: 2200, iterations: Infinity, easing: 'linear' }
+    );
+  }
 
   document.getElementById('sn-btn').addEventListener('click', () => SnagAI.toggle());
   document.getElementById('sn-close').addEventListener('click', () => SnagAI.closePanel());
