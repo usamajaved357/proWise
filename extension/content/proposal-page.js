@@ -209,18 +209,26 @@
     // ── Event listeners ──────────────────────────────────────────────────────
 
     _openBox = function() {
+      if (box.classList.contains('sn-pp-open') || box.classList.contains('sn-pp-opening')) return;
       btn.classList.add('sn-pp-hidden');
-      box.style.display = 'flex';
-      requestAnimationFrame(() => box.classList.add('sn-pp-open'));
-      document.getElementById('sn-pp-input')?.focus();
+      box.classList.remove('sn-pp-closing');
+      box.classList.add('sn-pp-opening');
+      // After animation completes, settle into steady open state
+      setTimeout(() => {
+        box.classList.remove('sn-pp-opening');
+        box.classList.add('sn-pp-open');
+        document.getElementById('sn-pp-input')?.focus();
+      }, 300);
     };
 
     _closeBox = function() {
-      box.classList.remove('sn-pp-open');
+      if (!box.classList.contains('sn-pp-open') && !box.classList.contains('sn-pp-opening')) return;
+      box.classList.remove('sn-pp-open', 'sn-pp-opening');
+      box.classList.add('sn-pp-closing');
       setTimeout(() => {
-        box.style.display = '';
+        box.classList.remove('sn-pp-closing');
         btn.classList.remove('sn-pp-hidden');
-      }, 220);
+      }, 180);
     };
 
     const openBox  = _openBox;
