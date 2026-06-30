@@ -148,6 +148,10 @@
     return; // skip duplicate appendChild below
   }
 
+  // Exposed so generate() can call them regardless of which flow triggers it
+  let _openBox  = () => {};
+  let _closeBox = () => {};
+
   // ── UI Build ───────────────────────────────────────────────────────────────
   function buildUI(jobData) {
     const hasJob   = !!(jobData?.title || jobData?.description);
@@ -186,15 +190,16 @@
         <button class="sn-pp-chip" data-ins="Rewrite the opening line with a stronger hook">Better hook</button>
         ${hasQs ? `<button class="sn-pp-chip" data-ins="Also answer all client questions">Fill questions</button>` : ''}
       </div>
-      <div class="sn-pp-input-wrap">
-        <textarea class="sn-pp-input" id="sn-pp-input" placeholder="Describe changes — shorter, add GitHub, more confident…"></textarea>
-      </div>
-      <div class="sn-pp-footer">
-        <span class="sn-pp-hint">✦ writes directly into the field</span>
-        <button class="sn-pp-write" id="sn-pp-write">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2s.7 5.8 2.1 7.2C15.5 10.6 21 12 21 12s-5.5 1.4-6.9 2.8C12.7 16.2 12 22 12 22s-.7-5.8-2.1-7.2C8.5 13.4 3 12 3 12s5.5-1.4 6.9-2.8C11.3 7.8 12 2 12 2z"/></svg>
-          Write cover letter
-        </button>
+      <div class="sn-pp-compose">
+        <div class="sn-pp-compose-wrap">
+          <textarea class="sn-pp-input" id="sn-pp-input" placeholder="Shorter, add GitHub, more confident…" rows="1"></textarea>
+          <button class="sn-pp-send" id="sn-pp-write" title="Generate cover letter">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+              <path d="M22 2L11 13" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+        </div>
       </div>
     `;
 
@@ -203,24 +208,31 @@
 
     // ── Event listeners ──────────────────────────────────────────────────────
 
+    _openBox = function() {
+      btn.classList.add('sn-pp-hidden');
+      box.style.display = 'flex';
+      requestAnimationFrame(() => box.classList.add('sn-pp-open'));
+      document.getElementById('sn-pp-input')?.focus();
+    };
+
+    _closeBox = function() {
+      box.classList.remove('sn-pp-open');
+      setTimeout(() => {
+        box.style.display = '';
+        btn.classList.remove('sn-pp-hidden');
+      }, 220);
+    };
+
+    const openBox  = _openBox;
+    const closeBox = _closeBox;
+
     // Toggle chat box
     btn.addEventListener('click', () => {
       if (btn.classList.contains('sn-pp-loading')) return;
-      const isOpen = box.classList.contains('sn-pp-open');
-      if (isOpen) {
-        box.classList.remove('sn-pp-open');
-        setTimeout(() => { box.style.display = ''; }, 200);
-      } else {
-        box.style.display = 'flex';
-        requestAnimationFrame(() => box.classList.add('sn-pp-open'));
-        document.getElementById('sn-pp-input')?.focus();
-      }
+      box.classList.contains('sn-pp-open') ? closeBox() : openBox();
     });
 
-    document.getElementById('sn-pp-close').addEventListener('click', () => {
-      box.classList.remove('sn-pp-open');
-      setTimeout(() => { box.style.display = ''; }, 200);
-    });
+    document.getElementById('sn-pp-close').addEventListener('click', closeBox);
 
     // Chips fill the input
     box.querySelectorAll('.sn-pp-chip').forEach(chip => {
@@ -228,11 +240,41 @@
         const inp = document.getElementById('sn-pp-input');
         inp.value = chip.dataset.ins;
         inp.focus();
+        syncSendBtn(inp);
+        autoResize(inp);
       });
     });
 
-    // Write button — chatbot flow (only floating btn shows progress)
-    document.getElementById('sn-pp-write').addEventListener('click', () => generate(jobData, 'chatbot'));
+    // Auto-resize textarea and sync send button disabled state
+    const sendBtn = document.getElementById('sn-pp-write');
+
+    function autoResize(el) {
+      el.style.height = 'auto';
+      el.style.height = Math.min(el.scrollHeight, 100) + 'px';
+    }
+
+    function syncSendBtn(el) {
+      sendBtn.disabled = !el.value.trim();
+    }
+
+    const inp = document.getElementById('sn-pp-input');
+    sendBtn.disabled = true; // disabled by default — empty field
+
+    inp.addEventListener('input', () => {
+      autoResize(inp);
+      syncSendBtn(inp);
+    });
+
+    // Send on Enter (Shift+Enter = newline)
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        if (!sendBtn.disabled) generate(jobData, 'chatbot');
+      }
+    });
+
+    // Write button — chatbot flow
+    sendBtn.addEventListener('click', () => generate(jobData, 'chatbot'));
   }
 
   // ── Generation ─────────────────────────────────────────────────────────────
@@ -255,13 +297,10 @@
 
     // Show progress only on the relevant element for each flow
     if (isInline) {
-      // Inline: spin the pill button, update label
       if (clIcon) clIcon.classList.add('sn-cl-spinning');
     } else {
-      // Chatbot: collapse box, spin floating button
-      box.classList.remove('sn-pp-open');
-      setTimeout(() => { box.style.display = ''; }, 200);
-      btn.classList.add('sn-pp-loading');
+      _closeBox();
+      setTimeout(() => btn.classList.add('sn-pp-loading'), 220);
     }
     if (writeBtn) writeBtn.disabled = true;
 
@@ -301,7 +340,7 @@
           btn.classList.add('sn-pp-done');
           setTimeout(() => btn.classList.remove('sn-pp-done'), 2000);
         }
-        if (statusEl) statusEl.textContent = 'Done — cover letter inserted';
+        if (statusEl) statusEl.textContent = 'Cover letter ready ✓';
         if (dotEl) dotEl.className = 'sn-pp-status-dot';
       }
 
@@ -350,11 +389,7 @@
       if (statusEl) statusEl.textContent = 'Error: ' + (err.message || 'Try again');
       if (dotEl) dotEl.className = 'sn-pp-status-dot err';
 
-      // Reopen chat box on error only for chatbot flow
-      if (!isInline) {
-        box.style.display = 'flex';
-        requestAnimationFrame(() => box.classList.add('sn-pp-open'));
-      }
+      if (!isInline) _openBox();
     }
 
     if (writeBtn) writeBtn.disabled = false;
