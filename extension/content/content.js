@@ -6,19 +6,9 @@
   'use strict';
 
   // ── Button state helpers ──────────────────────────────────────────────────
-  const _SVG_BEAT_HTML = `<svg width="32" height="22" viewBox="0 0 20 14" fill="none">
-    <path d="M0,7 L3,7 L5,1 L7,13 L9,4 L11,10 L13,7 L20,7" stroke="rgba(196,210,255,0.28)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-    <path id="sn-beat-dot" d="M0,7 L3,7 L5,1 L7,13 L9,4 L11,10 L13,7 L20,7" stroke="#ffffff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" fill="none" stroke-dasharray="1.5 56.5" stroke-dashoffset="7"/>
+  const _SVG_BEAT_HTML = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M13 2L4.5 13.5H11L10 22L20.5 9.5H14L13 2Z" fill="white" stroke="white" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/>
   </svg>`;
-
-  function _startBeatAnim() {
-    const dot = document.getElementById('sn-beat-dot');
-    if (!dot) return;
-    dot.animate(
-      [{ strokeDashoffset: 7 }, { strokeDashoffset: -58 }],
-      { duration: 2200, iterations: Infinity, easing: 'linear' }
-    );
-  }
 
   const _SVG_BEAT = _SVG_BEAT_HTML;
   const _SVG_SPIN  = `<svg class="sn-btn-spin" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>`;
@@ -36,7 +26,6 @@
     } else {
       btn.innerHTML = _SVG_BEAT; btn.disabled = false;
       btn.style.background = ''; btn.classList.remove('sn-btn-done');
-      _startBeatAnim();
     }
   }
 
