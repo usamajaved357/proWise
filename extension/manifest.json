@@ -27,6 +27,8 @@
         "content/modules/job-reader.js",
         "content/modules/probability.js",
         "content/modules/panel.js",
+        "content/modules/job-analyser.js",
+        "content/modules/sidebar.js",
         "content/modules/page-paywall.js",
         "content/modules/page-alert.js",
         "content/modules/page-proposal.js",
@@ -34,6 +36,18 @@
       ],
       "css": [
         "content/content.css"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://www.upwork.com/nx/proposals/*"
+      ],
+      "js": [
+        "content/proposal-page.js"
+      ],
+      "css": [
+        "content/proposal-page.css"
       ],
       "run_at": "document_idle"
     },

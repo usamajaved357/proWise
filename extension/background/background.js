@@ -1,6 +1,7 @@
 // ── Snag AI Background — message router ───────────────────────────────────────
-import { handleGenerate } from './modules/generate.js';
-import { getStatus }      from './modules/status.js';
+import { handleGenerate, handleCoverLetter } from './modules/generate.js';
+import { getStatus }    from './modules/status.js';
+import { handleAnalyse } from './modules/analyse.js';
 
 // Generate a stable device UUID on first install
 chrome.runtime.onInstalled.addListener(() => {
@@ -16,6 +17,14 @@ chrome.runtime.onInstalled.addListener(() => {
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   if (msg.type === 'GENERATE_PROPOSAL') {
     handleGenerate(msg.payload).then(sendResponse).catch(e => sendResponse({ error: e.message }));
+    return true;
+  }
+  if (msg.type === 'GENERATE_COVER_LETTER') {
+    handleCoverLetter(msg).then(sendResponse).catch(e => sendResponse({ error: e.message }));
+    return true;
+  }
+  if (msg.type === 'ANALYSE_JOB') {
+    handleAnalyse(msg).then(sendResponse).catch(e => sendResponse({ error: e.message }));
     return true;
   }
   if (msg.type === 'GET_STATUS') {
@@ -96,7 +105,9 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
           return {
             // Activity
-            proposalCount:       activity.totalApplicants          ?? null,
+            // NOTE: proposalCount intentionally omitted — Upwork shows ranges to freelancers,
+            // reading the exact count from the store would expose hidden data (ToS risk).
+            // We use the DOM-parsed range value from job-reader.js instead.
             hiredCount:          activity.totalHired               ?? 0,
             interviewingCount:   activity.totalInvitedToInterview  ?? null,
             invitesSent:         activity.invitationsSent          ?? null,

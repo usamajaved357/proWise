@@ -21,23 +21,47 @@
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 #sn-btn {
-  display: flex; align-items: center; gap: 8px;
-  background: linear-gradient(135deg, #0d1120, #1a2035);
-  color: var(--sn-white); border: 1px solid rgba(201,168,76,.35);
-  border-radius: 50px; padding: 11px 20px 11px 14px;
-  font-size: 13px; font-weight: 600; cursor: pointer;
-  box-shadow: 0 4px 24px rgba(0,0,0,.5), 0 0 0 1px rgba(201,168,76,.15);
-  transition: transform .2s, box-shadow .2s;
+  width: 52px; height: 52px;
+  display: flex; align-items: center; justify-content: center;
+  background: #6366f1;
+  color: #fff; border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(99,102,241,.45);
+  transition: transform .2s ease, box-shadow .25s ease, outline-color .25s ease;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  position: relative;
 }
 #sn-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 32px rgba(0,0,0,.6), 0 0 0 1px rgba(201,168,76,.3);
+  box-shadow: 0 8px 28px rgba(99,102,241,.6);
+  outline: 0.75px solid rgba(255,255,255,.6);
+  outline-offset: 4px;
 }
+/* Tooltip */
+#sn-btn::before {
+  content: '✦ Analyse this job with Snag AI';
+  position: absolute;
+  bottom: calc(100% + 10px);
+  right: 0;
+  background: #0f172a;
+  color: #f1f5f9;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  padding: 8px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(99,102,241,.3);
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity .15s, transform .15s;
+  box-shadow: 0 4px 16px rgba(0,0,0,.3);
+}
+#sn-btn:hover::before { opacity: 1; transform: translateY(0); }
 .sn-btn-icon {
-  width: 24px; height: 24px;
-  background: linear-gradient(135deg, #b8860b, #e8c878);
-  border-radius: 7px; display: flex; align-items: center; justify-content: center;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
 }
 .sn-live-dot {
   width: 6px; height: 6px; background: var(--sn-green); border-radius: 50%;
@@ -131,6 +155,16 @@
   border-radius: 50%; animation: sn-spin .7s linear infinite;
 }
 @keyframes sn-spin { to { transform: rotate(360deg); } }
+
+/* Travelling highlight along the ECG wave — stroke-dashoffset moves the cyan segment */
+@keyframes sn-beat-travel {
+  from { stroke-dashoffset:  7; }
+  to   { stroke-dashoffset: -51; }
+}
+.sn-beat-travel {
+  animation: sn-beat-travel 1.6s linear infinite;
+  filter: drop-shadow(0 0 2px rgba(103,232,249,.9));
+}
 .sn-loading-text { font-size: 14px; font-weight: 600; color: var(--sn-white); }
 .sn-loading-sub { font-size: 12px; color: var(--sn-white3); }
 
@@ -1079,3 +1113,162 @@
   from { opacity:0; transform:translateY(5px); }
   to   { opacity:1; transform:none; }
 }
+
+/* ── Snag AI Job Page Sidebar ─────────────────────────────────────────────── */
+#sn-sidebar {
+  position: fixed;
+  top: 0; right: 0;
+  width: 300px;
+  height: 100vh;
+  background: #0d1120;
+  border-left: 1px solid rgba(99,102,241,.3);
+  z-index: 2147483646;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform .28s cubic-bezier(.4,0,.2,1);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: #f0eeea;
+  box-shadow: -8px 0 32px rgba(0,0,0,.4);
+}
+#sn-sidebar.sn-sb-open { transform: translateX(0); }
+
+.sn-sb-head {
+  display: flex; align-items: center; gap: 9px;
+  padding: 14px 14px 12px;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+  flex-shrink: 0;
+}
+.sn-sb-logo {
+  width: 30px; height: 30px; border-radius: 8px;
+  background: #6366f1;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.sn-sb-head-text { flex: 1; }
+.sn-sb-title { font-size: 13px; font-weight: 700; letter-spacing: -.01em; }
+.sn-sb-sub   { font-size: 10px; color: rgba(240,238,234,.4); margin-top: 1px; }
+.sn-sb-close {
+  width: 26px; height: 26px; border-radius: 50%;
+  background: rgba(255,255,255,.06); border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; color: rgba(240,238,234,.5);
+  transition: background .15s;
+}
+.sn-sb-close:hover { background: rgba(255,255,255,.12); color: #f0eeea; }
+
+.sn-sb-body { flex: 1; overflow-y: auto; padding: 14px; }
+
+.sn-sb-loading { font-size: 12px; color: rgba(240,238,234,.4); padding: 20px 0; text-align: center; }
+
+/* Verdict pill */
+.sn-sb-verdict {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 12px; border-radius: 999px; border: 1px solid;
+  font-size: 11px; font-weight: 700; margin-bottom: 14px;
+  letter-spacing: .01em;
+}
+.sn-sb-vdot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+
+/* Score row — side by side */
+.sn-sb-score-row {
+  display: flex; align-items: stretch; gap: 0;
+  margin-bottom: 14px;
+}
+.sn-sb-score-cell { flex: 1; padding: 10px 14px; }
+.sn-sb-sdivider { width: 1px; background: rgba(255,255,255,.06); flex-shrink: 0; }
+.sn-sb-slbl { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; color: rgba(240,238,234,.3); margin-bottom: 5px; }
+.sn-sb-snum { font-size: 24px; font-weight: 800; letter-spacing: -.04em; line-height: 1; margin-bottom: 6px; }
+.sn-sb-sbar { height: 5px; background: rgba(255,255,255,.07); border-radius: 999px; overflow: hidden; }
+.sn-sb-sfill { height: 100%; border-radius: 999px; transition: width .6s cubic-bezier(.4,0,.2,1); }
+
+/* Section labels */
+.sn-sb-section {
+  font-size: 9px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .09em; color: rgba(240,238,234,.28);
+  margin: 12px 0 6px;
+}
+.sn-sb-section-green { color: rgba(74,222,128,.6); }
+
+/* Factor rows */
+.sn-sb-factor {
+  display: flex; align-items: flex-start; gap: 7px;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255,255,255,.04);
+}
+.sn-sb-factor:last-of-type { border-bottom: none; }
+.sn-sb-fdot { width: 8px; height: 8px; border-radius: 50%; background: #f87171; flex-shrink: 0; margin-top: 4px; }
+.sn-sb-fbody { flex: 1; min-width: 0; }
+.sn-sb-fname { font-size: 11.5px; font-weight: 600; color: rgba(240,238,234,.88); line-height: 1.4; }
+.sn-sb-fnote { font-size: 10px; color: rgba(240,238,234,.4); margin-top: 2px; line-height: 1.5; }
+.sn-sb-fscore { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 999px; background: rgba(248,113,113,.14); color: #f87171; flex-shrink: 0; margin-top: 2px; }
+
+.sn-sb-empty { font-size: 12px; color: #4ade80; text-align: center; padding: 16px 0; }
+
+/* Apply button */
+.sn-sb-apply-row { margin-top: 16px; }
+.sn-sb-apply-btn {
+  display: flex; align-items: center; justify-content: center;
+  width: 100%; padding: 10px;
+  background: #6366f1; color: #fff;
+  border-radius: 999px;
+  font-size: 12px; font-weight: 700;
+  text-decoration: none !important;
+  transition: opacity .15s;
+  cursor: pointer;
+}
+.sn-sb-apply-btn:hover { opacity: .88; text-decoration: none !important; }
+
+/* ── Sidebar new states (Claude analysis) ────────────────────────────────── */
+.sn-sb-placeholder { font-size: 12px; color: rgba(240,238,234,.35); text-align: center; padding: 24px 16px; line-height: 1.7; }
+
+.sn-sb-loading-state { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 32px 16px; }
+.sn-sb-spinner { width: 28px; height: 28px; border: 2.5px solid rgba(255,255,255,.1); border-top-color: #6366f1; border-radius: 50%; animation: sn-sb-spin .7s linear infinite; }
+@keyframes sn-sb-spin { to { transform: rotate(360deg); } }
+.sn-sb-loading-text { font-size: 13px; font-weight: 600; color: #f0eeea; }
+.sn-sb-loading-sub  { font-size: 11px; color: rgba(240,238,234,.4); text-align: center; }
+
+.sn-sb-error-state { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 28px 16px; }
+.sn-sb-error-icon  { font-size: 22px; color: #f87171; }
+.sn-sb-error-msg   { font-size: 12px; color: rgba(248,113,113,.8); text-align: center; line-height: 1.6; }
+
+.sn-sb-summary { font-size: 11.5px; color: rgba(240,238,234,.5); line-height: 1.65; margin: 12px 0 0; padding: 10px 12px; background: rgba(255,255,255,.025); border-radius: 8px; border: 1px solid rgba(255,255,255,.06); }
+
+.sn-sb-hook { font-size: 11px; color: rgba(99,102,241,.9); line-height: 1.55; margin: 10px 0 0; padding: 8px 11px; background: rgba(99,102,241,.07); border-radius: 8px; border: 1px solid rgba(99,102,241,.2); }
+.sn-sb-hook-label { display: block; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .09em; color: rgba(240,238,234,.35); margin-bottom: 6px; }
+
+.sn-sb-footer-row { margin-top: 10px; text-align: center; }
+.sn-sb-reanalyse-btn {
+  background: none;
+  border: 1px solid rgba(255,255,255,.12);
+  color: rgba(240,238,234,.4);
+  font-size: 10px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: border-color .2s, color .2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: inherit;
+}
+.sn-sb-reanalyse-btn:hover { border-color: rgba(99,102,241,.5); color: rgba(240,238,234,.7); }
+.sn-sb-recount { font-size: 9px; opacity: .55; }
+.sn-sb-reanalyse-locked { font-size: 9px; color: rgba(240,238,234,.18); }
+
+/* Button spinner animation */
+.sn-btn-spin { animation: sn-sb-spin .7s linear infinite; }
+
+/* ── Sidebar verdict hero ────────────────────────────────────────────────── */
+.sn-sb-verdict-hero { padding:18px 16px 16px; }
+.sn-sb-score-row { margin-top: 10px; }
+.sn-sb-verdict-word { font-size:28px; font-weight:900; letter-spacing:-.04em; line-height:1; margin-bottom:8px; }
+.sn-sb-verdict-reason { font-size:11.5px; line-height:1.6; color:rgba(240,238,234,.6); }
+
+/* Score inline: number + word side by side */
+.sn-sb-score-inline { display:flex; align-items:baseline; gap:6px; margin-bottom:5px; }
+.sn-sb-sword { font-size:11px; font-weight:700; opacity:.85; }
+
+/* Insight rows (free-reasoning analysis) */
+.sn-sb-insight { display:flex; align-items:flex-start; gap:8px; padding:6px 14px; border-bottom:1px solid rgba(255,255,255,.04); }
+.sn-sb-insight:last-child { border-bottom:none; }

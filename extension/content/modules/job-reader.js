@@ -1,10 +1,15 @@
 // ── Job data extractor — reads Upwork job page ────────────────────────────────
 window.SnagAI.getJob = function() {
-  const title = (
+  const titleEl = (
     document.querySelector('h1[data-test="job-title"]') ||
     document.querySelector('h1.m-0') ||
+    document.querySelector('[class*="JobTitle"]') ||
+    document.querySelector('[class*="job-title"]') ||
     document.querySelector('h1')
-  )?.innerText?.trim() || '';
+  );
+  const title = titleEl?.innerText?.trim()
+    || document.title.replace(/\s*[\|–-].*$/, '').trim()
+    || '';
 
   const descEl = (
     document.querySelector('[data-test="Description"] .air3-truncation') ||
@@ -76,7 +81,32 @@ window.SnagAI.getJob = function() {
   const skillsSet = [...new Set(skillsArr)];
   const skills = skillsSet.join(', ');
 
-  const budget   = document.querySelector('[data-test="budget"] strong, [data-test="Budget"] strong')?.innerText?.trim() || '';
+  const budget = (() => {
+    // Try multiple selectors Upwork uses for budget/price across job types
+    const selectors = [
+      '[data-test="budget"] strong',
+      '[data-test="Budget"] strong',
+      '[data-test="budget"]',
+      '[data-test="Budget"]',
+      '[class*="BudgetAmount"]',
+      '[class*="budget-amount"]',
+      '[data-test="fixed-price"] strong',
+      '[data-test="hourly-rate"] strong',
+    ];
+    for (const s of selectors) {
+      const el = document.querySelector(s);
+      if (el?.innerText?.trim()) return el.innerText.trim();
+    }
+    // Fallback: scan page text — handles $350.00\n\nFixed-price format
+    const allText = document.body.innerText;
+    const fixedMatch = allText.match(/\$[\d,]+\.?\d*[\s\S]{0,15}Fixed[\s-]price/i)
+                    || allText.match(/Fixed[\s-]price[\s\S]{0,5}\n[\s\S]{0,5}\$[\d,]+\.?\d*/i);
+    if (fixedMatch) {
+      const priceOnly = fixedMatch[0].match(/\$[\d,]+\.?\d*/);
+      if (priceOnly) return priceOnly[0];
+    }
+    return '';
+  })();
   const location = document.querySelector('[data-test="client-location"] strong')?.innerText?.trim() || '';
   const jobType  = document.querySelector('[data-test="job-type"], [class*="jobType"]')?.innerText?.trim() || '';
 
@@ -131,7 +161,7 @@ window.SnagAI.getJob = function() {
   if (invM) invitesSent = parseInt(invM[1]);
   const unM = pageText2.match(/Unanswered invites[:\s]+(\d+)/i);
   if (unM) unansweredInvites = parseInt(unM[1]);
-  const hirM = pageText2.match(/Hired[:\s]+(\d+)/i);
+  const hirM = pageText2.match(/Hires?[:\s]+(\d+)/i) || pageText2.match(/(\d+)\s+hires?\b/i);
   if (hirM) hiredCount = parseInt(hirM[1]);
 
   let timePosted = null, timePostedMinutes = null;
@@ -175,17 +205,35 @@ window.SnagAI.getJob = function() {
   if (engM) reqEnglish = engM[1].trim();
 
   const paymentVerified = pageText2.includes('Payment method verified');
+  const phoneVerified   = pageText2.includes('Phone number verified') || pageText2.includes('Phone verified');
   let clientSpentNum = 0;
   if (clientTotalSpent) {
     const spRaw = clientTotalSpent.replace(/[,$]/g, '');
     clientSpentNum = /[Kk]$/.test(spRaw) ? parseFloat(spRaw) * 1000 : parseFloat(spRaw) || 0;
   }
 
+  const jobUnavailable = (() => {
+    const bodyText = document.body.innerText;
+    const byText = /this job is no longer available/i.test(bodyText)
+      || /job is no longer available/i.test(bodyText)
+      || /no longer available/i.test(bodyText);
+    const byEl = !!(
+      document.querySelector('[data-test="job-unavailable"]') ||
+      document.querySelector('.job-unavailable') ||
+      document.querySelector('[class*="jobUnavailable"]') ||
+      document.querySelector('[class*="NotAvailable"]') ||
+      document.querySelector('[data-test="not-available"]')
+    );
+    const result = byText || byEl;
+    console.log('[SnagAI] jobUnavailable:', result, '| byText:', byText, '| byEl:', byEl);
+    return result;
+  })();
+
   const jobStats = {
     proposalCount, lastViewed, interviewingCount, invitesSent, unansweredInvites, hiredCount,
     timePosted, timePostedMinutes, clientAvgRate, clientHireRate, clientTotalSpent, clientRating,
-    reqJSS, reqTalentType, reqEnglish, paymentVerified, clientSpentNum,
-    jobSkills: skillsSet || []
+    reqJSS, reqTalentType, reqEnglish, paymentVerified, phoneVerified, clientSpentNum,
+    jobSkills: skillsSet || [], jobUnavailable
   };
   console.log('Job stats:', JSON.stringify(jobStats));
 

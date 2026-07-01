@@ -122,17 +122,21 @@ window.SnagAI.calcWinProbability = function(jobStats, profile, filters) {
   }
 
   const userRate   = parseFloat((profile.hourlyRate || '0').replace(/[^0-9.]/g, '')) || 0;
-  const clientRate = jobStats.clientAvgRate;
+  const _rawRate   = jobStats.clientAvgRate;
+  const clientRate = Math.round((typeof _rawRate === 'number' ? _rawRate
+    : typeof _rawRate === 'object' && _rawRate !== null
+      ? parseFloat(_rawRate.amount ?? _rawRate.value ?? _rawRate.price ?? 0)
+      : parseFloat(String(_rawRate || '0')) || 0) * 100) / 100;
   if (userRate && clientRate) {
     const pct = Math.abs(userRate - clientRate) / clientRate;
     if (pct <= 0.15) {
-      matchScore += 12; matchFactors.push({ label: 'Rate', value: '$' + userRate + ' ≈ $' + clientRate + ' avg', delta: +12, note: 'Perfect alignment' });
+      matchScore += 12; matchFactors.push({ label: 'Hourly rate', value: '$' + userRate + ' ≈ $' + clientRate + ' avg', delta: +12, note: 'Perfect alignment' });
     } else if (userRate < clientRate) {
-      matchScore += 6;  matchFactors.push({ label: 'Rate', value: '$' + userRate + ' < $' + clientRate + ' avg', delta: +6,  note: 'Competitive rate' });
+      matchScore += 6;  matchFactors.push({ label: 'Hourly rate', value: '$' + userRate + ' < $' + clientRate + ' avg', delta: +6,  note: 'Competitive rate' });
     } else if (pct <= 0.5) {
-      matchScore += 0;  matchFactors.push({ label: 'Rate', value: '$' + userRate + ' vs $' + clientRate + ' avg', delta: 0,   note: 'Slightly above avg' });
+      matchScore += 0;  matchFactors.push({ label: 'Hourly rate', value: '$' + userRate + ' vs $' + clientRate + ' avg', delta: 0,   note: 'Slightly above avg' });
     } else {
-      matchScore -= 8;  matchFactors.push({ label: 'Rate', value: '$' + userRate + ' vs $' + clientRate + ' avg', delta: -8,  note: 'Well above client avg', warn: true });
+      matchScore -= 8;  matchFactors.push({ label: 'Hourly rate', value: '$' + userRate + ' vs $' + clientRate + ' avg', delta: -8,  note: 'Well above client avg', warn: true });
       warnings.push('Your rate $' + userRate + '/hr is much higher than client avg $' + clientRate + '/hr');
     }
   }
