@@ -36,6 +36,10 @@
 
   // ── Sidebar toggle — main action on job page ──────────────────────────────
   SnagAI.toggle = async function() {
+    if (!chrome.runtime?.id) {
+      console.warn('[SnagAI] Extension context invalidated — refresh the page.');
+      return;
+    }
     const sidebar = document.getElementById('sn-sidebar');
     if (!sidebar) return;
 

@@ -56,8 +56,10 @@ window.SnagAI.isJobAnalysed = async function() {
   const jobId    = SnagAI.state.cachedJobId;
   const cacheKey = jobId && jobId !== 'current' ? CACHE_PREFIX + jobId : null;
   if (!cacheKey) return false;
-  const stored = await new Promise(r => chrome.storage.local.get([cacheKey], r));
-  return !!(stored[cacheKey]?.analysis);
+  try {
+    const stored = await new Promise(r => chrome.storage.local.get([cacheKey], r));
+    return !!(stored[cacheKey]?.analysis);
+  } catch(e) { return false; }
 };
 
 /**
