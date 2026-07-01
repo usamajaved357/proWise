@@ -1,10 +1,15 @@
 // ── Job data extractor — reads Upwork job page ────────────────────────────────
 window.SnagAI.getJob = function() {
-  const title = (
+  const titleEl = (
     document.querySelector('h1[data-test="job-title"]') ||
     document.querySelector('h1.m-0') ||
+    document.querySelector('[class*="JobTitle"]') ||
+    document.querySelector('[class*="job-title"]') ||
     document.querySelector('h1')
-  )?.innerText?.trim() || '';
+  );
+  const title = titleEl?.innerText?.trim()
+    || document.title.replace(/\s*[\|–-].*$/, '').trim()
+    || '';
 
   const descEl = (
     document.querySelector('[data-test="Description"] .air3-truncation') ||
