@@ -45,6 +45,21 @@
       return;
     }
 
+    // Check job availability immediately from page text — works for both cached and fresh paths
+    const _pageUnavailable = /this job is no longer available/i.test(document.body.innerText);
+    if (_pageUnavailable) {
+      _setBtnState('done');
+      const _sbBody = document.getElementById('sn-sb-body');
+      if (_sbBody) _sbBody.innerHTML = `
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;text-align:center;gap:12px">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <div style="color:#f87171;font-size:14px;font-weight:600;letter-spacing:.01em">Job No Longer Available</div>
+          <div style="color:rgba(240,238,234,.45);font-size:12.5px;line-height:1.6;max-width:220px">This job has been closed or removed by the client. No audit available.</div>
+        </div>`;
+      SnagAI.openSidebar();
+      return;
+    }
+
     // Already analysed — open instantly with cached data, no API call
     const alreadyDone = await SnagAI.isJobAnalysed();
     if (alreadyDone) {
@@ -267,9 +282,10 @@
 
       if (!refineInstruction) {
         const jobFilters   = prof.jobFilters || {};
-        const autoSkip     = jobFilters.autoSkipHired !== false;
-        const minScore     = jobFilters.minAlertScore ?? 60;
-        const hired        = job.jobStats?.hiredCount || 0;
+        const autoSkip      = jobFilters.autoSkipHired !== false;
+        const minScore      = jobFilters.minAlertScore ?? 60;
+        const hired         = job.jobStats?.hiredCount || 0;
+        const jobUnavailable = job.jobStats?.jobUnavailable || false;
 
         // Auto-skip immediately if hired and user enabled that filter
         if (hired > 0 && autoSkip) { SnagAI.closePanel(); return; }
@@ -277,8 +293,8 @@
         const preWp   = SnagAI.calcWinProbability(job.jobStats || {}, prof, jobFilters);
         const hasRisk = (preWp.riskItems || []).length > 0;
 
-        if (hired > 0 || preWp.combined < minScore || hasRisk) {
-          const blocked = await SnagAI.showProbAlert(preWp, hired);
+        if (jobUnavailable || hired > 0 || preWp.combined < minScore || hasRisk) {
+          const blocked = await SnagAI.showProbAlert(preWp, hired, jobUnavailable);
           if (blocked) return;
         }
       }
@@ -303,8 +319,9 @@
         payload: { job, refineInstruction, currentLetter }
       });
 
-      SnagAI.state.jobStats = job.jobStats;
-      SnagAI.state.profile  = stored.profile || {};
+      SnagAI.state.jobStats      = job.jobStats;
+      SnagAI.state.jobUnavailable = job.jobStats?.jobUnavailable || false;
+      SnagAI.state.profile       = stored.profile || {};
 
       if (!response) { SnagAI.showError('No response. Try refreshing the page.'); return; }
       if (response.showPaywall) { SnagAI.showPaywall(response.usage || response); return; }

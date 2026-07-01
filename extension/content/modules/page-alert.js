@@ -1,7 +1,7 @@
 // ── Win probability alert page ────────────────────────────────────────────────
-window.SnagAI.showProbAlert = function(wp, hired) {
+window.SnagAI.showProbAlert = function(wp, hired, jobUnavailable) {
   return new Promise(resolve => {
-    const isHired = hired > 0;
+    const isHired = hired > 0 || !!jobUnavailable;
 
     const riskPenalty    = Math.min(40, (wp.riskItems || []).length * 12);
     const severeMismatch = (wp.topMatch || []).some(f => f.skillMatch && f.delta <= -25);
@@ -16,13 +16,16 @@ window.SnagAI.showProbAlert = function(wp, hired) {
     const probColor  = wp.probScore  >= 70 ? '#4ade80' : wp.probScore  >= 45 ? '#facc15' : '#f87171';
     const matchColor = wp.matchScore >= 70 ? '#4ade80' : wp.matchScore >= 45 ? '#e8a020' : '#f87171';
 
-    const label = isHired ? 'Job Closed'
+    const label = jobUnavailable ? 'Job Unavailable'
+      : isHired ? 'Job Closed'
       : combined >= 70 ? 'Good Opportunity'
       : combined >= 55 ? 'Proceed with Caution'
       : combined >= 35 ? 'Warning — Low Odds'
       : 'Warning — High Risk';
 
-    const summary = isHired
+    const summary = jobUnavailable
+      ? 'This job is no longer available. It has been removed or closed by the client.'
+      : isHired
       ? 'Already hired — applying only burns your Connects with zero chance.'
       : combined >= 70 ? 'Strong opportunity. Low competition and your profile is a good match.'
       : combined >= 55 ? 'Some factors against you — worth applying if you can stand out.'

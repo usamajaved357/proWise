@@ -207,11 +207,28 @@ window.SnagAI.getJob = function() {
     clientSpentNum = /[Kk]$/.test(spRaw) ? parseFloat(spRaw) * 1000 : parseFloat(spRaw) || 0;
   }
 
+  const jobUnavailable = (() => {
+    const bodyText = document.body.innerText;
+    const byText = /this job is no longer available/i.test(bodyText)
+      || /job is no longer available/i.test(bodyText)
+      || /no longer available/i.test(bodyText);
+    const byEl = !!(
+      document.querySelector('[data-test="job-unavailable"]') ||
+      document.querySelector('.job-unavailable') ||
+      document.querySelector('[class*="jobUnavailable"]') ||
+      document.querySelector('[class*="NotAvailable"]') ||
+      document.querySelector('[data-test="not-available"]')
+    );
+    const result = byText || byEl;
+    console.log('[SnagAI] jobUnavailable:', result, '| byText:', byText, '| byEl:', byEl);
+    return result;
+  })();
+
   const jobStats = {
     proposalCount, lastViewed, interviewingCount, invitesSent, unansweredInvites, hiredCount,
     timePosted, timePostedMinutes, clientAvgRate, clientHireRate, clientTotalSpent, clientRating,
     reqJSS, reqTalentType, reqEnglish, paymentVerified, phoneVerified, clientSpentNum,
-    jobSkills: skillsSet || []
+    jobSkills: skillsSet || [], jobUnavailable
   };
   console.log('Job stats:', JSON.stringify(jobStats));
 
