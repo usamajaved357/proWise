@@ -10,7 +10,8 @@ const billingRoute  = require('./routes/billing');
 const upgradeRoute  = require('./routes/upgrade');
 const webhookRoute  = require('./routes/webhook');
 const adminRoute    = require('./routes/admin');
-const verifyRoute   = require('./routes/verify');
+const verifyRoute       = require('./routes/verify');
+const profileAuditRoute = require('./routes/profile-audit');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -41,6 +42,7 @@ app.use('/analyse',         analyseRoute);
 app.use('/billing-portal',  billingRoute);
 app.use('/upgrade',         upgradeRoute);
 app.use('/webhook/paddle',  webhookRoute);
+app.use('/profile-audit',   profileAuditRoute);
 app.use(adminRoute); // handles /activate, /admin/grant, /admin/users
 
 app.listen(PORT, () => console.log(`Snag AI v7 on port ${PORT}`));
