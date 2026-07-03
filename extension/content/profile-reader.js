@@ -500,14 +500,15 @@
     return panel;
   }
 
-  // ── Export the rendered audit panel as a downloadable PDF ────────────────────
+  // ── Export the audit as a downloadable PDF ────────────────────────────────────
+  // Drawn natively with jsPDF (vector text, not a screenshot) on a clean light
+  // page — the on-screen panel stays dark, but a dark page is a bad print/PDF
+  // convention, so the exported report gets its own light, standard-size layout.
   async function exportAuditPDF() {
-    const btn    = document.getElementById('snagai-audit-export');
-    const panel  = document.getElementById('snagai-audit-panel');
-    const bodyEl = document.getElementById('snagai-audit-body');
-    if (!btn || btn.disabled || !panel || !bodyEl || !latestAuditResult) return;
-    if (typeof html2canvas !== 'function' || !window.jspdf) {
-      console.log('[SnagAI] PDF export unavailable — html2canvas/jsPDF not loaded');
+    const btn = document.getElementById('snagai-audit-export');
+    if (!btn || btn.disabled || !latestAuditResult) return;
+    if (!window.jspdf) {
+      console.log('[SnagAI] PDF export unavailable — jsPDF not loaded');
       return;
     }
 
@@ -515,69 +516,219 @@
     btn.disabled = true;
     btn.innerHTML = `<span>Exporting…</span>`;
 
-    let captureRoot;
     try {
+      const audit = latestAuditResult;
       const profileName = (latestAuditProfile && latestAuditProfile.name) || 'Your profile';
       const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 
-      // Off-screen capture root — stays a descendant of #snagai-audit-panel so the
-      // panel's own CSS (fonts, colors, box-sizing reset) applies identically.
-      // Rendered at report width (not the 340px sidebar width) so the exported
-      // page reads like a document instead of a stretched, narrow sidebar strip.
-      const REPORT_WIDTH = 760;
-      captureRoot = document.createElement('div');
-      captureRoot.style.cssText = `position:absolute;top:0;left:-9999px;width:${REPORT_WIDTH}px;background:#0d0d12`;
-      captureRoot.innerHTML = `
-        <div style="padding:24px 28px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:12px">
-          <div style="width:34px;height:34px;background:#6366f1;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-            <svg width="17" height="17" viewBox="0 0 100 100" fill="none">
-              <rect x="5" y="5" width="64" height="78" rx="10" stroke="white" stroke-width="7" fill="none"/>
-              <line x1="16" y1="24" x2="55" y2="24" stroke="white" stroke-width="7" stroke-linecap="round"/>
-              <line x1="16" y1="40" x2="55" y2="40" stroke="white" stroke-width="7" stroke-linecap="round"/>
-              <line x1="16" y1="56" x2="38" y2="56" stroke="white" stroke-width="7" stroke-linecap="round"/>
-              <circle cx="76" cy="77" r="23" fill="#4338ca"/>
-              <polygon points="80,59 70,78 77,78 73,95 88,74 81,74" fill="white"/>
-            </svg>
-          </div>
-          <div>
-            <div style="font-size:15px;font-weight:700;color:#f0eeea">Snag AI &mdash; Profile Audit Report</div>
-            <div style="font-size:11.5px;color:rgba(240,238,234,.45);margin-top:2px">${profileName} &middot; ${dateStr}</div>
-          </div>
-        </div>
-      `;
-
-      const bodyClone = bodyEl.cloneNode(true);
-      bodyClone.removeAttribute('id');
-      bodyClone.style.cssText = `width:${REPORT_WIDTH}px;overflow:visible;height:auto;padding-bottom:28px`;
-      captureRoot.appendChild(bodyClone);
-      panel.appendChild(captureRoot);
-
-      const canvas = await html2canvas(captureRoot, { backgroundColor: '#0d0d12', scale: 2, width: REPORT_WIDTH });
-
-      // Lay the capture across standard A4 pages with margins, slicing into
-      // multiple pages if the report is taller than one page.
       const { jsPDF } = window.jspdf;
-      const doc    = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true });
-      const pageW  = doc.internal.pageSize.getWidth();
-      const pageH  = doc.internal.pageSize.getHeight();
-      const margin = 10;
-      const usableW = pageW - margin * 2;
-      const usableH = pageH - margin * 2;
+      const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true });
 
-      const imgData = canvas.toDataURL('image/jpeg', 0.92);
-      const imgW = usableW;
-      const imgH = (canvas.height / canvas.width) * imgW;
+      // ── palette (print-safe — darker than the on-screen neon so text stays legible on white) ──
+      const hx = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+      const INK = hx('#17171f'), MUTED = hx('#63636f'), FAINT = hx('#9b9ba6'), LINE = hx('#e4e4ea');
+      const INDIGO = hx('#4f46e5'), INDIGO_BG = hx('#eef0fd'), INDIGO_DK = hx('#3730a3');
+      const GREEN = hx('#15803d'), GREEN_BG = hx('#f0fdf4');
+      const AMBER = hx('#b45309'), AMBER_BG = hx('#fffbeb');
+      const RED = hx('#b91c1c'), RED_BG = hx('#fef2f2');
+      const BLUE = hx('#1d4ed8'), BLUE_BG = hx('#eff6ff');
+      const PURPLE = hx('#6d28d9'), ORANGE = hx('#c2410c');
+      const STATUS_COLOR = { Elite: PURPLE, Strong: GREEN, Good: BLUE, Average: AMBER, Weak: ORANGE, Critical: RED };
+      const BUCKET = n => n >= 8 ? { fg: GREEN, bg: GREEN_BG } : n >= 6 ? { fg: BLUE, bg: BLUE_BG } : n >= 4 ? { fg: AMBER, bg: AMBER_BG } : { fg: RED, bg: RED_BG };
+      const IMPACT = { High: { fg: RED, bg: RED_BG }, Medium: { fg: AMBER, bg: AMBER_BG }, Low: { fg: BLUE, bg: BLUE_BG } };
 
-      let heightLeft = imgH;
-      let y = margin;
-      doc.addImage(imgData, 'JPEG', margin, y, imgW, imgH);
-      heightLeft -= usableH;
+      // ── layout ──
+      const pageW = doc.internal.pageSize.getWidth();
+      const pageH = doc.internal.pageSize.getHeight();
+      const marginX = 18, marginTop = 18, marginBottom = 16;
+      const contentW = pageW - marginX * 2;
+      let page = 1, y = marginTop;
 
-      while (heightLeft > 0) {
-        y = heightLeft - imgH + margin;
-        doc.addPage();
-        doc.addImage(imgData, 'JPEG', margin, y, imgW, imgH);
-        heightLeft -= usableH;
+      const lineH = (size, factor = 1.32) => size * factor * 0.3528;
+      const wrapped = (text, size, font = 'helvetica', style = 'normal', width = contentW) => {
+        doc.setFont(font, style); doc.setFontSize(size);
+        return doc.splitTextToSize(String(text || ''), width);
+      };
+
+      function drawHeader(full) {
+        if (full) {
+          doc.setFillColor(...INDIGO);
+          doc.roundedRect(marginX, y, 9, 9, 2, 2, 'F');
+          doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(255, 255, 255);
+          doc.text('S', marginX + 4.5, y + 6.3, { align: 'center' });
+
+          doc.setFont('helvetica', 'bold'); doc.setFontSize(13); doc.setTextColor(...INK);
+          doc.text('Snag AI — Profile Audit Report', marginX + 13, y + 5.6);
+
+          doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(...MUTED);
+          doc.text(`${profileName}  ·  ${dateStr}`, marginX + 13, y + 10.6);
+
+          y += 16;
+        } else {
+          doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5); doc.setTextColor(...INDIGO);
+          doc.text('SNAG AI — PROFILE AUDIT REPORT', marginX, y);
+          doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.setTextColor(...FAINT);
+          doc.text(`${profileName}`, pageW - marginX, y, { align: 'right' });
+          y += 5;
+        }
+        doc.setDrawColor(...LINE); doc.setLineWidth(0.3);
+        doc.line(marginX, y, pageW - marginX, y);
+        y += full ? 9 : 8;
+      }
+
+      function ensureSpace(needed) {
+        if (y + needed > pageH - marginBottom) {
+          doc.addPage();
+          page++;
+          y = marginTop;
+          drawHeader(false);
+        }
+      }
+
+      // ── hero: score, status, headline ──
+      drawHeader(true);
+
+      const score = parseFloat(audit.overallScore) || 0;
+      const status = audit.status || 'Good';
+      const stColor = STATUS_COLOR[status] || BLUE;
+      const r = 11, cx = marginX + r, cy = y + r;
+
+      doc.setDrawColor(...stColor); doc.setLineWidth(1.1);
+      doc.circle(cx, cy, r, 'S');
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(13); doc.setTextColor(...stColor);
+      doc.text(score.toFixed(1), cx, cy + 1.6, { align: 'center' });
+
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(...FAINT);
+      doc.text(`${status.toUpperCase()} PROFILE`, cx + r + 7, cy - 0.5);
+
+      y += r * 2 + 7;
+
+      if (audit.headline) {
+        const lines = wrapped(`“${audit.headline}”`, 15, 'times', 'italic');
+        doc.setTextColor(...INK);
+        doc.text(lines, marginX, y);
+        y += lines.length * lineH(15) + 8;
+      }
+
+      doc.setDrawColor(...LINE); doc.setLineWidth(0.3);
+      doc.line(marginX, y, pageW - marginX, y);
+      y += 10;
+
+      // ── sections: diagnosis + concrete suggested fix ──
+      (audit.sections || []).forEach(sec => {
+        ensureSpace(16);
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(11.5); doc.setTextColor(...INK);
+        doc.text(sec.label || '', marginX, y);
+
+        const b = BUCKET(sec.score);
+        const badgeLabel = `${sec.score}/10`;
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
+        const bw = doc.getTextWidth(badgeLabel) + 6;
+        doc.setFillColor(...b.bg);
+        doc.roundedRect(pageW - marginX - bw, y - 4.2, bw, 5.6, 1.4, 1.4, 'F');
+        doc.setTextColor(...b.fg);
+        doc.text(badgeLabel, pageW - marginX - bw / 2, y - 0.5, { align: 'center' });
+        y += 7;
+
+        if (sec.finding) {
+          const lines = wrapped(sec.finding, 9.5);
+          const h = lines.length * lineH(9.5);
+          ensureSpace(h + 4);
+          doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5); doc.setTextColor(...MUTED);
+          doc.text(lines, marginX, y);
+          y += h + 4;
+        }
+
+        if (sec.fix) {
+          const innerW = contentW - 14;
+          const fixLines = wrapped(sec.fix, 9.5, 'helvetica', 'normal', innerW);
+          const boxH = fixLines.length * lineH(9.5) + 11;
+          ensureSpace(boxH + 6);
+          doc.setFillColor(...INDIGO_BG);
+          doc.roundedRect(marginX, y, contentW, boxH, 2, 2, 'F');
+          doc.setFillColor(...INDIGO);
+          doc.rect(marginX, y, 1.3, boxH, 'F');
+          doc.setFont('helvetica', 'bold'); doc.setFontSize(7.3); doc.setTextColor(...INDIGO_DK);
+          doc.text('SUGGESTED FIX', marginX + 6, y + 5.5);
+          doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5); doc.setTextColor(...INK);
+          doc.text(fixLines, marginX + 6, y + 10.3);
+          y += boxH + 9;
+        } else {
+          y += 5;
+        }
+      });
+
+      // ── what's working ──
+      const wins = audit.topWins || [];
+      if (wins.length) {
+        const quoteText = `“${wins.join('. ')}.”`;
+        const qLines = wrapped(quoteText, 10, 'times', 'italic', contentW - 14);
+        const boxH = qLines.length * lineH(10) + 10;
+        ensureSpace(boxH + 8);
+        doc.setFillColor(...GREEN_BG);
+        doc.roundedRect(marginX, y, contentW, boxH, 2, 2, 'F');
+        doc.setFillColor(...GREEN);
+        doc.rect(marginX, y, 1.3, boxH, 'F');
+        doc.setFont('times', 'italic'); doc.setFontSize(10); doc.setTextColor(...INK);
+        doc.text(qLines, marginX + 7, y + 7);
+        y += boxH + 10;
+      }
+
+      // ── what to fix first ──
+      const fixes = audit.topFixes || [];
+      if (fixes.length) {
+        ensureSpace(12);
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(12); doc.setTextColor(...INK);
+        doc.text('What to fix first', marginX, y);
+        y += 9;
+
+        fixes.forEach(f => {
+          const imp = IMPACT[f.impact] || IMPACT.Medium;
+          const lines = wrapped(f.action, 9.8, 'helvetica', 'normal', contentW - 14);
+          const textH = lines.length * lineH(9.8);
+          ensureSpace(textH + 13);
+
+          doc.setFillColor(...imp.fg);
+          doc.circle(marginX + 3, y + 2.4, 3, 'F');
+          doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5); doc.setTextColor(255, 255, 255);
+          doc.text(String(f.priority), marginX + 3, y + 3.5, { align: 'center' });
+
+          doc.setFont('helvetica', 'normal'); doc.setFontSize(9.8); doc.setTextColor(...INK);
+          doc.text(lines, marginX + 9, y + 1.6);
+
+          const impLabel = `${(f.impact || '').toUpperCase()} IMPACT`;
+          doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5);
+          const iw = doc.getTextWidth(impLabel) + 5;
+          const impY = y + 1.6 + textH + 2;
+          doc.setFillColor(...imp.bg);
+          doc.roundedRect(marginX + 9, impY - 3.6, iw, 4.8, 1.2, 1.2, 'F');
+          doc.setTextColor(...imp.fg);
+          doc.text(impLabel, marginX + 9 + iw / 2, impY - 0.3, { align: 'center' });
+
+          y += textH + 13;
+        });
+      }
+
+      // ── rate insight ──
+      if (audit.rateInsight) {
+        const lines = wrapped(audit.rateInsight, 9, 'times', 'italic');
+        const h = lines.length * lineH(9);
+        ensureSpace(h + 10);
+        doc.setDrawColor(...LINE); doc.setLineWidth(0.3);
+        doc.line(marginX, y, pageW - marginX, y);
+        y += 7;
+        doc.setFont('times', 'italic'); doc.setFontSize(9); doc.setTextColor(...MUTED);
+        doc.text(lines, marginX, y);
+        y += h;
+      }
+
+      // ── footer + page numbers on every page ──
+      const total = doc.internal.getNumberOfPages();
+      for (let p = 1; p <= total; p++) {
+        doc.setPage(p);
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(...FAINT);
+        doc.text('Generated by Snag AI', marginX, pageH - 9);
+        doc.text(`Page ${p} of ${total}`, pageW - marginX, pageH - 9, { align: 'right' });
       }
 
       const safeName = String(profileName).trim().replace(/[^a-z0-9]+/gi, '-').replace(/(^-+|-+$)/g, '') || 'profile';
@@ -588,7 +739,6 @@
       console.log('[SnagAI] PDF export failed:', e.message);
       btn.innerHTML = `<span>Export failed</span>`;
     } finally {
-      if (captureRoot) captureRoot.remove();
       setTimeout(() => { btn.disabled = false; btn.innerHTML = originalBtnHtml; }, 1800);
     }
   }

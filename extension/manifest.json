@@ -56,7 +56,6 @@
         "https://www.upwork.com/freelancers/*"
       ],
       "js": [
-        "html2canvas.min.js",
         "jspdf.umd.min.js",
         "content/profile-reader.js"
       ],
