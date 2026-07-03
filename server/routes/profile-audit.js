@@ -53,7 +53,7 @@ function callClaudeRaw(system, userMsg) {
 
     const body = JSON.stringify({
       model: 'claude-sonnet-4-6',
-      max_tokens: 1800,
+      max_tokens: 3000,
       system,
       messages: [{ role: 'user', content: userMsg }],
     });

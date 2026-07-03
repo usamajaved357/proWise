@@ -191,6 +191,10 @@
   }
 
 
+  // ── Audit PDF export state — holds the most recently rendered audit ──────────
+  let latestAuditResult  = null;
+  let latestAuditProfile = null;
+
   // ── Storage helpers ───────────────────────────────────────────────────────────
   const local = {
     get: keys => new Promise(r => chrome.storage.local.get(keys, r)),
@@ -414,9 +418,13 @@
       #snagai-audit-panel{all:initial;position:fixed!important;top:0!important;right:0!important;width:340px!important;height:100vh!important;background:#0d0d12!important;border-left:1px solid rgba(255,255,255,.08)!important;z-index:2147483647!important;display:flex!important;flex-direction:column!important;animation:sn-slide-in .22s ease!important;overflow:hidden!important;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif!important;box-sizing:border-box!important}
       #snagai-audit-panel *{box-sizing:border-box;font-family:inherit}
 
-      .sn-hd{display:flex;align-items:center;gap:10px;padding:16px;border-bottom:1px solid rgba(255,255,255,.07);flex-shrink:0}
+      .sn-hd{display:flex;align-items:center;gap:8px;padding:16px;border-bottom:1px solid rgba(255,255,255,.07);flex-shrink:0}
       .sn-hd-ico{width:26px;height:26px;background:#6366f1;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
       .sn-hd-lbl{font-size:13px;font-weight:600;color:#f0eeea;flex:1}
+      .sn-hd-export{display:flex;align-items:center;gap:5px;background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.3);color:#a5a8f5;border-radius:999px;padding:5px 10px;font-size:10.5px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:background .15s,border-color .15s}
+      .sn-hd-export:hover:not(:disabled){background:rgba(99,102,241,.2);border-color:rgba(99,102,241,.45)}
+      .sn-hd-export:disabled{opacity:.35;cursor:default}
+      .sn-hd-export svg{flex-shrink:0}
       .sn-hd-close{background:none;border:none;color:rgba(255,255,255,.35);font-size:15px;cursor:pointer;line-height:1;padding:2px}
       .sn-hd-close:hover{color:rgba(255,255,255,.7)}
 
@@ -471,6 +479,10 @@
             </svg>
           </div>
           <span class="sn-hd-lbl">Profile Audit</span>
+          <button class="sn-hd-export" id="snagai-audit-export" disabled title="Export as PDF">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+            <span>PDF</span>
+          </button>
           <button class="sn-hd-close" id="snagai-audit-close">✕</button>
         </div>
         <div class="sn-bd" id="snagai-audit-body">
@@ -483,8 +495,102 @@
       `;
       document.body.appendChild(panel);
       document.getElementById('snagai-audit-close').addEventListener('click', () => panel.remove());
+      document.getElementById('snagai-audit-export').addEventListener('click', exportAuditPDF);
     }
     return panel;
+  }
+
+  // ── Export the rendered audit panel as a downloadable PDF ────────────────────
+  async function exportAuditPDF() {
+    const btn    = document.getElementById('snagai-audit-export');
+    const panel  = document.getElementById('snagai-audit-panel');
+    const bodyEl = document.getElementById('snagai-audit-body');
+    if (!btn || btn.disabled || !panel || !bodyEl || !latestAuditResult) return;
+    if (typeof html2canvas !== 'function' || !window.jspdf) {
+      console.log('[SnagAI] PDF export unavailable — html2canvas/jsPDF not loaded');
+      return;
+    }
+
+    const originalBtnHtml = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = `<span>Exporting…</span>`;
+
+    let captureRoot;
+    try {
+      const profileName = (latestAuditProfile && latestAuditProfile.name) || 'Your profile';
+      const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+      // Off-screen capture root — stays a descendant of #snagai-audit-panel so the
+      // panel's own CSS (fonts, colors, box-sizing reset) applies identically.
+      // Rendered at report width (not the 340px sidebar width) so the exported
+      // page reads like a document instead of a stretched, narrow sidebar strip.
+      const REPORT_WIDTH = 760;
+      captureRoot = document.createElement('div');
+      captureRoot.style.cssText = `position:absolute;top:0;left:-9999px;width:${REPORT_WIDTH}px;background:#0d0d12`;
+      captureRoot.innerHTML = `
+        <div style="padding:24px 28px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:12px">
+          <div style="width:34px;height:34px;background:#6366f1;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg width="17" height="17" viewBox="0 0 100 100" fill="none">
+              <rect x="5" y="5" width="64" height="78" rx="10" stroke="white" stroke-width="7" fill="none"/>
+              <line x1="16" y1="24" x2="55" y2="24" stroke="white" stroke-width="7" stroke-linecap="round"/>
+              <line x1="16" y1="40" x2="55" y2="40" stroke="white" stroke-width="7" stroke-linecap="round"/>
+              <line x1="16" y1="56" x2="38" y2="56" stroke="white" stroke-width="7" stroke-linecap="round"/>
+              <circle cx="76" cy="77" r="23" fill="#4338ca"/>
+              <polygon points="80,59 70,78 77,78 73,95 88,74 81,74" fill="white"/>
+            </svg>
+          </div>
+          <div>
+            <div style="font-size:15px;font-weight:700;color:#f0eeea">Snag AI &mdash; Profile Audit Report</div>
+            <div style="font-size:11.5px;color:rgba(240,238,234,.45);margin-top:2px">${profileName} &middot; ${dateStr}</div>
+          </div>
+        </div>
+      `;
+
+      const bodyClone = bodyEl.cloneNode(true);
+      bodyClone.removeAttribute('id');
+      bodyClone.style.cssText = `width:${REPORT_WIDTH}px;overflow:visible;height:auto;padding-bottom:28px`;
+      captureRoot.appendChild(bodyClone);
+      panel.appendChild(captureRoot);
+
+      const canvas = await html2canvas(captureRoot, { backgroundColor: '#0d0d12', scale: 2, width: REPORT_WIDTH });
+
+      // Lay the capture across standard A4 pages with margins, slicing into
+      // multiple pages if the report is taller than one page.
+      const { jsPDF } = window.jspdf;
+      const doc    = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true });
+      const pageW  = doc.internal.pageSize.getWidth();
+      const pageH  = doc.internal.pageSize.getHeight();
+      const margin = 10;
+      const usableW = pageW - margin * 2;
+      const usableH = pageH - margin * 2;
+
+      const imgData = canvas.toDataURL('image/jpeg', 0.92);
+      const imgW = usableW;
+      const imgH = (canvas.height / canvas.width) * imgW;
+
+      let heightLeft = imgH;
+      let y = margin;
+      doc.addImage(imgData, 'JPEG', margin, y, imgW, imgH);
+      heightLeft -= usableH;
+
+      while (heightLeft > 0) {
+        y = heightLeft - imgH + margin;
+        doc.addPage();
+        doc.addImage(imgData, 'JPEG', margin, y, imgW, imgH);
+        heightLeft -= usableH;
+      }
+
+      const safeName = String(profileName).trim().replace(/[^a-z0-9]+/gi, '-').replace(/(^-+|-+$)/g, '') || 'profile';
+      doc.save(`SnagAI-Profile-Audit-${safeName}-${new Date().toISOString().slice(0, 10)}.pdf`);
+
+      btn.innerHTML = `<span>Saved ✓</span>`;
+    } catch (e) {
+      console.log('[SnagAI] PDF export failed:', e.message);
+      btn.innerHTML = `<span>Export failed</span>`;
+    } finally {
+      if (captureRoot) captureRoot.remove();
+      setTimeout(() => { btn.disabled = false; btn.innerHTML = originalBtnHtml; }, 1800);
+    }
   }
 
   // ── Render audit results ──────────────────────────────────────────────────────
@@ -544,6 +650,10 @@
         ${audit.rateInsight ? `<div class="sn-erate">${audit.rateInsight}</div>` : ''}
       </div>
     `;
+
+    latestAuditResult = audit;
+    const exportBtn = document.getElementById('snagai-audit-export');
+    if (exportBtn) exportBtn.disabled = false;
   }
 
   // ── Audit button ──────────────────────────────────────────────────────────────
@@ -608,6 +718,7 @@
       openAuditPanel();
       try {
         const auditData = await readAuditData();
+        latestAuditProfile = auditData;
         console.log('[SnagAI] Audit data:', auditData);
         const audit = await chrome.runtime.sendMessage({ type: 'AUDIT_PROFILE', profile: auditData });
         if (audit?.error) throw new Error(audit.error);
