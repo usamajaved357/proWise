@@ -203,73 +203,86 @@
     )),
   };
 
-  // ── Inject sync button — matches Write Proposal pill style ───────────────────
-  function injectSyncButton(onSync) {
-    if (document.getElementById('snagai-sync-trigger')) return;
+  // ── Inject toolbar — one shared capsule housing both Audit and Sync ──────────
+  // Two independent buttons, one frame — replaces the earlier two-separate-pills
+  // layout that looked disjointed floating side by side.
+  function injectToolbar(onAudit, onSync) {
+    if (document.getElementById('snagai-toolbar')) return;
 
     const style = document.createElement('style');
     style.textContent = `
       @keyframes snagai-pulse{0%,100%{opacity:1}50%{opacity:.4}}
       @keyframes snagai-spin{to{transform:rotate(360deg)}}
-      #snagai-sync-trigger{position:fixed;bottom:28px;right:28px;z-index:2147483646;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
-      #snagai-sync-btn{display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,#0d1120,#1a2035);color:#f0eeea;border:1px solid rgba(201,168,76,.35);border-radius:50px;padding:11px 20px 11px 14px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 4px 24px rgba(0,0,0,.5),0 0 0 1px rgba(201,168,76,.15);transition:transform .2s,box-shadow .2s;font-family:inherit}
-      #snagai-sync-btn:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,.6),0 0 0 1px rgba(201,168,76,.3)}
-      #snagai-sync-btn:disabled{opacity:.7;cursor:default;transform:none}
-      .snagai-btn-icon{width:24px;height:24px;background:#6366f1;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-      .snagai-live-dot{width:6px;height:6px;background:#34d399;border-radius:50%;animation:snagai-pulse 2s ease-in-out infinite;flex-shrink:0}
+      #snagai-toolbar{position:fixed;bottom:28px;right:28px;z-index:2147483646;display:flex;align-items:stretch;background:#111827;border:1px solid rgba(99,102,241,.28);border-radius:999px;box-shadow:0 8px 28px rgba(0,0,0,.45);overflow:hidden;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;transition:transform .2s,box-shadow .2s}
+      #snagai-toolbar:hover{transform:translateY(-2px);box-shadow:0 12px 36px rgba(0,0,0,.55)}
+      .snagai-tb-btn{display:flex;align-items:center;justify-content:center;background:none;border:none;padding:9px;cursor:pointer;position:relative;transition:background .15s}
+      .snagai-tb-btn:hover:not(:disabled){background:rgba(255,255,255,.06)}
+      .snagai-tb-btn:disabled{opacity:.6;cursor:default}
+      .snagai-tb-icon{width:24px;height:24px;background:#6366f1;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+      .snagai-tb-div{width:1px;margin:8px 0;background:rgba(255,255,255,.1);flex-shrink:0}
+      .snagai-live-dot{position:absolute;top:6px;right:6px;width:6px;height:6px;background:#34d399;border-radius:50%;border:1.5px solid #111827;animation:snagai-pulse 2s ease-in-out infinite}
       .snagai-spin-icon{display:inline-block;animation:snagai-spin .7s linear infinite}
     `;
     document.head.appendChild(style);
 
     const wrap = document.createElement('div');
-    wrap.id = 'snagai-sync-trigger';
+    wrap.id = 'snagai-toolbar';
 
-    const btn = document.createElement('button');
-    btn.id = 'snagai-sync-btn';
-    btn.innerHTML = `
-      <div class="snagai-btn-icon">
-        <svg width="16" height="16" viewBox="0 0 100 100" fill="none">
-          <rect x="5" y="5" width="64" height="78" rx="10" stroke="white" stroke-width="5.5" fill="none"/>
-          <line x1="14" y1="23" x2="57" y2="23" stroke="white" stroke-width="5" stroke-linecap="round"/>
-          <line x1="14" y1="35" x2="57" y2="35" stroke="white" stroke-width="5" stroke-linecap="round"/>
-          <line x1="14" y1="47" x2="57" y2="47" stroke="white" stroke-width="5" stroke-linecap="round"/>
-          <circle cx="76" cy="77" r="23" fill="#4338ca"/>
-          <polygon points="80,59 70,78 77,78 73,95 88,74 81,74" fill="white"/>
-        </svg>
+    const auditBtn = document.createElement('button');
+    auditBtn.id = 'snagai-audit-btn';
+    auditBtn.className = 'snagai-tb-btn';
+    auditBtn.title = 'Audit Profile';
+    auditBtn.innerHTML = `
+      <div class="snagai-tb-icon">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
       </div>
-      <span>Sync Profile</span>
+    `;
+    auditBtn.addEventListener('click', () => onAudit(auditBtn));
+
+    const divider = document.createElement('div');
+    divider.className = 'snagai-tb-div';
+
+    const syncBtn = document.createElement('button');
+    syncBtn.id = 'snagai-sync-btn';
+    syncBtn.className = 'snagai-tb-btn';
+    syncBtn.title = 'Sync Profile';
+    syncBtn.innerHTML = `
+      <div class="snagai-tb-icon">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      </div>
       <span class="snagai-live-dot"></span>
     `;
 
-    btn.addEventListener('click', async () => {
-      btn.disabled = true;
-      btn.innerHTML = `
-        <div class="snagai-btn-icon">
-          <span class="snagai-spin-icon" style="font-size:13px;color:#0a0e1a">↻</span>
+    syncBtn.addEventListener('click', async () => {
+      syncBtn.disabled = true;
+      syncBtn.title = 'Syncing…';
+      syncBtn.innerHTML = `
+        <div class="snagai-tb-icon">
+          <span class="snagai-spin-icon" style="font-size:13px;color:#fff">↻</span>
         </div>
-        <span>Syncing…</span>
       `;
       try {
         await onSync();
-        btn.innerHTML = `
-          <div class="snagai-btn-icon" style="background:linear-gradient(135deg,#065f46,#34d399)">
+        syncBtn.title = 'Synced';
+        syncBtn.innerHTML = `
+          <div class="snagai-tb-icon" style="background:#16a34a">
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
           </div>
-          <span>Synced</span>
         `;
-        btn.style.borderColor = 'rgba(52,211,153,.4)';
       } catch(e) {
-        btn.innerHTML = `
-          <div class="snagai-btn-icon" style="background:linear-gradient(135deg,#7f1d1d,#f87171)">
+        syncBtn.title = 'Sync failed — click to retry';
+        syncBtn.innerHTML = `
+          <div class="snagai-tb-icon" style="background:#dc2626">
             <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
           </div>
-          <span>Retry</span>
         `;
-        btn.disabled = false;
+        syncBtn.disabled = false;
       }
     });
 
-    wrap.appendChild(btn);
+    wrap.appendChild(auditBtn);
+    wrap.appendChild(divider);
+    wrap.appendChild(syncBtn);
     document.body.appendChild(wrap);
   }
 
@@ -806,31 +819,6 @@
     if (exportBtn) exportBtn.disabled = false;
   }
 
-  // ── Audit button ──────────────────────────────────────────────────────────────
-  function injectAuditButton(onAudit) {
-    if (document.getElementById('snagai-audit-trigger')) return;
-
-    const wrap = document.createElement('div');
-    wrap.id = 'snagai-audit-trigger';
-    wrap.style.cssText = 'position:fixed;bottom:28px;right:200px;z-index:2147483646;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
-
-    const btn = document.createElement('button');
-    btn.id = 'snagai-audit-btn';
-    btn.style.cssText = 'display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,#312e81,#4338ca);color:#f0eeea;border:1px solid rgba(99,102,241,.5);border-radius:50px;padding:11px 20px 11px 14px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 4px 24px rgba(99,102,241,.35);transition:transform .2s,box-shadow .2s;font-family:inherit';
-    btn.innerHTML = `
-      <div style="width:24px;height:24px;background:rgba(255,255,255,.15);border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-      </div>
-      <span>Audit Profile</span>
-    `;
-    btn.addEventListener('mouseenter', () => { btn.style.transform = 'translateY(-2px)'; btn.style.boxShadow = '0 8px 32px rgba(99,102,241,.5)'; });
-    btn.addEventListener('mouseleave', () => { btn.style.transform = ''; btn.style.boxShadow = '0 4px 24px rgba(99,102,241,.35)'; });
-
-    btn.addEventListener('click', () => onAudit(btn));
-    wrap.appendChild(btn);
-    document.body.appendChild(wrap);
-  }
-
   // ── Init ──────────────────────────────────────────────────────────────────────
   async function init() {
     const { registeredProfiles: registered = [] } = await local.get(['registeredProfiles']);
@@ -857,13 +845,13 @@
 
     injectAuditStyles();
 
-    injectAuditButton(async (btn) => {
+    injectToolbar(async (btn) => {
       btn.disabled = true;
+      btn.title = 'Auditing…';
       btn.innerHTML = `
-        <div style="width:24px;height:24px;background:rgba(255,255,255,.15);border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-          <span style="display:inline-block;animation:snagai-spin .7s linear infinite;font-size:13px">↻</span>
+        <div class="snagai-tb-icon">
+          <span class="snagai-spin-icon" style="font-size:13px;color:#fff">↻</span>
         </div>
-        <span>Auditing…</span>
       `;
       openAuditPanel();
       try {
@@ -873,11 +861,11 @@
         const audit = await chrome.runtime.sendMessage({ type: 'AUDIT_PROFILE', profile: auditData });
         if (audit?.error) throw new Error(audit.error);
         renderAudit(audit);
+        btn.title = 'View Audit';
         btn.innerHTML = `
-          <div style="width:24px;height:24px;background:rgba(74,222,128,.2);border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+          <div class="snagai-tb-icon" style="background:#16a34a">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
           </div>
-          <span>View Audit</span>
         `;
         btn.disabled = false;
         btn.onclick = () => {
@@ -887,12 +875,15 @@
       } catch(e) {
         const body = document.getElementById('snagai-audit-body');
         if (body) body.innerHTML = `<div style="padding:40px 24px;text-align:center;color:#f87171;font-size:13px">Audit failed: ${e.message}</div>`;
-        btn.innerHTML = `<span>Retry</span>`;
+        btn.title = 'Audit failed — click to retry';
+        btn.innerHTML = `
+          <div class="snagai-tb-icon" style="background:#dc2626">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </div>
+        `;
         btn.disabled = false;
       }
-    });
-
-    injectSyncButton(async () => {
+    }, async () => {
       const existing     = await local.get([localKey]);
       const existingFull = existing[localKey] || {};
       const data         = readProfileData();
