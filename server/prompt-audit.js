@@ -52,11 +52,15 @@ bio (0-10):
 - 7-8: Strong hook, specific metrics (users, revenue, downloads), clear niche, CTA
 - 9-10: Opens with client pain point, quantified proof, memorable phrase, clear next step
 
+AI summary quality: Upwork now shows clients an AI-generated summary of the freelancer built from bio, portfolio descriptions, and work history reviews. In the finding and fix, evaluate whether the bio would produce a strong AI summary — look for clear outcome statements Uma can extract, specific technology + result language rather than vague claims, and whether a 3-sentence AI summary of this profile would read as compelling or generic. Flag any bio that contains only vague claims with no extractable specifics.
+
 skills (0-10):
 - 0-3: Fewer than 5 skills or wrong skills for niche
 - 4-6: 5-12 skills but includes generic/irrelevant entries
 - 7-8: 13-20 relevant skills, strategically chosen for search visibility
 - 9-10: 15-20 perfectly targeted skills covering primary + adjacent + tools
+
+Specialized Profile keyword-loss flag (applies to skills and bio findings): After May 28, 2026, Upwork deleted all Specialized Profiles and their keywords did not auto-transfer to the main profile — many freelancers lost keyword coverage without realizing it. If skills coverage or bio language looks thin or inconsistent with the stated title, flag this explicitly in the finding or fix: "If you previously had Specialized Profiles, your keywords did not auto-transfer after May 28, 2026. Audit your main profile skills and bio to ensure all relevant keywords are present."
 
 portfolio (0-10):
 - 0-2: 0-1 portfolio items
@@ -64,6 +68,8 @@ portfolio (0-10):
 - 6-7: 5-8 items, good variety across niches
 - 8-9: 9-15 items with outcome metrics (downloads, users, revenue)
 - 10: 15+ items, diverse, with quantified outcomes on each
+
+Keyword quality & AI summary strength: Uma Recruiter reads portfolio descriptions to generate client-facing summaries — a high item count with thin descriptions still produces a weak AI summary. Portfolios with rich, keyword-specific descriptions (technologies used, problem solved, outcome achieved) score higher than portfolios with the same item count but vague or generic descriptions; deduct 1-2 points from the tier above if descriptions are thin or missing keywords relevant to the freelancer's stated niche. In the finding/fix, check that each item has enough specific language for Uma to generate a meaningful client-facing summary — flag any items that contain only vague claims with no extractable specifics.
 
 history (0-10):
 - 0-3: 0-2 completed jobs or average rating below 4.5
@@ -77,6 +83,8 @@ credibility (0-10):
 - Each testimonial: +1 (max +3)
 - Employment history present: +1
 - Education listed: +0.5
+
+Normalization: the raw point total above can exceed 10. After summing all applicable points, normalize to a 0-10 scale using this formula: final score = min(raw total, 10). Never return a credibility score above 10 regardless of how many signals are present. When writing the finding and fix, mention which high-value signals (JSS, badge tier, testimonials) are missing or weak since those carry the most weight.
 
 certificates (0-10):
 NOTE: Upwork's algorithm gives profiles with certifications a ~10% visibility boost in search rankings.
@@ -105,17 +113,25 @@ Be explicit in your finding about whether the provider tier is holding them back
 
 completeness (0-10):
 - Profile photo present (assume yes if they have clients): +2
-- Video intro: +2 (rare differentiator — less than 5% of freelancers have it)
+- Video intro: +3 (rare differentiator — less than 5% of freelancers have it as of 2026; Uma Recruiter surfaces profiles with video intros more prominently in shortlists since it signals completeness and client trust — a bigger differentiator post-Uma than before)
 - Response time 0-4 hrs: +2, same day: +1
 - 30+ hrs/week availability: +1
 - GitHub linked: +1
 - Stack Overflow linked: +0.5
 - Languages beyond English: +0.5
+- Available Now badge set to ON: +1
+- Last proposal submitted within 7 days: +1
+- Last contract or hire within 30 days: +1
+
+Recent activity signal: Uma favors active profiles over dormant ones. If none of the three recent-activity signals above (Available Now, recent proposal, recent contract/hire) are present, flag the profile in the finding or fix as potentially deprioritized by Uma's matching algorithm.
+
+Normalization: the raw point total above can exceed 10. After summing all applicable points, normalize to a 0-10 scale using this formula: final score = min(raw total, 10). Never return a completeness score above 10 regardless of how many signals are present. When writing the finding and fix, mention which high-value signals (video intro, recent activity, Available Now) are missing since those carry the most weight.
 
 positioning (0-10):
-- Rate vs tier: is their rate appropriate for their badge/JSS/experience level?
+- Rate vs tier: is their rate appropriate for their badge/JSS/experience level — AND for their specific skill category's scarcity tier? Upwork's 2026 variable fee structure charges 5-10% fees for scarce skill categories (e.g. senior engineering) and 15% for commodity categories, and Uma uses rate as a matching filter against client budgets. Evaluate the rate against category scarcity, not just badge or JSS. A senior Flutter or React developer at $30/hr signals commodity pricing even with a Rising Talent or Top Rated badge — flag this explicitly and suggest a rate range based on category tier (example: a Rising Talent full-stack developer should be pricing at $45-65/hr minimum to avoid commodity matching).
 - $20/hr for Top Rated + 100% JSS is severely underpriced — note this explicitly
 - Niche clarity: do they own one specific problem category or are they too broad?
+- Category drift (Uma matching confidence): Uma matches profiles to jobs based on consistency between title, skills, bio, and portfolio. Drift between these (e.g. title says "Flutter Developer" but portfolio is mostly web or unrelated projects) lowers Uma's matching confidence and results in fewer relevant invites. Award +1 if title matches primary skills, +1 if bio reinforces the same niche as the title, +1 if portfolio items align with the stated specialty. Apply a penalty of 1-2 points if the profile reads as a generalist across unrelated categories.
 - Score based on how commanding and deliberate their market position appears
 
 STATUS thresholds (based on overallScore):
