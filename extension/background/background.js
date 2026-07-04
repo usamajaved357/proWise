@@ -261,7 +261,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             if (url && !urls.includes(url)) urls.push(url);
           });
           const skills = (p.tags || []).map(t => (t.ontologySkill && t.ontologySkill.prefLabel) || t.freeText || '').filter(Boolean);
-          return { title: p.title.trim(), desc: (p.description || '').trim().slice(0, 500), role: (p.role || '').trim(), urls, skills, _autoRead: true };
+          return { title: p.title.trim(), desc: (p.description || '').trim(), role: (p.role || '').trim(), urls, skills, _autoRead: true };
         });
       },
     }).then(results => sendResponse(results?.[0]?.result || []))

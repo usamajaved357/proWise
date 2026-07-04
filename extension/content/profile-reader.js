@@ -34,7 +34,7 @@
   }
 
   // ── Skill validators ─────────────────────────────────────────────────────────
-  const UPWORK_TRAITS   = /^(Committed to|Clear Communicator|Accountable for|Detail Oriented|Solution Oriented|Collaborative$|Reliable$|Deadline|Self-Motivated|Highly Organized|Effective Communicator|Client Focused|Results Driven|Independent|Interpersonal)/i;
+  const UPWORK_TRAITS   = /^(Committed to|Clear Communicator|Accountable for|Detail Oriented|Solution Oriented|Collaborative$|Reliable$|Professional$|Deadline|Self-Motivated|Highly Organized|Effective Communicator|Client Focused|Results Driven|Independent|Interpersonal)/i;
   const PORTFOLIO_NOISE = /^(From \$|\$\d|Your project|Manage project|View project|Add project|Pagination|Current page|go to page|\d+ days delivery|\d+ hrs|of \d+$)/i;
   function isValidSkill(s) {
     if (!s || s.length < 2 || s.length > 60) return false;
@@ -44,7 +44,7 @@
     if (/\brating\b|\bout of \d|\bstars?\b|\breview/i.test(s)) return false;
     if (/^\d+\.\d+\s*out|^Rating is/i.test(s)) return false;
     if (/\b(is|was|are|were|have|has|had|will|would|could|should|need|want|looking|help|finishing|fixing|building)\b/i.test(s)) return false;
-    if (/^(Help|Need|Want|Looking|Build|Fix|Create|Make|Develop|Design|Get|Find|Add|Update|Improve|Write|Test|Review|Deploy|Manage|Handle|Working|See|Show|View|Click|Go|Back|Next|Prev|Load|Save|Submit|Cancel|Close|Open)\b/i.test(s)) return false;
+    if (/^(Help|Need|Want|Looking|Build|Fix|Create|Make|Develop|Design|Get|Find|Add|Update|Improve|Write|Test|Review|Deploy|Manage|Handle|Working|See|Show|View|Click|Go|Back|Next|Prev|Load|Save|Submit|Cancel|Close|Open)$/i.test(s)) return false;
     if (/^Published (on|in)\b|^\d{1,2},?\s+\d{4}$|^(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\b/i.test(s)) return false;
     if (/\bdelivery\b|\bpaginat|\bcurrent page|\bgo to page/i.test(s)) return false;
     if (s.split(' ').length > 5) return false;
@@ -52,22 +52,55 @@
   }
 
   // ── Skills ───────────────────────────────────────────────────────────────────
+  // Upwork's Work History summary shows two auto-generated blocks that must never
+  // be treated as the freelancer's editable Skills: "Skills used" (tags Uma infers
+  // from completed jobs) and "Insights from completed jobs" (client-endorsed trait
+  // words like "Professional", "Reliable"). Upwork sometimes renders all of these
+  // with the same badge markup as the real Skills section, so an unscoped DOM query
+  // can merge them together. We exclude everything between "Skills used" and
+  // "Completed jobs (" — which spans both auto-generated blocks — from the real
+  // skills list, while keeping a narrower "Skills used"→"Insights..." slice
+  // separately labeled as Uma's inferred tags for informational context only.
+  const SKILL_SELECTORS = ['.up-skill-badge','[data-test="FreelancerCard-skill"]','[data-test="skill-badge"]','.skill-name','[class*="skill-badge"]','[class*="skillBadge"]'];
+
+  function findSkillsUsedRange() {
+    const all = [...document.querySelectorAll('body *')].filter(el => el.children.length === 0);
+    const start = all.find(el => /^skills used$/i.test((el.innerText || '').trim()));
+    if (!start) return null;
+    const tagsEnd = all.find(el => /^insights from completed jobs$/i.test((el.innerText || '').trim()));
+    const fullEnd = all.find(el => /^completed jobs\s*\(/i.test((el.innerText || '').trim()));
+    return { start, tagsEnd, fullEnd: fullEnd || tagsEnd };
+  }
+
+  function isBetween(el, start, end) {
+    if (!start) return false;
+    const afterStart = !!(start.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING);
+    if (!afterStart) return false;
+    if (!end) return true;
+    return !!(el.compareDocumentPosition(end) & Node.DOCUMENT_POSITION_FOLLOWING);
+  }
+
   function readSkills() {
     const roots = [document.querySelector('[data-test="skills-section"]'), document.querySelector('[class*="skills-section"]'), document].filter(Boolean);
-    const sels  = ['.up-skill-badge','[data-test="FreelancerCard-skill"]','[data-test="skill-badge"]','.skill-name','[class*="skill-badge"]','[class*="skillBadge"]'];
+    const range = findSkillsUsedRange();
     for (const root of roots) {
-      for (const sel of sels) {
+      for (const sel of SKILL_SELECTORS) {
         try {
-          const els = root.querySelectorAll(sel);
+          const els = [...root.querySelectorAll(sel)].filter(e => !range || !isBetween(e, range.start, range.fullEnd));
           if (els.length > 0) {
-            const ex = [...new Set([...els].map(e => e.innerText.trim().split('\n')[0].trim()).filter(isValidSkill))];
+            const ex = [...new Set(els.map(e => e.innerText.trim().split('\n')[0].trim()).filter(isValidSkill))];
             if (ex.length >= 2 || root !== document) return ex;
           }
         } catch(e) {}
       }
       if (root === roots[0] && roots.length > 1) continue; break;
     }
-    const pt = document.body.innerText;
+    let pt = document.body.innerText;
+    const umaStart = pt.search(/Skills used/i);
+    if (umaStart > -1) {
+      const umaEnd = pt.search(/Completed jobs\s*\(/i);
+      pt = umaEnd > umaStart ? pt.slice(0, umaStart) + pt.slice(umaEnd) : pt.slice(0, umaStart);
+    }
     const ss = pt.search(/\n(?:Skills|Top Skills)\s*\n/i);
     if (ss > -1) {
       const after = pt.slice(ss + 8, ss + 1200);
@@ -79,6 +112,21 @@
         if (isValidSkill(l)) lines.push(l);
       }
       if (lines.length) return [...new Set(lines)];
+    }
+    return [];
+  }
+
+  // ── Uma's AI-inferred "Skills used" tags (informational only, not editable) ───
+  function readUmaSkillTags() {
+    const range = findSkillsUsedRange();
+    if (!range) return [];
+    for (const sel of SKILL_SELECTORS) {
+      try {
+        const els = [...document.querySelectorAll(sel)].filter(e => isBetween(e, range.start, range.tagsEnd));
+        if (els.length > 0) {
+          return [...new Set(els.map(e => e.innerText.trim().split('\n')[0].trim()).filter(isValidSkill))];
+        }
+      } catch(e) {}
     }
     return [];
   }
@@ -290,12 +338,12 @@
 
     // Reviews — actual format: "Rating is 5.0 out of 5.\n5.0\nDate\n"review text"\nEndorsed"
     const reviewTexts = [];
-    const reviewRe = /Rating is (\d+(?:\.\d+)?) out of 5\.[\s\S]{1,200}?[“”"]([^“”"\n]{10,400})[“”"]/gi;
+    const reviewRe = /Rating is (\d+(?:\.\d+)?) out of 5\.[\s\S]{1,200}?[“”"]([^“”"\n]{10,800})[“”"]/gi;
     let rm;
     while ((rm = reviewRe.exec(pt)) !== null && reviewTexts.length < 8) {
       const rating = rm[1];
       const text = rm[2].trim();
-      if (text.length > 10) reviewTexts.push(`${rating}★ — "${text.slice(0, 200)}"`);
+      if (text.length > 10) reviewTexts.push(`${rating}★ — "${text}"`);
     }
 
     // Portfolio — full data via Vuex store (all pages, titles + desc + urls + skills)
@@ -304,7 +352,7 @@
       const parts = [p.title];
       if (p.role) parts.push(p.role);
       if (p.skills?.length) parts.push('Skills: ' + p.skills.join(', '));
-      if (p.desc) parts.push(p.desc.slice(0, 120));
+      if (p.desc) parts.push(p.desc);
       if (p.urls?.length) parts.push('URL: ' + p.urls[0]);
       return parts.join(' | ');
     });
@@ -342,9 +390,13 @@
     }
 
     // Employment
-    const empSection = pt.match(/Employment history\n([\s\S]{0,3000}?)(?:\nOther experiences|\nFooter navigation)/i);
-    const empSummary = empSection ? empSection[1].trim().slice(0, 1200) : '';
+    const empSection = pt.match(/Employment history\n([\s\S]{0,8000}?)(?:\nOther experiences|\nFooter navigation)/i);
+    const empSummary = empSection ? empSection[1].trim() : '';
     const empCount = (empSection?.[1].match(/\n[A-Z].{10,100}\n\s*\n[A-Z]/g) || []).length || (empSection ? 1 : 0);
+
+    // Other experiences — additional roles Upwork lists separately from Employment history
+    const otherExpSection = pt.match(/\nOther experiences\n([\s\S]{0,6000}?)(?:\nFooter navigation|\nTestimonials|\nCertifications|$)/i);
+    const otherExperience = otherExpSection ? otherExpSection[1].trim() : '';
 
     // Linked accounts — "GitHub Since YYYY" and "StackOverflow\n<name>" are unique strings
     // that only appear in the linked accounts section, so safe to search full page text
@@ -376,11 +428,18 @@
       hours: base.hours,
       country: base.country,
       skillsArr: base.skillsArr,
+      umaSkillTags: readUmaSkillTags(),
       bio: (() => {
-        // Full bio for audit — don't truncate, metrics are deep in the text
-        const os = pt.search(/\n(?:Full Stack|Senior|Junior|Lead|Expert|Freelance|Developer|Designer|Engineer|I build|I am|I help|I create)/i);
-        if (os > -1) {
-          const after = pt.slice(os, os + 3000);
+        // Full bio for audit — don't truncate, metrics are deep in the text.
+        // Search from after the hourly-rate line (title/rate always precede the
+        // bio) so a title starting with "Full Stack"/"Senior"/etc. doesn't get
+        // mistaken for the bio's own opening line.
+        const rateIdx = pt.search(/\$\d+(?:\.\d+)?\s*\/\s*hr/i);
+        const searchFrom = rateIdx > -1 ? rateIdx : 0;
+        const relOs = pt.slice(searchFrom).search(/\n(?:Full Stack|Senior|Junior|Lead|Expert|Freelance|Developer|Designer|Engineer|I build|I am|I help|I create)/i);
+        if (relOs > -1) {
+          const os = searchFrom + relOs;
+          const after = pt.slice(os, os + 6000);
           const end = after.search(/\n(?:Consultations|Portfolio|Work history|more\n)/i);
           return end > -1 ? after.slice(0, end).trim() : after.trim();
         }
@@ -401,6 +460,7 @@
       certificationCount: certs.length,
       employmentSummary: empSummary,
       employmentCount: empCount,
+      otherExperience,
       education,
       languages,
       responseTime: respTime,
