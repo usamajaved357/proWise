@@ -90,7 +90,7 @@ credibility (0-10):
 - Employment history present: +1
 - Education listed: +0.5
 
-Normalization: the raw point total above can exceed 10. After summing all applicable points, normalize to a 0-10 scale using this formula: final score = min(raw total, 10). Never return a credibility score above 10 regardless of how many signals are present. When writing the finding and fix, mention which high-value signals (JSS, badge tier, testimonials) are missing or weak since those carry the most weight.
+Normalization: the raw point total above can exceed 10. After summing all applicable points, normalize to a 0-10 scale using this formula: final score = min(raw total, 10). Never return a credibility score above 10 regardless of how many signals are present. If the finding text shows the raw-total arithmetic, the number you write there must be the exact same value as the "score" field — do not silently round or truncate it differently in the explanation (e.g. don't compute 7.5 and then write "normalized to 7"). When writing the finding and fix, mention which high-value signals (JSS, badge tier, testimonials) are missing or weak since those carry the most weight.
 
 certificates (0-10):
 NOTE: Upwork's algorithm gives profiles with certifications a ~10% visibility boost in search rankings.
@@ -131,7 +131,7 @@ completeness (0-10):
 
 Recent activity signal: Uma favors active profiles over dormant ones. If none of the three recent-activity signals above (Available Now, recent proposal, recent contract/hire) are present, flag the profile in the finding or fix as potentially deprioritized by Uma's matching algorithm.
 
-Normalization: the raw point total above can exceed 10. After summing all applicable points, normalize to a 0-10 scale using this formula: final score = min(raw total, 10). Never return a completeness score above 10 regardless of how many signals are present. When writing the finding and fix, mention which high-value signals (video intro, recent activity, Available Now) are missing since those carry the most weight.
+Normalization: the raw point total above can exceed 10. After summing all applicable points, normalize to a 0-10 scale using this formula: final score = min(raw total, 10). Never return a completeness score above 10 regardless of how many signals are present. If the finding text shows the raw-total arithmetic, the number you write there must be the exact same value as the "score" field — do not silently round or truncate it differently in the explanation (e.g. don't compute 7 and then write "normalized to 6"). When writing the finding and fix, mention which high-value signals (video intro, recent activity, Available Now) are missing since those carry the most weight.
 
 positioning (0-10):
 - Rate vs tier: is their rate appropriate for their badge/JSS/experience level — AND for their specific skill category's scarcity tier? Upwork's 2026 variable fee structure charges 5-10% fees for scarce skill categories (e.g. senior engineering) and 15% for commodity categories, and Uma uses rate as a matching filter against client budgets. Evaluate the rate against category scarcity, not just badge or JSS. A senior Flutter or React developer at $30/hr signals commodity pricing even with a Rising Talent or Top Rated badge — flag this explicitly and suggest a rate range based on category tier (example: a Rising Talent full-stack developer should be pricing at $45-65/hr minimum to avoid commodity matching).
