@@ -1,6 +1,7 @@
 'use strict';
 
 // ── Snag AI Profile Audit — Claude scoring prompt ──────────────────────────
+const { buildChangesBlock, buildPreviousAuditBlock } = require('./audit-shared');
 
 const AUDIT_SYSTEM = `You are Snag AI's Upwork profile coach. Be ruthlessly honest, data-driven, and specific. No flattery. No vague advice.
 
@@ -253,24 +254,6 @@ ${buildChangesBlock(profile.profileChanges)}
 ${buildPreviousAuditBlock(profile.previousAudit)}
 
 Score all 9 sections honestly. Be specific about findings and fixes.`;
-}
-
-function buildChangesBlock(changes) {
-  if (!changes) return '';
-  return `CHANGES SINCE LAST AUDIT (code-verified — this is ground truth for what actually changed; do not re-derive it yourself):
-${changes}
-`;
-}
-
-function buildPreviousAuditBlock(previousAudit) {
-  if (!previousAudit || !Array.isArray(previousAudit.sections) || !previousAudit.sections.length) {
-    return 'PREVIOUS AUDIT: None — this is the first audit of this profile.';
-  }
-  const sectionLines = previousAudit.sections.map(s =>
-    `- ${s.label} (scored ${s.score}/10): finding was "${s.finding || ''}" — fix suggested was "${s.fix || ''}"`
-  ).join('\n');
-  return `PREVIOUS AUDIT (score was ${previousAudit.overallScore ?? '?'}/10) — this is a re-audit of a profile you scored before. Compare every item below against the CURRENT profile data above and check whether each suggestion was actually implemented:
-${sectionLines}`;
 }
 
 module.exports = { AUDIT_SYSTEM, buildAuditMessage };

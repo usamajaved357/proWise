@@ -3,6 +3,8 @@ import { handleGenerate, handleCoverLetter } from './modules/generate.js';
 import { getStatus }    from './modules/status.js';
 import { handleAnalyse } from './modules/analyse.js';
 import { handleProfileAudit } from './modules/profile-audit.js';
+import { handleGetAgencyData } from './modules/agency-data.js';
+import { handleAgencyAudit } from './modules/agency-audit.js';
 
 // Generate a stable device UUID on first install
 chrome.runtime.onInstalled.addListener(() => {
@@ -30,6 +32,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   }
   if (msg.type === 'AUDIT_PROFILE') {
     handleProfileAudit(msg).then(sendResponse).catch(e => sendResponse({ error: e.message }));
+    return true;
+  }
+  if (msg.type === 'AUDIT_AGENCY') {
+    handleAgencyAudit(msg).then(sendResponse).catch(e => sendResponse({ error: e.message }));
     return true;
   }
   if (msg.type === 'GET_STATUS') {
@@ -266,6 +272,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       },
     }).then(results => sendResponse(results?.[0]?.result || []))
       .catch(() => sendResponse([]));
+    return true;
+  }
+  if (msg.type === 'GET_AGENCY_DATA') {
+    handleGetAgencyData(msg, sender).then(sendResponse).catch(() => sendResponse(null));
     return true;
   }
 });

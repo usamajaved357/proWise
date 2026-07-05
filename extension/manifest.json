@@ -60,6 +60,15 @@
         "content/profile-reader.js"
       ],
       "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://www.upwork.com/agencies/*"
+      ],
+      "js": [
+        "content/agency-reader.js"
+      ],
+      "run_at": "document_idle"
     }
   ],
   "action": {
