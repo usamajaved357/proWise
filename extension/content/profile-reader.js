@@ -212,7 +212,14 @@
   // "clients'" are never mistaken for a suggestion.
   function parseSuggestionSegments(text) {
     if (!text) return [{ text: '', hl: false }];
-    const re = /(^|[\s(])['"‘“]([^'"’”]{4,}?)['"’”](?=[\s.,!?;:)]|$)/g;
+    // Double quotes only (straight or curly) — matches the SOLUTION-ORIENTED
+    // RULE's "wrap it in double quotes, never single quotes" instruction.
+    // A straight/curly SINGLE quote must never be a delimiter here: any
+    // contraction inside the quoted script ("I've", "Here's") contains an
+    // apostrophe, and since '/' were previously valid closing-quote chars,
+    // the excluded-character class made the whole match fail the moment it
+    // hit that apostrophe — silently falling back to unhighlighted plain text.
+    const re = /(^|[\s(])["“]([^"”]{4,}?)["”](?=[\s.,!?;:)]|$)/g;
     const segments = [];
     let last = 0, m;
     while ((m = re.exec(text)) !== null) {
@@ -468,6 +475,14 @@
     const otherExpSection = pt.match(/\nOther experiences\n([\s\S]{0,6000}?)(?:\nFooter navigation|\nTestimonials|\nCertifications|$)/i);
     const otherExperience = otherExpSection ? otherExpSection[1].trim() : '';
 
+    // Video introduction — the "Video introduction" heading appears in the
+    // freelancer's own self-view regardless of whether one is recorded (it's
+    // a settings/CTA section), so the heading's presence alone is not a
+    // signal. A real recorded video shows its duration ("0:45" etc.) directly
+    // under the heading; an unrecorded one goes straight to the next section
+    // with nothing in between — so the duration timestamp is what we check for.
+    const hasVideoIntro = /Video introduction\s*\n\s*\d{1,2}:\d{2}/i.test(pt);
+
     // Linked accounts — "GitHub Since YYYY" and "StackOverflow\n<name>" are unique strings
     // that only appear in the linked accounts section, so safe to search full page text
     const githubLinked = /github since \d{4}/i.test(pt);
@@ -535,10 +550,66 @@
       languages,
       responseTime: respTime,
       availability,
-      hasVideoIntro: false,
+      hasVideoIntro,
       githubLinked,
       stackOverflowLinked: soLinked,
     };
+  }
+
+  // Code-verified diff between the profile snapshot used for the previous audit
+  // and the current one — handed to the model as ground truth so it judges
+  // whether a change addresses a prior gap instead of having to detect the
+  // change itself from raw text (the same class of task that made the
+  // self-computed overallScore unreliable).
+  function diffSkillList(oldArr, newArr) {
+    const norm = s => (s || '').toLowerCase().trim();
+    const oldSet = new Set((oldArr || []).map(norm));
+    const newSet = new Set((newArr || []).map(norm));
+    return {
+      added: (newArr || []).filter(s => !oldSet.has(norm(s))),
+      removed: (oldArr || []).filter(s => !newSet.has(norm(s))),
+    };
+  }
+
+  function computeProfileChanges(prev, cur) {
+    if (!prev) return null;
+    const lines = [];
+
+    lines.push((prev.title || '') === (cur.title || '')
+      ? 'TITLE: unchanged'
+      : `TITLE: changed — "${prev.title || ''}" → "${cur.title || ''}"`);
+
+    const { added, removed } = diffSkillList(prev.skillsArr, cur.skillsArr);
+    lines.push(`SKILLS ADDED: ${added.length ? added.join(', ') : 'none'}`);
+    lines.push(`SKILLS REMOVED: ${removed.length ? removed.join(', ') : 'none'}`);
+
+    lines.push((prev.bio || '') === (cur.bio || '')
+      ? 'BIO: unchanged'
+      : `BIO: changed (${(prev.bio || '').length} → ${(cur.bio || '').length} chars)`);
+
+    lines.push((prev.rate || '') === (cur.rate || '')
+      ? `RATE: unchanged (${cur.rate || 'not set'})`
+      : `RATE: changed — ${prev.rate || 'not set'} → ${cur.rate || 'not set'}`);
+
+    const prevPort = prev.portfolioCount || 0, curPort = cur.portfolioCount || 0;
+    if (prevPort === curPort) {
+      lines.push(`PORTFOLIO ITEMS: unchanged (${curPort})`);
+    } else {
+      const delta = curPort - prevPort;
+      lines.push(`PORTFOLIO ITEMS: ${prevPort} → ${curPort} (${delta > 0 ? '+' + delta + ' new' : delta})`);
+    }
+
+    const prevCerts = prev.certificationCount || 0, curCerts = cur.certificationCount || 0;
+    lines.push(prevCerts === curCerts
+      ? `CERTIFICATIONS: unchanged (${curCerts})`
+      : `CERTIFICATIONS: ${prevCerts} → ${curCerts}`);
+
+    const prevEmp = prev.employmentCount || 0, curEmp = cur.employmentCount || 0;
+    lines.push(prevEmp === curEmp
+      ? `EMPLOYMENT HISTORY: unchanged (${curEmp} positions)`
+      : `EMPLOYMENT HISTORY: ${prevEmp} → ${curEmp} positions`);
+
+    return lines.join('\n');
   }
 
   // ── Audit panel styles ────────────────────────────────────────────────────────
@@ -974,17 +1045,24 @@
       openAuditPanel();
       try {
         const auditData = await readAuditData();
+        // Clean snapshot of this run's profile fields, saved below for the
+        // *next* audit's code-verified diff — captured before we attach
+        // previousAudit/profileChanges context onto auditData.
+        const profileSnapshotForDiff = { ...auditData };
         // Attach the last audit run for this profile so the model can check
         // whether its own previous suggestions were actually implemented,
         // instead of re-evaluating from a blank slate every time.
-        const { [lastAuditKey]: previousAudit } = await local.get([lastAuditKey]);
+        const lastAuditProfileKey = lastAuditKey + '_profile';
+        const { [lastAuditKey]: previousAudit, [lastAuditProfileKey]: previousProfileSnapshot } =
+          await local.get([lastAuditKey, lastAuditProfileKey]);
         if (previousAudit) auditData.previousAudit = previousAudit;
+        if (previousProfileSnapshot) auditData.profileChanges = computeProfileChanges(previousProfileSnapshot, auditData);
         latestAuditProfile = auditData;
         console.log('[SnagAI] Audit data:', auditData);
         const audit = await chrome.runtime.sendMessage({ type: 'AUDIT_PROFILE', profile: auditData });
         if (audit?.error) throw new Error(audit.error);
         renderAudit(audit);
-        await local.set({ [lastAuditKey]: audit });
+        await local.set({ [lastAuditKey]: audit, [lastAuditProfileKey]: profileSnapshotForDiff });
         icon.innerHTML = AUDIT_ICON_SVG;
         icon.style.background = '#16a34a';
         btn.disabled = false;

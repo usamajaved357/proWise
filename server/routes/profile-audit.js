@@ -42,6 +42,55 @@ function recomputeOverallScore(audit) {
     score >= 3   ? 'Weak' : 'Critical';
 }
 
+// Same quote-detection regex the extension uses to highlight literal fixes in
+// the sidebar/PDF (extension/content/profile-reader.js parseSuggestionSegments).
+// A fix or topFixes.action written without a matched quote pair still renders
+// fine — it just silently falls back to plain, unhighlighted text — so this
+// only logs a warning rather than failing the request.
+// Double quotes only — a straight/curly single quote must never be a
+// delimiter, or an apostrophe inside a quoted script ("I've", "Here's")
+// breaks the match entirely (see profile-reader.js for the full explanation).
+const QUOTE_RE = /(^|[\s(])["“]([^"”]{4,}?)["”](?=[\s.,!?;:)]|$)/;
+// Same pattern with the global flag, for extracting every quoted span rather
+// than just testing whether one exists (used by checkTitleLength below).
+const QUOTE_RE_GLOBAL = /(^|[\s(])["“]([^"”]{4,}?)["”](?=[\s.,!?;:)]|$)/g;
+
+// Upwork's profile title field has a documented 70-character hard limit —
+// support.upwork.com/hc/en-us/articles/34958631345171-Profile-title. Anything
+// longer is silently truncated on the live profile with no error, so this is
+// worth catching even though the prompt now instructs Claude to self-check.
+const TITLE_LIMIT = 70;
+
+function checkTitleLength(audit) {
+  const titleSection = (audit.sections || []).find(sec => sec.id === 'title');
+  if (!titleSection || !titleSection.fix) return;
+  const quoted = [...titleSection.fix.matchAll(QUOTE_RE_GLOBAL)].map(m => m[2]);
+  quoted.forEach(q => {
+    if (q.length > TITLE_LIMIT) {
+      console.warn(`[AUDIT] Suggested title is ${q.length} chars, exceeds Upwork's ${TITLE_LIMIT}-char limit and will be truncated on the live profile: "${q}"`);
+    }
+  });
+}
+
+function checkQuoteFormatting(audit) {
+  let missing = 0, total = 0;
+  (audit.sections || []).forEach(sec => {
+    if (sec.fix) {
+      total++;
+      if (!QUOTE_RE.test(sec.fix)) missing++;
+    }
+  });
+  (audit.topFixes || []).forEach(tf => {
+    if (tf.action) {
+      total++;
+      if (!QUOTE_RE.test(tf.action)) missing++;
+    }
+  });
+  if (missing > 0) {
+    console.warn(`[AUDIT] ${missing}/${total} fixes missing quoted literal text — these will render as plain, unhighlighted text in the sidebar/PDF`);
+  }
+}
+
 router.post('/', async (req, res) => {
   try {
     const { profile } = req.body;
@@ -73,6 +122,8 @@ router.post('/', async (req, res) => {
 
     const claudeScore = audit.overallScore;
     recomputeOverallScore(audit);
+    checkQuoteFormatting(audit);
+    checkTitleLength(audit);
     console.log('[AUDIT] Score:', audit.overallScore, '(Claude said:', claudeScore, ') | Status:', audit.status);
     return res.json({ success: true, audit });
 
