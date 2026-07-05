@@ -203,6 +203,76 @@
     return merged;
   }
 
+  // ── Suggestion-quote detection — shared between the sidebar and PDF export ────
+  // Splits audit text into plain/highlighted segments wherever a literal
+  // suggested replacement appears in quotes (single, straight-double, or curly),
+  // normalizing the quote marks to curly double quotes. Only a real quoted phrase
+  // is matched (opening quote must follow whitespace/start, closing quote must be
+  // followed by whitespace/punctuation/end) so contractions like "Uma's" or
+  // "clients'" are never mistaken for a suggestion.
+  function parseSuggestionSegments(text) {
+    if (!text) return [{ text: '', hl: false }];
+    const re = /(^|[\s(])['"‘“]([^'"’”]{4,}?)['"’”](?=[\s.,!?;:)]|$)/g;
+    const segments = [];
+    let last = 0, m;
+    while ((m = re.exec(text)) !== null) {
+      const lead = m[1] || '';
+      const start = m.index + lead.length;
+      if (start > last) segments.push({ text: text.slice(last, start), hl: false });
+      segments.push({ text: `“${m[2]}”`, hl: true });
+      last = m.index + m[0].length;
+    }
+    if (last < text.length) segments.push({ text: text.slice(last), hl: false });
+    return segments.length ? segments : [{ text, hl: false }];
+  }
+
+  function renderSuggestionHTML(text) {
+    return parseSuggestionSegments(text)
+      .map(seg => seg.hl ? `<span class="sn-quote-hl">${seg.text}</span>` : seg.text)
+      .join('');
+  }
+
+  // ── PDF-only: word-wrap text into lines while tracking which words fall inside
+  // a highlighted suggestion quote, so the "Suggested fix" box can render mixed
+  // colors — jsPDF's doc.text() only supports a single color per call, so the
+  // line has to be laid out and drawn word-by-word instead of as one string.
+  function layoutRichWords(doc, text, fontSize, font, maxWidth) {
+    doc.setFont(font, 'normal'); doc.setFontSize(fontSize);
+    const spaceW = doc.getTextWidth(' ');
+    const lines = [[]];
+    let lineW = 0;
+    parseSuggestionSegments(text).forEach(seg => {
+      seg.text.split(' ').forEach(word => {
+        if (word === '') return;
+        const ww = doc.getTextWidth(word);
+        if (lineW > 0 && lineW + spaceW + ww > maxWidth) {
+          lines.push([]);
+          lineW = 0;
+        } else if (lineW > 0) {
+          lineW += spaceW;
+        }
+        lines[lines.length - 1].push({ text: word, hl: seg.hl });
+        lineW += ww;
+      });
+    });
+    return lines;
+  }
+
+  function drawRichLines(doc, lines, x, startY, lineHeightMm, normalColor, hlColor, fontSize, font) {
+    doc.setFont(font, 'normal'); doc.setFontSize(fontSize);
+    const spaceW = doc.getTextWidth(' ');
+    let y = startY;
+    lines.forEach(line => {
+      let cx = x;
+      line.forEach(w => {
+        doc.setTextColor(...(w.hl ? hlColor : normalColor));
+        doc.text(w.text, cx, y);
+        cx += doc.getTextWidth(w.text) + spaceW;
+      });
+      y += lineHeightMm;
+    });
+  }
+
   // ── Main profile data reader ──────────────────────────────────────────────────
   async function readProfilePic() {
     try {
@@ -508,6 +578,7 @@
       .sn-ebody{padding:20px 24px}
       .sn-esec-title{font-family:Georgia,'Times New Roman',serif;font-size:13px;font-weight:700;color:#f0eeea;margin-bottom:6px}
       .sn-esec-body{font-size:12px;color:rgba(240,238,234,.55);line-height:1.75;margin-bottom:18px}
+      .sn-quote-hl{color:#a5b4fc}
 
       .sn-equote{padding:14px 16px;border-left:2px solid #4ade80;background:rgba(74,222,128,.04);margin-bottom:18px}
       .sn-equote-txt{font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:12.5px;color:rgba(240,238,234,.75);line-height:1.6}
@@ -707,8 +778,8 @@
 
         if (sec.fix) {
           const innerW = contentW - 14;
-          const fixLines = wrapped(sec.fix, 9.5, 'helvetica', 'normal', innerW);
-          const boxH = fixLines.length * lineH(9.5) + 11;
+          const richLines = layoutRichWords(doc, sec.fix, 9.5, 'helvetica', innerW);
+          const boxH = richLines.length * lineH(9.5) + 11;
           ensureSpace(boxH + 6);
           doc.setFillColor(...INDIGO_BG);
           doc.roundedRect(marginX, y, contentW, boxH, 2, 2, 'F');
@@ -716,8 +787,7 @@
           doc.rect(marginX, y, 1.3, boxH, 'F');
           doc.setFont('helvetica', 'bold'); doc.setFontSize(7.3); doc.setTextColor(...INDIGO_DK);
           doc.text('SUGGESTED FIX', marginX + 6, y + 5.5);
-          doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5); doc.setTextColor(...INK);
-          doc.text(fixLines, marginX + 6, y + 10.3);
+          drawRichLines(doc, richLines, marginX + 6, y + 10.3, lineH(9.5), INK, INDIGO, 9.5, 'helvetica');
           y += boxH + 9;
         } else {
           y += 5;
@@ -827,28 +897,26 @@
     };
     const st = SC[status] || SC.Good;
 
-    const bc = n => n >= 8 ? '#4ade80' : n >= 6 ? '#60a5fa' : n >= 4 ? '#fbbf24' : '#f87171';
     const IC = { High:'#f87171', Medium:'#fbbf24', Low:'#60a5fa' };
 
     const secsHtml = (audit.sections || []).map(sec => {
-      const c = bc(sec.score);
       const txt = sec.fix
-        ? `${sec.finding || ''} — <span style="color:${c}">${sec.fix}</span>`
-        : (sec.finding || '');
+        ? `${renderSuggestionHTML(sec.finding || '')} — ${renderSuggestionHTML(sec.fix)}`
+        : renderSuggestionHTML(sec.finding || '');
       return `<div class="sn-esec-title">${sec.label}</div><div class="sn-esec-body">${txt}</div>`;
     }).join('');
 
     const wins = audit.topWins || [];
     const quoteHtml = wins.length
-      ? `<div class="sn-equote"><div class="sn-equote-txt">"${wins.join('. ')}."</div></div>`
+      ? `<div class="sn-equote"><div class="sn-equote-txt">"${renderSuggestionHTML(wins.join('. '))}."</div></div>`
       : '';
 
     const fixes = audit.topFixes || [];
     const primary = fixes[0];
     const fixHtml = primary ? `
       <div class="sn-efix-title">What to fix first</div>
-      <div class="sn-efix-primary">${primary.action} — <span style="color:${IC[primary.impact] || '#60a5fa'}">${primary.impact} impact, fix this first.</span></div>
-      ${fixes.slice(1).map(f => `<div class="sn-efix-secondary">${f.action} — <span style="color:${IC[f.impact] || '#60a5fa'}">${(f.impact||'').toLowerCase()} impact</span></div>`).join('')}
+      <div class="sn-efix-primary">${renderSuggestionHTML(primary.action)} — <span style="color:${IC[primary.impact] || '#60a5fa'}">${primary.impact} impact, fix this first.</span></div>
+      ${fixes.slice(1).map(f => `<div class="sn-efix-secondary">${renderSuggestionHTML(f.action)} — <span style="color:${IC[f.impact] || '#60a5fa'}">${(f.impact||'').toLowerCase()} impact</span></div>`).join('')}
     ` : '';
 
     body.innerHTML = `
@@ -863,7 +931,7 @@
         ${secsHtml}
         ${quoteHtml}
         ${fixHtml}
-        ${audit.rateInsight ? `<div class="sn-erate">${audit.rateInsight}</div>` : ''}
+        ${audit.rateInsight ? `<div class="sn-erate">${renderSuggestionHTML(audit.rateInsight)}</div>` : ''}
       </div>
     `;
 
@@ -894,6 +962,7 @@
 
     const profileId = target.id || ('profile_' + Date.now());
     const localKey  = 'profileFull_' + profileId;
+    const lastAuditKey = 'lastAudit_' + profileId;
     const originUrl = target.url;
 
     injectAuditStyles();
@@ -905,11 +974,17 @@
       openAuditPanel();
       try {
         const auditData = await readAuditData();
+        // Attach the last audit run for this profile so the model can check
+        // whether its own previous suggestions were actually implemented,
+        // instead of re-evaluating from a blank slate every time.
+        const { [lastAuditKey]: previousAudit } = await local.get([lastAuditKey]);
+        if (previousAudit) auditData.previousAudit = previousAudit;
         latestAuditProfile = auditData;
         console.log('[SnagAI] Audit data:', auditData);
         const audit = await chrome.runtime.sendMessage({ type: 'AUDIT_PROFILE', profile: auditData });
         if (audit?.error) throw new Error(audit.error);
         renderAudit(audit);
+        await local.set({ [lastAuditKey]: audit });
         icon.innerHTML = AUDIT_ICON_SVG;
         icon.style.background = '#16a34a';
         btn.disabled = false;
