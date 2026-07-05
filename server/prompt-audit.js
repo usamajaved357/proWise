@@ -118,6 +118,8 @@ credibility (0-10):
 - Employment history present: +1
 - Education listed: +0.5
 
+ID verification (from ID VERIFICATION above) is a minor additional trust signal — worth a brief mention if present or notably absent, but it does not carry its own fixed point value in this rubric and should not be treated as a major scoring factor on its own.
+
 Normalization: the raw point total above can exceed 10. Compute the raw total and apply final score = min(raw total, 10) — do this arithmetic silently, internally only. Never return a credibility score above 10 regardless of how many signals are present. Never print the point breakdown or the raw-to-normalized math in the finding or fix (see INTERNAL SCORING RULE above) — the "score" field is the only place the number appears, and it must be the correctly normalized value. When writing the finding and fix, mention in plain language which high-value signals (JSS, badge tier, testimonials) are missing or weak since those carry the most weight — never as a point value.
 
 certificates (0-10):
@@ -240,6 +242,7 @@ LANGUAGES: ${profile.languages || 'Not listed'}
 RESPONSE TIME: ${profile.responseTime || 'Unknown'}
 AVAILABILITY: ${profile.availability || 'Unknown'}
 VIDEO INTRO: ${profile.hasVideoIntro ? 'Yes' : 'No'}
+ID VERIFICATION: ${profile.idVerified ? 'Verified' : 'Not verified'}
 GITHUB LINKED: ${profile.githubLinked ? 'Yes' : 'No'}
 STACKOVERFLOW LINKED: ${profile.stackOverflowLinked ? 'Yes' : 'No'}
 

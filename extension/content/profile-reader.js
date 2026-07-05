@@ -483,6 +483,10 @@
     // with nothing in between — so the duration timestamp is what we check for.
     const hasVideoIntro = /Video introduction\s*\n\s*\d{1,2}:\d{2}/i.test(pt);
 
+    // ID verification — under "Verifications", the "ID:" label is immediately
+    // followed by "Verified" only when Upwork has actually verified it.
+    const idVerified = /ID:\s*\n?\s*Verified/i.test(pt);
+
     // Linked accounts — "GitHub Since YYYY" and "StackOverflow\n<name>" are unique strings
     // that only appear in the linked accounts section, so safe to search full page text
     const githubLinked = /github since \d{4}/i.test(pt);
@@ -551,6 +555,7 @@
       responseTime: respTime,
       availability,
       hasVideoIntro,
+      idVerified,
       githubLinked,
       stackOverflowLinked: soLinked,
     };

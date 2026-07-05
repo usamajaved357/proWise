@@ -97,10 +97,18 @@ router.post('/', async (req, res) => {
     if (!profile) return res.status(400).json({ error: 'profile is required' });
 
     const userMessage = buildAuditMessage(profile);
+    // Gated full-prompt dump for debugging exactly what was sent — off by
+    // default so it doesn't spam production logs on every audit.
+    if (process.env.AUDIT_DEBUG === '1') {
+      console.log('[AUDIT][DEBUG] Full rendered prompt sent to Claude:\n' + userMessage);
+    }
     console.log('[AUDIT] Auditing profile:', (profile.name || '').slice(0, 40), '| Rate:', profile.rate);
 
-    const rawText = await callClaudeRaw(AUDIT_SYSTEM, userMessage);
+    const { text: rawText, usage } = await callClaudeRaw(AUDIT_SYSTEM, userMessage);
     console.log('[AUDIT] Raw response length:', rawText.length);
+    if (usage) {
+      console.log(`[AUDIT] Tokens — input: ${usage.input_tokens}, output: ${usage.output_tokens}, cache_write: ${usage.cache_creation_input_tokens || 0}, cache_read: ${usage.cache_read_input_tokens || 0}`);
+    }
 
     const jsonMatch = rawText.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
@@ -138,10 +146,20 @@ function callClaudeRaw(system, userMsg) {
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) return reject(new Error('ANTHROPIC_API_KEY not set'));
 
+    // AUDIT_SYSTEM is byte-identical on every request (~6K tokens, well above
+    // Sonnet 4.6's 2048-token cache minimum). 1h TTL over the 5m default:
+    // observed audit traffic clusters loosely by the hour, not the minute, so
+    // 5m almost never got reused (write premium paid, read discount never
+    // claimed). 1h costs more per write (2x vs 1.25x) but survives long enough
+    // to actually get read back within a real cluster of requests — check
+    // cache_read_input_tokens in the usage log to confirm it's paying off for
+    // your actual traffic, and drop back to 5m/no caching if it stays near 0.
     const body = JSON.stringify({
       model: 'claude-sonnet-4-6',
       max_tokens: 4200,
-      system,
+      system: [
+        { type: 'text', text: system, cache_control: { type: 'ephemeral', ttl: '1h' } },
+      ],
       messages: [{ role: 'user', content: userMsg }],
     });
 
@@ -162,7 +180,7 @@ function callClaudeRaw(system, userMsg) {
         try {
           const parsed = JSON.parse(raw);
           if (parsed.error) return reject(new Error(parsed.error.message || 'Claude error'));
-          resolve(parsed.content?.[0]?.text || '');
+          resolve({ text: parsed.content?.[0]?.text || '', usage: parsed.usage || null });
         } catch(e) { reject(e); }
       });
     });
