@@ -7,7 +7,7 @@
 
 const https = require('https');
 
-function callClaudeRaw(system, userMsg) {
+function callClaudeRaw(system, userMsg, schema) {
   return new Promise((resolve, reject) => {
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) return reject(new Error('ANTHROPIC_API_KEY not set'));
@@ -21,14 +21,27 @@ function callClaudeRaw(system, userMsg) {
     // write (2x vs 1.25x) but survives long enough to actually get read back
     // within a real cluster of requests — check cache_read_input_tokens in
     // the usage log to confirm it's paying off for your actual traffic.
-    const body = JSON.stringify({
+    const payload = {
       model: 'claude-sonnet-4-6',
       max_tokens: 4200,
       system: [
         { type: 'text', text: system, cache_control: { type: 'ephemeral', ttl: '1h' } },
       ],
       messages: [{ role: 'user', content: userMsg }],
-    });
+    };
+    // Schema-enforced structured output — this is the real fix for the
+    // recurring "invalid JSON" bugs (unescaped straight quotes, raw control
+    // characters, and any other flavor of the same root problem: a model
+    // asked to freehand valid JSON syntax around its own prose). With a
+    // schema, string escaping is the API's job, not the model's, so it's
+    // mechanically impossible for the response to be malformed JSON — no
+    // more patching one new escaping edge case at a time. Confirmed
+    // compatible with the system prompt cache above (only changing the
+    // schema itself invalidates that cache, and it's static per feature).
+    if (schema) {
+      payload.output_config = { format: { type: 'json_schema', schema } };
+    }
+    const body = JSON.stringify(payload);
 
     const req = https.request({
       hostname: 'api.anthropic.com',

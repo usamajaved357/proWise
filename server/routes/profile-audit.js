@@ -7,7 +7,7 @@ const express = require('express');
 const router  = express.Router();
 const { AUDIT_SYSTEM, buildAuditMessage } = require('../prompt-audit');
 const { callClaudeRaw } = require('../claude-client');
-const { checkQuoteFormatting, computeWeightedScore, QUOTE_RE_GLOBAL } = require('../audit-shared');
+const { checkQuoteFormatting, computeWeightedScore, QUOTE_RE_GLOBAL, logJsonParseFailure, repairAndParseJSON, buildAuditResponseSchema } = require('../audit-shared');
 
 // Weights must match the "overallScore = weighted average" line in prompt-audit.js
 // and sum to exactly 1 (they previously summed to 1.10 in the prompt text, which
@@ -16,6 +16,10 @@ const SECTION_WEIGHTS = {
   title: 0.08, bio: 0.15, skills: 0.08, portfolio: 0.15, history: 0.15,
   credibility: 0.08, certificates: 0.08, completeness: 0.08, positioning: 0.15,
 };
+
+// Schema-enforced structured output — see claude-client.js's callClaudeRaw
+// for why this replaced regex-extracting/repairing a freehand JSON response.
+const AUDIT_SCHEMA = buildAuditResponseSchema(Object.keys(SECTION_WEIGHTS));
 
 // Upwork's profile title field has a documented 70-character hard limit —
 // support.upwork.com/hc/en-us/articles/34958631345171-Profile-title. Anything
@@ -49,23 +53,20 @@ router.post('/', async (req, res) => {
     }
     console.log('[AUDIT] Auditing profile:', (profile.name || '').slice(0, 40), '| Rate:', profile.rate);
 
-    const { text: rawText, usage } = await callClaudeRaw(AUDIT_SYSTEM, userMessage);
+    const { text: rawText, usage } = await callClaudeRaw(AUDIT_SYSTEM, userMessage, AUDIT_SCHEMA);
     console.log('[AUDIT] Raw response length:', rawText.length);
     if (usage) {
       console.log(`[AUDIT] Tokens — input: ${usage.input_tokens}, output: ${usage.output_tokens}, cache_write: ${usage.cache_creation_input_tokens || 0}, cache_read: ${usage.cache_read_input_tokens || 0}`);
     }
 
-    const jsonMatch = rawText.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      console.error('[AUDIT] No JSON in response:', rawText.slice(0, 200));
-      return res.status(500).json({ error: 'No structured response from AI' });
-    }
-
+    // Schema-enforced output should already be valid JSON with no wrapper —
+    // repairAndParseJSON is kept as defense-in-depth, not because it's
+    // expected to trigger anymore.
     let audit;
     try {
-      audit = JSON.parse(jsonMatch[0]);
+      audit = repairAndParseJSON(rawText);
     } catch(e) {
-      console.error('[AUDIT] JSON parse error:', e.message);
+      logJsonParseFailure('AUDIT', rawText, e);
       return res.status(500).json({ error: 'Failed to parse AI response' });
     }
 

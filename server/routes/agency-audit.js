@@ -11,7 +11,7 @@ const express = require('express');
 const router  = express.Router();
 const { AGENCY_AUDIT_SYSTEM, buildAgencyAuditMessage } = require('../prompt-agency-audit');
 const { callClaudeRaw } = require('../claude-client');
-const { checkQuoteFormatting, computeWeightedScore } = require('../audit-shared');
+const { checkQuoteFormatting, computeWeightedScore, logJsonParseFailure, repairAndParseJSON, buildAuditResponseSchema } = require('../audit-shared');
 
 // Must match the "overallScore = weighted average" line in prompt-agency-audit.js
 // and sum to exactly 1.
@@ -19,6 +19,10 @@ const SECTION_WEIGHTS = {
   summary: 0.10, description: 0.12, skills: 0.08, services: 0.08, portfolio: 0.15,
   featuredClients: 0.07, workHistory: 0.12, credibility: 0.10, team: 0.10, positioning: 0.08,
 };
+
+// Schema-enforced structured output — see claude-client.js's callClaudeRaw
+// for why this replaced regex-extracting/repairing a freehand JSON response.
+const AGENCY_AUDIT_SCHEMA = buildAuditResponseSchema(Object.keys(SECTION_WEIGHTS));
 
 router.post('/', async (req, res) => {
   try {
@@ -31,23 +35,20 @@ router.post('/', async (req, res) => {
     }
     console.log('[AGENCY_AUDIT] Auditing agency:', (agency.name || '').slice(0, 40), '| Rate:', agency.minRate, '-', agency.maxRate);
 
-    const { text: rawText, usage } = await callClaudeRaw(AGENCY_AUDIT_SYSTEM, userMessage);
+    const { text: rawText, usage } = await callClaudeRaw(AGENCY_AUDIT_SYSTEM, userMessage, AGENCY_AUDIT_SCHEMA);
     console.log('[AGENCY_AUDIT] Raw response length:', rawText.length);
     if (usage) {
       console.log(`[AGENCY_AUDIT] Tokens — input: ${usage.input_tokens}, output: ${usage.output_tokens}, cache_write: ${usage.cache_creation_input_tokens || 0}, cache_read: ${usage.cache_read_input_tokens || 0}`);
     }
 
-    const jsonMatch = rawText.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      console.error('[AGENCY_AUDIT] No JSON in response:', rawText.slice(0, 200));
-      return res.status(500).json({ error: 'No structured response from AI' });
-    }
-
+    // Schema-enforced output should already be valid JSON with no wrapper —
+    // repairAndParseJSON is kept as defense-in-depth, not because it's
+    // expected to trigger anymore.
     let audit;
     try {
-      audit = JSON.parse(jsonMatch[0]);
+      audit = repairAndParseJSON(rawText);
     } catch(e) {
-      console.error('[AGENCY_AUDIT] JSON parse error:', e.message);
+      logJsonParseFailure('AGENCY_AUDIT', rawText, e);
       return res.status(500).json({ error: 'Failed to parse AI response' });
     }
 

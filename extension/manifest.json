@@ -66,6 +66,7 @@
         "https://www.upwork.com/agencies/*"
       ],
       "js": [
+        "jspdf.umd.min.js",
         "content/agency-reader.js"
       ],
       "run_at": "document_idle"

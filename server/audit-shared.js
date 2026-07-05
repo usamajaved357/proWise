@@ -17,6 +17,110 @@ const QUOTE_RE = /(^|[\s(])["“]([^"”]{4,}?)["”](?=[\s.,!?;:)]|$)/;
 // than just testing whether one exists.
 const QUOTE_RE_GLOBAL = /(^|[\s(])["“]([^"”]{4,}?)["”](?=[\s.,!?;:)]|$)/g;
 
+// On a JSON.parse failure, Node's error message includes a character offset
+// ("...at position 845...") but not the actual malformed text — logging just
+// the message leaves you unable to diagnose without another live API call.
+// This pulls the offset out and prints the real text around it.
+function logJsonParseFailure(label, rawJson, error) {
+  const posMatch = /position (\d+)/.exec(error.message || '');
+  if (posMatch) {
+    const pos = parseInt(posMatch[1], 10);
+    const start = Math.max(0, pos - 80);
+    const snippet = rawJson.slice(start, pos + 80);
+    console.error(`[${label}] JSON parse error: ${error.message}`);
+    console.error(`[${label}] Text around the failure (char ${pos}):\n…${snippet}…`);
+  } else {
+    console.error(`[${label}] JSON parse error: ${error.message}`);
+    console.error(`[${label}] Raw JSON (first 500 chars): ${rawJson.slice(0, 500)}`);
+  }
+}
+
+// A second, independent failure mode from the same root cause (the model not
+// reliably escaping things inside JSON string values): a raw newline/tab/other
+// control character typed literally inside a string instead of as \n/\t,
+// which JSON.parse rejects as "Bad control character in string literal".
+// Fixed with a single linear scan tracking string/escape state — simpler and
+// more robust than position-patching since one response can contain many
+// literal line breaks (e.g. a multi-paragraph finding) in one string.
+function sanitizeControlCharsInStrings(text) {
+  let out = '';
+  let inString = false;
+  let escaped = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (!inString) {
+      out += ch;
+      if (ch === '"') inString = true;
+      continue;
+    }
+    if (escaped) {
+      out += ch;
+      escaped = false;
+      continue;
+    }
+    if (ch === '\\') {
+      out += ch;
+      escaped = true;
+      continue;
+    }
+    if (ch === '"') {
+      inString = false;
+      out += ch;
+      continue;
+    }
+    const code = ch.charCodeAt(0);
+    if (code < 0x20) {
+      if (ch === '\n') out += '\\n';
+      else if (ch === '\r') out += '\\r';
+      else if (ch === '\t') out += '\\t';
+      else out += '\\u' + code.toString(16).padStart(4, '0');
+    } else {
+      out += ch;
+    }
+  }
+  return out;
+}
+
+// Self-healing JSON repair — a real recovery mechanism, not just a prompt
+// instruction we're hoping the model follows. We told Claude to use curly
+// quotes specifically because they can't break JSON, and it *still* used
+// straight quotes around a literal phrase on the very next real run —
+// proving the instruction alone isn't reliable enough when a discarded
+// response costs real money. This repairs the exact failure mode we've now
+// seen twice: a straight, unescaped `"` inside a string value that fools
+// JSON.parse into thinking the string ended early ("Expected ',' or '}'
+// after property value"). It locates the actual false-terminator quote
+// (scanning backward from the reported error position) and escapes it, then
+// retries — looping since one finding/fix can contain multiple such quotes.
+// Deliberately narrow: only handles this one, now-confirmed error shape;
+// anything else re-throws rather than guessing at a fix we haven't verified.
+function repairAndParseJSON(rawJson, maxAttempts = 30) {
+  const sanitized = sanitizeControlCharsInStrings(rawJson);
+  const sanitizedControlChars = sanitized !== rawJson;
+  let text = sanitized;
+  for (let i = 0; i < maxAttempts; i++) {
+    try {
+      const result = JSON.parse(text);
+      if (i > 0 || sanitizedControlChars) {
+        const reasons = [];
+        if (i > 0) reasons.push(`${i} unescaped straight quote${i === 1 ? '' : 's'}`);
+        if (sanitizedControlChars) reasons.push('raw control character(s) (e.g. a literal newline) inside a string value');
+        console.warn(`[AUDIT] JSON self-repaired (${reasons.join('; ')})`);
+      }
+      return result;
+    } catch (e) {
+      const m = /after property value in JSON at position (\d+)/.exec(e.message);
+      if (!m) throw e;
+      const pos = parseInt(m[1], 10);
+      let q = pos;
+      while (q >= 0 && text[q] !== '"') q--;
+      if (q < 0 || text[q - 1] === '\\') throw e;
+      text = text.slice(0, q) + '\\' + text.slice(q);
+    }
+  }
+  throw new Error('JSON repair exceeded max attempts');
+}
+
 // A fix or topFixes.action written without a matched quote pair still renders
 // fine — it just silently falls back to plain, unhighlighted text in the
 // sidebar/PDF — so this only logs a warning rather than failing the request.
@@ -66,6 +170,67 @@ function computeWeightedScore(audit, weights) {
     score >= 3   ? 'Weak' : 'Critical';
 }
 
+// Shared response shape for both audit features (freelancer/agency differ
+// only in which section ids are valid) — passed to callClaudeRaw's
+// output_config.format so the API enforces valid JSON structurally instead
+// of us regex-extracting and repairing a freehand response after the fact.
+function buildAuditResponseSchema(sectionIds) {
+  return {
+    type: 'object',
+    properties: {
+      overallScore: { type: 'number' },
+      status: { type: 'string', enum: ['Elite', 'Strong', 'Good', 'Average', 'Weak', 'Critical'] },
+      headline: { type: 'string' },
+      sections: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            id: { type: 'string', enum: sectionIds },
+            label: { type: 'string' },
+            score: { type: 'number' },
+            verdict: { type: 'string', enum: ['Strong', 'Good', 'Weak', 'Critical'] },
+            finding: { type: 'string' },
+            // minLength forces the model to actually write the literal
+            // replacement text, not just an introductory clause ("Replace it
+            // with something like:") that satisfies the schema's type check
+            // but drops the substance — a real regression seen once schema
+            // enforcement replaced freeform prose generation for this field.
+            // Anthropic's json_schema format doesn't support oneOf, so this
+            // uses the plain type-array form instead — minLength is a no-op
+            // on a null instance per JSON Schema spec, so it still only
+            // constrains the non-null (string) case.
+            fix: {
+              type: ['string', 'null'],
+              minLength: 40,
+              description: 'The literal, ready-to-copy replacement text itself — the full rewritten tagline/description/skill list/rate range/etc., not merely a sentence promising one. Never end on a colon or "like:" with the actual suggestion missing. null only if nothing needs to change.',
+            },
+          },
+          required: ['id', 'label', 'score', 'verdict', 'finding', 'fix'],
+          additionalProperties: false,
+        },
+      },
+      topWins: { type: 'array', items: { type: 'string' } },
+      topFixes: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            priority: { type: 'number' },
+            action: { type: 'string', minLength: 40, description: 'The concrete replacement itself, verb-first — exact text/number/name, never a truncated lead-in with the suggestion missing.' },
+            impact: { type: 'string', enum: ['High', 'Medium', 'Low'] },
+          },
+          required: ['priority', 'action', 'impact'],
+          additionalProperties: false,
+        },
+      },
+      rateInsight: { type: 'string' },
+    },
+    required: ['overallScore', 'status', 'headline', 'sections', 'topWins', 'topFixes', 'rateInsight'],
+    additionalProperties: false,
+  };
+}
+
 function buildChangesBlock(changes) {
   if (!changes) return '';
   return `CHANGES SINCE LAST AUDIT (code-verified — this is ground truth for what actually changed; do not re-derive it yourself):
@@ -90,4 +255,7 @@ module.exports = {
   computeWeightedScore,
   buildChangesBlock,
   buildPreviousAuditBlock,
+  logJsonParseFailure,
+  repairAndParseJSON,
+  buildAuditResponseSchema,
 };

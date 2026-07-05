@@ -1061,6 +1061,22 @@ textarea.edit-val{min-height:38px}
           <div class="empty-url-hint">After saving, click <strong>Open &amp; Sync</strong> in the profile card, then click <strong>Sync Profile</strong> on the Upwork page — takes about 5 seconds.</div>
         </div>
       </div>
+
+      <!-- ── Agency Profiles — a separate Upwork account type from a
+           freelancer profile; unrelated to the "Agency" plan tier above ── -->
+      <div class="apd-panel" id="agency-profile-panel" style="margin-top:24px">
+        <div class="apd-title">Agency Profiles</div>
+        <p class="apd-desc">Register an Upwork <strong>Agency</strong>-type profile URL (upwork.com/agencies/...) to audit it. This is a different Upwork account type from your freelancer profile above.</p>
+        <div class="profile-slots" id="agency-profile-slots"></div>
+        <div id="agency-profile-upgrade-msg" style="display:none;font-size:13px;color:var(--white3);padding:8px 0">
+          Your current plan doesn't include an agency-profile slot yet.
+        </div>
+        <button id="save-agency-urls" class="btn-indigo" style="margin-top:10px">Save Agency URL</button>
+        <div class="apd-footer-msg">
+          <span class="saved-msg" id="saved-agency-urls-msg">✓ Saved</span>
+          <span class="apd-hint">After saving, open the agency page — the Audit/Sync buttons will appear there.</span>
+        </div>
+      </div>
     </div><!-- /profiles -->
 
     <!-- ══ SUBSCRIPTION ══ -->

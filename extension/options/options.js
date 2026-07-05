@@ -6,6 +6,7 @@ import { renderProfilesPage }             from './modules/profiles.js';
 import { loadEmail, initEmail } from './modules/email.js';
 import { initSettings, applySettingsToUI } from './modules/settings.js';
 import { renderProfileSlots, initProfileUrls } from './modules/profile-urls.js';
+import { renderAgencySlots, initAgencyUrls } from './modules/agency-urls.js';
 
 // ── Section navigation ────────────────────────────────────────────────────────
 function switchSection(name) {
@@ -28,6 +29,9 @@ if (_tab) switchSection(_tab);
 // ── Storage change listener — live refresh when profile syncs ─────────────────
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area === 'local') {
+    if (Object.keys(changes).some(k => k === 'registeredAgencies' || k.startsWith('agencyFull_'))) {
+      renderAgencySlots();
+    }
     const hasProfile = Object.keys(changes).some(k =>
       k.startsWith('profileFull_') || k === 'primaryProfileId' || k === 'registeredProfiles' || k === 'activeProfileId'
     );
@@ -90,10 +94,12 @@ async function init() {
   initEmail();
   initSettings();
   initProfileUrls();
+  initAgencyUrls();
 
   loadStatus();
   loadEmail();
   renderProfileSlots();
+  renderAgencySlots();
   renderProfilesPage();
 
   const { settings = {} } = await chrome.storage.sync.get(['settings']);

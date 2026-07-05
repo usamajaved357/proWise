@@ -1,14 +1,12 @@
-// ── Snag AI Agency Reader v2 ───────────────────────────────────────────────
-// Mirrors extension/content/profile-reader.js's toolbar/panel/render pattern
-// for agency profiles. renderAudit and the quote-highlighting logic are
-// copied verbatim (not imported) rather than extracted into a shared module
-// yet — a refactor of the already-verified freelancer file right before this
-// feature's first real test would conflate two risky changes in one pass.
-// Extracting into extension/content/modules/audit-ui.js is a deliberate,
-// flagged fast-follow once this is proven working, not skipped by accident.
-//
-// PDF export is intentionally NOT included in this pass — sidebar-only, so
-// we can validate the rubric/data pipeline against real audits first.
+// ── Snag AI Agency Reader v3 ───────────────────────────────────────────────
+// Mirrors extension/content/profile-reader.js's toolbar/panel/render/PDF
+// pattern for agency profiles. renderAudit, the quote-highlighting logic,
+// and the PDF export are copied verbatim (not imported) rather than
+// extracted into a shared module yet — a refactor of the already-verified
+// freelancer file right before this feature's testing would conflate two
+// risky changes in one pass. Extracting into
+// extension/content/modules/audit-ui.js is a deliberate, flagged fast-follow
+// once this is proven working, not skipped by accident.
 (function () {
   if (!location.href.includes('/agencies/')) return;
 
@@ -46,9 +44,47 @@
       .join('');
   }
 
+  // ── PDF-only: word-wrap text into lines while tracking which words fall inside
+  // a highlighted suggestion quote — identical to profile-reader.js's version.
+  function layoutRichWords(doc, text, fontSize, font, maxWidth) {
+    doc.setFont(font, 'normal'); doc.setFontSize(fontSize);
+    const spaceW = doc.getTextWidth(' ');
+    const lines = [[]];
+    let lineW = 0;
+    parseSuggestionSegments(text).forEach(seg => {
+      seg.text.split(' ').forEach(word => {
+        if (word === '') return;
+        const ww = doc.getTextWidth(word);
+        if (lineW > 0 && lineW + spaceW + ww > maxWidth) {
+          lines.push([]);
+          lineW = 0;
+        } else if (lineW > 0) {
+          lineW += spaceW;
+        }
+        lines[lines.length - 1].push({ text: word, hl: seg.hl });
+        lineW += ww;
+      });
+    });
+    return lines;
+  }
+
+  function drawRichLines(doc, lines, x, startY, lineHeightMm, normalColor, hlColor, fontSize, font) {
+    doc.setFont(font, 'normal'); doc.setFontSize(fontSize);
+    const spaceW = doc.getTextWidth(' ');
+    let y = startY;
+    lines.forEach(line => {
+      let cx = x;
+      line.forEach(w => {
+        doc.setTextColor(...(w.hl ? hlColor : normalColor));
+        doc.text(w.text, cx, y);
+        cx += doc.getTextWidth(w.text) + spaceW;
+      });
+      y += lineHeightMm;
+    });
+  }
+
   // ── Code-verified diff for progress-tracking — mirrors profile-reader.js's
-  // computeProfileChanges, adapted to agency fields (rate range instead of a
-  // single rate, portfolio/workHistory counts instead of certs/employment).
+  // computeProfileChanges, adapted to agency fields.
   function computeAgencyChanges(prev, cur) {
     if (!prev) return null;
     const lines = [];
@@ -105,19 +141,18 @@
     return lines.join('\n');
   }
 
-  // ── Toolbar — same visual pattern as profile-reader.js's shared capsule ────
-  function injectToolbar(onAudit, onSync) {
-    if (document.getElementById('snagai-agency-toolbar')) return;
+  const AUDIT_ICON_SVG = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>';
+  const SYNC_ICON_SVG  = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>';
 
-    const AUDIT_ICON_SVG = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>';
-    const SYNC_ICON_SVG  = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>';
-
+  function injectToolbarStyles() {
+    if (document.getElementById('snagai-agency-toolbar-styles')) return;
     const style = document.createElement('style');
+    style.id = 'snagai-agency-toolbar-styles';
     style.textContent = `
       @keyframes snagai-a-pulse{0%,100%{opacity:1}50%{opacity:.4}}
       @keyframes snagai-a-spin{to{transform:rotate(360deg)}}
-      #snagai-agency-toolbar{position:fixed;bottom:28px;right:28px;z-index:2147483646;display:flex;align-items:stretch;background:#111827;border:1px solid rgba(99,102,241,.28);border-radius:999px;box-shadow:0 8px 28px rgba(0,0,0,.45);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;transition:transform .2s,box-shadow .2s}
-      #snagai-agency-toolbar:hover{transform:translateY(-2px);box-shadow:0 12px 36px rgba(0,0,0,.55)}
+      #snagai-agency-toolbar,#snagai-agency-add{position:fixed;bottom:28px;right:28px;z-index:2147483646;display:flex;align-items:stretch;background:#111827;border:1px solid rgba(99,102,241,.28);border-radius:999px;box-shadow:0 8px 28px rgba(0,0,0,.45);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;transition:transform .2s,box-shadow .2s}
+      #snagai-agency-toolbar:hover,#snagai-agency-add:hover{transform:translateY(-2px);box-shadow:0 12px 36px rgba(0,0,0,.55)}
       .snagai-a-btn{display:flex;align-items:center;justify-content:center;background:none;border:none;padding:9px;cursor:pointer;position:relative;transition:background .15s}
       .snagai-a-btn:hover:not(:disabled){background:rgba(255,255,255,.06)}
       .snagai-a-btn:disabled{opacity:.6;cursor:default}
@@ -130,8 +165,17 @@
       .snagai-a-tip{position:absolute;bottom:calc(100% + 9px);right:0;transform:translateY(4px);background:#1a1f2e;color:#f0eeea;font-size:11px;font-weight:500;line-height:1.3;padding:6px 10px;border-radius:7px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .15s,transform .15s;box-shadow:0 6px 20px rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.08)}
       .snagai-a-tip::after{content:'';position:absolute;top:100%;right:14px;border:5px solid transparent;border-top-color:#1a1f2e}
       .snagai-a-btn:hover .snagai-a-tip{opacity:1;transform:translateY(0)}
+      #snagai-agency-add-btn{display:flex;align-items:center;gap:8px;background:none;border:none;color:#f0eeea;font-size:12.5px;font-weight:600;padding:11px 18px;cursor:pointer;border-radius:999px;font-family:inherit}
+      #snagai-agency-add-btn:hover:not(:disabled){background:rgba(255,255,255,.06)}
+      #snagai-agency-add-btn:disabled{opacity:.6;cursor:default}
     `;
     document.head.appendChild(style);
+  }
+
+  // ── Toolbar — same visual pattern as profile-reader.js's shared capsule ────
+  function injectToolbar(onAudit, onSync) {
+    if (document.getElementById('snagai-agency-toolbar')) return;
+    injectToolbarStyles();
 
     const wrap = document.createElement('div');
     wrap.id = 'snagai-agency-toolbar';
@@ -192,6 +236,10 @@
       .sn-hd{display:flex;align-items:center;gap:8px;padding:16px;border-bottom:1px solid rgba(255,255,255,.07);flex-shrink:0}
       .sn-hd-ico{width:26px;height:26px;background:#6366f1;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
       .sn-hd-lbl{font-size:13px;font-weight:600;color:#f0eeea;flex:1}
+      .sn-hd-export{display:flex;align-items:center;gap:5px;background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.3);color:#a5a8f5;border-radius:999px;padding:5px 10px;font-size:10.5px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:background .15s,border-color .15s}
+      .sn-hd-export:hover:not(:disabled){background:rgba(99,102,241,.2);border-color:rgba(99,102,241,.45)}
+      .sn-hd-export:disabled{opacity:.35;cursor:default}
+      .sn-hd-export svg{flex-shrink:0}
       .sn-hd-close{background:none;border:none;color:rgba(255,255,255,.35);font-size:15px;cursor:pointer;line-height:1;padding:2px}
       .sn-hd-close:hover{color:rgba(255,255,255,.7)}
 
@@ -246,6 +294,10 @@
             </svg>
           </div>
           <span class="sn-hd-lbl">Agency Audit</span>
+          <button class="sn-hd-export" id="snagai-agency-audit-export" disabled title="Export as PDF">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+            <span>PDF</span>
+          </button>
           <button class="sn-hd-close" id="snagai-agency-audit-close">✕</button>
         </div>
         <div class="sn-bd" id="snagai-agency-audit-body">
@@ -258,14 +310,247 @@
       `;
       document.body.appendChild(panel);
       document.getElementById('snagai-agency-audit-close').addEventListener('click', () => panel.remove());
+      document.getElementById('snagai-agency-audit-export').addEventListener('click', exportAuditPDF);
     }
     return panel;
   }
 
-  // ── Render — identical shape/logic to profile-reader.js's renderAudit;
-  // works unchanged because the agency JSON schema (sections[]/topWins/
-  // topFixes/overallScore/status/headline/rateInsight) was deliberately
-  // built to match it.
+  // ── Audit PDF export state — holds the most recently rendered audit ──────
+  let latestAuditResult = null;
+  let latestAgencyName  = null;
+
+  // ── Export the audit as a downloadable PDF — same native-jsPDF approach as
+  // profile-reader.js's exportAuditPDF, adapted labels/section count only.
+  async function exportAuditPDF() {
+    const btn = document.getElementById('snagai-agency-audit-export');
+    if (!btn || btn.disabled || !latestAuditResult) return;
+    if (!window.jspdf) {
+      console.log('[SnagAI] PDF export unavailable — jsPDF not loaded');
+      return;
+    }
+
+    const originalBtnHtml = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = `<span>Exporting…</span>`;
+
+    try {
+      const audit = latestAuditResult;
+      const agencyName = latestAgencyName || 'Your agency';
+      const dateStr = new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true });
+
+      const hx = h => [parseInt(h.slice(1, 3), 16), parseInt(h.slice(3, 5), 16), parseInt(h.slice(5, 7), 16)];
+      const INK = hx('#17171f'), MUTED = hx('#63636f'), FAINT = hx('#9b9ba6'), LINE = hx('#e4e4ea');
+      const INDIGO = hx('#4f46e5'), INDIGO_BG = hx('#eef0fd'), INDIGO_DK = hx('#3730a3');
+      const GREEN = hx('#15803d'), GREEN_BG = hx('#f0fdf4');
+      const AMBER = hx('#b45309'), AMBER_BG = hx('#fffbeb');
+      const RED = hx('#b91c1c'), RED_BG = hx('#fef2f2');
+      const BLUE = hx('#1d4ed8'), BLUE_BG = hx('#eff6ff');
+      const PURPLE = hx('#6d28d9'), ORANGE = hx('#c2410c');
+      const STATUS_COLOR = { Elite: PURPLE, Strong: GREEN, Good: BLUE, Average: AMBER, Weak: ORANGE, Critical: RED };
+      const BUCKET = n => n >= 8 ? { fg: GREEN, bg: GREEN_BG } : n >= 6 ? { fg: BLUE, bg: BLUE_BG } : n >= 4 ? { fg: AMBER, bg: AMBER_BG } : { fg: RED, bg: RED_BG };
+      const IMPACT = { High: { fg: RED, bg: RED_BG }, Medium: { fg: AMBER, bg: AMBER_BG }, Low: { fg: BLUE, bg: BLUE_BG } };
+
+      const pageW = doc.internal.pageSize.getWidth();
+      const pageH = doc.internal.pageSize.getHeight();
+      const marginX = 18, marginTop = 18, marginBottom = 16;
+      const contentW = pageW - marginX * 2;
+      let y = marginTop;
+
+      const lineH = (size, factor = 1.32) => size * factor * 0.3528;
+      const wrapped = (text, size, font = 'helvetica', style = 'normal', width = contentW) => {
+        doc.setFont(font, style); doc.setFontSize(size);
+        return doc.splitTextToSize(String(text || ''), width);
+      };
+
+      function drawHeader(full) {
+        if (full) {
+          doc.setFillColor(...INDIGO);
+          doc.roundedRect(marginX, y, 9, 9, 2, 2, 'F');
+          doc.setFont('helvetica', 'bold'); doc.setFontSize(10); doc.setTextColor(255, 255, 255);
+          doc.text('S', marginX + 4.5, y + 6.3, { align: 'center' });
+
+          doc.setFont('helvetica', 'bold'); doc.setFontSize(13); doc.setTextColor(...INK);
+          doc.text('Snag AI — Agency Audit Report', marginX + 13, y + 5.6);
+
+          doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(...MUTED);
+          doc.text(`${agencyName}  ·  ${dateStr}`, marginX + 13, y + 10.6);
+
+          y += 16;
+        } else {
+          doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5); doc.setTextColor(...INDIGO);
+          doc.text('SNAG AI — AGENCY AUDIT REPORT', marginX, y);
+          doc.setFont('helvetica', 'normal'); doc.setFontSize(8.5); doc.setTextColor(...FAINT);
+          doc.text(`${agencyName}`, pageW - marginX, y, { align: 'right' });
+          y += 5;
+        }
+        doc.setDrawColor(...LINE); doc.setLineWidth(0.3);
+        doc.line(marginX, y, pageW - marginX, y);
+        y += full ? 9 : 8;
+      }
+
+      function ensureSpace(needed) {
+        if (y + needed > pageH - marginBottom) {
+          doc.addPage();
+          y = marginTop;
+          drawHeader(false);
+        }
+      }
+
+      drawHeader(true);
+
+      const score = parseFloat(audit.overallScore) || 0;
+      const status = audit.status || 'Good';
+      const stColor = STATUS_COLOR[status] || BLUE;
+      const r = 11, cx = marginX + r, cy = y + r;
+
+      doc.setDrawColor(...stColor); doc.setLineWidth(1.1);
+      doc.circle(cx, cy, r, 'S');
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(13); doc.setTextColor(...stColor);
+      doc.text(score.toFixed(1), cx, cy + 1.6, { align: 'center' });
+
+      doc.setFont('helvetica', 'bold'); doc.setFontSize(9); doc.setTextColor(...FAINT);
+      doc.text(`${status.toUpperCase()} AGENCY`, cx + r + 7, cy - 0.5);
+
+      y += r * 2 + 7;
+
+      if (audit.headline) {
+        const lines = wrapped(`“${audit.headline}”`, 15, 'times', 'italic');
+        doc.setTextColor(...INK);
+        doc.text(lines, marginX, y);
+        y += lines.length * lineH(15) + 8;
+      }
+
+      doc.setDrawColor(...LINE); doc.setLineWidth(0.3);
+      doc.line(marginX, y, pageW - marginX, y);
+      y += 10;
+
+      (audit.sections || []).forEach(sec => {
+        ensureSpace(16);
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(11.5); doc.setTextColor(...INK);
+        doc.text(sec.label || '', marginX, y);
+
+        const b = BUCKET(sec.score);
+        const badgeLabel = `${sec.score}/10`;
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(9);
+        const bw = doc.getTextWidth(badgeLabel) + 6;
+        doc.setFillColor(...b.bg);
+        doc.roundedRect(pageW - marginX - bw, y - 4.2, bw, 5.6, 1.4, 1.4, 'F');
+        doc.setTextColor(...b.fg);
+        doc.text(badgeLabel, pageW - marginX - bw / 2, y - 0.5, { align: 'center' });
+        y += 7;
+
+        if (sec.finding) {
+          const lines = wrapped(sec.finding, 9.5);
+          const h = lines.length * lineH(9.5);
+          ensureSpace(h + 4);
+          doc.setFont('helvetica', 'normal'); doc.setFontSize(9.5); doc.setTextColor(...MUTED);
+          doc.text(lines, marginX, y);
+          y += h + 4;
+        }
+
+        if (sec.fix) {
+          const innerW = contentW - 14;
+          const richLines = layoutRichWords(doc, sec.fix, 9.5, 'helvetica', innerW);
+          const boxH = richLines.length * lineH(9.5) + 11;
+          ensureSpace(boxH + 6);
+          doc.setFillColor(...INDIGO_BG);
+          doc.roundedRect(marginX, y, contentW, boxH, 2, 2, 'F');
+          doc.setFillColor(...INDIGO);
+          doc.rect(marginX, y, 1.3, boxH, 'F');
+          doc.setFont('helvetica', 'bold'); doc.setFontSize(7.3); doc.setTextColor(...INDIGO_DK);
+          doc.text('SUGGESTED FIX', marginX + 6, y + 5.5);
+          drawRichLines(doc, richLines, marginX + 6, y + 10.3, lineH(9.5), INK, INDIGO, 9.5, 'helvetica');
+          y += boxH + 9;
+        } else {
+          y += 5;
+        }
+      });
+
+      const wins = audit.topWins || [];
+      if (wins.length) {
+        const quoteText = `“${wins.join('. ')}.”`;
+        const qLines = wrapped(quoteText, 10, 'times', 'italic', contentW - 14);
+        const boxH = qLines.length * lineH(10) + 10;
+        ensureSpace(boxH + 8);
+        doc.setFillColor(...GREEN_BG);
+        doc.roundedRect(marginX, y, contentW, boxH, 2, 2, 'F');
+        doc.setFillColor(...GREEN);
+        doc.rect(marginX, y, 1.3, boxH, 'F');
+        doc.setFont('times', 'italic'); doc.setFontSize(10); doc.setTextColor(...INK);
+        doc.text(qLines, marginX + 7, y + 7);
+        y += boxH + 10;
+      }
+
+      const fixes = audit.topFixes || [];
+      if (fixes.length) {
+        ensureSpace(12);
+        doc.setFont('helvetica', 'bold'); doc.setFontSize(12); doc.setTextColor(...INK);
+        doc.text('What to fix first', marginX, y);
+        y += 9;
+
+        fixes.forEach(f => {
+          const imp = IMPACT[f.impact] || IMPACT.Medium;
+          const lines = wrapped(f.action, 9.8, 'helvetica', 'normal', contentW - 14);
+          const textH = lines.length * lineH(9.8);
+          ensureSpace(textH + 13);
+
+          doc.setFillColor(...imp.fg);
+          doc.circle(marginX + 3, y + 2.4, 3, 'F');
+          doc.setFont('helvetica', 'bold'); doc.setFontSize(8.5); doc.setTextColor(255, 255, 255);
+          doc.text(String(f.priority), marginX + 3, y + 3.5, { align: 'center' });
+
+          doc.setFont('helvetica', 'normal'); doc.setFontSize(9.8); doc.setTextColor(...INK);
+          doc.text(lines, marginX + 9, y + 1.6);
+
+          const impLabel = `${(f.impact || '').toUpperCase()} IMPACT`;
+          doc.setFont('helvetica', 'bold'); doc.setFontSize(7.5);
+          const iw = doc.getTextWidth(impLabel) + 5;
+          const impY = y + 1.6 + textH + 2;
+          doc.setFillColor(...imp.bg);
+          doc.roundedRect(marginX + 9, impY - 3.6, iw, 4.8, 1.2, 1.2, 'F');
+          doc.setTextColor(...imp.fg);
+          doc.text(impLabel, marginX + 9 + iw / 2, impY - 0.3, { align: 'center' });
+
+          y += textH + 13;
+        });
+      }
+
+      if (audit.rateInsight) {
+        const lines = wrapped(audit.rateInsight, 9, 'times', 'italic');
+        const h = lines.length * lineH(9);
+        ensureSpace(h + 10);
+        doc.setDrawColor(...LINE); doc.setLineWidth(0.3);
+        doc.line(marginX, y, pageW - marginX, y);
+        y += 7;
+        doc.setFont('times', 'italic'); doc.setFontSize(9); doc.setTextColor(...MUTED);
+        doc.text(lines, marginX, y);
+        y += h;
+      }
+
+      const total = doc.internal.getNumberOfPages();
+      for (let p = 1; p <= total; p++) {
+        doc.setPage(p);
+        doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(...FAINT);
+        doc.text('Generated by Snag AI', marginX, pageH - 9);
+        doc.text(`Page ${p} of ${total}`, pageW - marginX, pageH - 9, { align: 'right' });
+      }
+
+      const safeName = String(agencyName).trim().replace(/[^a-z0-9]+/gi, '-').replace(/(^-+|-+$)/g, '') || 'agency';
+      doc.save(`SnagAI-Agency-Audit-${safeName}-${new Date().toISOString().slice(0, 10)}.pdf`);
+
+      btn.innerHTML = `<span>Saved ✓</span>`;
+    } catch (e) {
+      console.log('[SnagAI] Agency PDF export failed:', e.message);
+      btn.innerHTML = `<span>Export failed</span>`;
+    } finally {
+      setTimeout(() => { btn.disabled = false; btn.innerHTML = originalBtnHtml; }, 1800);
+    }
+  }
+
+  // ── Render — identical shape/logic to profile-reader.js's renderAudit ─────
   function renderAudit(audit) {
     const body = document.getElementById('snagai-agency-audit-body');
     if (!body) return;
@@ -274,12 +559,8 @@
     const status = audit.status || 'Good';
 
     const SC = {
-      Elite:    { c:'#c4b5fd', bg:'rgba(196,181,253,.08)', bd:'rgba(196,181,253,.18)' },
-      Strong:   { c:'#4ade80', bg:'rgba(74,222,128,.07)',  bd:'rgba(74,222,128,.18)'  },
-      Good:     { c:'#60a5fa', bg:'rgba(96,165,250,.07)',  bd:'rgba(96,165,250,.18)'  },
-      Average:  { c:'#fbbf24', bg:'rgba(251,191,36,.07)',  bd:'rgba(251,191,36,.18)'  },
-      Weak:     { c:'#fb923c', bg:'rgba(251,146,60,.07)',  bd:'rgba(251,146,60,.18)'  },
-      Critical: { c:'#f87171', bg:'rgba(248,113,113,.07)', bd:'rgba(248,113,113,.18)' },
+      Elite:    { c:'#c4b5fd' }, Strong: { c:'#4ade80' }, Good: { c:'#60a5fa' },
+      Average:  { c:'#fbbf24' }, Weak:   { c:'#fb923c' }, Critical: { c:'#f87171' },
     };
     const st = SC[status] || SC.Good;
     const IC = { High:'#f87171', Medium:'#fbbf24', Low:'#60a5fa' };
@@ -319,31 +600,38 @@
         ${audit.rateInsight ? `<div class="sn-erate">${renderSuggestionHTML(audit.rateInsight)}</div>` : ''}
       </div>
     `;
+
+    latestAuditResult = audit;
+    const exportBtn = document.getElementById('snagai-agency-audit-export');
+    if (exportBtn) exportBtn.disabled = false;
   }
 
   // ── Init ────────────────────────────────────────────────────────────────
-  // No registeredProfiles gate yet — that's the options-page registration UI
-  // for agencies, which doesn't exist yet. Toolbar shows on any /agencies/*
-  // page for now, purely to unblock real-data testing; tightening this to
-  // match the freelancer flow's registered-profile gating is a separate,
-  // explicitly deferred piece of work.
   async function init() {
     const slug = location.href.split('/agencies/')[1]?.split('/')[0]?.split('?')[0] || '';
     if (!slug) return;
 
+    // Same gate as profile-reader.js's freelancer flow: the toolbar only
+    // ever appears for a URL registered via the options page's Agency
+    // Profiles panel (extension/options/modules/agency-urls.js). No in-page
+    // "add" prompt — registration happens in the extension UI only.
+    const { registeredAgencies = [] } = await local.get(['registeredAgencies']);
+    const isRegistered = registeredAgencies.some(a => a?.slug === slug);
+    if (!isRegistered) return;
+
     const lastAuditKey = 'lastAgencyAudit_' + slug;
     const lastAuditProfileKey = lastAuditKey + '_profile';
 
-    injectAuditStyles();
-
-    injectToolbar(async (btn) => {
+    async function runAudit(btn) {
       btn.disabled = true;
       const icon = btn.querySelector('.snagai-a-icon');
       icon.innerHTML = `<span class="snagai-a-spin-icon" style="font-size:13px;color:#fff">↻</span>`;
+      injectAuditStyles();
       openAuditPanel();
       try {
         const agencyData = await readAgencyData();
         if (!agencyData) throw new Error('Could not read agency data — try refreshing the page.');
+        latestAgencyName = agencyData.name || null;
 
         const profileSnapshotForDiff = { ...agencyData };
         const { [lastAuditKey]: previousAudit, [lastAuditProfileKey]: previousProfileSnapshot } =
@@ -357,7 +645,7 @@
 
         renderAudit(audit);
         await local.set({ [lastAuditKey]: audit, [lastAuditProfileKey]: profileSnapshotForDiff });
-        icon.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>';
+        icon.innerHTML = AUDIT_ICON_SVG;
         icon.style.background = '#16a34a';
         btn.disabled = false;
         btn.onclick = () => {
@@ -371,12 +659,16 @@
         icon.style.background = '#dc2626';
         btn.disabled = false;
       }
-    }, async () => {
+    }
+
+    async function runSync() {
       const agencyData = await readAgencyData();
       if (!agencyData) throw new Error('Could not read agency data');
       await local.set({ ['agencyFull_' + slug]: agencyData });
       console.log('[SnagAI] Agency synced:', agencyData.name);
-    });
+    }
+
+    injectToolbar(runAudit, runSync);
   }
 
   init();
