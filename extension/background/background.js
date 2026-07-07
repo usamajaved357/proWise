@@ -1,5 +1,6 @@
 // ── Snag AI Background — message router ───────────────────────────────────────
 import { handleGenerate, handleCoverLetter } from './modules/generate.js';
+import { handleAgencyCoverLetter } from './modules/agency-generate.js';
 import { getStatus }    from './modules/status.js';
 import { handleAnalyse } from './modules/analyse.js';
 import { handleProfileAudit } from './modules/profile-audit.js';
@@ -24,6 +25,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   }
   if (msg.type === 'GENERATE_COVER_LETTER') {
     handleCoverLetter(msg).then(sendResponse).catch(e => sendResponse({ error: e.message }));
+    return true;
+  }
+  if (msg.type === 'GENERATE_AGENCY_COVER_LETTER') {
+    handleAgencyCoverLetter(msg).then(sendResponse).catch(e => sendResponse({ error: e.message }));
     return true;
   }
   if (msg.type === 'ANALYSE_JOB') {

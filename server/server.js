@@ -5,6 +5,7 @@ const express = require('express');
 
 const statusRoute   = require('./routes/status');
 const proposalRoute = require('./routes/proposal');
+const agencyProposalRoute = require('./routes/agency-proposal');
 const analyseRoute  = require('./routes/analyse');
 const billingRoute  = require('./routes/billing');
 const upgradeRoute  = require('./routes/upgrade');
@@ -42,6 +43,7 @@ app.get('/', (req, res) => res.json({ status: 'ok', service: 'Snag AI API v7' })
 app.use('/verify',          verifyRoute);
 app.use('/status',          statusRoute);
 app.use('/proposal',        proposalRoute);
+app.use('/agency-proposal', agencyProposalRoute);
 app.use('/analyse',         analyseRoute);
 app.use('/billing-portal',  billingRoute);
 app.use('/upgrade',         upgradeRoute);
