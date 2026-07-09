@@ -12,6 +12,7 @@ const router  = express.Router();
 const { AGENCY_AUDIT_SYSTEM, buildAgencyAuditMessage } = require('../prompt-agency-audit');
 const { callClaudeRaw } = require('../claude-client');
 const { checkQuoteFormatting, computeWeightedScore, logJsonParseFailure, repairAndParseJSON, buildAuditResponseSchema } = require('../audit-shared');
+const { canAudit, recordAuditUsage, getUserStatus } = require('../modules/usage');
 
 // Must match the "overallScore = weighted average" line in prompt-agency-audit.js
 // and sum to exactly 1.
@@ -26,8 +27,30 @@ const AGENCY_AUDIT_SCHEMA = buildAuditResponseSchema(Object.keys(SECTION_WEIGHTS
 
 router.post('/', async (req, res) => {
   try {
-    const { agency } = req.body;
+    const { agency, email: userEmail } = req.body;
     if (!agency) return res.status(400).json({ error: 'agency is required' });
+
+    // Profile/agency audits are ~10x the cost of a proposal/job-audit and
+    // used far less often, so they draw from a separate quota — see
+    // routes/profile-audit.js for the full reasoning.
+    const isRealEmail = userEmail && userEmail.includes('@') && !userEmail.includes('propwise.local');
+    if (!isRealEmail) {
+      return res.status(403).json({
+        error: 'Please add and verify your email in Settings to use Snag AI.',
+        requiresEmail: true,
+      });
+    }
+    const auditOk = await canAudit(userEmail);
+    if (!auditOk) {
+      const status = await getUserStatus(userEmail);
+      return res.status(402).json({
+        error: status.auditLimit === 0
+          ? 'Agency audits aren\'t included on your plan. Upgrade to Pro or Agency to unlock them.'
+          : `You've used all ${status.auditLimit} profile/agency audits this month. Resets on the 1st.`,
+        showPaywall: true,
+        ...status
+      });
+    }
 
     const userMessage = buildAgencyAuditMessage(agency);
     if (process.env.AUDIT_DEBUG === '1') {
@@ -60,7 +83,9 @@ router.post('/', async (req, res) => {
     computeWeightedScore(audit, SECTION_WEIGHTS);
     checkQuoteFormatting(audit);
     console.log('[AGENCY_AUDIT] Score:', audit.overallScore, '(Claude said:', claudeScore, ') | Status:', audit.status);
-    return res.json({ success: true, audit });
+    await recordAuditUsage(userEmail);
+    const status = await getUserStatus(userEmail);
+    return res.json({ success: true, audit, usage: status });
 
   } catch(e) {
     console.error('[AGENCY_AUDIT] Error:', e.message);

@@ -67,7 +67,13 @@
     // Already analysed — open instantly with cached data, no API call
     const alreadyDone = await SnagAI.isJobAnalysed();
     if (alreadyDone) {
-      const cacheKey = 'sn_analysis_' + SnagAI.state.cachedJobId;
+      // Cache key must match job-analyser.js's primary-profile-suffixed
+      // scheme exactly, or this fast path silently misses the entry
+      // isJobAnalysed() just confirmed exists.
+      const { primaryProfileId, activeProfileId } = await new Promise(r =>
+        chrome.storage.local.get(['primaryProfileId', 'activeProfileId'], r));
+      const suffix   = (primaryProfileId || activeProfileId || 'default') + '_';
+      const cacheKey = 'sn_analysis_' + suffix + SnagAI.state.cachedJobId;
       chrome.storage.local.get([cacheKey], r => {
         const cached = r[cacheKey];
         if (cached?.analysis) SnagAI.renderAnalysis({ ...cached.analysis, fromCache: true });

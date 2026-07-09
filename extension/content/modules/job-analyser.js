@@ -8,6 +8,17 @@ const CACHE_PREFIX      = 'sn_analysis_';
 const REANALYSE_PREFIX  = 'sn_recount_';
 const MAX_REANALYSES    = 3; // max extra analyses after initial (3 re-analyses total)
 
+// Cache/re-analyse counters are keyed by the ACTIVE primary profile's id
+// (freelancer or agency — background/modules/primary-profile.js resolves
+// which one is used), not by a mode flag. This means switching which
+// profile is primary from the Profiles page naturally gets its own cache
+// slot per job, same as it would for two different freelancer profiles.
+async function primaryKeySuffix() {
+  const { primaryProfileId, activeProfileId } = await new Promise(r =>
+    chrome.storage.local.get(['primaryProfileId', 'activeProfileId'], r));
+  return (primaryProfileId || activeProfileId || 'default') + '_';
+}
+
 // ── Public API ──────────────────────────────────────────────────────────────
 
 /**
@@ -16,28 +27,21 @@ const MAX_REANALYSES    = 3; // max extra analyses after initial (3 re-analyses 
  */
 window.SnagAI.analyseJob = async function(jobData, filters = {}, forceRefresh = false) {
   const jobId = SnagAI.state.cachedJobId;
-
-  // "Generate as" mode — set via the extension popup toggle (only shown once
-  // an agency profile is registered). A freelancer-mode analysis and an
-  // agency-mode analysis of the same job are genuinely different results
-  // (different fit scoring, different hook), so they're cached separately.
-  const { generateAsMode = 'freelancer' } = await new Promise(r => chrome.storage.local.get(['generateAsMode'], r));
-  const isAgency  = generateAsMode === 'agency';
-  const cachePrefix = isAgency ? CACHE_PREFIX + 'agency_' : CACHE_PREFIX;
-  const cacheKey  = jobId && jobId !== 'current' ? cachePrefix + jobId : null;
+  const suffix = await primaryKeySuffix();
+  const cacheKey = jobId && jobId !== 'current' ? CACHE_PREFIX + suffix + jobId : null;
 
   if (!forceRefresh && cacheKey) {
     const stored = await new Promise(r => chrome.storage.local.get([cacheKey], r));
     const cached = stored[cacheKey];
     if (cached?.analysis) {
-      console.log('[SnagAI] Analysis cache hit:', jobId, isAgency ? '(agency)' : '');
+      console.log('[SnagAI] Analysis cache hit:', jobId);
       return { ...cached.analysis, fromCache: true };
     }
   }
 
-  console.log('[SnagAI] Running Claude analysis for job:', jobId, isAgency ? '(agency)' : '', forceRefresh ? '(forced refresh)' : '');
+  console.log('[SnagAI] Running Claude analysis for job:', jobId, forceRefresh ? '(forced refresh)' : '');
   const analysis = await chrome.runtime.sendMessage({
-    type:    isAgency ? 'ANALYSE_AGENCY_JOB' : 'ANALYSE_JOB',
+    type:    'ANALYSE_JOB',
     jobData: jobData || {},
     filters: filters || {},
   });
@@ -45,7 +49,7 @@ window.SnagAI.analyseJob = async function(jobData, filters = {}, forceRefresh = 
   if (analysis?.error) throw new Error(analysis.error);
 
   if (cacheKey && analysis) {
-    const reCountKey    = isAgency ? REANALYSE_PREFIX + 'agency_' + jobId : REANALYSE_PREFIX + jobId;
+    const reCountKey    = REANALYSE_PREFIX + suffix + jobId;
     const reCountStored = await new Promise(r => chrome.storage.local.get([reCountKey], r));
     const currentCount  = reCountStored[reCountKey] || 0;
     chrome.storage.local.set({
@@ -64,8 +68,8 @@ window.SnagAI.analyseJob = async function(jobData, filters = {}, forceRefresh = 
 window.SnagAI.isJobAnalysed = async function() {
   const jobId = SnagAI.state.cachedJobId;
   if (!jobId || jobId === 'current') return false;
-  const { generateAsMode = 'freelancer' } = await new Promise(r => chrome.storage.local.get(['generateAsMode'], r));
-  const cacheKey = (generateAsMode === 'agency' ? CACHE_PREFIX + 'agency_' : CACHE_PREFIX) + jobId;
+  const suffix = await primaryKeySuffix();
+  const cacheKey = CACHE_PREFIX + suffix + jobId;
   try {
     const stored = await new Promise(r => chrome.storage.local.get([cacheKey], r));
     return !!(stored[cacheKey]?.analysis);
@@ -79,8 +83,8 @@ window.SnagAI.isJobAnalysed = async function() {
 window.SnagAI.getReAnalyseStatus = async function() {
   const jobId = SnagAI.state.cachedJobId;
   if (!jobId || jobId === 'current') return { used: 0, remaining: MAX_REANALYSES, locked: false };
-  const { generateAsMode = 'freelancer' } = await new Promise(r => chrome.storage.local.get(['generateAsMode'], r));
-  const reCountKey = (generateAsMode === 'agency' ? REANALYSE_PREFIX + 'agency_' : REANALYSE_PREFIX) + jobId;
+  const suffix = await primaryKeySuffix();
+  const reCountKey = REANALYSE_PREFIX + suffix + jobId;
   const stored = await new Promise(r => chrome.storage.local.get([reCountKey], r));
   const used   = stored[reCountKey] || 0;
   return { used, remaining: MAX_REANALYSES - used, locked: used >= MAX_REANALYSES };

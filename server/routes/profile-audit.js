@@ -8,6 +8,7 @@ const router  = express.Router();
 const { AUDIT_SYSTEM, buildAuditMessage } = require('../prompt-audit');
 const { callClaudeRaw } = require('../claude-client');
 const { checkQuoteFormatting, computeWeightedScore, QUOTE_RE_GLOBAL, logJsonParseFailure, repairAndParseJSON, buildAuditResponseSchema } = require('../audit-shared');
+const { canAudit, recordAuditUsage, getUserStatus } = require('../modules/usage');
 
 // Weights must match the "overallScore = weighted average" line in prompt-audit.js
 // and sum to exactly 1 (they previously summed to 1.10 in the prompt text, which
@@ -42,8 +43,30 @@ function checkTitleLength(audit) {
 
 router.post('/', async (req, res) => {
   try {
-    const { profile } = req.body;
+    const { profile, email: userEmail } = req.body;
     if (!profile) return res.status(400).json({ error: 'profile is required' });
+
+    // Profile audits are ~10x the cost of a proposal/job-audit ($0.10 vs
+    // $0.01) and used far less often, so they draw from a separate quota
+    // (canAudit/recordAuditUsage) rather than the main pool.
+    const isRealEmail = userEmail && userEmail.includes('@') && !userEmail.includes('propwise.local');
+    if (!isRealEmail) {
+      return res.status(403).json({
+        error: 'Please add and verify your email in Settings to use Snag AI.',
+        requiresEmail: true,
+      });
+    }
+    const auditOk = await canAudit(userEmail);
+    if (!auditOk) {
+      const status = await getUserStatus(userEmail);
+      return res.status(402).json({
+        error: status.auditLimit === 0
+          ? 'Profile audits aren\'t included on your plan. Upgrade to Pro or Agency to unlock them.'
+          : `You've used all ${status.auditLimit} profile audits this month. Resets on the 1st.`,
+        showPaywall: true,
+        ...status
+      });
+    }
 
     const userMessage = buildAuditMessage(profile);
     // Gated full-prompt dump for debugging exactly what was sent — off by
@@ -79,7 +102,9 @@ router.post('/', async (req, res) => {
     checkQuoteFormatting(audit);
     checkTitleLength(audit);
     console.log('[AUDIT] Score:', audit.overallScore, '(Claude said:', claudeScore, ') | Status:', audit.status);
-    return res.json({ success: true, audit });
+    await recordAuditUsage(userEmail);
+    const status = await getUserStatus(userEmail);
+    return res.json({ success: true, audit, usage: status });
 
   } catch(e) {
     console.error('[AUDIT] Error:', e.message);

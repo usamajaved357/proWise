@@ -120,36 +120,6 @@ function updateStatusUI(data) {
   }
 }
 
-// ── Generate-as mode toggle ──────────────────────────────────────────────
-// Only relevant once a user has both a freelancer profile and a registered
-// agency profile — determines which profile's data + prompt generate.js
-// (freelancer) vs agency-generate.js (agency) uses for the next cover
-// letter. Hidden entirely when no agency is registered, since there's
-// nothing to choose between yet.
-function setModeUI(mode) {
-  document.getElementById('mode-freelancer').classList.toggle('active', mode === 'freelancer');
-  document.getElementById('mode-agency').classList.toggle('active', mode === 'agency');
-}
-
-async function initModeToggle() {
-  const { registeredAgencies = [] } = await chrome.storage.local.get(['registeredAgencies']);
-  const hasAgency = registeredAgencies.some(a => a && a.slug);
-  if (!hasAgency) return;
-
-  document.getElementById('mode-row').style.display = 'block';
-
-  const { generateAsMode = 'freelancer' } = await chrome.storage.local.get(['generateAsMode']);
-  setModeUI(generateAsMode);
-
-  document.querySelectorAll('.mode-btn').forEach(btn => {
-    btn.addEventListener('click', async () => {
-      const mode = btn.dataset.mode;
-      await chrome.storage.local.set({ generateAsMode: mode });
-      setModeUI(mode);
-    });
-  });
-}
-
 // Close popup when it loses focus (clicking outside)
 window.addEventListener('blur', () => window.close());
 
@@ -163,5 +133,4 @@ window.addEventListener('blur', () => window.close());
     updateStatusUI({ plan: cached.userPlan, used, limit, remaining: Math.max(0, limit - used) });
   }
   await loadStatus();
-  await initModeToggle();
 })();

@@ -70,13 +70,6 @@ body{width:300px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-se
 .open-settings:hover{opacity:.88;transform:translateY(-1px)}
 .open-settings svg{opacity:.9;flex-shrink:0}
 
-/* Generate-as mode toggle */
-.mode-row{margin:10px 14px 0;display:none}
-.mode-label{font-size:10px;color:rgba(240,238,234,.4);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em}
-.mode-toggle{display:flex;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:3px}
-.mode-btn{flex:1;padding:7px 10px;background:none;border:none;border-radius:8px;color:rgba(240,238,234,.5);font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;transition:all .15s}
-.mode-btn.active{background:#6366f1;color:#fff}
-
 /* Footer */
 .ftr{padding:10px 14px 12px;text-align:center;font-size:10px;color:rgba(240,238,234,.16);margin-top:10px}
 </style>
@@ -114,15 +107,6 @@ body{width:300px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-se
   </div>
   <div class="bar-wrap"><div class="bar-fill bar-ok" id="usage-bar" style="width:0%"></div></div>
   <div class="usage-status" id="usage-status">2 proposals remaining this month</div>
-</div>
-
-<!-- Generate-as mode toggle — only shown once an agency profile is registered -->
-<div class="mode-row" id="mode-row">
-  <div class="mode-label">Generate as</div>
-  <div class="mode-toggle">
-    <button class="mode-btn" id="mode-freelancer" data-mode="freelancer">Freelancer</button>
-    <button class="mode-btn" id="mode-agency" data-mode="agency">Agency</button>
-  </div>
 </div>
 
 <!-- Alert banner -->

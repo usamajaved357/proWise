@@ -1,7 +1,44 @@
 // ── Profiles section — cards, skills, portfolio, save ────────────────────────
-import { PLAN_LIMITS, SKILLS_SHOW } from './config.js';
+import { PLAN_PROFILE_LIMITS, SKILLS_SHOW } from './config.js';
 import { state } from './state.js';
 import { showSaved, getSkillsArr, _esc } from './helpers.js';
+
+// ── Agency data normalizer ────────────────────────────────────────────────
+// Maps agencyFull_<slug>'s field names onto the same shape freelancer cards
+// already expect (name/jss/earnings/jobs/hours/title/rate/tierKey/country/
+// profilePicUrl/portfolios) so renderProfileCard needs almost no branching —
+// per the "same card, same sync flow, just a tag" requirement, agencies are
+// rendered through the exact same code path as freelancers, just fed
+// normalized data. Job Filters and portfolio editing stay freelancer-only
+// (agency has no jobFilters concept, and its portfolio is read-only scraped
+// data, not meant to be hand-edited here) — renderProfileCard skips those
+// blocks when profile._type === 'agency'.
+function normalizeAgencyForCard(entry, full) {
+  if (!full) return entry;
+  const badge = full.topRatedPlusStatus === 'ELIGIBLE' ? 'Top Rated Plus'
+    : full.topRatedStatus === 'ELIGIBLE' ? 'Top Rated'
+    : full.vetted ? 'Vetted' : '';
+  const rate = (full.minRate != null && full.maxRate != null)
+    ? (full.minRate === full.maxRate ? '$' + full.minRate + '/hr' : '$' + full.minRate + '-$' + full.maxRate + '/hr')
+    : '';
+  const loc0 = (full.locations || [])[0];
+  const country = loc0 ? [loc0.city, loc0.country].filter(Boolean).join(', ') : '';
+  return {
+    ...entry,
+    name:           full.name || '',
+    jss:            full.jobSuccessScore != null ? full.jobSuccessScore + '%' : '',
+    earnings:       full.totalEarnings != null ? '$' + full.totalEarnings : '',
+    jobs:           full.totalJobs || '',
+    hours:          full.totalHours || '',
+    title:          full.summary || '',
+    rate,
+    tierKey:        '',
+    tier:           badge,
+    country,
+    profilePicUrl:  full.photo || '',
+    portfolios:     (full.portfolio || []).map(p => ({ title: p.title, urls: p.url ? [p.url] : [], desc: p.description || '' })),
+  };
+}
 
 // ── Skills expand/collapse ────────────────────────────────────────────────────
 export function renderSkillsExpand(wrap, skillsArr, expanded) {
@@ -768,17 +805,83 @@ function renderPortfolioItemV2(list, p, pi, allProfiles, profileIdx, autoOpen) {
 }
 
 // ── Profile card renderer ─────────────────────────────────────────────────────
+// Auto-detects freelancer vs agency from the URL shape and routes into the
+// correct underlying storage array — the plan-wide combined limit is checked
+// by the caller before this runs. Returns true on success, false on an
+// invalid/unrecognized URL.
+async function registerProfileUrl(url) {
+  const isAgencyUrl     = url.includes('upwork.com/agencies/');
+  const isFreelancerUrl = url.includes('upwork.com/freelancers/');
+  if (!url || (!isAgencyUrl && !isFreelancerUrl)) return false;
+
+  if (isAgencyUrl) {
+    const slug = url.split('/agencies/')[1]?.split('/')[0]?.split('?')[0] || '';
+    if (!slug) return false;
+    const stored = await new Promise(r => chrome.storage.local.get(['registeredAgencies'], r));
+    const agencies = stored.registeredAgencies || [];
+    const id = 'agency_' + (agencies.length + 1) + '_' + Date.now();
+    agencies.push({ url, slug, id, syncEnabled: true });
+    await new Promise(r => chrome.storage.local.set({ registeredAgencies: agencies }, r));
+  } else {
+    const stored = await new Promise(r => chrome.storage.local.get(['registeredProfiles'], r));
+    const profiles = stored.registeredProfiles || [];
+    const id = 'profile_' + (profiles.length + 1) + '_' + Date.now();
+    profiles.push({ url, id, syncEnabled: true });
+    await new Promise(r => chrome.storage.local.set({ registeredProfiles: profiles }, r));
+  }
+  return true;
+}
+
+// Wires the static "Add your Upwork profile" empty-state form (options.html
+// #empty-profile-url-inp / #empty-save-profile-btn) — a one-time listener
+// attach, called once from options.js's init(), since the button lives in
+// static markup rather than being recreated on every renderProfilesPage().
+export function initProfilesPage() {
+  document.getElementById('empty-save-profile-btn')?.addEventListener('click', async () => {
+    const inp = document.getElementById('empty-profile-url-inp');
+    const url = (inp?.value || '').trim();
+    const ok  = await registerProfileUrl(url);
+    if (!ok) {
+      if (inp) { inp.style.borderColor = 'var(--red)'; setTimeout(() => inp.style.borderColor = '', 2000); }
+      return;
+    }
+    await renderProfilesPage();
+    chrome.tabs.create({ url });
+  });
+}
+
+// Deletes a profile entry regardless of type — fetches fresh from the
+// CORRECT underlying array (registeredProfiles vs registeredAgencies) and
+// removes the matching id, rather than trusting the in-memory merged list
+// (which no longer maps 1:1 to either storage array once both types are
+// combined for display).
+async function deleteProfileEntry(profile) {
+  if (profile._type === 'agency') {
+    const { registeredAgencies = [] } = await new Promise(r => chrome.storage.local.get(['registeredAgencies'], r));
+    const updated = registeredAgencies.filter(a => a && a.id !== profile.id);
+    await chrome.storage.local.set({ registeredAgencies: updated });
+    if (profile.slug) chrome.storage.local.remove('agencyFull_' + profile.slug);
+  } else {
+    const { registeredProfiles = [] } = await new Promise(r => chrome.storage.local.get(['registeredProfiles'], r));
+    const updated = registeredProfiles.filter(p => p && p.id !== profile.id);
+    await chrome.storage.local.set({ registeredProfiles: updated });
+    if (profile.id) chrome.storage.local.remove('profileFull_' + profile.id);
+  }
+}
+
+// ── Profile card renderer — shared by both freelancer and agency entries ────
 export function renderProfileCard(container, profile, idx, allProfiles, primaryProfileId) {
   const card = document.createElement('div');
   card.className = 'pr-detail';
   card.dataset.profileIdx = idx;
 
-  const synced        = !!(profile.name || profile.jss || profile._readAt);
-  const validProfiles = allProfiles.filter(p => p && p.url);
-  const isPrimary     = validProfiles.length <= 1
+  const isAgency       = profile._type === 'agency';
+  const synced         = !!(profile.name || profile.jss || profile._readAt);
+  const validProfiles  = allProfiles.filter(p => p && p.url);
+  const isPrimary      = validProfiles.length <= 1
     ? true : (primaryProfileId ? profile.id === primaryProfileId : idx === 0);
-  const portfolios    = profile.portfolios || [];
-  const portsOk       = portfolios.filter(p => p.urls && p.urls.some(u => u && u.trim())).length;
+  const portfolios     = profile.portfolios || [];
+  const portsOk        = portfolios.filter(p => p.urls && p.urls.some(u => u && u.trim())).length;
 
   function ini(name) {
     return (name || '').trim().split(/\s+/).map(w => w[0] || '').slice(0, 2).join('').toUpperCase() || '?';
@@ -808,25 +911,24 @@ export function renderProfileCard(container, profile, idx, allProfiles, primaryP
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(240,238,234,.12)" stroke-width="1.5" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
         </div>
         <div style="font-size:13px;font-weight:700;color:rgba(240,238,234,.25);margin-bottom:5px">No data yet</div>
-        <div style="font-size:11.5px;color:rgba(240,238,234,.15);line-height:1.7;max-width:300px;margin:0 auto">Click <strong style="color:rgba(240,238,234,.28)">Open &amp; Sync</strong> above, then click the "Sync Profile" pill in the bottom-right corner of the page.</div>
+        <div style="font-size:11.5px;color:rgba(240,238,234,.15);line-height:1.7;max-width:300px;margin:0 auto">Click <strong style="color:rgba(240,238,234,.28)">Open &amp; Sync</strong> above, then click the "${isAgency ? 'Sync' : 'Sync Profile'}" pill in the bottom-right corner of the page.</div>
       </div>`;
     card.querySelector(`#open-pending-${idx}`)?.addEventListener('click', () => chrome.tabs.create({ url: profile.url }));
     card.querySelector(`#btn-primary-${idx}`)?.addEventListener('click', () => {
       chrome.runtime.sendMessage({ type: 'SET_PRIMARY_PROFILE', profileId: profile.id }, () => renderProfilesPage());
     });
-    card.querySelector('.btn-icon-del')?.addEventListener('click', () => {
+    card.querySelector('.btn-icon-del')?.addEventListener('click', async () => {
       if (!confirm('Remove this profile?')) return;
-      const id = profile.id; allProfiles.splice(idx, 1);
-      chrome.storage.local.set({ registeredProfiles: allProfiles });
-      if (id) chrome.storage.local.remove('profileFull_' + id);
+      await deleteProfileEntry(profile);
       renderProfilesPage();
     });
     container.appendChild(card); return;
   }
 
-  // Tier text
+  // Tier text (freelancer badge keys only — agency's badge is already a
+  // plain string set by normalizeAgencyForCard, e.g. "Top Rated Plus")
   const tierLabels = { expert: 'Expert Vetted', top_rated_plus: 'Top Rated Plus', top_rated: 'Top Rated', rising: 'Rising Talent' };
-  const tierTxt    = tierLabels[profile.tierKey] || '';
+  const tierTxt    = isAgency ? (profile.tier || '') : (tierLabels[profile.tierKey] || '');
 
   // Two-line meta: title on line 1, rate · tier · country on line 2
   const metaTitle = profile.title || '';
@@ -879,14 +981,31 @@ export function renderProfileCard(container, profile, idx, allProfiles, primaryP
   card.querySelector(`#btn-primary-${idx}`)?.addEventListener('click', () => {
     chrome.runtime.sendMessage({ type: 'SET_PRIMARY_PROFILE', profileId: profile.id }, () => renderProfilesPage());
   });
-  card.querySelector('.btn-icon-del')?.addEventListener('click', () => {
+  card.querySelector('.btn-icon-del')?.addEventListener('click', async () => {
     if (!confirm('Remove this profile?')) return;
-    const id = profile.id; allProfiles.splice(idx, 1);
-    chrome.storage.local.set({ registeredProfiles: allProfiles });
-    if (id) chrome.storage.local.remove('profileFull_' + id);
+    await deleteProfileEntry(profile);
     renderProfilesPage();
   });
   container.appendChild(card);
+
+  // Job Filters and portfolio EDITING are freelancer-only — agency has no
+  // jobFilters concept, and its portfolio is read-only scraped data (editing
+  // it here would need to write to agencyFull_<slug>, a path that doesn't
+  // exist and isn't a designed feature). Agency still gets a read-only
+  // portfolio list below so the data is visible, just not editable.
+  if (!isAgency) {
+    const filtersLbl = document.createElement('div');
+    filtersLbl.className = 'pr-card-block-lbl';
+    filtersLbl.style.cssText = 'margin-bottom:8px;margin-top:20px';
+    filtersLbl.textContent = 'Job Filters';
+    container.appendChild(filtersLbl);
+
+    const filtersBlock = document.createElement('div');
+    filtersBlock.className = 'pr-card-block';
+    filtersBlock.innerHTML = `<div id="jf-body-${idx}"></div>`;
+    container.appendChild(filtersBlock);
+    renderJobFilters(filtersBlock.querySelector(`#jf-body-${idx}`), profile);
+  }
 
   // Portfolio — label + subtitle outside the card frame
   const portLbl = document.createElement('div');
@@ -896,22 +1015,6 @@ export function renderProfileCard(container, profile, idx, allProfiles, primaryP
   const portSub = document.createElement('div');
   portSub.style.cssText = 'font-size:11px;color:rgba(240,238,255,.22);margin-bottom:10px;line-height:1.55;font-weight:400';
   portSub.textContent = 'Snag AI matches your portfolio projects to each job by skills and description, then references the most relevant linked ones in your cover letter.';
-
-  // Filters label — outside the card frame (comes first now)
-  const filtersLbl = document.createElement('div');
-  filtersLbl.className = 'pr-card-block-lbl';
-  filtersLbl.style.cssText = 'margin-bottom:8px;margin-top:20px';
-  filtersLbl.textContent = 'Job Filters';
-  container.appendChild(filtersLbl);
-
-  // Filters card
-  const filtersBlock = document.createElement('div');
-  filtersBlock.className = 'pr-card-block';
-  filtersBlock.innerHTML = `<div id="jf-body-${idx}"></div>`;
-  container.appendChild(filtersBlock);
-  renderJobFilters(filtersBlock.querySelector(`#jf-body-${idx}`), profile);
-
-  // Portfolio label + card (below filters)
   container.appendChild(portLbl);
   container.appendChild(portSub);
 
@@ -924,7 +1027,24 @@ export function renderProfileCard(container, profile, idx, allProfiles, primaryP
     (portfolios.length > 0 && portsOk === 0 ? `<div style="margin:4px 0 10px;padding:9px 12px;background:rgba(250,204,21,.04);border:1px solid rgba(250,204,21,.15);border-radius:8px;font-size:11px;color:rgba(250,204,21,.55);line-height:1.55">No URLs added — go to your Upwork profile, add portfolio links there, then re-sync.</div>` : '');
 
   const portList = portBlock.querySelector(`#port-list-${idx}`);
-  portfolios.forEach((p, pi) => renderPortfolioItemV2(portList, p, pi, allProfiles, idx));
+  if (isAgency) {
+    // Read-only rendering — no edit/save capability, since agency portfolio
+    // has no write-back path in this UI.
+    portfolios.forEach(p => {
+      const hasLink = p.urls && p.urls.some(u => u && u.trim());
+      const url = hasLink ? p.urls.find(u => u && u.trim()) : null;
+      const row = document.createElement('div');
+      row.className = 'port-v2-card';
+      row.innerHTML =
+        '<div class="pi-name">' + _esc(p.title || 'Untitled') + '</div>' +
+        (url
+          ? '<a class="pi-url-text" href="' + _esc(url) + '" target="_blank">' + _esc(url.replace(/^https?:\/\//, '')) + '</a>'
+          : '<div class="pi-no-url-text">No URL</div>');
+      portList.appendChild(row);
+    });
+  } else {
+    portfolios.forEach((p, pi) => renderPortfolioItemV2(portList, p, pi, allProfiles, idx));
+  }
   container.appendChild(portBlock);
 }
 
@@ -932,24 +1052,38 @@ export function renderProfileCard(container, profile, idx, allProfiles, primaryP
 export async function renderProfilesPage() {
   const [syncStored, localStored] = await Promise.all([
     chrome.storage.sync.get(['userPlan']),
-    chrome.storage.local.get(['registeredProfiles','activeProfileId','primaryProfileId'])
+    chrome.storage.local.get(['registeredProfiles','registeredAgencies','activeProfileId','primaryProfileId'])
   ]);
   const userPlan           = syncStored.userPlan || 'free';
   const registeredProfiles = localStored.registeredProfiles || [];
+  const registeredAgencies = localStored.registeredAgencies || [];
   const primaryProfileId   = localStored.primaryProfileId || null;
 
-  const registered = registeredProfiles.filter(p => p && p.url);
-  const localKeys  = registered.map(p => p.id ? 'profileFull_' + p.id : null).filter(Boolean);
-  const localFull  = localKeys.length
+  // Combine both types into one list — a "profile" is either a freelancer
+  // profile or an agency profile, registered against the same plan-wide
+  // slot count (PLAN_PROFILE_LIMITS), shown in the same card UI with only a
+  // type tag distinguishing them.
+  const registeredF = registeredProfiles.filter(p => p && p.url).map(p => ({ ...p, _type: 'freelancer' }));
+  const registeredA = registeredAgencies.filter(a => a && a.url).map(a => ({ ...a, _type: 'agency' }));
+  const registered  = [...registeredF, ...registeredA];
+
+  const localKeys = registered.map(p =>
+    p._type === 'agency' ? (p.slug ? 'agencyFull_' + p.slug : null) : (p.id ? 'profileFull_' + p.id : null)
+  ).filter(Boolean);
+  const localFull = localKeys.length
     ? await new Promise(resolve => chrome.storage.local.get(localKeys, resolve))
     : {};
 
   const mergedProfiles = registered.map(p => {
+    if (p._type === 'agency') {
+      const full = p.slug ? localFull['agencyFull_' + p.slug] : null;
+      return normalizeAgencyForCard(p, full);
+    }
     const full = p.id ? localFull['profileFull_' + p.id] : null;
     return full ? { ...p, ...full } : p;
   });
 
-  const limit     = PLAN_LIMITS[userPlan] || 1;
+  const limit     = PLAN_PROFILE_LIMITS[userPlan] || 1;
   const container = document.getElementById('profiles-container');
   const noMsg     = document.getElementById('no-profiles-msg');
   const addBtn    = document.getElementById('add-profile-btn');
@@ -986,6 +1120,7 @@ export async function renderProfilesPage() {
     const synced    = !!(p.name || p.jss || p._readAt);
     const isPrimary = validProfiles.length <= 1 ? true : (primaryProfileId ? p.id === primaryProfileId : i === 0);
     const ini       = initials(p.name);
+    const typeChip  = `<div class="pr-sel-type">${p._type === 'agency' ? 'Agency' : 'Freelancer'}</div>`;
 
     const card = document.createElement('div');
     card.className = 'pr-sel-card' + (i === (state.currentSlide || 0) ? ' active' : '');
@@ -994,6 +1129,7 @@ export async function renderProfilesPage() {
       : ini;
     card.innerHTML =
       (isPrimary ? '<div class="pr-sel-tag">Primary</div>' : '') +
+      typeChip +
       '<div class="pr-sel-av">' + avContent + '</div>' +
       '<div class="pr-sel-name">' + (p.name || 'Profile ' + (i + 1)) + '</div>' +
       '<div class="pr-sel-meta">' + (synced
@@ -1016,9 +1152,9 @@ export async function renderProfilesPage() {
     addPanel.innerHTML = `
       <div style="background:var(--bg2);border:1px solid rgba(99,102,241,.25);border-radius:16px;padding:22px 24px">
         <div style="font-size:13px;font-weight:700;color:rgba(240,238,255,.75);margin-bottom:4px">Add Upwork profile</div>
-        <div style="font-size:12px;color:rgba(240,238,255,.3);margin-bottom:16px">Paste your Upwork profile URL. After saving, open the profile and click the <strong style="color:rgba(240,238,255,.45)">"Sync Profile"</strong> pill to read your data.</div>
+        <div style="font-size:12px;color:rgba(240,238,255,.3);margin-bottom:16px">Paste your Upwork freelancer <em>or</em> agency profile URL — Snag AI detects which one automatically. After saving, open it and click the sync pill to read your data.</div>
         <div style="display:flex;gap:8px;align-items:center">
-          <input id="pr-new-url-inp" type="url" placeholder="https://www.upwork.com/freelancers/~..."
+          <input id="pr-new-url-inp" type="url" placeholder="https://www.upwork.com/freelancers/~... or /agencies/..."
             style="flex:1;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:999px;padding:9px 18px;color:#f0eeff;font-size:12.5px;font-family:inherit;outline:none;min-width:0;transition:border-color .15s">
           <button id="pr-new-url-save" style="padding:9px 22px;border-radius:999px;background:#6366f1;color:#fff;font-size:12.5px;font-weight:700;border:none;cursor:pointer;font-family:inherit;flex-shrink:0">Save</button>
           <button id="pr-new-url-cancel" style="padding:8px 16px;border-radius:999px;background:transparent;border:1px solid rgba(255,255,255,.1);color:rgba(240,238,255,.4);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;flex-shrink:0">Cancel</button>
@@ -1041,15 +1177,11 @@ export async function renderProfilesPage() {
     async function saveNewProfile() {
       const inp = addPanel.querySelector('#pr-new-url-inp');
       const url = (inp?.value || '').trim();
-      if (!url || !url.includes('upwork.com/freelancers/')) {
+      const ok  = await registerProfileUrl(url);
+      if (!ok) {
         if (inp) { inp.style.borderColor = 'rgba(248,113,113,.5)'; setTimeout(() => inp.style.borderColor = '', 2000); }
         return;
       }
-      const stored = await new Promise(r => chrome.storage.local.get(['registeredProfiles'], r));
-      const profiles = stored.registeredProfiles || [];
-      const id = 'profile_' + (profiles.length + 1) + '_' + Date.now();
-      profiles.push({ url, id, syncEnabled: true });
-      await new Promise(r => chrome.storage.local.set({ registeredProfiles: profiles }, r));
       renderProfilesPage();
     }
 

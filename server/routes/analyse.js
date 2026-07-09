@@ -7,13 +7,35 @@ const express = require('express');
 const https   = require('https');
 const router  = express.Router();
 const { ANALYSE_SYSTEM, buildAnalyseMessage } = require('../prompt-analyse');
+const { canGenerate, recordUsage, getUserStatus } = require('../modules/usage');
 
 router.post('/', async (req, res) => {
   try {
-    const { job, profile, filters } = req.body;
+    const { job, profile, filters, email: userEmail, anonId } = req.body;
 
     if (!job || !profile) {
       return res.status(400).json({ error: 'job and profile are required' });
+    }
+
+    // Job audits draw from the same unified pool as proposals/revisions —
+    // see routes/proposal.js for why they're not metered separately.
+    const isRealEmail = userEmail && userEmail.includes('@') && !userEmail.includes('propwise.local');
+    if (!isRealEmail) {
+      return res.status(403).json({
+        error: 'Please add and verify your email in Settings to use Snag AI.',
+        requiresEmail: true,
+      });
+    }
+    const ok = await canGenerate(userEmail);
+    if (!ok) {
+      const status = await getUserStatus(userEmail);
+      return res.status(402).json({
+        error: status.plan === 'free'
+          ? 'You\'ve used your 2 free proposals. Subscribe to keep winning jobs.'
+          : `You've used all ${status.limit} job audits/proposals this month. Resets on the 1st.`,
+        showPaywall: true,
+        ...status
+      });
     }
 
     const userMessage = buildAnalyseMessage({ job, profile, filters });
@@ -238,7 +260,9 @@ router.post('/', async (req, res) => {
 
     console.log(`[ANALYSE] Result: ${analysis.verdict} | competition=${analysis.competitionPressure} fit=${analysis.profileFit} | concerns:${analysis.concerns.length} strengths:${analysis.strengths.length}`);
 
-    res.json({ success: true, analysis });
+    await recordUsage(userEmail);
+    const status = await getUserStatus(userEmail);
+    res.json({ success: true, analysis, usage: status });
 
   } catch(err) {
     console.error('[ANALYSE] Unhandled error:', err.message);

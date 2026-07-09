@@ -1,28 +1,16 @@
 // ── Agency cover letter generation ──────────────────────────────────────────
-// Mirrors extension/background/modules/generate.js's handleCoverLetter, but
-// loads agency data (registeredAgencies + agencyFull_<slug>, written by
-// extension/content/agency-reader.js) instead of a freelancer profile, and
-// posts to /agency-proposal instead of /proposal. No "primary agency"
-// concept exists yet — PLAN_AGENCY_PROFILE_LIMITS caps every plan at 0 or 1
-// registered agency today, so picking the first one with real cached data
-// is equivalent to a primary-profile pick without needing that extra UI.
+// Mirrors extension/background/modules/generate.js's freelancer generation
+// logic, but posts to /agency-proposal with the agency data shape instead.
+// Resolution of "which profile is primary" happens once, upstream, in
+// generate.js via resolvePrimaryEntity() — this function just takes the
+// already-resolved agencyFull data and does the actual request.
 const SERVER = 'http://localhost:3000'; // Local Host
 
-export async function handleAgencyCoverLetter(msg) {
+export async function handleAgencyCoverLetter(msg, agencyFull) {
   const [syncData, localData] = await Promise.all([
     chrome.storage.sync.get(['userEmail', 'anonId', 'settings']),
-    chrome.storage.local.get(['registeredAgencies', 'deviceId'])
+    chrome.storage.local.get(['deviceId'])
   ]);
-
-  const regAgencies = localData.registeredAgencies || [];
-  const agencyMeta = regAgencies.find(a => a && a.slug) || regAgencies[0];
-
-  let agencyFull = null;
-  if (agencyMeta?.slug) {
-    const localKey = 'agencyFull_' + agencyMeta.slug;
-    const stored = await new Promise(r => chrome.storage.local.get([localKey], r));
-    agencyFull = stored[localKey] || null;
-  }
 
   if (!agencyFull) {
     return { error: 'No agency profile data found. Open your registered agency profile page once to sync it, then try again.' };

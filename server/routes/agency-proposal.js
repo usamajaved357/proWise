@@ -186,12 +186,13 @@ router.post('/', async (req, res) => {
       }
     }
 
+    // Revisions cost the same $0.01 as a fresh generation, so they draw from
+    // the same unified pool as job audits/proposals — see routes/proposal.js
+    // for the full reasoning.
     if (isRealEmail) {
-      if (!isRefinement) {
-        await recordUsage(userEmail);
-        if (deviceId) {
-          try { await upsertAnon(userEmail, { device_id: deviceId }); } catch(e) {}
-        }
+      await recordUsage(userEmail);
+      if (!isRefinement && deviceId) {
+        try { await upsertAnon(userEmail, { device_id: deviceId }); } catch(e) {}
       }
       const status = await getUserStatus(userEmail);
       return res.json({ success: true, ...result, usage: status });

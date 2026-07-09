@@ -1,31 +1,25 @@
 // ── Job Analysis — background module ───────────────────────────────────────
-// Fetches the freelancer profile from storage and calls the /analyse endpoint
+// Fetches the primary profile (freelancer or agency, resolved via
+// resolvePrimaryEntity) and calls the matching /analyse or /agency-analyse
+// endpoint.
 
 // const SERVER = 'https://prowise-4e5t.onrender.com'; // Production
 const SERVER = 'http://localhost:3000'; // Local Host
 
+import { resolvePrimaryEntity } from './primary-profile.js';
+import { handleAgencyAnalyse } from './agency-analyse.js';
+
 export async function handleAnalyse(payload) {
-  const [syncData, localData] = await Promise.all([
-    chrome.storage.sync.get(['userEmail', 'anonId']),
-    chrome.storage.local.get(['registeredProfiles', 'activeProfileId', 'primaryProfileId', 'deviceId'])
-  ]);
+  const primary = await resolvePrimaryEntity();
 
-  // Resolve primary profile
-  const regProfiles = localData.registeredProfiles || [];
-  const primaryId   = localData.primaryProfileId || localData.activeProfileId;
-  const primaryMeta =
-    (primaryId && regProfiles.find(p => p && p.id === primaryId && (p.name || p.jss || p._readAt))) ||
-    regProfiles.find(p => p && (p.name || p.jss || p._readAt)) ||
-    regProfiles[0];
-
-  let profileFull = null;
-  if (primaryMeta?.id) {
-    const lk     = 'profileFull_' + primaryMeta.id;
-    const stored = await new Promise(r => chrome.storage.local.get([lk], r));
-    profileFull  = stored[lk] || null;
+  if (primary?.type === 'agency') {
+    return handleAgencyAnalyse(payload, primary.data);
   }
 
-  const baseProfile = profileFull || primaryMeta || {};
+  const { userEmail, anonId } = await chrome.storage.sync.get(['userEmail', 'anonId']);
+
+  const profileFull = primary?.data || null;
+  const baseProfile  = profileFull || primary?.meta || {};
   const profile = {
     ...baseProfile,
     skills:    Array.isArray(baseProfile.skillsArr) && baseProfile.skillsArr.length
@@ -42,8 +36,8 @@ export async function handleAnalyse(payload) {
       job:     payload.jobData || {},
       profile,
       filters: payload.filters || {},
-      email:   syncData.userEmail || null,
-      anonId:  syncData.anonId   || null,
+      email:   userEmail || null,
+      anonId:  anonId   || null,
     })
   });
 

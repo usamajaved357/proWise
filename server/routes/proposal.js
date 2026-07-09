@@ -200,14 +200,16 @@ router.post('/', async (req, res) => {
       }
     }
 
-    // Refinements don't consume a proposal credit — only fresh generations do
+    // Revisions cost the same $0.01 as a fresh generation, so they draw from
+    // the same unified pool — no separate revision cap, no free pass here.
+    // A user can spend their monthly quota however they want (revise one
+    // proposal 10 times, or generate 10 fresh ones) rather than hitting an
+    // arbitrary per-proposal limit while unused quota sits idle.
     if (isRealEmail) {
-      if (!isRefinement) {
-        await recordUsage(userEmail);
-        // Store deviceId on first free usage so same device can't reuse another email
-        if (deviceId) {
-          try { await upsertAnon(userEmail, { device_id: deviceId }); } catch(e) {}
-        }
+      await recordUsage(userEmail);
+      // Store deviceId on first free usage so same device can't reuse another email
+      if (!isRefinement && deviceId) {
+        try { await upsertAnon(userEmail, { device_id: deviceId }); } catch(e) {}
       }
       const status = await getUserStatus(userEmail);
       return res.json({ success: true, ...result, usage: status });

@@ -1,27 +1,13 @@
 // ── Agency Job Analysis — background module ─────────────────────────────────
-// Mirrors extension/background/modules/analyse.js's handleAnalyse, but loads
-// agency data (registeredAgencies + agencyFull_<slug>) instead of a
-// freelancer profile, and posts to /agency-analyse instead of /analyse.
-// No "primary agency" concept exists yet — PLAN_AGENCY_PROFILE_LIMITS caps
-// every plan at 0 or 1 registered agency today, so the first registered
-// agency with real cached data is equivalent to a primary-profile pick.
+// Mirrors extension/background/modules/analyse.js's freelancer logic, but
+// posts to /agency-analyse with the agency data shape instead. Resolution of
+// "which profile is primary" happens once, upstream, in analyse.js via
+// resolvePrimaryEntity() — this function just takes the already-resolved
+// agencyFull data and does the actual request.
 const SERVER = 'http://localhost:3000'; // Local Host
 
-export async function handleAgencyAnalyse(payload) {
-  const [syncData, localData] = await Promise.all([
-    chrome.storage.sync.get(['userEmail', 'anonId']),
-    chrome.storage.local.get(['registeredAgencies'])
-  ]);
-
-  const regAgencies = localData.registeredAgencies || [];
-  const agencyMeta = regAgencies.find(a => a && a.slug) || regAgencies[0];
-
-  let agencyFull = null;
-  if (agencyMeta?.slug) {
-    const lk = 'agencyFull_' + agencyMeta.slug;
-    const stored = await new Promise(r => chrome.storage.local.get([lk], r));
-    agencyFull = stored[lk] || null;
-  }
+export async function handleAgencyAnalyse(payload, agencyFull) {
+  const { userEmail, anonId } = await chrome.storage.sync.get(['userEmail', 'anonId']);
 
   if (!agencyFull) {
     throw new Error('No agency profile data found. Open your registered agency profile page once to sync it, then try again.');
@@ -34,8 +20,8 @@ export async function handleAgencyAnalyse(payload) {
       job:     payload.jobData || {},
       agency:  agencyFull,
       filters: payload.filters || {},
-      email:   syncData.userEmail || null,
-      anonId:  syncData.anonId   || null,
+      email:   userEmail || null,
+      anonId:  anonId   || null,
     })
   });
 

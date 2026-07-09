@@ -1,5 +1,5 @@
 // ── Subscription: status, plan UI, billing card, upgrade ─────────────────────
-import { SERVER_URL, PLAN_LABELS, PLAN_QUOTAS, PLAN_LIMITS } from './config.js';
+import { SERVER_URL, PLAN_LABELS, PLAN_QUOTAS, PLAN_PROFILE_LIMITS } from './config.js';
 import { state } from './state.js';
 import { fmtDate, daysUntil, showSaved } from './helpers.js';
 
@@ -20,7 +20,7 @@ export async function upgradePlan(newPlan) {
   }
 
   const planLabel  = PLAN_LABELS[newPlan] || newPlan;
-  const planPrices = { starter: '$19', pro: '$39', agency: '$69' };
+  const planPrices = { starter: '$19', pro: '$35', agency: '$55' };
   const fromLabel  = PLAN_LABELS[state.activePlan] || state.activePlan;
   const direction  = ['starter','pro','agency'].indexOf(newPlan) > ['starter','pro','agency'].indexOf(state.activePlan)
     ? 'Upgrade' : 'Downgrade';
@@ -61,10 +61,44 @@ export async function upgradePlan(newPlan) {
   }
 }
 
-export function updatePlanUI(plan, used, quota, billing = {}) {
+export function updatePlanUI(plan, used, quota, billing = {}, auditInfo = {}) {
   const rem   = Math.max(0, quota - used);
   const pct   = Math.min(100, (used / quota) * 100);
   const label = PLAN_LABELS[plan] || 'Free';
+
+  // Profile/agency audits — separate quota from the main job-audit+proposal
+  // pool (10x pricier, used far less often — see server/modules/usage.js).
+  const auditLimit = auditInfo.auditLimit ?? 0;
+  const usedAudits = auditInfo.usedAudits ?? 0;
+  const remAudits  = auditInfo.remainingAudits ?? Math.max(0, auditLimit - usedAudits);
+  const auditsCard = document.getElementById('ud-audits-card');
+  if (auditsCard) {
+    const auditPct = auditLimit > 0 ? Math.min(100, (usedAudits / auditLimit) * 100) : 0;
+    const remAuditsEl = document.getElementById('ud-audits-rem');
+    if (remAuditsEl) remAuditsEl.textContent = auditLimit > 0 ? remAudits : '—';
+    const usedAuditsEl = document.getElementById('ud-audits-used');
+    if (usedAuditsEl) usedAuditsEl.textContent = usedAudits;
+    const limAuditsEl = document.getElementById('ud-audits-limit');
+    if (limAuditsEl) limAuditsEl.textContent = auditLimit;
+    const barAuditsEl = document.getElementById('ud-audits-bar');
+    if (barAuditsEl) {
+      barAuditsEl.style.width = auditPct + '%';
+      barAuditsEl.style.background = auditPct >= 90 ? 'var(--red)' : auditPct >= 70 ? 'var(--yellow)' : '';
+    }
+    const resetAuditsEl = document.getElementById('ud-audits-reset-date');
+    if (resetAuditsEl) {
+      const resetIso = billing.cancelsAt || billing.nextBilledAt || null;
+      resetAuditsEl.textContent = resetIso ? fmtDate(resetIso) : 'monthly';
+    }
+    auditsCard.classList.toggle('us-card-dim', auditLimit === 0);
+    // Non-destructive toggle — never overwrite .us-footnote's innerHTML, or
+    // the used/limit/reset spans it holds would be gone for good and this
+    // card would stay stuck on "not included" even after an upgrade.
+    const footEl  = auditsCard.querySelector('.us-footnote');
+    const hintEl  = document.getElementById('ud-audits-upgrade-hint');
+    if (footEl) footEl.style.display = auditLimit === 0 ? 'none' : '';
+    if (hintEl) hintEl.style.display = auditLimit === 0 ? '' : 'none';
+  }
 
   const badge = document.getElementById('sb-plan-badge');
   badge.textContent = label;
@@ -102,10 +136,11 @@ export function updatePlanUI(plan, used, quota, billing = {}) {
     resetEl.style.color = (billing.subscriptionStatus === 'canceling') ? '#facc15' : 'inherit';
   }
 
-  chrome.storage.local.get(['registeredProfiles'], d => {
+  chrome.storage.local.get(['registeredProfiles', 'registeredAgencies'], d => {
     const profiles      = (d.registeredProfiles || []).filter(p => p && p.url);
-    const profilesUsed  = profiles.length;
-    const profilesLimit = PLAN_LIMITS[plan] || 1;
+    const agencies      = (d.registeredAgencies || []).filter(a => a && a.url);
+    const profilesUsed  = profiles.length + agencies.length;
+    const profilesLimit = PLAN_PROFILE_LIMITS[plan] || 1;
     const profilesPct   = Math.min(100, (profilesUsed / profilesLimit) * 100);
     const puEl = document.getElementById('ud-profiles-used');
     if (puEl) puEl.textContent = profilesUsed;
@@ -120,7 +155,7 @@ export function updatePlanUI(plan, used, quota, billing = {}) {
     const btn = c.querySelector('.pcv2-btn[data-plan]');
     if (btn) {
       const p = btn.dataset.plan;
-      const btnLabels = { starter:'Get Starter →', pro:'Get Pro →', agency:'Get Agency →' };
+      const btnLabels = { starter:'Get Basic →', pro:'Get Pro →', agency:'Get Agency →' };
       btn.textContent = btnLabels[p] || 'Upgrade →';
       btn.disabled    = false;
       btn.className   = 'pcv2-btn ' + (p === 'pro' ? 'pcv2-btn-gold' : 'pcv2-btn-outline');
@@ -158,7 +193,7 @@ export function renderBillingCard(plan, used, quota, billing) {
   const titleEl = document.getElementById('plan-section-title');
   if (titleEl) titleEl.textContent = 'Upgrade your plan';
 
-  const planPrices  = { starter: '$19', pro: '$39', agency: '$69' };
+  const planPrices  = { starter: '$19', pro: '$35', agency: '$55' };
   const planLabel   = PLAN_LABELS[plan] || plan;
   const price       = planPrices[plan]  || '';
   const subStatus   = billing.subscriptionStatus || (billing.active !== false ? 'active' : 'canceled');
@@ -226,7 +261,7 @@ export function renderBillingCard(plan, used, quota, billing) {
             ${statusHtml}
           </div>
           <div class="bc-plan-title">${planLabel} Plan <span class="bc-plan-price">${price}/mo</span></div>
-          <div class="bc-plan-quota">${quota.toLocaleString()} proposals / month</div>
+          <div class="bc-plan-quota">${quota.toLocaleString()} job audits + proposals / month (revisions included)</div>
         </div>
         <div class="bc-header-right">
           <button class="bc-manage-btn" id="bc-manage-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> Manage billing
@@ -270,7 +305,7 @@ export function renderBillingCard(plan, used, quota, billing) {
 }
 
 export async function loadStatus() {
-  const cached = await chrome.storage.sync.get(['userPlan','usageCount','usageLimit','userActive','nextBilledAt','currentPeriodStart','subscriptionStatus','cancelsAt']);
+  const cached = await chrome.storage.sync.get(['userPlan','usageCount','usageLimit','userActive','nextBilledAt','currentPeriodStart','subscriptionStatus','cancelsAt','auditLimit','usedAudits']);
   const cPlan  = cached.userPlan   || 'free';
   const cUsed  = cached.usageCount || 0;
   const cQuota = cached.usageLimit || PLAN_QUOTAS[cPlan] || 2;
@@ -280,6 +315,9 @@ export async function loadStatus() {
     nextBilledAt:        cached.nextBilledAt         || null,
     currentPeriodStart:  cached.currentPeriodStart   || null,
     cancelsAt:           cached.cancelsAt            || null,
+  }, {
+    auditLimit: cached.auditLimit ?? 0,
+    usedAudits: cached.usedAudits ?? 0,
   });
 
   try {
@@ -297,6 +335,8 @@ export async function loadStatus() {
         nextBilledAt:        status.nextBilledAt         || null,
         currentPeriodStart:  status.currentPeriodStart   || null,
         cancelsAt:           status.cancelsAt            || null,
+        auditLimit:          status.auditLimit           ?? 0,
+        usedAudits:          status.usedAudits           ?? 0,
       });
       updatePlanUI(plan, used, quota, {
         active:              status.active !== false,
@@ -304,6 +344,10 @@ export async function loadStatus() {
         nextBilledAt:        status.nextBilledAt         || null,
         currentPeriodStart:  status.currentPeriodStart   || null,
         cancelsAt:           status.cancelsAt            || null,
+      }, {
+        auditLimit:      status.auditLimit      ?? 0,
+        usedAudits:      status.usedAudits      ?? 0,
+        remainingAudits: status.remainingAudits ?? undefined,
       });
     }
   } catch(e) { /* use cached */ }

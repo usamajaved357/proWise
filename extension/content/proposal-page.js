@@ -320,15 +320,13 @@
       // Re-fetch job data fresh in case it was updated
       const freshJob = await getCachedJob();
 
-      // "Generate as" mode — set via the extension popup toggle (only shown
-      // once an agency profile is registered). Determines whether this CL
-      // uses the freelancer profile + prompt or the agency profile + prompt.
-      const { generateAsMode = 'freelancer' } = await chrome.storage.local.get(['generateAsMode']);
-      const msgType = generateAsMode === 'agency' ? 'GENERATE_AGENCY_COVER_LETTER' : 'GENERATE_COVER_LETTER';
+      // Which profile (freelancer or agency) this uses is resolved entirely
+      // in the background via resolvePrimaryEntity() — whichever profile is
+      // marked primary on the Profiles page. No mode toggle needed here.
 
       // Phase 1 — generate cover letter (no questions, fast)
       const result = await chrome.runtime.sendMessage({
-        type:      msgType,
+        type:      'GENERATE_COVER_LETTER',
         jobData:   freshJob || jobData,
         instruction,
         existingCL,
@@ -372,7 +370,7 @@
 
         try {
           const ansResult = await chrome.runtime.sendMessage({
-            type:        msgType,
+            type:        'GENERATE_COVER_LETTER',
             jobData:     freshJob || jobData,
             instruction: '',
             existingCL:  generatedCL,
