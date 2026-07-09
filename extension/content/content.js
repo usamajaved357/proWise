@@ -82,6 +82,7 @@
 
     try {
       await new Promise(r => setTimeout(r, 600));
+      await SnagAI.waitForJobActivitySection();
       const job = SnagAI.getJob();
       try {
         const storeData = await chrome.runtime.sendMessage({ type: 'GET_JOB_DATA' });
@@ -130,6 +131,7 @@
     SnagAI.showSidebarLoading();
 
     try {
+      await SnagAI.waitForJobActivitySection();
       const job = SnagAI.getJob();
       try {
         const storeData = await chrome.runtime.sendMessage({ type: 'GET_JOB_DATA' });
@@ -172,6 +174,7 @@
   async function cacheJobData() { // returns promise — callers can .then()
     try {
       await new Promise(r => setTimeout(r, 1200));
+      await SnagAI.waitForJobActivitySection();
       const job = SnagAI.getJob();
       if (!job?.title && !job?.description) return;
 
@@ -278,6 +281,7 @@
       }
 
       await new Promise(r => setTimeout(r, 800));
+      await SnagAI.waitForJobActivitySection();
       const job = SnagAI.getJob();
 
       // Enrich jobStats from Vuex store — more reliable than DOM parsing for all activity stats

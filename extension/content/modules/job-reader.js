@@ -1,4 +1,23 @@
 // ── Job data extractor — reads Upwork job page ────────────────────────────────
+
+// getJob() reads the "Activity on this job" sidebar (Proposals, Interviewing,
+// etc.) synchronously via regex over document.body.innerText — there's no
+// Vuex fallback for these fields (proposalCount is deliberately excluded
+// from GET_JOB_DATA's Vuex read; see background.js), so if this sidebar
+// hasn't rendered yet when getJob() runs, those fields come back null with
+// no second chance. This is the same hydration-race shape already found and
+// fixed for GET_JOB_DATA's Vuex read and for agency-data.js's staff/portfolio
+// read — callers should await this before calling getJob() instead of
+// trusting a fixed setTimeout to have been long enough.
+window.SnagAI.waitForJobActivitySection = async function(maxAttempts = 12, intervalMs = 300) {
+  for (let i = 0; i < maxAttempts; i++) {
+    if (/\n(?:Proposals|Activity on this job)[:\s]/i.test(document.body.innerText)) return true;
+    await new Promise(r => setTimeout(r, intervalMs));
+  }
+  console.warn('[SnagAI] "Activity on this job" sidebar never appeared in page text after', maxAttempts * intervalMs, 'ms — proposalCount/interviewingCount will be null');
+  return false;
+};
+
 window.SnagAI.getJob = function() {
   const titleEl = (
     document.querySelector('h1[data-test="job-title"]') ||
@@ -143,6 +162,9 @@ window.SnagAI.getJob = function() {
   }
 
   const proposalsRaw = extractNum('Proposals');
+  if (!proposalsRaw) {
+    console.warn('[SnagAI] Could not find "Proposals" in the scraped sidebar text. First 300 chars scanned:', pageText2.slice(0, 300));
+  }
   let proposalCount = null;
   if (proposalsRaw) {
     const nums = proposalsRaw.match(/\d+/g);
