@@ -87,6 +87,9 @@
         const storeData = await chrome.runtime.sendMessage({ type: 'GET_JOB_DATA' });
         if (storeData && job.jobStats) {
           Object.entries(storeData).forEach(([k, v]) => { if (v !== null && v !== undefined) job.jobStats[k] = v; });
+          console.log('[SnagAI] Job stats enriched from Vuex store:', storeData);
+        } else {
+          console.warn('[SnagAI] GET_JOB_DATA returned nothing — jobStats will rely on DOM-parsed values only:', job.jobStats);
         }
       } catch(e) {}
 
@@ -132,6 +135,9 @@
         const storeData = await chrome.runtime.sendMessage({ type: 'GET_JOB_DATA' });
         if (storeData && job.jobStats) {
           Object.entries(storeData).forEach(([k, v]) => { if (v !== null && v !== undefined) job.jobStats[k] = v; });
+          console.log('[SnagAI] Job stats enriched from Vuex store:', storeData);
+        } else {
+          console.warn('[SnagAI] GET_JOB_DATA returned nothing — jobStats will rely on DOM-parsed values only:', job.jobStats);
         }
       } catch(e) {}
 
@@ -173,6 +179,9 @@
         const storeData = await chrome.runtime.sendMessage({ type: 'GET_JOB_DATA' });
         if (storeData && job.jobStats) {
           Object.entries(storeData).forEach(([k, v]) => { if (v !== null && v !== undefined) job.jobStats[k] = v; });
+          console.log('[SnagAI] Job stats enriched from Vuex store:', storeData);
+        } else {
+          console.warn('[SnagAI] GET_JOB_DATA returned nothing — jobStats will rely on DOM-parsed values only:', job.jobStats);
         }
       } catch(e) {}
 

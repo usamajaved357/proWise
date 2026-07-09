@@ -3,6 +3,7 @@ import { handleGenerate, handleCoverLetter } from './modules/generate.js';
 import { handleAgencyCoverLetter } from './modules/agency-generate.js';
 import { getStatus }    from './modules/status.js';
 import { handleAnalyse } from './modules/analyse.js';
+import { handleAgencyAnalyse } from './modules/agency-analyse.js';
 import { handleProfileAudit } from './modules/profile-audit.js';
 import { handleGetAgencyData } from './modules/agency-data.js';
 import { handleAgencyAudit } from './modules/agency-audit.js';
@@ -33,6 +34,10 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   }
   if (msg.type === 'ANALYSE_JOB') {
     handleAnalyse(msg).then(sendResponse).catch(e => sendResponse({ error: e.message }));
+    return true;
+  }
+  if (msg.type === 'ANALYSE_AGENCY_JOB') {
+    handleAgencyAnalyse(msg).then(sendResponse).catch(e => sendResponse({ error: e.message }));
     return true;
   }
   if (msg.type === 'AUDIT_PROFILE') {
@@ -69,14 +74,31 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     return true;
   }
   if (msg.type === 'GET_JOB_DATA') {
-    // Reads job stats from window.__NUXT__.vuex.jobDetails — far more reliable than DOM parsing
+    // Reads job stats from window.__NUXT__.vuex.jobDetails — far more reliable
+    // than DOM parsing. This previously read jd synchronously, once, right
+    // after content.js's single setTimeout — the exact same hydration-race
+    // shape already found and fixed in agency-data.js (window.__NUXT__ exists
+    // immediately, but its vuex.jobDetails payload can still be empty/absent
+    // for a beat after that on slower loads or heavier sidebar content).
+    // A real audit run showed EVERY jobStats field come back null — not a
+    // partial miss — which matches a single read landing before hydration,
+    // not a broken selector. Poll the same way agency-data.js does instead
+    // of trusting the caller's fixed delay.
     chrome.scripting.executeScript({
       target: { tabId: sender.tab.id },
       world: 'MAIN',
-      func: () => {
+      func: async () => {
         try {
-          const jd      = window.__NUXT__?.vuex?.jobDetails;
-          if (!jd) return null;
+          let jd = null;
+          for (let i = 0; i < 15; i++) {
+            jd = window.__NUXT__?.vuex?.jobDetails;
+            if (jd && jd.job) break;
+            await new Promise(r => setTimeout(r, 300));
+          }
+          if (!jd) {
+            console.warn('[SnagAI] GET_JOB_DATA — window.__NUXT__.vuex.jobDetails never hydrated after 4.5s');
+            return null;
+          }
 
           const job      = jd.job      || {};
           const buyer    = jd.buyer    || {};
