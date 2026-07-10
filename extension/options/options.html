@@ -31,9 +31,7 @@ a{text-decoration:none;color:inherit}
 .sb-logo-link{display:flex;align-items:center;gap:10px;padding:22px 20px 20px;border-bottom:1px solid var(--border);transition:opacity .15s}
 .sb-logo-link:hover{opacity:.8}
 .sb-icon{width:34px;height:34px;flex-shrink:0}
-.sb-icon svg{width:100%;height:100%;display:block}
-.sb-icon.is-loading .snag-rings{animation:snagSpin 1.2s linear infinite}
-@keyframes snagSpin{to{transform:rotate(360deg)}}
+.sb-icon img{width:100%;height:100%;display:block}
 .sb-brand{display:flex;flex-direction:column}
 .sb-name{font-size:15px;font-weight:700;letter-spacing:-.01em}
 .sb-ver{font-size:10px;color:var(--white3);margin-top:1px}
@@ -957,18 +955,7 @@ textarea.edit-val{min-height:38px}
   <div class="sidebar">
     <a href="https://snagai.netlify.app" target="_blank" class="sb-logo-link">
       <div class="sb-icon" id="sb-icon">
-        <svg width="34" height="34" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <clipPath id="badgeClipSidebar"><rect x="0" y="0" width="512" height="512" rx="112.64" ry="112.64"></rect></clipPath>
-        </defs>
-        <g clip-path="url(#badgeClipSidebar)">
-          <rect x="0" y="0" width="512" height="512" fill="#0d0a1a"></rect>
-          <foreignObject x="56.32" y="56.32" width="399.36" height="399.36">
-            <div xmlns="http://www.w3.org/1999/xhtml" class="snag-rings" style="width:100%;height:100%;border-radius:50%;background:conic-gradient(from 0deg,#52b9b8 0.00%, #799cb0 6.25%, #a17fa8 12.50%, #c962a0 18.75%, #ea489c 25.00%, #d94cb3 31.25%, #c84fcb 37.50%, #b752e2 43.75%, #a657f6 50.00%, #9569ee 56.25%, #847ae6 62.50%, #738cdf 68.75%, #629ed7 75.00%, #50afcf 81.25%, #3fc1c7 87.50%, #2ed3c0 93.75%, #52b9b8 100%);-webkit-mask:radial-gradient(circle closest-side,transparent 71.79%,black 71.79%);mask:radial-gradient(circle closest-side,transparent 71.79%,black 71.79%)"></div>
-          </foreignObject>
-          <circle cx="256" cy="256" r="107.52" fill="#000000"></circle>
-        </g>
-      </svg>
+        <img src="../icons/icon128.png" alt="Snag AI">
       </div>
       <div class="sb-brand">
         <div class="sb-name">Snag AI</div>
