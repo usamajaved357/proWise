@@ -305,6 +305,8 @@ export function renderBillingCard(plan, used, quota, billing) {
 }
 
 export async function loadStatus() {
+  const logoEl = document.getElementById('sb-icon');
+  logoEl?.classList.add('is-loading');
   const cached = await chrome.storage.sync.get(['userPlan','usageCount','usageLimit','userActive','nextBilledAt','currentPeriodStart','subscriptionStatus','cancelsAt','auditLimit','usedAudits']);
   const cPlan  = cached.userPlan   || 'free';
   const cUsed  = cached.usageCount || 0;
@@ -351,4 +353,5 @@ export async function loadStatus() {
       });
     }
   } catch(e) { /* use cached */ }
+  finally { logoEl?.classList.remove('is-loading'); }
 }

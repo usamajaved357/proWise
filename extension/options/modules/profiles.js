@@ -1120,7 +1120,8 @@ export async function renderProfilesPage() {
     const synced    = !!(p.name || p.jss || p._readAt);
     const isPrimary = validProfiles.length <= 1 ? true : (primaryProfileId ? p.id === primaryProfileId : i === 0);
     const ini       = initials(p.name);
-    const typeChip  = `<div class="pr-sel-type">${p._type === 'agency' ? 'Agency' : 'Freelancer'}</div>`;
+    const isAgencyP = p._type === 'agency';
+    const typeChip  = `<div class="pr-sel-type ${isAgencyP ? 'pr-sel-type-agency' : 'pr-sel-type-freelancer'}">${isAgencyP ? 'Agency' : 'Freelancer'}</div>`;
 
     const card = document.createElement('div');
     card.className = 'pr-sel-card' + (i === (state.currentSlide || 0) ? ' active' : '');
@@ -1128,8 +1129,7 @@ export async function renderProfilesPage() {
       ? '<img src="' + p.profilePicUrl + '" alt="' + (p.name || '') + '">'
       : ini;
     card.innerHTML =
-      (isPrimary ? '<div class="pr-sel-tag">Primary</div>' : '') +
-      typeChip +
+      '<div class="pr-sel-toprow">' + typeChip + (isPrimary ? '<div class="pr-sel-tag">Primary</div>' : '') + '</div>' +
       '<div class="pr-sel-av">' + avContent + '</div>' +
       '<div class="pr-sel-name">' + (p.name || 'Profile ' + (i + 1)) + '</div>' +
       '<div class="pr-sel-meta">' + (synced
