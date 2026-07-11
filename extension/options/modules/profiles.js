@@ -311,7 +311,7 @@ function jfFmt(id, raw) {
 
 function jfTrack(sl) {
   const pct = ((sl.value - sl.min) / (sl.max - sl.min)) * 100;
-  sl.style.background = `linear-gradient(to right,#6366f1 ${pct}%,rgba(255,255,255,.08) ${pct}%)`;
+  sl.style.background = `linear-gradient(to right,#2dd4bf 0%,#a855f7 ${pct}%,rgba(255,255,255,.08) ${pct}%)`;
 }
 
 function jfBadgeInfo(filters) {
@@ -328,7 +328,7 @@ function renderJobFilters(body, profile) {
 
   function sl(id, label, min, max, step, val, desc) {
     const pct = ((val - min) / (max - min)) * 100;
-    const bg = `linear-gradient(to right,#6366f1 ${pct}%,rgba(255,255,255,.08) ${pct}%)`;
+    const bg = `linear-gradient(to right,#2dd4bf 0%,#a855f7 ${pct}%,rgba(255,255,255,.08) ${pct}%)`;
     return `<div class="jf-row2">
       <span class="jf-row2-name">${label}</span>
       <div class="jf-row2-right">
@@ -351,10 +351,10 @@ function renderJobFilters(body, profile) {
   }
 
   const ICK = '<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
-  const I_COMP  = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>';
-  const I_QUAL  = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
-  const I_MATCH = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>';
-  const I_ALERT = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>';
+  const I_COMP  = '<span class="jf-emoji">👥</span>';
+  const I_QUAL  = '<span class="jf-emoji">⭐</span>';
+  const I_MATCH = '<span class="jf-emoji">↕️</span>';
+  const I_ALERT = '<span class="jf-emoji">🔔</span>';
 
   const spentVal = v => [0,100,1000,10000,100000].map(n => `<option value="${n}"${F.minClientSpent===n?' selected':''}>${n===0?'Any':n>=1000?'$'+(n/1000)+'K+':'$'+n+'+'}</option>`).join('');
 
@@ -467,8 +467,8 @@ function renderJobFilters(body, profile) {
           if (!t) {
             t = document.createElement('div');
             t.id = 'snagai-filter-toast';
-            t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e1d32;border:1px solid rgba(99,102,241,.4);color:rgba(240,238,255,.85);font-size:12.5px;font-weight:600;padding:10px 20px;border-radius:999px;z-index:99999;pointer-events:none;opacity:0;transition:opacity .2s;font-family:-apple-system,BlinkMacSystemFont,sans-serif;display:flex;align-items:center;gap:7px';
-            t.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg> Filters saved';
+            t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e1d32;border:1px solid rgba(168,85,247,.4);color:rgba(240,238,255,.85);font-size:12.5px;font-weight:600;padding:10px 20px;border-radius:999px;z-index:99999;pointer-events:none;opacity:0;transition:opacity .2s;font-family:-apple-system,BlinkMacSystemFont,sans-serif;display:flex;align-items:center;gap:7px';
+            t.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2dd4bf" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg> Filters saved';
             document.body.appendChild(t);
           }
           t.style.opacity = '1';
@@ -682,7 +682,7 @@ function renderPortfolioItemV2(list, p, pi, allProfiles, profileIdx, autoOpen) {
 
     const CHECK_ICON =
       '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-        '<path d="M12 2C13.5 2 14.2 3.5 15.5 4C16.8 4.5 18.5 3.8 19.3 4.7C20.2 5.5 19.5 7.2 20 8.5C20.5 9.8 22 10.5 22 12C22 13.5 20.5 14.2 20 15.5C19.5 16.8 20.2 18.5 19.3 19.3C18.5 20.2 16.8 19.5 15.5 20C14.2 20.5 13.5 22 12 22C10.5 22 9.8 20.5 8.5 20C7.2 19.5 5.5 20.2 4.7 19.3C3.8 18.5 4.5 16.8 4 15.5C3.5 14.2 2 13.5 2 12C2 10.5 3.5 9.8 4 8.5C4.5 7.2 3.8 5.5 4.7 4.7C5.5 3.8 7.2 4.5 8.5 4C9.8 3.5 10.5 2 12 2Z" fill="#6366f1"/>' +
+        '<path d="M12 2C13.5 2 14.2 3.5 15.5 4C16.8 4.5 18.5 3.8 19.3 4.7C20.2 5.5 19.5 7.2 20 8.5C20.5 9.8 22 10.5 22 12C22 13.5 20.5 14.2 20 15.5C19.5 16.8 20.2 18.5 19.3 19.3C18.5 20.2 16.8 19.5 15.5 20C14.2 20.5 13.5 22 12 22C10.5 22 9.8 20.5 8.5 20C7.2 19.5 5.5 20.2 4.7 19.3C3.8 18.5 4.5 16.8 4 15.5C3.5 14.2 2 13.5 2 12C2 10.5 3.5 9.8 4 8.5C4.5 7.2 3.8 5.5 4.7 4.7C5.5 3.8 7.2 4.5 8.5 4C9.8 3.5 10.5 2 12 2Z" fill="#2dd4bf"/>' +
         '<path d="M8.5 12.5L11 15L15.5 9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
       '</svg>';
 
@@ -878,8 +878,8 @@ export function renderProfileCard(container, profile, idx, allProfiles, primaryP
   const isAgency       = profile._type === 'agency';
   const synced         = !!(profile.name || profile.jss || profile._readAt);
   const validProfiles  = allProfiles.filter(p => p && p.url);
-  const isPrimary      = validProfiles.length <= 1
-    ? true : (primaryProfileId ? profile.id === primaryProfileId : idx === 0);
+  const isPrimary      = validProfiles.length > 1
+    && (primaryProfileId ? profile.id === primaryProfileId : idx === 0);
   const portfolios     = profile.portfolios || [];
   const portsOk        = portfolios.filter(p => p.urls && p.urls.some(u => u && u.trim())).length;
 
@@ -899,10 +899,10 @@ export function renderProfileCard(container, profile, idx, allProfiles, primaryP
           <div class="pr-meta" style="font-style:italic">${profile.url || ''}</div>
           <div class="pr-acts">
             <button class="btn-indigo" id="open-pending-${idx}">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg> Open &amp; Sync
+              <span style="font-size:11px;line-height:1">↻</span> Open &amp; Sync
             </button>
             ${!isPrimary && validProfiles.length > 1 ? `<button class="btn-indigo-outline" id="btn-primary-${idx}">★ Make Primary</button>` : ''}
-            <button class="btn-icon-del" title="Remove profile"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg></button>
+            <button class="btn-icon-del" title="Remove profile"><span style="font-size:13px;line-height:1">🗑️</span></button>
           </div>
         </div>
       </div>
@@ -939,8 +939,8 @@ export function renderProfileCard(container, profile, idx, allProfiles, primaryP
     ? new Date(profile._readAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
     : null;
 
-  const SYNC_ICON = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>';
-  const DEL_ICON  = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg>';
+  const SYNC_ICON = '<span style="font-size:13px;line-height:1">↻</span>';
+  const DEL_ICON  = '<span style="font-size:13px;line-height:1">🗑️</span>';
 
   // Profile card — header + stats + synced footer only
   const detailAv = profile.profilePicUrl
@@ -956,17 +956,17 @@ export function renderProfileCard(container, profile, idx, allProfiles, primaryP
           <span class="pr-name">${profile.name || 'Unknown'}</span>
           ${isPrimary ? '<span class="badge-primary">Primary</span>' : ''}
         </div>
-        ${metaTitle ? `<div class="pr-meta" style="color:rgba(240,238,234,.5);font-size:12.5px;margin-bottom:3px">${metaTitle}</div>` : ''}
+        ${metaTitle ? `<div class="pr-meta" style="color:#9199ab;font-size:13.5px;margin-bottom:3px">${metaTitle}</div>` : ''}
         ${metaSub ? `<div class="pr-meta" style="font-size:11px;color:rgba(240,238,255,.32);letter-spacing:.01em">${metaSub}</div>` : ''}
         ${!isPrimary && validProfiles.length > 1 ? `<button class="btn-make-primary" id="btn-primary-${idx}">Make this profile primary</button>` : ''}
       </div>
       <div class="pr-hdr-right">
-        <button class="btn-indigo" id="sync-profile-${idx}">${SYNC_ICON} Sync</button>
+        <button class="btn-sync-circle" id="sync-profile-${idx}" title="Sync">${SYNC_ICON}</button>
         <button class="btn-icon-del" title="Remove profile">${DEL_ICON}</button>
       </div>
     </div>
     <div class="pr-stats">
-      <div class="pr-stat"><div class="pr-stat-n">${profile.jss || '—'}</div><div class="pr-stat-l">JSS</div></div>
+      <div class="pr-stat"><div class="pr-stat-n pr-stat-n-highlight">${profile.jss || '—'}</div><div class="pr-stat-l">JSS</div></div>
       <div class="pr-stat"><div class="pr-stat-n">${profile.earnings || '—'}</div><div class="pr-stat-l">Earned</div></div>
       <div class="pr-stat"><div class="pr-stat-n">${profile.jobs || '—'}</div><div class="pr-stat-l">Jobs</div></div>
       <div class="pr-stat"><div class="pr-stat-n">${profile.hours || '—'}</div><div class="pr-stat-l">Hours</div></div>
@@ -1098,6 +1098,11 @@ export async function renderProfilesPage() {
   addBtn.style.display = 'none';
 
   const validProfiles = mergedProfiles.filter(p => p && p.url);
+  // Only show the selector row (and the primary tag/logic) when more than one
+  // profile actually exists, or there's room under the plan limit to add a
+  // second one — a single-profile plan (or a single profile so far, at cap)
+  // has nothing to switch between and "primary" is a meaningless concept.
+  const showSelGrid = mergedProfiles.length > 1 || mergedProfiles.length < limit;
 
   // ── Profile selector grid ──────────────────────────────────────────────────
   const selGrid = document.createElement('div');
@@ -1118,7 +1123,7 @@ export async function renderProfilesPage() {
 
   mergedProfiles.forEach((p, i) => {
     const synced    = !!(p.name || p.jss || p._readAt);
-    const isPrimary = validProfiles.length <= 1 ? true : (primaryProfileId ? p.id === primaryProfileId : i === 0);
+    const isPrimary = validProfiles.length > 1 && (primaryProfileId ? p.id === primaryProfileId : i === 0);
     const ini       = initials(p.name);
     const isAgencyP = p._type === 'agency';
     const typeChip  = `<div class="pr-sel-type ${isAgencyP ? 'pr-sel-type-agency' : 'pr-sel-type-freelancer'}">${isAgencyP ? 'Agency' : 'Freelancer'}</div>`;
@@ -1150,13 +1155,13 @@ export async function renderProfilesPage() {
     addCard.innerHTML = '<span class="pr-add-icon" style="font-size:22px;font-weight:300;line-height:1">+</span><span class="pr-add-lbl">Add profile</span>';
 
     addPanel.innerHTML = `
-      <div style="background:var(--bg2);border:1px solid rgba(99,102,241,.25);border-radius:16px;padding:22px 24px">
+      <div style="background:var(--bg2);border:1px solid rgba(168,85,247,.25);border-radius:16px;padding:22px 24px">
         <div style="font-size:13px;font-weight:700;color:rgba(240,238,255,.75);margin-bottom:4px">Add Upwork profile</div>
         <div style="font-size:12px;color:rgba(240,238,255,.3);margin-bottom:16px">Paste your Upwork freelancer <em>or</em> agency profile URL — Snag AI detects which one automatically. After saving, open it and click the sync pill to read your data.</div>
         <div style="display:flex;gap:8px;align-items:center">
           <input id="pr-new-url-inp" type="url" placeholder="https://www.upwork.com/freelancers/~... or /agencies/..."
             style="flex:1;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:999px;padding:9px 18px;color:#f0eeff;font-size:12.5px;font-family:inherit;outline:none;min-width:0;transition:border-color .15s">
-          <button id="pr-new-url-save" style="padding:9px 22px;border-radius:999px;background:#6366f1;color:#fff;font-size:12.5px;font-weight:700;border:none;cursor:pointer;font-family:inherit;flex-shrink:0">Save</button>
+          <button id="pr-new-url-save" style="padding:9px 22px;border-radius:999px;background:var(--grad-brand);color:#fff;font-size:12.5px;font-weight:700;border:none;cursor:pointer;font-family:inherit;flex-shrink:0">Save</button>
           <button id="pr-new-url-cancel" style="padding:8px 16px;border-radius:999px;background:transparent;border:1px solid rgba(255,255,255,.1);color:rgba(240,238,255,.4);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;flex-shrink:0">Cancel</button>
         </div>
       </div>`;
@@ -1191,8 +1196,10 @@ export async function renderProfilesPage() {
     selGrid.appendChild(addCard);
   }
 
-  container.appendChild(selGrid);
-  container.appendChild(addPanel);
+  if (showSelGrid) {
+    container.appendChild(selGrid);
+    container.appendChild(addPanel);
+  }
   container.appendChild(detailContainer);
 
   const initialIdx = Math.min(state.currentSlide || 0, mergedProfiles.length - 1);
