@@ -928,8 +928,8 @@ export function renderProfileCard(container, profile, idx, allProfiles, primaryP
     ? new Date(profile._readAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
     : null;
 
-  const SYNC_ICON = '<span class="emoji-icon" style="font-size:13px;line-height:1">↻</span>';
-  const DEL_ICON  = '<span class="emoji-icon" style="font-size:13px;line-height:1">🗑️</span>';
+  const SYNC_ICON = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>';
+  const DEL_ICON  = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg>';
 
   // Profile card — header + stats + synced footer only
   const detailAv = profile.profilePicUrl
