@@ -1,5 +1,5 @@
 // ── Subscription: status, plan UI, billing card, upgrade ─────────────────────
-import { SERVER_URL, PLAN_LABELS, PLAN_QUOTAS, PLAN_PROFILE_LIMITS } from './config.js';
+import { SERVER_URL, PLAN_LABELS, PLAN_QUOTAS } from './config.js';
 import { state } from './state.js';
 import { fmtDate, daysUntil, showSaved } from './helpers.js';
 
@@ -70,31 +70,29 @@ export function updatePlanUI(plan, used, quota, billing = {}, auditInfo = {}) {
   // pool (10x pricier, used far less often — see server/modules/usage.js).
   const auditLimit = auditInfo.auditLimit ?? 0;
   const usedAudits = auditInfo.usedAudits ?? 0;
-  const remAudits  = auditInfo.remainingAudits ?? Math.max(0, auditLimit - usedAudits);
   const auditsCard = document.getElementById('ud-audits-card');
   if (auditsCard) {
-    const auditPct = auditLimit > 0 ? Math.min(100, (usedAudits / auditLimit) * 100) : 0;
-    const remAuditsEl = document.getElementById('ud-audits-rem');
-    if (remAuditsEl) remAuditsEl.textContent = auditLimit > 0 ? remAudits : '—';
+    const auditPct  = auditLimit > 0 ? Math.min(100, (usedAudits / auditLimit) * 100) : 0;
+    const gaugeEl   = document.getElementById('ud-gauge-audits');
+    if (gaugeEl) gaugeEl.style.setProperty('--gauge-pct', auditPct + '%');
+    const gaugeWrap = document.getElementById('ud-audits-gauge');
+    if (gaugeWrap) gaugeWrap.classList.toggle('locked', auditLimit === 0);
     const usedAuditsEl = document.getElementById('ud-audits-used');
     if (usedAuditsEl) usedAuditsEl.textContent = usedAudits;
     const limAuditsEl = document.getElementById('ud-audits-limit');
     if (limAuditsEl) limAuditsEl.textContent = auditLimit;
-    const barAuditsEl = document.getElementById('ud-audits-bar');
-    if (barAuditsEl) {
-      barAuditsEl.style.width = auditPct + '%';
-      barAuditsEl.style.background = auditPct >= 90 ? 'var(--red)' : auditPct >= 70 ? 'var(--yellow)' : '';
-    }
     const resetAuditsEl = document.getElementById('ud-audits-reset-date');
     if (resetAuditsEl) {
       const resetIso = billing.cancelsAt || billing.nextBilledAt || null;
       resetAuditsEl.textContent = resetIso ? fmtDate(resetIso) : 'monthly';
     }
-    auditsCard.classList.toggle('us-card-dim', auditLimit === 0);
     // Non-destructive toggle — never overwrite .us-footnote's innerHTML, or
     // the used/limit/reset spans it holds would be gone for good and this
     // card would stay stuck on "not included" even after an upgrade.
-    const footEl  = auditsCard.querySelector('.us-footnote');
+    const bignumEl = document.getElementById('ud-audits-bignum');
+    if (bignumEl) bignumEl.textContent = auditLimit === 0 ? 'Not on your plan' : '';
+    if (bignumEl) bignumEl.style.display = auditLimit === 0 ? '' : 'none';
+    const footEl  = document.getElementById('ud-audits-footnote');
     const hintEl  = document.getElementById('ud-audits-upgrade-hint');
     if (footEl) footEl.style.display = auditLimit === 0 ? 'none' : '';
     if (hintEl) hintEl.style.display = auditLimit === 0 ? '' : 'none';
@@ -107,19 +105,21 @@ export function updatePlanUI(plan, used, quota, billing = {}, auditInfo = {}) {
   document.getElementById('sb-count').textContent     = used + ' / ' + quota + ' used';
   document.getElementById('sb-bar').style.width       = pct + '%';
 
-  const planBadgeEl = document.getElementById('ud-plan-badge');
-  if (planBadgeEl) { planBadgeEl.textContent = label; planBadgeEl.className = 'us-plan-badge badge-' + plan; }
-  const remEl = document.getElementById('ud-proposals-rem');
-  if (remEl) remEl.textContent = rem;
   const usedEl = document.getElementById('ud-used');
   if (usedEl) usedEl.textContent = used;
   const limEl = document.getElementById('ud-limit');
   if (limEl) limEl.textContent = quota;
-  const barEl = document.getElementById('ud-bar');
-  if (barEl) {
-    barEl.style.width = pct + '%';
-    barEl.style.background = pct >= 90 ? 'var(--red)' : pct >= 70 ? 'var(--yellow)' : '';
-  }
+  const gaugeProposals = document.getElementById('ud-gauge-proposals');
+  if (gaugeProposals) gaugeProposals.style.setProperty('--gauge-pct', pct + '%');
+
+  // Job Audits card mirrors the same combined pool as Proposals.
+  const jaUsedEl = document.getElementById('ud-jobaudits-used');
+  if (jaUsedEl) jaUsedEl.textContent = used;
+  const jaLimEl = document.getElementById('ud-jobaudits-limit');
+  if (jaLimEl) jaLimEl.textContent = quota;
+  const gaugeJobAudits = document.getElementById('ud-gauge-jobaudits');
+  if (gaugeJobAudits) gaugeJobAudits.style.setProperty('--gauge-pct', pct + '%');
+
   const _ue = document.getElementById('ud-urgency');
   if (_ue) {
     let msg = '', cls = 'ud-urgency';
@@ -129,36 +129,25 @@ export function updatePlanUI(plan, used, quota, billing = {}, auditInfo = {}) {
     _ue.textContent = msg; _ue.className = cls;
   }
 
+  const resetIso = billing.cancelsAt || billing.nextBilledAt || null;
+  const resetTxt = resetIso ? fmtDate(resetIso) : 'monthly';
   const resetEl = document.getElementById('ud-reset-date');
   if (resetEl) {
-    const resetIso = billing.cancelsAt || billing.nextBilledAt || null;
-    resetEl.textContent = resetIso ? fmtDate(resetIso) : 'monthly';
+    resetEl.textContent = resetTxt;
     resetEl.style.color = (billing.subscriptionStatus === 'canceling') ? '#facc15' : 'inherit';
   }
-
-  chrome.storage.local.get(['registeredProfiles', 'registeredAgencies'], d => {
-    const profiles      = (d.registeredProfiles || []).filter(p => p && p.url);
-    const agencies      = (d.registeredAgencies || []).filter(a => a && a.url);
-    const profilesUsed  = profiles.length + agencies.length;
-    const profilesLimit = PLAN_PROFILE_LIMITS[plan] || 1;
-    const profilesPct   = Math.min(100, (profilesUsed / profilesLimit) * 100);
-    const puEl = document.getElementById('ud-profiles-used');
-    if (puEl) puEl.textContent = profilesUsed;
-    const plEl = document.getElementById('ud-profiles-limit');
-    if (plEl) plEl.textContent = profilesLimit;
-    const pbEl = document.getElementById('ud-profiles-bar');
-    if (pbEl) pbEl.style.width = profilesPct + '%';
-  });
+  const jaResetEl = document.getElementById('ud-jobaudits-reset-date');
+  if (jaResetEl) jaResetEl.textContent = resetTxt;
 
   document.querySelectorAll('.pcv2-card').forEach(c => {
     c.classList.remove('current');
     const btn = c.querySelector('.pcv2-btn[data-plan]');
     if (btn) {
       const p = btn.dataset.plan;
-      const btnLabels = { starter:'Get Basic →', pro:'Get Pro →', agency:'Get Agency →' };
-      btn.textContent = btnLabels[p] || 'Upgrade →';
+      const btnLabels = { starter:'Get Basic', pro:'Get Pro', agency:'Get Agency' };
+      btn.textContent = btnLabels[p] || 'Upgrade';
       btn.disabled    = false;
-      btn.className   = 'pcv2-btn ' + (p === 'pro' ? 'pcv2-btn-gold' : 'pcv2-btn-outline');
+      btn.className   = 'pcv2-btn ' + (p === 'pro' ? 'pcv2-btn-gold' : p === 'agency' ? 'pcv2-btn-agency' : 'pcv2-btn-outline');
     }
   });
 
@@ -206,14 +195,13 @@ export function renderBillingCard(plan, used, quota, billing) {
   const keyDateFmt        = fmtDate(keyDate);
   const days              = daysUntil(keyDate);
 
-  let statusHtml;
+  let statusHtml = '';
   if (isCanceling) {
     statusHtml = `<span class="bc-status bc-canceling"><span class="bc-status-dot"></span>Cancels ${keyDateFmt}</span>`;
   } else if (subStatus === 'canceled') {
     statusHtml = '<span class="bc-status bc-canceled"><span class="bc-status-dot"></span>Canceled</span>';
-  } else {
-    statusHtml = '<span class="bc-status bc-active"><span class="bc-status-dot"></span>Active</span>';
   }
+  const badgeIcon = { starter: '◆', pro: '◆◆', agency: '◆◆◆' }[plan] || '◆';
 
   let statsHtml;
   if (isCanceling && hasCancelDate) {
@@ -253,25 +241,25 @@ export function renderBillingCard(plan, used, quota, billing) {
   }
 
   wrap.innerHTML = `
-    <div class="billing-card">
+    <div class="billing-card-border"><div class="billing-card">
       <div class="bc-header">
         <div class="bc-header-left">
           <div class="bc-badges-row">
-            <span class="bc-plan-badge badge-${plan}">${planLabel}</span>
+            <span class="bc-plan-badge badge-${plan}">${badgeIcon}</span>
+            <span class="bc-plan-name badge-${plan}">${planLabel}</span>
             ${statusHtml}
           </div>
-          <div class="bc-plan-title">${planLabel} Plan <span class="bc-plan-price">${price}/mo</span></div>
-          <div class="bc-plan-quota">${quota.toLocaleString()} job audits + proposals / month (revisions included)</div>
+          <div class="bc-plan-title">${price}<span class="bc-plan-price">/mo</span></div>
         </div>
         <div class="bc-header-right">
           <button class="bc-manage-btn" id="bc-manage-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> Manage billing
-           
+
           </button>
         </div>
       </div>
       <div class="bc-body-divider"></div>
       ${statsHtml}
-    </div>
+    </div></div>
   `;
 
   document.getElementById('bc-manage-btn')?.addEventListener('click', async () => {
