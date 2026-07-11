@@ -423,7 +423,7 @@ function renderJobFilters(body, profile) {
     <div class="jf-filter-footer">
       <button class="btn-reset-plain" id="jf-reset">Reset Filters</button>
       <button class="btn-apply-filters" id="jf-save">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        <span style="font-size:12px">✓</span>
         Apply filters
       </button>
     </div>
@@ -467,7 +467,7 @@ function renderJobFilters(body, profile) {
           if (!t) {
             t = document.createElement('div');
             t.id = 'snagai-filter-toast';
-            t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e1d32;border:1px solid rgba(168,85,247,.4);color:rgba(240,238,255,.85);font-size:12.5px;font-weight:600;padding:10px 20px;border-radius:999px;z-index:99999;pointer-events:none;opacity:0;transition:opacity .2s;font-family:-apple-system,BlinkMacSystemFont,sans-serif;display:flex;align-items:center;gap:7px';
+            t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e1d32;border:1px solid rgba(168,85,247,.4);color:rgba(240,238,255,.85);font-size:12.5px;font-weight:600;padding:10px 20px;border-radius:999px;z-index:99999;pointer-events:none;opacity:0;transition:opacity .2s;display:flex;align-items:center;gap:7px';
             t.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2dd4bf" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg> Filters saved';
             document.body.appendChild(t);
           }
@@ -680,18 +680,8 @@ function renderPortfolioItemV2(list, p, pi, allProfiles, profileIdx, autoOpen) {
     item.classList.toggle('port-has-link', hasLinks);
     item.classList.toggle('port-no-link', !hasLinks);
 
-    const CHECK_ICON =
-      '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-        '<path d="M12 2C13.5 2 14.2 3.5 15.5 4C16.8 4.5 18.5 3.8 19.3 4.7C20.2 5.5 19.5 7.2 20 8.5C20.5 9.8 22 10.5 22 12C22 13.5 20.5 14.2 20 15.5C19.5 16.8 20.2 18.5 19.3 19.3C18.5 20.2 16.8 19.5 15.5 20C14.2 20.5 13.5 22 12 22C10.5 22 9.8 20.5 8.5 20C7.2 19.5 5.5 20.2 4.7 19.3C3.8 18.5 4.5 16.8 4 15.5C3.5 14.2 2 13.5 2 12C2 10.5 3.5 9.8 4 8.5C4.5 7.2 3.8 5.5 4.7 4.7C5.5 3.8 7.2 4.5 8.5 4C9.8 3.5 10.5 2 12 2Z" fill="#2dd4bf"/>' +
-        '<path d="M8.5 12.5L11 15L15.5 9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
-      '</svg>';
-
-    const WARN_ICON =
-      '<svg width="18" height="18" viewBox="0 0 24 24" fill="none">' +
-        '<circle cx="12" cy="12" r="9" stroke="rgba(250,204,21,.4)" stroke-width="1.5"/>' +
-        '<line x1="12" y1="8" x2="12" y2="13" stroke="rgba(250,204,21,.75)" stroke-width="1.8" stroke-linecap="round"/>' +
-        '<circle cx="12" cy="16" r="0.8" fill="rgba(250,204,21,.75)"/>' +
-      '</svg>';
+    const CHECK_ICON = '✓';
+    const WARN_ICON   = '!';
 
     const firstUrl = hasLinks ? (p.urls || []).find(u => u && u.trim()) : null;
     const fullUrl  = firstUrl ? (firstUrl.startsWith('http') ? firstUrl : 'https://' + firstUrl) : null;
@@ -719,7 +709,6 @@ function renderPortfolioItemV2(list, p, pi, allProfiles, profileIdx, autoOpen) {
           'background:#1a1830;border:1px solid rgba(250,204,21,.28);' +
           'color:rgba(240,238,255,.78);font-size:11px;font-weight:500;line-height:1.5;' +
           'padding:8px 12px;border-radius:8px;max-width:240px;' +
-          'font-family:-apple-system,BlinkMacSystemFont,sans-serif;' +
           'box-shadow:0 6px 20px rgba(0,0,0,.45);';
         tip.textContent = 'Missing URL — add this project\'s link to your Upwork portfolio, then re-sync.';
 
@@ -899,7 +888,7 @@ export function renderProfileCard(container, profile, idx, allProfiles, primaryP
           <div class="pr-meta" style="font-style:italic">${profile.url || ''}</div>
           <div class="pr-acts">
             <button class="btn-indigo" id="open-pending-${idx}">
-              <span style="font-size:11px;line-height:1">↻</span> Open &amp; Sync
+              <span class="emoji-icon" style="font-size:11px;line-height:1">↻</span> Open &amp; Sync
             </button>
             ${!isPrimary && validProfiles.length > 1 ? `<button class="btn-indigo-outline" id="btn-primary-${idx}">★ Make Primary</button>` : ''}
             <button class="btn-icon-del" title="Remove profile"><span style="font-size:13px;line-height:1">🗑️</span></button>
@@ -939,8 +928,8 @@ export function renderProfileCard(container, profile, idx, allProfiles, primaryP
     ? new Date(profile._readAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
     : null;
 
-  const SYNC_ICON = '<span style="font-size:13px;line-height:1">↻</span>';
-  const DEL_ICON  = '<span style="font-size:13px;line-height:1">🗑️</span>';
+  const SYNC_ICON = '<span class="emoji-icon" style="font-size:13px;line-height:1">↻</span>';
+  const DEL_ICON  = '<span class="emoji-icon" style="font-size:13px;line-height:1">🗑️</span>';
 
   // Profile card — header + stats + synced footer only
   const detailAv = profile.profilePicUrl
