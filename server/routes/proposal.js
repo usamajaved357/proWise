@@ -3,7 +3,7 @@
 const express = require('express');
 const router  = express.Router();
 const { callClaude, extractClientName, SYSTEM, buildUserMessage, processBold } = require('../modules/claude');
-const { canGenerate, recordUsage, canAnonGenerate, recordAnonUsage, getUserStatus } = require('../modules/usage');
+const { canGenerate, recordUsage, canAnonGenerate, recordAnonUsage, getUserStatus, hasFreeRevision, consumeFreeRevision } = require('../modules/usage');
 const { getAnon, getUser, getAnonByDevice, upsertAnon } = require('../modules/db');
 
 router.post('/', async (req, res) => {
@@ -53,29 +53,40 @@ router.post('/', async (req, res) => {
     } catch(e) { /* db error — proceed */ }
   }
 
+  const refineInstruction = req.body.refineInstruction || '';
+  const currentLetter     = req.body.currentLetter     || '';
+  const isRefinement      = !!(refineInstruction && currentLetter);
+
   try {
-    if (isRealEmail) {
-      const ok = await canGenerate(userEmail);
-      if (!ok) {
-        const status = await getUserStatus(userEmail);
-        console.log(`Limit reached: ${userEmail} | plan: ${status.plan} | used: ${status.used}/${status.limit}`);
-        return res.status(402).json({
-          error: status.plan === 'free'
-            ? 'You\'ve used your 2 free proposals. Subscribe to keep winning jobs.'
-            : `You\'ve used all ${status.limit} proposals this month. Resets on the 1st.`,
-          showPaywall: true,
-          ...status
-        });
-      }
-    } else if (anonId) {
-      const ok = await canAnonGenerate(anonId);
-      if (!ok) {
-        console.log(`Anon limit reached: ${anonId}`);
-        return res.status(402).json({
-          error: 'You\'ve used your 2 free proposals. Subscribe to keep winning jobs.',
-          showPaywall: true,
-          plan: 'free', limit: 2, used: 2, remaining: 0
-        });
+    // A refinement on a job that hasn't used its 1 free revision yet bypasses
+    // the pool gate entirely — it doesn't cost the user anything, so it
+    // shouldn't be blocked by an empty pool either.
+    const freeRevision = isRealEmail && isRefinement && await hasFreeRevision(userEmail, job);
+
+    if (!freeRevision) {
+      if (isRealEmail) {
+        const ok = await canGenerate(userEmail);
+        if (!ok) {
+          const status = await getUserStatus(userEmail);
+          console.log(`Limit reached: ${userEmail} | plan: ${status.plan} | used: ${status.used}/${status.limit}`);
+          return res.status(402).json({
+            error: status.plan === 'free'
+              ? 'You\'ve used your 2 free proposals. Subscribe to keep winning jobs.'
+              : `You\'ve used all ${status.limit} proposals this month. Resets on the 1st.`,
+            showPaywall: true,
+            ...status
+          });
+        }
+      } else if (anonId) {
+        const ok = await canAnonGenerate(anonId);
+        if (!ok) {
+          console.log(`Anon limit reached: ${anonId}`);
+          return res.status(402).json({
+            error: 'You\'ve used your 2 free proposals. Subscribe to keep winning jobs.',
+            showPaywall: true,
+            plan: 'free', limit: 2, used: 2, remaining: 0
+          });
+        }
       }
     }
 
@@ -100,11 +111,8 @@ router.post('/', async (req, res) => {
     }
     console.log('Client name:', job.clientName || 'not found');
 
-    const refineInstruction = req.body.refineInstruction || '';
-    const currentLetter     = req.body.currentLetter     || '';
     const categories        = Array.isArray(req.body.categories) ? req.body.categories : [];
     const freelancerType    = req.body.freelancerType    || 'developer';
-    const isRefinement      = !!(refineInstruction && currentLetter);
 
     const rawPortfolios = profile.portfolio || [];
     console.log('[DEBUG] portfolios received:', rawPortfolios.length);
@@ -200,19 +208,22 @@ router.post('/', async (req, res) => {
       }
     }
 
-    // Revisions cost the same $0.01 as a fresh generation, so they draw from
-    // the same unified pool — no separate revision cap, no free pass here.
-    // A user can spend their monthly quota however they want (revise one
-    // proposal 10 times, or generate 10 fresh ones) rather than hitting an
-    // arbitrary per-proposal limit while unused quota sits idle.
+    // Every job gets 1 free revision per billing month (tracked by hashing
+    // title+description — see hasFreeRevision). The 1st revision on a given
+    // job doesn't touch the pool; the 2nd+ revision on that same job, or any
+    // fresh generation, costs 1 unit like normal.
     if (isRealEmail) {
-      await recordUsage(userEmail);
+      if (freeRevision) {
+        await consumeFreeRevision(userEmail, job);
+      } else {
+        await recordUsage(userEmail);
+      }
       // Store deviceId on first free usage so same device can't reuse another email
       if (!isRefinement && deviceId) {
         try { await upsertAnon(userEmail, { device_id: deviceId }); } catch(e) {}
       }
       const status = await getUserStatus(userEmail);
-      return res.json({ success: true, ...result, usage: status });
+      return res.json({ success: true, ...result, usage: status, freeRevision: !!freeRevision });
     }
 
     res.json({ success: true, ...result });

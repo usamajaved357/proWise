@@ -4,6 +4,8 @@
 // "which profile is primary" happens once, upstream, in analyse.js via
 // resolvePrimaryEntity() — this function just takes the already-resolved
 // agencyFull data and does the actual request.
+import { syncUsageToStorage } from './sync-usage.js';
+
 const SERVER = 'http://localhost:3000'; // Local Host
 
 export async function handleAgencyAnalyse(payload, agencyFull) {
@@ -29,6 +31,7 @@ export async function handleAgencyAnalyse(payload, agencyFull) {
   if (!res.ok || !data.success) {
     throw new Error(data.error || 'Analysis failed');
   }
+  await syncUsageToStorage(data.usage);
 
   return data.analysis;
 }

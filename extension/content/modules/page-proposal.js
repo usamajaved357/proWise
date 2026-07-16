@@ -1,6 +1,6 @@
 // ── Proposal render page ──────────────────────────────────────────────────────
 window.SnagAI.renderProposal = function(data) {
-  const { letter, hookType, tips, usage } = data;
+  const { letter, hookType, tips, usage, wasRevision, freeRevision } = data;
   if (!letter) { SnagAI.showError('Empty proposal. Please try again.'); return; }
 
   const jobStats = SnagAI.state.jobStats || {};
@@ -8,7 +8,9 @@ window.SnagAI.renderProposal = function(data) {
   const wp = SnagAI.calcWinProbability(jobStats, profile);
   const remaining = usage && usage.remaining !== undefined ? usage.remaining : null;
 
-  document.getElementById('sn-hook-label').textContent = hookType ? 'Hook: ' + hookType : 'Proposal ready';
+  document.getElementById('sn-hook-label').textContent = wasRevision
+    ? (freeRevision ? 'Revision updated · free' : 'Revision updated · 1 credit used')
+    : (hookType ? 'Hook: ' + hookType : 'Proposal ready');
 
   const badge = document.getElementById('sn-usage-badge');
   if (remaining !== null) {

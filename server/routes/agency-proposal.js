@@ -11,7 +11,7 @@ const express = require('express');
 const router  = express.Router();
 const { callClaude, extractClientName, processBold } = require('../modules/claude');
 const { buildAgencyUserMessage } = require('../prompt-agency-proposal');
-const { canGenerate, recordUsage, canAnonGenerate, recordAnonUsage, getUserStatus } = require('../modules/usage');
+const { canGenerate, recordUsage, canAnonGenerate, recordAnonUsage, getUserStatus, hasFreeRevision, consumeFreeRevision } = require('../modules/usage');
 const { getAnon, getUser, getAnonByDevice, upsertAnon } = require('../modules/db');
 
 router.post('/', async (req, res) => {
@@ -60,28 +60,38 @@ router.post('/', async (req, res) => {
     } catch(e) { /* db error — proceed */ }
   }
 
+  const refineInstruction = req.body.refineInstruction || '';
+  const currentLetter     = req.body.currentLetter     || '';
+  const isRefinement      = !!(refineInstruction && currentLetter);
+
   try {
-    if (isRealEmail) {
-      const ok = await canGenerate(userEmail);
-      if (!ok) {
-        const status = await getUserStatus(userEmail);
-        console.log(`[AGENCY_PROPOSAL] Limit reached: ${userEmail} | plan: ${status.plan} | used: ${status.used}/${status.limit}`);
-        return res.status(402).json({
-          error: status.plan === 'free'
-            ? 'You\'ve used your 2 free proposals. Subscribe to keep winning jobs.'
-            : `You\'ve used all ${status.limit} proposals this month. Resets on the 1st.`,
-          showPaywall: true,
-          ...status
-        });
-      }
-    } else if (anonId) {
-      const ok = await canAnonGenerate(anonId);
-      if (!ok) {
-        return res.status(402).json({
-          error: 'You\'ve used your 2 free proposals. Subscribe to keep winning jobs.',
-          showPaywall: true,
-          plan: 'free', limit: 2, used: 2, remaining: 0
-        });
+    // A refinement on a job that hasn't used its 1 free revision yet bypasses
+    // the pool gate entirely — see routes/proposal.js for the full reasoning.
+    const freeRevision = isRealEmail && isRefinement && await hasFreeRevision(userEmail, job);
+
+    if (!freeRevision) {
+      if (isRealEmail) {
+        const ok = await canGenerate(userEmail);
+        if (!ok) {
+          const status = await getUserStatus(userEmail);
+          console.log(`[AGENCY_PROPOSAL] Limit reached: ${userEmail} | plan: ${status.plan} | used: ${status.used}/${status.limit}`);
+          return res.status(402).json({
+            error: status.plan === 'free'
+              ? 'You\'ve used your 2 free proposals. Subscribe to keep winning jobs.'
+              : `You\'ve used all ${status.limit} proposals this month. Resets on the 1st.`,
+            showPaywall: true,
+            ...status
+          });
+        }
+      } else if (anonId) {
+        const ok = await canAnonGenerate(anonId);
+        if (!ok) {
+          return res.status(402).json({
+            error: 'You\'ve used your 2 free proposals. Subscribe to keep winning jobs.',
+            showPaywall: true,
+            plan: 'free', limit: 2, used: 2, remaining: 0
+          });
+        }
       }
     }
 
@@ -103,10 +113,7 @@ router.post('/', async (req, res) => {
     }
     console.log('[AGENCY_PROPOSAL] Client name:', job.clientName || 'not found');
 
-    const refineInstruction = req.body.refineInstruction || '';
-    const currentLetter     = req.body.currentLetter     || '';
     const categories        = Array.isArray(req.body.categories) ? req.body.categories : [];
-    const isRefinement      = !!(refineInstruction && currentLetter);
 
     const minRate = parseFloat(agency.minRate) || 0;
     const maxRate = parseFloat(agency.maxRate) || 0;
@@ -186,16 +193,20 @@ router.post('/', async (req, res) => {
       }
     }
 
-    // Revisions cost the same $0.01 as a fresh generation, so they draw from
-    // the same unified pool as job audits/proposals — see routes/proposal.js
-    // for the full reasoning.
+    // 1 free revision per job per billing month — see routes/proposal.js for
+    // the full reasoning. 2nd+ revision on the same job, or any fresh
+    // generation, costs 1 unit from the main pool like normal.
     if (isRealEmail) {
-      await recordUsage(userEmail);
+      if (freeRevision) {
+        await consumeFreeRevision(userEmail, job);
+      } else {
+        await recordUsage(userEmail);
+      }
       if (!isRefinement && deviceId) {
         try { await upsertAnon(userEmail, { device_id: deviceId }); } catch(e) {}
       }
       const status = await getUserStatus(userEmail);
-      return res.json({ success: true, ...result, usage: status });
+      return res.json({ success: true, ...result, usage: status, freeRevision: !!freeRevision });
     }
 
     res.json({ success: true, ...result });

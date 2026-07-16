@@ -12,14 +12,14 @@ const express = require('express');
 const https   = require('https');
 const router  = express.Router();
 const { AGENCY_ANALYSE_SYSTEM, buildAgencyAnalyseMessage } = require('../prompt-agency-analyse');
-const { canGenerate, recordUsage, getUserStatus } = require('../modules/usage');
+const { canJobAudit, recordJobAuditUsage, getUserStatus } = require('../modules/usage');
 
 router.post('/', async (req, res) => {
   try {
     const { job, agency, filters, email: userEmail } = req.body;
 
-    // Job audits draw from the same unified pool as proposals/revisions —
-    // see routes/proposal.js for why they're not metered separately.
+    // Job audits have their own pool, separate from cover-letter proposals —
+    // see server/modules/usage.js's canJobAudit/recordJobAuditUsage.
     const isRealEmail = userEmail && userEmail.includes('@') && !userEmail.includes('propwise.local');
     if (!isRealEmail) {
       return res.status(403).json({
@@ -27,13 +27,13 @@ router.post('/', async (req, res) => {
         requiresEmail: true,
       });
     }
-    const ok = await canGenerate(userEmail);
+    const ok = await canJobAudit(userEmail);
     if (!ok) {
       const status = await getUserStatus(userEmail);
       return res.status(402).json({
-        error: status.plan === 'free'
-          ? 'You\'ve used your 2 free proposals. Subscribe to keep winning jobs.'
-          : `You've used all ${status.limit} job audits/proposals this month. Resets on the 1st.`,
+        error: status.jobAuditLimit === 0
+          ? 'Job audits aren\'t included on your plan. Upgrade to Pro or Agency to unlock them.'
+          : `You've used all ${status.jobAuditLimit} job audits this month. Resets on the 1st.`,
         showPaywall: true,
         ...status
       });
@@ -247,7 +247,7 @@ router.post('/', async (req, res) => {
 
     console.log(`[AGENCY_ANALYSE] Result: ${analysis.verdict} | competition=${analysis.competitionPressure} fit=${analysis.profileFit} | concerns:${analysis.concerns.length} strengths:${analysis.strengths.length}`);
 
-    await recordUsage(userEmail);
+    await recordJobAuditUsage(userEmail);
     const status = await getUserStatus(userEmail);
     res.json({ success: true, analysis, usage: status });
 

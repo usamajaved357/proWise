@@ -323,12 +323,17 @@
       }
 
       SnagAI.showLoading();
-      try {
-        const status = await chrome.runtime.sendMessage({ type: 'GET_STATUS' });
-        if (status && status.remaining !== undefined && status.remaining <= 0) {
-          SnagAI.showPaywall(status); return;
-        }
-      } catch(e) { /* let server enforce */ }
+      // Skip this client-side pre-check for revisions — a revision might be
+      // free (1 free revision per letter, server-enforced) even when the
+      // main pool is at 0, and this check has no way to know that in advance.
+      if (!refineInstruction) {
+        try {
+          const status = await chrome.runtime.sendMessage({ type: 'GET_STATUS' });
+          if (status && status.remaining !== undefined && status.remaining <= 0) {
+            SnagAI.showPaywall(status); return;
+          }
+        } catch(e) { /* let server enforce */ }
+      }
 
       await new Promise(r => setTimeout(r, 500));
       const jobWithReviews = SnagAI.getJob();

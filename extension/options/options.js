@@ -49,14 +49,16 @@ chrome.storage.onChanged.addListener((changes, area) => {
   if (changes.registeredProfiles || changes.profile) {
     renderProfilesPage();
   }
-  if (changes.userPlan || changes.usageCount) {
-    const plan = changes.userPlan?.newValue;
-    const used = changes.usageCount?.newValue;
-    if (plan !== undefined || used !== undefined) {
-      chrome.storage.sync.get(['userPlan','usageCount','usageLimit'], s => {
-        updatePlanUI(s.userPlan || 'free', s.usageCount || 0, s.usageLimit || PLAN_QUOTAS[s.userPlan] || 2);
+  if (changes.userPlan || changes.usageCount || changes.usedAudits || changes.jobAuditLimit || changes.usedJobAudits) {
+    chrome.storage.sync.get(['userPlan','usageCount','usageLimit','auditLimit','usedAudits','jobAuditLimit','usedJobAudits'], s => {
+      updatePlanUI(s.userPlan || 'free', s.usageCount || 0, s.usageLimit || PLAN_QUOTAS[s.userPlan] || 2, {}, {
+        auditLimit: s.auditLimit ?? 0,
+        usedAudits: s.usedAudits ?? 0,
+      }, {
+        jobAuditLimit: s.jobAuditLimit ?? 0,
+        usedJobAudits: s.usedJobAudits ?? 0,
       });
-    }
+    });
   }
 });
 

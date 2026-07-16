@@ -61,7 +61,7 @@ export async function upgradePlan(newPlan) {
   }
 }
 
-export function updatePlanUI(plan, used, quota, billing = {}, auditInfo = {}) {
+export function updatePlanUI(plan, used, quota, billing = {}, auditInfo = {}, jobAuditInfo = {}) {
   const rem   = Math.max(0, quota - used);
   const pct   = Math.min(100, (used / quota) * 100);
   const label = PLAN_LABELS[plan] || 'Free';
@@ -112,13 +112,16 @@ export function updatePlanUI(plan, used, quota, billing = {}, auditInfo = {}) {
   const gaugeProposals = document.getElementById('ud-gauge-proposals');
   if (gaugeProposals) gaugeProposals.style.setProperty('--gauge-pct', pct + '%');
 
-  // Job Audits card mirrors the same combined pool as Proposals.
+  // Job Audits — separate pool from Proposals (see server/modules/usage.js).
+  const jaLimit = jobAuditInfo.jobAuditLimit ?? 0;
+  const jaUsed  = jobAuditInfo.usedJobAudits ?? 0;
+  const jaPct   = jaLimit > 0 ? Math.min(100, (jaUsed / jaLimit) * 100) : 0;
   const jaUsedEl = document.getElementById('ud-jobaudits-used');
-  if (jaUsedEl) jaUsedEl.textContent = used;
+  if (jaUsedEl) jaUsedEl.textContent = jaUsed;
   const jaLimEl = document.getElementById('ud-jobaudits-limit');
-  if (jaLimEl) jaLimEl.textContent = quota;
+  if (jaLimEl) jaLimEl.textContent = jaLimit;
   const gaugeJobAudits = document.getElementById('ud-gauge-jobaudits');
-  if (gaugeJobAudits) gaugeJobAudits.style.setProperty('--gauge-pct', pct + '%');
+  if (gaugeJobAudits) gaugeJobAudits.style.setProperty('--gauge-pct', jaPct + '%');
 
   const _ue = document.getElementById('ud-urgency');
   if (_ue) {
@@ -293,7 +296,7 @@ export function renderBillingCard(plan, used, quota, billing) {
 }
 
 export async function loadStatus() {
-  const cached = await chrome.storage.sync.get(['userPlan','usageCount','usageLimit','userActive','nextBilledAt','currentPeriodStart','subscriptionStatus','cancelsAt','auditLimit','usedAudits']);
+  const cached = await chrome.storage.sync.get(['userPlan','usageCount','usageLimit','userActive','nextBilledAt','currentPeriodStart','subscriptionStatus','cancelsAt','auditLimit','usedAudits','jobAuditLimit','usedJobAudits']);
   const cPlan  = cached.userPlan   || 'free';
   const cUsed  = cached.usageCount || 0;
   const cQuota = cached.usageLimit || PLAN_QUOTAS[cPlan] || 2;
@@ -306,6 +309,9 @@ export async function loadStatus() {
   }, {
     auditLimit: cached.auditLimit ?? 0,
     usedAudits: cached.usedAudits ?? 0,
+  }, {
+    jobAuditLimit: cached.jobAuditLimit ?? 0,
+    usedJobAudits: cached.usedJobAudits ?? 0,
   });
 
   try {
@@ -325,6 +331,8 @@ export async function loadStatus() {
         cancelsAt:           status.cancelsAt            || null,
         auditLimit:          status.auditLimit           ?? 0,
         usedAudits:          status.usedAudits           ?? 0,
+        jobAuditLimit:       status.jobAuditLimit         ?? 0,
+        usedJobAudits:       status.usedJobAudits         ?? 0,
       });
       updatePlanUI(plan, used, quota, {
         active:              status.active !== false,
@@ -336,6 +344,10 @@ export async function loadStatus() {
         auditLimit:      status.auditLimit      ?? 0,
         usedAudits:      status.usedAudits      ?? 0,
         remainingAudits: status.remainingAudits ?? undefined,
+      }, {
+        jobAuditLimit:      status.jobAuditLimit      ?? 0,
+        usedJobAudits:      status.usedJobAudits      ?? 0,
+        remainingJobAudits: status.remainingJobAudits  ?? undefined,
       });
     }
   } catch(e) { /* use cached */ }

@@ -143,9 +143,14 @@ window.SnagAI.getJob = function() {
       '[class*="AboutClient"]',
       '[class*="JobActivity"]',
     ];
+    // Some of these selectors (esp. '[data-test="sidebar"]' and
+    // '[class*="sidebar"]') also match Upwork's global left nav wrapper,
+    // which has nothing to do with the job stats — only keep a candidate
+    // if it actually contains the labels we're looking for.
+    const relevant = /Proposals|Interviewing|Activity on this job|About the client/i;
     const parts = sectionSelectors
       .map(s => document.querySelector(s)?.innerText || '')
-      .filter(Boolean);
+      .filter(t => t && relevant.test(t));
     if (parts.length) return parts.join('\n');
 
     // Smarter fallback: anchor on where the stats actually live in page text

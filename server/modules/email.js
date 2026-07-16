@@ -7,7 +7,7 @@ function sendWelcomeEmail(to, plan) {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) { console.log(`[EMAIL SKIP] To:${to} Plan:${plan}`); return Promise.resolve(); }
   const planLabel = { starter:'Starter', pro:'Pro', agency:'Agency' }[plan] || plan;
-  const limit = PLANS[plan]?.limit || 0;
+  const limit = PLANS[plan]?.coverLetters?.limit || 0;
   const body = JSON.stringify({
     from: 'Snag AI <onboarding@resend.dev>',
     to: [to],

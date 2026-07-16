@@ -8,6 +8,7 @@ const SERVER = 'http://localhost:3000'; // Local Host
 
 import { resolvePrimaryEntity } from './primary-profile.js';
 import { handleAgencyAnalyse } from './agency-analyse.js';
+import { syncUsageToStorage } from './sync-usage.js';
 
 export async function handleAnalyse(payload) {
   const primary = await resolvePrimaryEntity();
@@ -45,6 +46,7 @@ export async function handleAnalyse(payload) {
   if (!res.ok || !data.success) {
     throw new Error(data.error || 'Analysis failed');
   }
+  await syncUsageToStorage(data.usage);
 
   return data.analysis;
 }

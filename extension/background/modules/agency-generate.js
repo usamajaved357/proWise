@@ -4,6 +4,8 @@
 // Resolution of "which profile is primary" happens once, upstream, in
 // generate.js via resolvePrimaryEntity() — this function just takes the
 // already-resolved agencyFull data and does the actual request.
+import { syncUsageToStorage } from './sync-usage.js';
+
 const SERVER = 'http://localhost:3000'; // Local Host
 
 export async function handleAgencyCoverLetter(msg, agencyFull) {
@@ -54,6 +56,7 @@ export async function handleAgencyCoverLetter(msg, agencyFull) {
   const data = await res.json();
   if (res.status === 402 || data.showPaywall) return { showPaywall: true, error: data.error };
   if (!res.ok) throw new Error(data.error || 'Server error');
+  await syncUsageToStorage(data.usage);
 
   const coverLetter = (data.letter || data.coverLetter || (typeof data === 'string' ? data : '')).trim();
 
@@ -79,6 +82,7 @@ export async function handleAgencyCoverLetter(msg, agencyFull) {
 
     const data2 = await res2.json();
     console.log('[SnagAI] Agency Phase 2 questions field:', JSON.stringify(data2?.questions)?.slice(0, 150));
+    await syncUsageToStorage(data2.usage);
 
     const answers = (data2?.questions || '')
       .split('\n')
@@ -88,5 +92,5 @@ export async function handleAgencyCoverLetter(msg, agencyFull) {
     return { coverLetter: msg.existingCL, answers };
   }
 
-  return { coverLetter, answers: [] };
+  return { coverLetter, answers: [], freeRevision: data.freeRevision, wasRevision: !!refineInstruction };
 }

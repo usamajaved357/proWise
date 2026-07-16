@@ -352,7 +352,9 @@
           btn.classList.add('sn-pp-done');
           setTimeout(() => btn.classList.remove('sn-pp-done'), 2000);
         }
-        if (statusEl) statusEl.textContent = 'Cover letter ready ✓';
+        if (statusEl) statusEl.textContent = result?.wasRevision
+          ? (result?.freeRevision ? 'Revision updated · free' : 'Revision updated · 1 credit used')
+          : 'Cover letter ready ✓';
         if (dotEl) dotEl.className = 'sn-pp-status-dot';
       }
 

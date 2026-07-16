@@ -2,10 +2,10 @@
 
 const express = require('express');
 const router  = express.Router();
-const { currentMonth } = require('../modules/config');
 const { getUser, upsertUser, updateUser } = require('../modules/db');
 const { sendWelcomeEmail } = require('../modules/email');
 const { getPaddleCustomer } = require('../modules/paddle');
+const { resetUsage } = require('../modules/usage');
 
 const PRICE_MAP = {
   [process.env.PADDLE_PRICE_STARTER]: 'starter',
@@ -55,9 +55,9 @@ router.post('/', async (req, res) => {
 
     const existingUser = await getUser(email);
     if (existingUser) {
-      await updateUser(email, { plan, active: true, sub_id: subId, customer_id: custId || existingUser.customer_id || null, billing_month: currentMonth(), next_billed_at: nextBilledAt, current_period_start: currentPeriodStart, cancels_at: null });
+      await updateUser(email, { plan, active: true, sub_id: subId, customer_id: custId || existingUser.customer_id || null, usage_data: resetUsage(), next_billed_at: nextBilledAt, current_period_start: currentPeriodStart, cancels_at: null });
     } else {
-      await upsertUser(email, { plan, active: true, sub_id: subId, customer_id: custId || null, used: 0, billing_month: currentMonth(), next_billed_at: nextBilledAt, current_period_start: currentPeriodStart, cancels_at: null });
+      await upsertUser(email, { plan, active: true, sub_id: subId, customer_id: custId || null, usage_data: resetUsage(), next_billed_at: nextBilledAt, current_period_start: currentPeriodStart, cancels_at: null });
     }
     console.log('DB updated:', email, '→', plan, '| customer_id:', custId, '| next_billed_at:', nextBilledAt);
     await sendWelcomeEmail(email, plan);
@@ -68,7 +68,7 @@ router.post('/', async (req, res) => {
     const nextBilledAt       = event.data?.next_billed_at || null;
     const currentPeriodStart = event.data?.current_billing_period?.starts_at || new Date().toISOString();
     if (email) {
-      await updateUser(email, { used: 0, billing_month: currentMonth(), next_billed_at: nextBilledAt, current_period_start: currentPeriodStart, cancels_at: null, active: true });
+      await updateUser(email, { usage_data: resetUsage(), next_billed_at: nextBilledAt, current_period_start: currentPeriodStart, cancels_at: null, active: true });
       console.log(`Renewed + reset: ${email} | next_billed_at: ${nextBilledAt}`);
     }
   }
