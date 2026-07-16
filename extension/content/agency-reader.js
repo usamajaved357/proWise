@@ -173,7 +173,7 @@
   }
 
   // ── Toolbar — same visual pattern as profile-reader.js's shared capsule ────
-  function injectToolbar(onAudit, onSync) {
+  function injectToolbar(onAudit, onSync, showAudit = true) {
     if (document.getElementById('snagai-agency-toolbar')) return;
     injectToolbarStyles();
 
@@ -215,8 +215,13 @@
       syncBtn.disabled = false;
     });
 
-    wrap.appendChild(auditBtn);
-    wrap.appendChild(divider);
+    // Audit is gated by "Profile audit" (not on Basic) — Sync never is, so
+    // it always stays. Hide the button + divider entirely rather than a
+    // paywall, per product decision.
+    if (showAudit) {
+      wrap.appendChild(auditBtn);
+      wrap.appendChild(divider);
+    }
     wrap.appendChild(syncBtn);
     document.body.appendChild(wrap);
   }
@@ -668,7 +673,16 @@
       console.log('[SnagAI] Agency synced:', agencyData.name);
     }
 
-    injectToolbar(runAudit, runSync);
+    // Fail-open on a network error — don't hide the button for an entitled
+    // user just because GET_STATUS timed out; the server still enforces the
+    // real gate when the button is clicked.
+    let showAuditBtn = true;
+    try {
+      const status = await chrome.runtime.sendMessage({ type: 'GET_STATUS' });
+      if (status && status.auditLimit === 0) showAuditBtn = false;
+    } catch(e) {}
+
+    injectToolbar(runAudit, runSync, showAuditBtn);
   }
 
   init();

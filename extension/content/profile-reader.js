@@ -335,7 +335,7 @@
   // ── Inject toolbar — one shared capsule housing both Audit and Sync ──────────
   // Two independent buttons, one frame — replaces the earlier two-separate-pills
   // layout that looked disjointed floating side by side.
-  function injectToolbar(onAudit, onSync) {
+  function injectToolbar(onAudit, onSync, showAudit = true) {
     if (document.getElementById('snagai-toolbar')) return;
 
     const style = document.createElement('style');
@@ -398,8 +398,13 @@
       }
     });
 
-    wrap.appendChild(auditBtn);
-    wrap.appendChild(divider);
+    // Audit is gated by "Profile audit" (not on Basic) — Sync never is, so
+    // it always stays. Hide the button + divider entirely rather than a
+    // paywall, per product decision.
+    if (showAudit) {
+      wrap.appendChild(auditBtn);
+      wrap.appendChild(divider);
+    }
     wrap.appendChild(syncBtn);
     document.body.appendChild(wrap);
   }
@@ -1043,6 +1048,15 @@
 
     injectAuditStyles();
 
+    // Fail-open on a network error — don't hide the button for an entitled
+    // user just because GET_STATUS timed out; the server still enforces the
+    // real gate when the button is clicked.
+    let showAuditBtn = true;
+    try {
+      const status = await chrome.runtime.sendMessage({ type: 'GET_STATUS' });
+      if (status && status.auditLimit === 0) showAuditBtn = false;
+    } catch(e) {}
+
     injectToolbar(async (btn) => {
       btn.disabled = true;
       const icon = btn.querySelector('.snagai-tb-icon');
@@ -1118,7 +1132,7 @@
       });
       console.log('[SnagAI] Save complete ✓');
 
-    });
+    }, showAuditBtn);
   }
 
   if (document.readyState === 'complete') setTimeout(() => init(), 1500);
