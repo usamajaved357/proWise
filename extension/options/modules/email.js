@@ -120,7 +120,7 @@ async function renderVerifyForm() {
         <input id="email-inp" type="text" placeholder="your@email.com" value="${userEmail || ''}" class="acct-inp">
         ${hasEmail ? `<button id="email-clear-btn" class="acct-inp-clear" aria-label="Clear"><svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M5 5L19 19M19 5L5 19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>` : ''}
       </div>
-      <button id="send-link-btn" class="acct-send-btn" ${lockedEmail ? 'disabled' : ''}>Send link</button>
+      <button id="send-link-btn" class="acct-send-btn" ${lockedEmail ? 'disabled' : ''}>Verify</button>
     </div>
     <div id="waiting-section" class="acct-waiting" style="display:none">
       <span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M3.5 6.5C3.5 5.4 4.4 4.5 5.5 4.5H18.5C19.6 4.5 20.5 5.4 20.5 6.5V17.5C20.5 18.6 19.6 19.5 18.5 19.5H5.5C4.4 19.5 3.5 18.6 3.5 17.5V6.5Z" stroke="currentColor" stroke-width="1.6"/><path d="M4 7L12 13L20 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
@@ -161,7 +161,7 @@ async function sendMagicLink() {
     if (msg) msg.innerHTML = '<span style="color:#f87171">Enter a valid email first.</span>';
     return;
   }
-  if (btn) { btn.textContent = 'Sending…'; btn.disabled = true; }
+  if (btn) { btn.textContent = 'Verifying'; btn.disabled = true; }
   if (msg) msg.textContent = '';
   stopPolling();
 
@@ -173,26 +173,28 @@ async function sendMagicLink() {
     });
     const data = await res.json();
 
+    // Already verified server-side — nothing to send, just reflect that.
     if (data.alreadyVerified) {
       await chrome.storage.sync.set({ userEmail: email, emailVerified: true });
-      if (msg) msg.innerHTML = '<span style="color:#4ade80">✓ Email already verified.</span>';
       renderEmailUI(email, true);
-      setTimeout(() => closeEdit(), 1500);
+      setTimeout(() => closeEdit(), 1200);
       return;
     }
     if (!res.ok) {
       if (msg) msg.innerHTML = `<span style="color:#f87171">${data.error || 'Failed to send link.'}</span>`;
+      if (btn) { btn.textContent = 'Verify'; btn.disabled = false; }
     } else {
       await chrome.storage.sync.set({ userEmail: email, emailVerified: false });
       const waiting = document.getElementById('waiting-section');
       if (waiting) waiting.style.display = 'flex';
-      if (msg) msg.innerHTML = '<span style="color:#4ade80">Link sent — check your inbox.</span>';
+      if (msg) msg.innerHTML = '<span style="color:#4ade80">Sending verification link</span>';
+      if (btn) { btn.textContent = 'Resend Link'; btn.disabled = false; }
       startPolling(email);
     }
   } catch(e) {
     if (msg) msg.innerHTML = '<span style="color:#f87171">Network error. Try again.</span>';
+    if (btn) { btn.textContent = 'Verify'; btn.disabled = false; }
   }
-  if (btn) { btn.textContent = 'Resend link'; btn.disabled = false; }
 }
 
 // The email link opens in a normal browser tab, not the extension, so there's
