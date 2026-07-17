@@ -5,6 +5,7 @@ import { loadStatus, updatePlanUI, upgradePlan, openCheckout } from './modules/s
 import { renderProfilesPage, initProfilesPage } from './modules/profiles.js';
 import { loadEmail, initEmail } from './modules/email.js';
 import { initSettings, applySettingsToUI } from './modules/settings.js';
+import { initAnalytics } from './modules/analytics.js';
 
 // ── Section navigation ────────────────────────────────────────────────────────
 function switchSection(name) {
@@ -96,6 +97,7 @@ async function init() {
   loadStatus();
   loadEmail();
   renderProfilesPage();
+  initAnalytics();
 
   const { settings = {} } = await chrome.storage.sync.get(['settings']);
   applySettingsToUI(settings);

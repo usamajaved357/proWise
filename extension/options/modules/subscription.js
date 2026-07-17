@@ -176,9 +176,26 @@ export function renderBillingCard(plan, used, quota, billing) {
   if (!wrap) return;
 
   if (plan === 'free') {
-    wrap.innerHTML = '';
     const titleEl = document.getElementById('plan-section-title');
     if (titleEl) titleEl.textContent = 'Choose a plan';
+    wrap.innerHTML = `
+      <div class="billing-card-border"><div class="billing-card">
+        <div class="bc-header">
+          <div class="bc-header-left">
+            <div class="bc-badges-row">
+              <span class="bc-plan-badge badge-free">◇</span>
+              <span class="bc-plan-name badge-free">Free</span>
+            </div>
+            <div class="bc-plan-title">$0<span class="bc-plan-price">/mo</span></div>
+          </div>
+        </div>
+        <div class="bc-body-divider"></div>
+        <div class="bc-stats bc-stats-pending">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          Upgrade anytime for more proposals, job audits, and profile audits.
+        </div>
+      </div></div>
+    `;
     return;
   }
 

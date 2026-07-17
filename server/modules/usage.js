@@ -2,8 +2,28 @@
 
 const crypto = require('crypto');
 const { PLANS, currentMonth } = require('./config');
-const { getUser, updateUser, upsertUser, getAnon, upsertAnon } = require('./db');
+const { getUser, updateUser, upsertUser, getAnon, upsertAnon, supabase } = require('./db');
 const { getPaddleSubscription } = require('./paddle');
+
+// ── Daily usage history — separate from usage_data (which only holds the
+// current billing month's totals and resets every cycle). One row per
+// (email, day), one column per feature, so a range query for the Analytics
+// charts is a single indexed SELECT with no aggregation needed. Read-then-
+// write like the rest of this file's counters — no transactions exist
+// anywhere else in this codebase either, and at this app's call volume the
+// race window is negligible.
+async function bumpDailyUsage(email, field) {
+  const day = new Date().toISOString().slice(0, 10);
+  try {
+    const rows = await supabase('GET', 'usage_daily', null,
+      `?email=eq.${encodeURIComponent(email)}&day=eq.${day}&limit=1`);
+    const existing = Array.isArray(rows) ? rows[0] : null;
+    const nextVal = (existing?.[field] || 0) + 1;
+    await supabase('POST', 'usage_daily', { email, day, [field]: nextVal }, '?on_conflict=email,day');
+  } catch (e) {
+    // non-fatal — the Analytics chart just shows less history, nothing user-facing breaks
+  }
+}
 
 // ── Per-user usage — a single jsonb column (usage_data) instead of a flat
 // column pair per feature. All features share one billingMonth: whichever
@@ -140,6 +160,7 @@ async function recordUsage(email) {
   const usage = currentUsage(u);
   usage.coverLetters.used += 1;
   await saveUsage(email, u, usage);
+  await bumpDailyUsage(email, 'cover_letters');
 }
 
 // ── Profile/agency audit quota — separate pool from cover letters/job
@@ -157,6 +178,7 @@ async function recordAuditUsage(email) {
   const usage = currentUsage(u);
   usage.profileAudits.used += 1;
   await saveUsage(email, u, usage);
+  await bumpDailyUsage(email, 'profile_audits');
 }
 
 // ── Job audit quota — separate pool from cover letters. Both cost the same
@@ -173,6 +195,7 @@ async function recordJobAuditUsage(email) {
   const usage = currentUsage(u);
   usage.jobAudits.used += 1;
   await saveUsage(email, u, usage);
+  await bumpDailyUsage(email, 'job_audits');
 }
 
 // ── 1 free revision per letter — identifies "the same letter" by hashing the
@@ -199,6 +222,7 @@ async function consumeFreeRevision(email, job) {
   const h = hashJob(job);
   if (!usage.coverLetters.revisedJobHashes.includes(h)) usage.coverLetters.revisedJobHashes.push(h);
   await saveUsage(email, u, usage);
+  await bumpDailyUsage(email, 'cover_letters');
 }
 
 async function canAnonGenerate(anonId) {

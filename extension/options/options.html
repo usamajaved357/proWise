@@ -438,6 +438,40 @@ textarea.edit-val{min-height:38px}
 .us-footnote strong{color:rgba(240,238,234,.65);font-weight:600}
 .us-footnote a,.us-footnote-link{color:var(--violet2);text-decoration:none}
 
+/* ── Analytics: date-range filter ─────────────────────────────── */
+.an-filter-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin:22px 0 16px}
+.an-range-pills{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.an-pill{padding:7px 14px;border-radius:999px;border:1px solid #232838;background:#0b0e17;color:rgba(240,238,234,.5);font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;transition:all .15s;white-space:nowrap}
+.an-pill:hover{border-color:rgba(255,255,255,.16);color:var(--white)}
+.an-pill.active{background:var(--violet-bg);border-color:rgba(168,85,247,.4);color:var(--violet2)}
+.an-custom-range{display:flex;align-items:center;gap:8px}
+.an-date-inp{padding:7px 12px;border-radius:999px;border:1px solid #232838;background:#0b0e17;color:var(--white);font-size:12px;font-family:inherit;outline:none;color-scheme:dark}
+.an-date-inp:focus{border-color:#6366f1}
+.an-range-sep{color:rgba(240,238,234,.3);font-size:12px}
+.an-apply-btn{padding:7px 16px;border-radius:999px;border:none;background:#6366f1;color:#fff;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer}
+
+/* ── Analytics: usage chart ────────────────────────────────────── */
+.an-chart-card{background:#0b0e17;border:1px solid #171b26;border-radius:18px;padding:24px 26px 22px;position:relative;overflow:visible}
+.an-chart-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;position:relative}
+.an-chart-total{font-size:26px;font-weight:700;color:var(--white);letter-spacing:-.02em}
+.an-chart-sub{font-size:11.5px;color:rgba(240,238,234,.35);margin-top:2px;margin-bottom:16px}
+.an-metric-btn{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:999px;border:1px solid #232838;background:#10141f;color:var(--white2);font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;white-space:nowrap}
+.an-metric-btn:hover{border-color:rgba(255,255,255,.16)}
+.an-metric-btn .car{font-size:9px;opacity:.6;transition:transform .15s}
+.an-metric-btn.open .car{transform:rotate(180deg)}
+.an-metric-menu{position:absolute;top:calc(100% + 6px);right:0;background:#10141f;border:1px solid #232838;border-radius:10px;padding:4px;min-width:150px;box-shadow:0 12px 30px rgba(0,0,0,.5);z-index:5;display:none}
+.an-metric-menu.open{display:block}
+.an-metric-item{display:flex;align-items:center;gap:8px;padding:7px 10px;border-radius:7px;font-size:12.5px;color:var(--white2);cursor:pointer;white-space:nowrap}
+.an-metric-item:hover{background:rgba(255,255,255,.05)}
+.an-metric-item.active{color:var(--white);font-weight:700}
+.an-metric-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.an-chart-svg-wrap{width:100%;height:220px;position:relative;cursor:crosshair}
+.an-chart-empty{height:100%;display:flex;align-items:center;justify-content:center;color:rgba(240,238,234,.3);font-size:12px;text-align:center;padding:0 20px}
+.an-chart-guide{position:absolute;top:0;bottom:0;width:1px;background:rgba(255,255,255,.12);pointer-events:none;display:none}
+.an-chart-tooltip{position:absolute;bottom:calc(100% + 8px);transform:translateX(-50%);background:#171b26;border:1px solid #2a3040;border-radius:8px;padding:6px 10px;white-space:nowrap;pointer-events:none;display:none;z-index:6}
+.an-chart-tooltip .day{font-size:10.5px;color:rgba(240,238,234,.45);margin-bottom:1px}
+.an-chart-tooltip .val{font-size:13px;font-weight:700;color:var(--white)}
+
 /* ── Plan Cards v2 ────────────────────────────────────────────── */
 .pcv2-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
 .pcv2-card{background:linear-gradient(165deg,rgba(148,152,168,.05),rgba(11,14,23,.2));border:1px solid #232838;border-radius:20px;padding:28px 26px 26px;position:relative;transition:border-color .2s,transform .2s;cursor:pointer}
@@ -485,10 +519,12 @@ textarea.edit-val{min-height:38px}
 .bc-plan-badge.badge-starter{background:var(--teal-bg);color:var(--teal2)}
 .bc-plan-badge.badge-pro{background:var(--violet-bg);color:var(--violet2)}
 .bc-plan-badge.badge-agency{background:rgba(245,169,199,.15);color:#f5a9c7}
+.bc-plan-badge.badge-free{background:rgba(255,255,255,.08);color:rgba(240,238,234,.6)}
 .bc-plan-name{font-size:15px;font-weight:800;text-transform:uppercase;letter-spacing:.06em}
 .bc-plan-name.badge-starter{color:var(--teal2)}
 .bc-plan-name.badge-pro{color:var(--violet2)}
 .bc-plan-name.badge-agency{color:#f5a9c7}
+.bc-plan-name.badge-free{color:rgba(240,238,234,.6)}
 .bc-status{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600}
 .bc-status-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
 .bc-active{color:#4ade80}.bc-active .bc-status-dot{background:#4ade80;box-shadow:0 0 7px rgba(74,222,128,.65)}
@@ -1029,15 +1065,20 @@ textarea.edit-val{min-height:38px}
         <span class="sb-emoji">👤</span>
         Profiles
       </div>
-      <div class="sb-item" data-section="subscription">
+      <div class="sb-item" data-section="analytics">
         <div class="sb-dot"></div>
-        <span class="sb-emoji">💳</span>
-        Subscription
+        <span class="sb-emoji">📊</span>
+        Analytics
       </div>
       <div class="sb-item" data-section="settings">
         <div class="sb-dot"></div>
         <span class="sb-emoji">⚙️</span>
         Settings
+      </div>
+      <div class="sb-item" data-section="subscription">
+        <div class="sb-dot"></div>
+        <span class="sb-emoji">💳</span>
+        Subscription
       </div>
       <div class="sb-divider"></div>
       <div class="sb-item" data-section="howto">
@@ -1123,10 +1164,10 @@ textarea.edit-val{min-height:38px}
 
     </div><!-- /profiles -->
 
-    <!-- ══ SUBSCRIPTION ══ -->
-    <div class="section" id="section-subscription">
-      <div class="section-title-solo">Plan &amp; Billing</div>
-      <div class="section-sub-solo">Track your usage and manage your plan.</div>
+    <!-- ══ ANALYTICS ══ -->
+    <div class="section" id="section-analytics">
+      <div class="section-title-solo">Analytics</div>
+      <div class="section-sub-solo">Track your usage and monthly limits.</div>
 
       <!-- Usage Stats Grid -->
       <div class="us-grid">
@@ -1186,6 +1227,32 @@ textarea.edit-val{min-height:38px}
           <div class="us-footnote" id="ud-audits-upgrade-hint" style="display:none"><a href="#" class="us-footnote-link" id="ud-audits-upgrade-link">Upgrade to Pro or Agency to unlock audits</a></div>
         </div>
       </div>
+
+      <!-- Date-range filter -->
+      <div class="an-filter-row">
+        <div class="an-range-pills" id="an-range-pills">
+          <button class="an-pill active" data-range="7d">Last week</button>
+          <button class="an-pill" data-range="30d">Last month</button>
+          <button class="an-pill" data-range="6m">6 months</button>
+          <button class="an-pill" data-range="1y">This year</button>
+          <button class="an-pill" data-range="custom">Custom</button>
+        </div>
+        <div class="an-custom-range" id="an-custom-range" style="display:none">
+          <input type="date" id="an-from" class="an-date-inp">
+          <span class="an-range-sep">–</span>
+          <input type="date" id="an-to" class="an-date-inp">
+          <button class="an-apply-btn" id="an-apply-btn">Apply</button>
+        </div>
+      </div>
+
+      <!-- Usage chart -->
+      <div class="an-chart-card" id="an-chart"></div>
+    </div><!-- /analytics -->
+
+    <!-- ══ SUBSCRIPTION ══ -->
+    <div class="section" id="section-subscription">
+      <div class="section-title-solo">Plan &amp; Billing</div>
+      <div class="section-sub-solo">Manage your plan and billing.</div>
 
       <!-- Billing card — rendered by JS for paid users -->
       <div id="billing-card-wrap"></div>
