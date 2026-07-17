@@ -609,14 +609,39 @@ textarea.edit-val{min-height:38px}
 .st-opt.active .st-opt-name{color:var(--gold)}
 .st-opt.active .st-opt-sub{color:rgba(201,168,76,.6)}
 .st-divider{height:1px;background:var(--border);margin:24px 0}
-/* Email card redesign for settings */
-.st-email-card{display:flex;align-items:center;gap:14px;padding:16px;background:rgba(255,255,255,.03);border:1px solid var(--border2);border-radius:var(--radius-sm)}
-.st-email-icon{width:38px;height:38px;border-radius:10px;background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--green)}
-.st-email-info{flex:1;min-width:0}
-.st-email-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--white3);margin-bottom:3px}
-.st-email-val{font-size:13px;font-weight:600;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.st-email-edit{margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
-#email-verified-badge{line-height:0;flex-shrink:0;display:inline-flex;align-items:center;margin-top:2px}
+/* Account email card — exact spec from SnagAI Settings Page mockup */
+.acct-card{border-radius:16px;background:var(--bg2);border:1px solid var(--border);overflow:hidden;margin-bottom:24px}
+.acct-card-head{display:flex;align-items:center;gap:8px;padding:20px 26px 0}
+.acct-card-head .ic{font-size:13px;opacity:.6;display:flex;align-items:center}
+.acct-card-head .lbl{font-size:11.5px;font-weight:800;letter-spacing:.08em;color:#6B7284}
+.acct-card-body{padding:18px 26px 22px}
+.acct-row{display:flex;align-items:center;justify-content:space-between;gap:16px;border-radius:13px;background:#10141F;border:1px solid #1D2230;padding:16px 18px}
+.acct-row-left{display:flex;align-items:center;gap:14px;min-width:0}
+.acct-iconbox{width:38px;height:38px;border-radius:10px;background:rgba(45,212,191,.14);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#5EEAD4}
+.acct-sublabel{font-size:10.5px;font-weight:800;letter-spacing:.06em;color:#565D70}
+.acct-valrow{display:flex;align-items:center;gap:8px;margin-top:3px}
+.acct-val{font-family:'Sora',sans-serif;font-size:14px;font-weight:700;color:#F5F6FA;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acct-val.unset{color:#4B5164}
+.acct-check{display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.acct-action-btn{flex-shrink:0;padding:5px 12px;border-radius:999px;border:1px solid rgba(168,85,247,.35);background:rgba(168,85,247,.1);color:#C084FC;font-size:11px;font-weight:700;font-family:inherit;cursor:pointer;transition:background .15s,border-color .15s}
+.acct-action-btn:hover{background:rgba(168,85,247,.18);border-color:rgba(168,85,247,.5)}
+.acct-edit{margin-top:16px}
+.acct-edit-row{display:flex;align-items:center;gap:12px}
+.acct-inp-wrap{position:relative;flex:1;min-width:0}
+.acct-inp{width:100%;box-sizing:border-box;padding:9px 40px 9px 16px;border-radius:999px;border:1px solid #232838;background:#10141F;color:#E7E9F0;font-size:13px;font-family:inherit;outline:none;transition:border-color .15s}
+.acct-inp:focus{border-color:#6366f1}
+.acct-inp-clear{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:20px;height:20px;border-radius:50%;border:none;background:rgba(248,113,113,.14);color:#f87171;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s}
+.acct-inp-clear:hover{background:rgba(248,113,113,.24)}
+.acct-send-btn{flex-shrink:0;padding:9px 18px;border-radius:999px;border:none;background:#7C6EF5;color:#fff;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;white-space:nowrap;transition:opacity .15s}
+.acct-send-btn:disabled{opacity:.6;cursor:default}
+.acct-row-cd{display:flex;align-items:center;gap:16px;flex-shrink:0}
+.acct-cancel-btn{font-size:13px;font-weight:700;color:#9199AB;background:none;border:none;cursor:pointer;padding:0;font-family:inherit}
+.acct-remove-btn{font-size:13px;font-weight:700;color:#F87171;background:none;border:none;cursor:pointer;padding:0;font-family:inherit}
+.acct-msg{font-size:12.5px;margin-top:10px;min-height:16px}
+.acct-waiting{margin-top:16px;padding:13px 16px;border-radius:13px;background:rgba(45,212,191,.06);border:1px solid rgba(45,212,191,.22);display:flex;align-items:flex-start;gap:10px}
+.acct-waiting .ic{color:#5EEAD4;flex-shrink:0;margin-top:1px}
+.acct-waiting .txt{font-size:12.5px;color:#C6CBDA;line-height:1.55}
+.acct-resend-btn{font-size:12px;color:#8B92A5;background:none;border:none;cursor:pointer;padding:0;font-family:inherit;text-decoration:underline;margin-top:6px;display:block}
 
 /* ── Job Filters ─────────────────────────────────────────────────────────── */
 .jf-section-hdr{display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;padding:2px 0}
@@ -1234,27 +1259,29 @@ textarea.edit-val{min-height:38px}
       <div class="section-sub-solo">Customize how Snag AI works for you.</div>
 
       <!-- Account Email -->
-      <div class="card">
-        <div class="card-title">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-          Account Email
-        </div>
-        <div class="st-email-card">
-          <div class="st-email-icon">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-          </div>
-          <div class="st-email-info">
-            <div class="st-email-label">Subscription email</div>
-            <div style="display:flex;align-items:center;gap:4px">
-              <div class="st-email-val" id="email-val">Not set</div>
-              <span id="email-verified-badge" style="display:none"></span>
+      <div class="acct-card">
+        <div class="acct-card-head"><span class="ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></span><span class="lbl">ACCOUNT EMAIL</span></div>
+        <div class="acct-card-body">
+          <div class="acct-row">
+            <div class="acct-row-left">
+              <div class="acct-iconbox">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M3.5 6.5C3.5 5.4 4.4 4.5 5.5 4.5H18.5C19.6 4.5 20.5 5.4 20.5 6.5V17.5C20.5 18.6 19.6 19.5 18.5 19.5H5.5C4.4 19.5 3.5 18.6 3.5 17.5V6.5Z" stroke="currentColor" stroke-width="1.6"/><path d="M4 7L12 13L20 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div style="min-width:0">
+                <div class="acct-sublabel">SUBSCRIPTION EMAIL</div>
+                <div class="acct-valrow">
+                  <span class="acct-val unset" id="email-val">Not set</span>
+                  <span class="acct-check" id="email-verified-badge" style="display:none"></span>
+                </div>
+              </div>
+            </div>
+            <button class="acct-action-btn" id="email-toggle">Add &amp; Verify</button>
+            <div class="acct-row-cd" id="email-row-cd" style="display:none">
+              <button class="acct-cancel-btn" id="email-cancel-btn">Cancel</button>
+              <button class="acct-remove-btn" id="email-delete-btn" style="display:none">Delete</button>
             </div>
           </div>
-          <button class="btn-email-toggle" id="email-toggle">Add</button>
-        </div>
-        <div class="st-email-edit" id="email-edit" style="display:none">
-          <input type="email" id="email-inp" placeholder="your@email.com" style="width:100%;padding:9px 12px;background:rgba(255,255,255,.05);border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--white);font-size:13px;outline:none;margin-bottom:10px;font-family:inherit">
-          <button class="btn-primary" id="email-save" style="font-size:12px;padding:8px 18px">Save email</button>
+          <div class="acct-edit" id="email-edit" style="display:none"></div>
         </div>
       </div>
 

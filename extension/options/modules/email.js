@@ -1,4 +1,10 @@
 // ── Email management + magic-link verification ─────────────────────────────
+// Markup/styling mirrors the "SnagAI Settings Page" design mockup's account
+// email card exactly (acct-* classes in options.html) — 4 states: verified,
+// editing an existing email, empty (no email), editing from empty. The
+// mockup didn't cover the "waiting for the link to be clicked" state (it
+// predates the magic-link flow) or the "set but unverified" resting state,
+// so those two are new, styled to match the same visual language.
 import { SERVER_URL } from './config.js';
 
 let pollTimer = null;
@@ -22,10 +28,11 @@ function renderEmailUI(email, verified) {
 
   if (email && verified) {
     val.textContent = email;
-    val.style.color = '';
-    if (toggle) toggle.textContent = 'Change';
+    val.classList.remove('unset');
+    if (toggle) toggle.textContent = 'Edit';
     if (badge) {
-      badge.style.display = 'inline-flex';
+      badge.style.display = 'flex';
+      badge.className = 'acct-check';
       badge.title = 'Email verified';
       badge.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M12 2C13.5 2 14.2 3.5 15.5 4C16.8 4.5 18.5 3.8 19.3 4.7C20.2 5.5 19.5 7.2 20 8.5C20.5 9.8 22 10.5 22 12C22 13.5 20.5 14.2 20 15.5C19.5 16.8 20.2 18.5 19.3 19.3C18.5 20.2 16.8 19.5 15.5 20C14.2 20.5 13.5 22 12 22C10.5 22 9.8 20.5 8.5 20C7.2 19.5 5.5 20.2 4.7 19.3C3.8 18.5 4.5 16.8 4 15.5C3.5 14.2 2 13.5 2 12C2 10.5 3.5 9.8 4 8.5C4.5 7.2 3.8 5.5 4.7 4.7C5.5 3.8 7.2 4.5 8.5 4C9.8 3.5 10.5 2 12 2Z" fill="#14a800"/>
@@ -34,10 +41,11 @@ function renderEmailUI(email, verified) {
     }
   } else if (email && !verified) {
     val.textContent = email;
-    val.style.color = '';
+    val.classList.remove('unset');
     if (toggle) toggle.textContent = 'Verify now';
     if (badge) {
-      badge.style.display = 'inline-flex';
+      badge.style.display = 'flex';
+      badge.className = 'acct-check unverified';
       badge.title = 'Email not verified — click Verify now';
       badge.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <circle cx="12" cy="12" r="10" fill="#ef4444"/>
@@ -47,66 +55,101 @@ function renderEmailUI(email, verified) {
     }
   } else {
     val.textContent = 'Not set';
-    val.style.color = 'rgba(240,238,234,.3)';
+    val.classList.add('unset');
     if (toggle) toggle.textContent = 'Add & Verify';
     if (badge) badge.style.display = 'none';
   }
 }
 
-export function initEmail() {
-  const toggle   = document.getElementById('email-toggle');
-  const editWrap = document.getElementById('email-edit');
-  if (!toggle || !editWrap) return;
+// The top-right slot shows either the single "Edit"/"Add & Verify"/"Verify
+// now" button, or (while editing) a "Cancel" + "Delete" pair in the exact
+// same spot — never both at once.
+async function openEdit() {
+  const { userEmail } = await chrome.storage.sync.get(['userEmail']);
+  const toggle = document.getElementById('email-toggle');
+  const cd     = document.getElementById('email-row-cd');
+  const del    = document.getElementById('email-delete-btn');
+  if (toggle) toggle.style.display = 'none';
+  if (cd) cd.style.display = 'flex';
+  if (del) del.style.display = userEmail ? '' : 'none';
 
-  toggle.addEventListener('click', async () => {
-    const isOpen = editWrap.style.display !== 'none';
-    editWrap.style.display = isOpen ? 'none' : 'block';
-    stopPolling();
-    if (!isOpen) renderVerifyForm();
+  const editWrap = document.getElementById('email-edit');
+  if (editWrap) editWrap.style.display = 'block';
+  renderVerifyForm();
+}
+
+function closeEdit() {
+  stopPolling();
+  const toggle = document.getElementById('email-toggle');
+  const cd     = document.getElementById('email-row-cd');
+  const editWrap = document.getElementById('email-edit');
+  if (toggle) toggle.style.display = '';
+  if (cd) cd.style.display = 'none';
+  if (editWrap) editWrap.style.display = 'none';
+}
+
+export function initEmail() {
+  const toggle = document.getElementById('email-toggle');
+  const cancel = document.getElementById('email-cancel-btn');
+  const del    = document.getElementById('email-delete-btn');
+  if (!toggle) return;
+
+  toggle.addEventListener('click', () => openEdit());
+  cancel?.addEventListener('click', () => closeEdit());
+  del?.addEventListener('click', async () => {
+    if (!confirm('Remove your account email? You will need to re-add and verify it to use Snag AI.')) return;
+    await chrome.storage.sync.remove(['userEmail', 'emailVerified']);
+    renderEmailUI(null, false);
+    closeEdit();
   });
 }
 
 async function renderVerifyForm() {
   const wrap = document.getElementById('email-edit');
   if (!wrap) return;
-  const { userEmail } = await chrome.storage.sync.get(['userEmail']);
-
-  const INP  = 'flex:1;padding:9px 18px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:999px;color:#f0eeff;font-size:12.5px;font-family:inherit;outline:none;min-width:0;transition:border-color .15s';
-  const BTN  = 'padding:9px 20px;border-radius:999px;background:#6366f1;color:#fff;font-size:12px;font-weight:700;border:none;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0';
-  const RMVB = 'background:none;border:none;color:rgba(248,113,113,.45);font-size:11px;cursor:pointer;font-family:inherit;text-decoration:underline;padding:0;transition:color .12s';
+  const { userEmail, emailVerified } = await chrome.storage.sync.get(['userEmail', 'emailVerified']);
+  const hasEmail = !!userEmail;
+  // If the current email is already verified, re-sending a link for that
+  // same address is pointless — Send link stays disabled until the user
+  // actually changes it to something else.
+  const lockedEmail = (hasEmail && emailVerified) ? userEmail.toLowerCase() : null;
 
   wrap.innerHTML = `
-    <div style="display:flex;flex-direction:column;gap:10px;margin-top:10px">
-      <div style="display:flex;gap:8px">
-        <input id="email-inp" type="email" placeholder="your@email.com"
-          value="${userEmail || ''}" style="${INP}">
-        <button id="send-link-btn" style="${BTN}">Send link</button>
+    <div class="acct-edit-row">
+      <div class="acct-inp-wrap">
+        <input id="email-inp" type="text" placeholder="your@email.com" value="${userEmail || ''}" class="acct-inp">
+        ${hasEmail ? `<button id="email-clear-btn" class="acct-inp-clear" aria-label="Clear"><svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M5 5L19 19M19 5L5 19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>` : ''}
       </div>
-      <div id="waiting-section" style="display:none;flex-direction:column;gap:6px">
-        <div style="font-size:11px;color:rgba(240,238,255,.4);line-height:1.5">Check your inbox and click the link — this updates automatically once you do.</div>
-        <button id="resend-link-btn" style="background:none;border:none;color:rgba(240,238,255,.28);font-size:11px;cursor:pointer;font-family:inherit;text-align:left;padding:0">
-          Didn't receive it? Resend link
-        </button>
-      </div>
-      <div style="display:flex;align-items:center;justify-content:space-between">
-        <div id="email-msg" style="font-size:12px;min-height:16px"></div>
-        ${userEmail ? `<button id="remove-email-btn" style="${RMVB}">Remove email</button>` : ''}
+      <button id="send-link-btn" class="acct-send-btn" ${lockedEmail ? 'disabled' : ''}>Send link</button>
+    </div>
+    <div id="waiting-section" class="acct-waiting" style="display:none">
+      <span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M3.5 6.5C3.5 5.4 4.4 4.5 5.5 4.5H18.5C19.6 4.5 20.5 5.4 20.5 6.5V17.5C20.5 18.6 19.6 19.5 18.5 19.5H5.5C4.4 19.5 3.5 18.6 3.5 17.5V6.5Z" stroke="currentColor" stroke-width="1.6"/><path d="M4 7L12 13L20 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      <div>
+        <div class="txt">Check your inbox and click the link — this updates automatically once you do.</div>
+        <button id="resend-link-btn" class="acct-resend-btn">Didn't receive it? Resend link</button>
       </div>
     </div>
+    <div id="email-msg" class="acct-msg"></div>
   `;
 
   document.getElementById('send-link-btn')?.addEventListener('click', () => sendMagicLink());
   document.getElementById('resend-link-btn')?.addEventListener('click', () => sendMagicLink());
   document.getElementById('email-inp')?.addEventListener('keydown', e => {
-    if (e.key === 'Enter') sendMagicLink();
+    if (e.key === 'Enter' && !document.getElementById('send-link-btn')?.disabled) sendMagicLink();
   });
-  document.getElementById('remove-email-btn')?.addEventListener('click', async () => {
-    if (!confirm('Remove your account email? You will need to re-add and verify it to use Snag AI.')) return;
-    stopPolling();
-    await chrome.storage.sync.remove(['userEmail', 'emailVerified']);
-    renderEmailUI(null, false);
-    const editWrap = document.getElementById('email-edit');
-    if (editWrap) editWrap.style.display = 'none';
+  if (lockedEmail) {
+    document.getElementById('email-inp')?.addEventListener('input', (e) => {
+      const sendBtn = document.getElementById('send-link-btn');
+      if (sendBtn) sendBtn.disabled = e.target.value.trim().toLowerCase() === lockedEmail;
+    });
+  }
+  document.getElementById('email-clear-btn')?.addEventListener('click', () => {
+    const inp = document.getElementById('email-inp');
+    if (inp) {
+      inp.value = '';
+      inp.focus();
+      inp.dispatchEvent(new Event('input'));
+    }
   });
 }
 
@@ -134,7 +177,7 @@ async function sendMagicLink() {
       await chrome.storage.sync.set({ userEmail: email, emailVerified: true });
       if (msg) msg.innerHTML = '<span style="color:#4ade80">✓ Email already verified.</span>';
       renderEmailUI(email, true);
-      setTimeout(() => { document.getElementById('email-edit').style.display = 'none'; }, 1500);
+      setTimeout(() => closeEdit(), 1500);
       return;
     }
     if (!res.ok) {
@@ -168,7 +211,7 @@ function startPolling(email) {
         renderEmailUI(email, true);
         const msg = document.getElementById('email-msg');
         if (msg) msg.innerHTML = '<span style="color:#4ade80">✓ Email verified! You\'re all set.</span>';
-        setTimeout(() => { const w = document.getElementById('email-edit'); if (w) w.style.display = 'none'; }, 2000);
+        setTimeout(() => closeEdit(), 2000);
       }
     } catch(e) { /* try again next tick */ }
   }, 4000);
