@@ -118,9 +118,9 @@ async function renderVerifyForm() {
     <div class="acct-edit-row">
       <div class="acct-inp-wrap">
         <input id="email-inp" type="text" placeholder="your@email.com" value="${userEmail || ''}" class="acct-inp">
-        ${hasEmail ? `<button id="email-clear-btn" class="acct-inp-clear" aria-label="Clear"><svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M5 5L19 19M19 5L5 19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>` : ''}
+        <button id="email-clear-btn" class="acct-inp-clear" aria-label="Clear" style="display:none"><svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M5 5L19 19M19 5L5 19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
       </div>
-      <button id="send-link-btn" class="acct-send-btn" ${lockedEmail ? 'disabled' : ''}>Verify</button>
+      <button id="send-link-btn" class="acct-send-btn">Verify</button>
     </div>
     <div id="waiting-section" class="acct-waiting" style="display:none">
       <span class="ic"><svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M3.5 6.5C3.5 5.4 4.4 4.5 5.5 4.5H18.5C19.6 4.5 20.5 5.4 20.5 6.5V17.5C20.5 18.6 19.6 19.5 18.5 19.5H5.5C4.4 19.5 3.5 18.6 3.5 17.5V6.5Z" stroke="currentColor" stroke-width="1.6"/><path d="M4 7L12 13L20 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
@@ -132,19 +132,27 @@ async function renderVerifyForm() {
     <div id="email-msg" class="acct-msg"></div>
   `;
 
-  document.getElementById('send-link-btn')?.addEventListener('click', () => sendMagicLink());
-  document.getElementById('resend-link-btn')?.addEventListener('click', () => sendMagicLink());
-  document.getElementById('email-inp')?.addEventListener('keydown', e => {
-    if (e.key === 'Enter' && !document.getElementById('send-link-btn')?.disabled) sendMagicLink();
-  });
-  if (lockedEmail) {
-    document.getElementById('email-inp')?.addEventListener('input', (e) => {
-      const sendBtn = document.getElementById('send-link-btn');
-      if (sendBtn) sendBtn.disabled = e.target.value.trim().toLowerCase() === lockedEmail;
-    });
+  const inp     = document.getElementById('email-inp');
+  const clearBtn = document.getElementById('email-clear-btn');
+  const sendBtn  = document.getElementById('send-link-btn');
+
+  // Clear (✕) shows only when there's text to clear; Verify hides entirely
+  // when the field still holds the already-verified address unchanged —
+  // nothing to do until the user actually changes it.
+  function syncInputState() {
+    const val = inp.value.trim();
+    if (clearBtn) clearBtn.style.display = val ? 'flex' : 'none';
+    if (sendBtn) sendBtn.style.display = (lockedEmail && val.toLowerCase() === lockedEmail) ? 'none' : '';
   }
-  document.getElementById('email-clear-btn')?.addEventListener('click', () => {
-    const inp = document.getElementById('email-inp');
+  syncInputState();
+
+  sendBtn?.addEventListener('click', () => sendMagicLink());
+  document.getElementById('resend-link-btn')?.addEventListener('click', () => sendMagicLink());
+  inp?.addEventListener('input', syncInputState);
+  inp?.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && sendBtn?.style.display !== 'none') sendMagicLink();
+  });
+  clearBtn?.addEventListener('click', () => {
     if (inp) {
       inp.value = '';
       inp.focus();
