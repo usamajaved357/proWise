@@ -3,7 +3,7 @@
 const express = require('express');
 const router  = express.Router();
 const { getUserStatus } = require('../modules/usage');
-const { getAnon }       = require('../modules/db');
+const { getAnon, getUser } = require('../modules/db');
 const { PLANS }         = require('../modules/config');
 
 // Anonymous/no-email callers still need the full feature shape (auditLimit,
@@ -24,6 +24,15 @@ router.post('/', async (req, res) => {
   try {
     const { email, anonId } = req.body;
     if (email && email.includes('@') && !email.includes('propwise.local')) {
+      // Don't hand back real plan/usage/billing data for an email nobody's
+      // proven they own — typing a stranger's address must not leak their
+      // account. Existing paid users are grandfathered (same rule as
+      // proposal.js) so pre-verification customers aren't locked out.
+      const userRecord = await getUser(email);
+      const isPaid = userRecord?.plan && userRecord.plan !== 'free' && userRecord.active !== false;
+      if (!isPaid && !userRecord?.email_verified) {
+        return res.json(freeStatus());
+      }
       const status = await getUserStatus(email);
       return res.json(status);
     }

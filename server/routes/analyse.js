@@ -8,6 +8,7 @@ const https   = require('https');
 const router  = express.Router();
 const { ANALYSE_SYSTEM, buildAnalyseMessage } = require('../prompt-analyse');
 const { canJobAudit, recordJobAuditUsage, getUserStatus } = require('../modules/usage');
+const { getUser } = require('../modules/db');
 
 router.post('/', async (req, res) => {
   try {
@@ -26,6 +27,21 @@ router.post('/', async (req, res) => {
         requiresEmail: true,
       });
     }
+
+    // Email must be verified before running job audits — same rule as
+    // routes/proposal.js, otherwise anyone can spend a stranger's quota by
+    // typing their email in Settings.
+    try {
+      const userRecord = await getUser(userEmail);
+      const isPaid = userRecord?.plan && userRecord.plan !== 'free' && userRecord.active !== false;
+      if (!isPaid && !userRecord?.email_verified) {
+        return res.status(403).json({
+          error: 'Please verify your email before running job audits.',
+          requiresVerification: true,
+        });
+      }
+    } catch(e) { /* db error — proceed rather than block */ }
+
     const ok = await canJobAudit(userEmail);
     if (!ok) {
       const status = await getUserStatus(userEmail);

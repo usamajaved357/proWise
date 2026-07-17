@@ -13,6 +13,7 @@ const { AGENCY_AUDIT_SYSTEM, buildAgencyAuditMessage } = require('../prompt-agen
 const { callClaudeRaw } = require('../claude-client');
 const { checkQuoteFormatting, computeWeightedScore, logJsonParseFailure, repairAndParseJSON, buildAuditResponseSchema } = require('../audit-shared');
 const { canAudit, recordAuditUsage, getUserStatus } = require('../modules/usage');
+const { getUser } = require('../modules/db');
 
 // Must match the "overallScore = weighted average" line in prompt-agency-audit.js
 // and sum to exactly 1.
@@ -40,6 +41,21 @@ router.post('/', async (req, res) => {
         requiresEmail: true,
       });
     }
+
+    // Email must be verified before running agency audits — same rule as
+    // routes/proposal.js, otherwise anyone can spend a stranger's quota by
+    // typing their email in Settings.
+    try {
+      const userRecord = await getUser(userEmail);
+      const isPaid = userRecord?.plan && userRecord.plan !== 'free' && userRecord.active !== false;
+      if (!isPaid && !userRecord?.email_verified) {
+        return res.status(403).json({
+          error: 'Please verify your email before running agency audits.',
+          requiresVerification: true,
+        });
+      }
+    } catch(e) { /* db error — proceed rather than block */ }
+
     const auditOk = await canAudit(userEmail);
     if (!auditOk) {
       const status = await getUserStatus(userEmail);

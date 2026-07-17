@@ -1,5 +1,13 @@
-// ── Email management + OTP verification ───────────────────────────────────────
+// ── Email management + magic-link verification ─────────────────────────────
 import { SERVER_URL } from './config.js';
+
+let pollTimer = null;
+let pollDeadline = 0;
+
+function stopPolling() {
+  if (pollTimer) clearInterval(pollTimer);
+  pollTimer = null;
+}
 
 export async function loadEmail() {
   const { userEmail, emailVerified } = await chrome.storage.sync.get(['userEmail', 'emailVerified']);
@@ -53,6 +61,7 @@ export function initEmail() {
   toggle.addEventListener('click', async () => {
     const isOpen = editWrap.style.display !== 'none';
     editWrap.style.display = isOpen ? 'none' : 'block';
+    stopPolling();
     if (!isOpen) renderVerifyForm();
   });
 }
@@ -64,8 +73,6 @@ async function renderVerifyForm() {
 
   const INP  = 'flex:1;padding:9px 18px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:999px;color:#f0eeff;font-size:12.5px;font-family:inherit;outline:none;min-width:0;transition:border-color .15s';
   const BTN  = 'padding:9px 20px;border-radius:999px;background:#6366f1;color:#fff;font-size:12px;font-weight:700;border:none;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0';
-  const OTP  = 'flex:1;padding:9px 18px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:999px;color:#f0eeff;font-size:18px;font-weight:700;font-family:monospace;letter-spacing:4px;text-align:center;outline:none;min-width:0;transition:border-color .15s';
-  const VFY  = 'padding:9px 20px;border-radius:999px;background:rgba(52,211,153,.1);border:1.5px solid rgba(52,211,153,.28);color:#34d399;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0';
   const RMVB = 'background:none;border:none;color:rgba(248,113,113,.45);font-size:11px;cursor:pointer;font-family:inherit;text-decoration:underline;padding:0;transition:color .12s';
 
   wrap.innerHTML = `
@@ -73,16 +80,12 @@ async function renderVerifyForm() {
       <div style="display:flex;gap:8px">
         <input id="email-inp" type="email" placeholder="your@email.com"
           value="${userEmail || ''}" style="${INP}">
-        <button id="send-otp-btn" style="${BTN}">Send Code</button>
+        <button id="send-link-btn" style="${BTN}">Send link</button>
       </div>
-      <div id="otp-section" style="display:none;flex-direction:column;gap:8px">
-        <div style="font-size:11px;color:rgba(240,238,255,.4)">Enter the 6-digit code sent to your email</div>
-        <div style="display:flex;gap:8px">
-          <input id="otp-inp" type="text" inputmode="numeric" maxlength="6" placeholder="000000" style="${OTP}">
-          <button id="verify-otp-btn" style="${VFY}">Verify</button>
-        </div>
-        <button id="resend-otp-btn" style="background:none;border:none;color:rgba(240,238,255,.28);font-size:11px;cursor:pointer;font-family:inherit;text-align:left;padding:0">
-          Didn't receive it? Resend code
+      <div id="waiting-section" style="display:none;flex-direction:column;gap:6px">
+        <div style="font-size:11px;color:rgba(240,238,255,.4);line-height:1.5">Check your inbox and click the link — this updates automatically once you do.</div>
+        <button id="resend-link-btn" style="background:none;border:none;color:rgba(240,238,255,.28);font-size:11px;cursor:pointer;font-family:inherit;text-align:left;padding:0">
+          Didn't receive it? Resend link
         </button>
       </div>
       <div style="display:flex;align-items:center;justify-content:space-between">
@@ -92,14 +95,14 @@ async function renderVerifyForm() {
     </div>
   `;
 
-  document.getElementById('send-otp-btn')?.addEventListener('click', () => sendOTP());
-  document.getElementById('verify-otp-btn')?.addEventListener('click', () => confirmOTP());
-  document.getElementById('resend-otp-btn')?.addEventListener('click', () => sendOTP());
-  document.getElementById('otp-inp')?.addEventListener('keydown', e => {
-    if (e.key === 'Enter') confirmOTP();
+  document.getElementById('send-link-btn')?.addEventListener('click', () => sendMagicLink());
+  document.getElementById('resend-link-btn')?.addEventListener('click', () => sendMagicLink());
+  document.getElementById('email-inp')?.addEventListener('keydown', e => {
+    if (e.key === 'Enter') sendMagicLink();
   });
   document.getElementById('remove-email-btn')?.addEventListener('click', async () => {
     if (!confirm('Remove your account email? You will need to re-add and verify it to use Snag AI.')) return;
+    stopPolling();
     await chrome.storage.sync.remove(['userEmail', 'emailVerified']);
     renderEmailUI(null, false);
     const editWrap = document.getElementById('email-edit');
@@ -107,9 +110,9 @@ async function renderVerifyForm() {
   });
 }
 
-async function sendOTP() {
+async function sendMagicLink() {
   const email = document.getElementById('email-inp')?.value?.trim();
-  const btn   = document.getElementById('send-otp-btn');
+  const btn   = document.getElementById('send-link-btn');
   const msg   = document.getElementById('email-msg');
   if (!email || !email.includes('@')) {
     if (msg) msg.innerHTML = '<span style="color:#f87171">Enter a valid email first.</span>';
@@ -117,9 +120,10 @@ async function sendOTP() {
   }
   if (btn) { btn.textContent = 'Sending…'; btn.disabled = true; }
   if (msg) msg.textContent = '';
+  stopPolling();
 
   try {
-    const res  = await fetch(SERVER_URL + '/verify/send', {
+    const res  = await fetch(SERVER_URL + '/verify/send-link', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email }),
@@ -134,52 +138,38 @@ async function sendOTP() {
       return;
     }
     if (!res.ok) {
-      if (msg) msg.innerHTML = `<span style="color:#f87171">${data.error || 'Failed to send code.'}</span>`;
+      if (msg) msg.innerHTML = `<span style="color:#f87171">${data.error || 'Failed to send link.'}</span>`;
     } else {
       await chrome.storage.sync.set({ userEmail: email, emailVerified: false });
-      document.getElementById('otp-section').style.display = 'flex';
-      document.getElementById('otp-inp')?.focus();
-      if (msg) msg.innerHTML = '<span style="color:#4ade80">Code sent — check your inbox.</span>';
+      const waiting = document.getElementById('waiting-section');
+      if (waiting) waiting.style.display = 'flex';
+      if (msg) msg.innerHTML = '<span style="color:#4ade80">Link sent — check your inbox.</span>';
+      startPolling(email);
     }
   } catch(e) {
     if (msg) msg.innerHTML = '<span style="color:#f87171">Network error. Try again.</span>';
   }
-  if (btn) { btn.textContent = 'Resend Code'; btn.disabled = false; }
+  if (btn) { btn.textContent = 'Resend link'; btn.disabled = false; }
 }
 
-async function confirmOTP() {
-  const email = document.getElementById('email-inp')?.value?.trim();
-  const code  = document.getElementById('otp-inp')?.value?.trim();
-  const btn   = document.getElementById('verify-otp-btn');
-  const msg   = document.getElementById('email-msg');
-  if (!code || code.length < 6) {
-    if (msg) msg.innerHTML = '<span style="color:#f87171">Enter the 6-digit code.</span>';
-    return;
-  }
-  if (btn) { btn.textContent = 'Verifying…'; btn.disabled = true; }
-  if (msg) msg.textContent = '';
-
-  const { deviceId } = await chrome.storage.local.get(['deviceId']);
-
-  try {
-    const res  = await fetch(SERVER_URL + '/verify/confirm', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, code, deviceId: deviceId || '' }),
-    });
-    const data = await res.json();
-
-    if (res.ok && data.ok) {
-      await chrome.storage.sync.set({ userEmail: email, emailVerified: true });
-      renderEmailUI(email, true);
-      if (msg) msg.innerHTML = '<span style="color:#4ade80">✓ Email verified! You\'re all set.</span>';
-      setTimeout(() => { document.getElementById('email-edit').style.display = 'none'; }, 2000);
-    } else {
-      if (msg) msg.innerHTML = `<span style="color:#f87171">${data.error || 'Verification failed.'}</span>`;
-      if (btn) { btn.textContent = 'Verify'; btn.disabled = false; }
-    }
-  } catch(e) {
-    if (msg) msg.innerHTML = '<span style="color:#f87171">Network error. Try again.</span>';
-    if (btn) { btn.textContent = 'Verify'; btn.disabled = false; }
-  }
+// The email link opens in a normal browser tab, not the extension, so there's
+// no direct callback — poll /verify/status until it flips to verified (or
+// give up after 5 minutes so an abandoned tab doesn't poll forever).
+function startPolling(email) {
+  pollDeadline = Date.now() + 5 * 60 * 1000;
+  pollTimer = setInterval(async () => {
+    if (Date.now() > pollDeadline) { stopPolling(); return; }
+    try {
+      const res  = await fetch(SERVER_URL + '/verify/status?email=' + encodeURIComponent(email));
+      const data = await res.json();
+      if (data.verified) {
+        stopPolling();
+        await chrome.storage.sync.set({ userEmail: email, emailVerified: true });
+        renderEmailUI(email, true);
+        const msg = document.getElementById('email-msg');
+        if (msg) msg.innerHTML = '<span style="color:#4ade80">✓ Email verified! You\'re all set.</span>';
+        setTimeout(() => { const w = document.getElementById('email-edit'); if (w) w.style.display = 'none'; }, 2000);
+      }
+    } catch(e) { /* try again next tick */ }
+  }, 4000);
 }

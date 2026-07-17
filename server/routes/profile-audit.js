@@ -9,6 +9,7 @@ const { AUDIT_SYSTEM, buildAuditMessage } = require('../prompt-audit');
 const { callClaudeRaw } = require('../claude-client');
 const { checkQuoteFormatting, computeWeightedScore, QUOTE_RE_GLOBAL, logJsonParseFailure, repairAndParseJSON, buildAuditResponseSchema } = require('../audit-shared');
 const { canAudit, recordAuditUsage, getUserStatus } = require('../modules/usage');
+const { getUser } = require('../modules/db');
 
 // Weights must match the "overallScore = weighted average" line in prompt-audit.js
 // and sum to exactly 1 (they previously summed to 1.10 in the prompt text, which
@@ -56,6 +57,21 @@ router.post('/', async (req, res) => {
         requiresEmail: true,
       });
     }
+
+    // Email must be verified before running profile audits — same rule as
+    // routes/proposal.js, otherwise anyone can spend a stranger's quota by
+    // typing their email in Settings.
+    try {
+      const userRecord = await getUser(userEmail);
+      const isPaid = userRecord?.plan && userRecord.plan !== 'free' && userRecord.active !== false;
+      if (!isPaid && !userRecord?.email_verified) {
+        return res.status(403).json({
+          error: 'Please verify your email before running profile audits.',
+          requiresVerification: true,
+        });
+      }
+    } catch(e) { /* db error — proceed rather than block */ }
+
     const auditOk = await canAudit(userEmail);
     if (!auditOk) {
       const status = await getUserStatus(userEmail);
