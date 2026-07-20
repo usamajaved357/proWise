@@ -2,22 +2,29 @@
 import { SERVER_URL } from './config.js';
 
 const METRICS = {
-  cover_letters:  { label: 'Cover letters',  color: '#2dd4bf' },
-  job_audits:     { label: 'Job audits',     color: '#a855f7' },
-  profile_audits: { label: 'Profile audits', color: '#ec4899' },
+  cover_letters:  { label: 'Cover letters',  singular: 'cover letter',  color: '#2dd4bf' },
+  job_audits:     { label: 'Job audits',     singular: 'job audit',     color: '#6366f1' },
+  profile_audits: { label: 'Profile audits', singular: 'profile audit', color: '#ec4899' },
 };
 
-const RANGE_LABELS = {
-  '7d': 'Last 7 days', '30d': 'Last 30 days', '6m': 'Last 6 months',
-  '1y': 'This year', 'custom': 'Custom range',
-};
+function pluralize(count, meta) {
+  return count === 1 ? meta.singular : meta.label.toLowerCase();
+}
 
-// Single chart, one metric shown at a time — switched via the dropdown.
+const RANGES = ['7d', '30d', '90d', 'year'];
+
+function rangeLabel(range) {
+  if (range === '7d')  return 'Last 7 days';
+  if (range === '30d') return 'Last 30 days';
+  if (range === '90d') return 'Last 90 days';
+  if (range === 'year') return String(new Date().getFullYear());
+  return '';
+}
+
+// Single chart, one metric shown at a time — switched via the tabs.
 let currentMetric = 'cover_letters';
 let currentRange  = '7d';
-let customFrom = null;
-let customTo   = null;
-let historyCache = null; // { filled: [...], from, to }
+let historyCache = null; // { buckets: [...], granularity, from, to }
 
 function fmtDate(d) { return d.toISOString().slice(0, 10); }
 
@@ -26,13 +33,26 @@ function fmtDayLabel(day) {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
 }
 
+function fmtMonthLabel(yearMonth, monthOnly) {
+  const [y, m] = yearMonth.split('-').map(Number);
+  const d = new Date(Date.UTC(y, m - 1, 1));
+  return d.toLocaleDateString('en-US', monthOnly
+    ? { month: 'short', timeZone: 'UTC' }
+    : { month: 'short', year: 'numeric', timeZone: 'UTC' });
+}
+
 function rangeToDates(range) {
   const to = new Date();
   const from = new Date();
-  if (range === '7d')       from.setDate(to.getDate() - 6);
-  else if (range === '30d') from.setDate(to.getDate() - 29);
-  else if (range === '6m')  from.setMonth(to.getMonth() - 6);
-  else if (range === '1y')  from.setFullYear(to.getFullYear() - 1);
+  if (range === '7d')        from.setDate(to.getDate() - 6);
+  else if (range === '30d')  from.setDate(to.getDate() - 29);
+  else if (range === '90d')  from.setDate(to.getDate() - 89);
+  else if (range === 'year') {
+    // Show the full calendar year, Jan through Dec (future months render as
+    // empty bars) — matches Upwork's year view rather than stopping at today.
+    from.setTime(Date.UTC(to.getFullYear(), 0, 1));
+    to.setTime(Date.UTC(to.getFullYear(), 11, 31));
+  }
   return { from: fmtDate(from), to: fmtDate(to) };
 }
 
@@ -46,8 +66,9 @@ async function fetchHistory(from, to) {
   } catch(e) { return []; }
 }
 
-// Fill every day in range so the chart has an even x-axis even when most
-// days have zero activity — the server only returns rows that exist.
+// Fill every day in range so buckets are computed from a complete series,
+// not just the days that happen to have a row — the server only returns
+// rows that exist.
 function fillDays(rows, from, to) {
   const byDay = {};
   rows.forEach(r => { byDay[r.day] = r; });
@@ -68,75 +89,147 @@ function fillDays(rows, from, to) {
   return out;
 }
 
-// Shared coordinate math — used both to draw the line/area and to find the
-// nearest point under the cursor on hover, so the two never drift apart.
-function computePoints(rows, field) {
-  const values = rows.map(r => r[field] || 0);
-  const max = Math.max(1, ...values);
-  const w = 300, h = 100;
-  const n = values.length;
-  const stepX = n > 1 ? w / (n - 1) : 0;
-  return values.map((v, i) => ({
-    x: n > 1 ? i * stepX : w / 2,
-    y: h - (v / max) * (h - 14) - 6,
-    value: v,
-    day: rows[i].day,
-  }));
+// Plotting 180+ individual daily bars (mostly zero, with real activity
+// crammed into whatever slice of the range actually has history) reads as
+// an illegible mess. Roll longer ranges up into weekly/monthly buckets —
+// same reasoning any dashboard uses: granularity should match the range.
+function bucketDays(days, monthOnlyLabels) {
+  const span = days.length;
+  let granularity = 'day';
+  if (span > 120) granularity = 'month';
+  else if (span > 31) granularity = 'week';
+
+  if (granularity === 'day') {
+    return { granularity, buckets: days.map(d => ({ label: fmtDayLabel(d.day), ...d })) };
+  }
+
+  if (granularity === 'month') {
+    const map = new Map();
+    days.forEach(d => {
+      const key = d.day.slice(0, 7);
+      if (!map.has(key)) map.set(key, { label: fmtMonthLabel(key, monthOnlyLabels), day: key, cover_letters: 0, job_audits: 0, profile_audits: 0 });
+      const b = map.get(key);
+      b.cover_letters  += d.cover_letters;
+      b.job_audits     += d.job_audits;
+      b.profile_audits += d.profile_audits;
+    });
+    return { granularity, buckets: Array.from(map.values()) };
+  }
+
+  // week — sequential 7-day chunks starting from the range's first day
+  const buckets = [];
+  for (let i = 0; i < days.length; i += 7) {
+    const chunk = days.slice(i, i + 7);
+    buckets.push({
+      label: fmtDayLabel(chunk[0].day),
+      day: chunk[0].day,
+      cover_letters:  chunk.reduce((s, d) => s + d.cover_letters, 0),
+      job_audits:     chunk.reduce((s, d) => s + d.job_audits, 0),
+      profile_audits: chunk.reduce((s, d) => s + d.profile_audits, 0),
+    });
+  }
+  return { granularity: 'week', buckets };
 }
 
-function buildSvgMarkup(points, color, field) {
-  const line = points.map((p, i) => (i === 0 ? 'M' : 'L') + p.x.toFixed(1) + ',' + p.y.toFixed(1)).join(' ');
-  const area = line + ` L${points[points.length - 1].x.toFixed(1)},100 L${points[0].x.toFixed(1)},100 Z`;
-  const gradId = 'an-grad-' + field;
+function niceStep(safeMax, divisions) {
+  const rawStep = safeMax / divisions;
+  const magnitude = Math.pow(10, Math.floor(Math.log10(rawStep)));
+  const residual = rawStep / magnitude;
+  if (residual > 5)      return 10 * magnitude;
+  if (residual > 2)      return 5 * magnitude;
+  if (residual > 1)      return 2 * magnitude;
+  return magnitude;
+}
+
+// Rounds the axis max up to a "nice" number (like a real chart axis: 0/10/
+// 20/30, not 0/17/34/51). Smaller ranges get 3 gridlines (0/X/2X/3X);
+// once the axis gets tall the gridlines thin out to just 0/X/2X — same
+// sparser look real dashboards use once the numbers get bigger.
+function niceScale(maxValue) {
+  const safeMax = Math.max(maxValue, 1);
+  let step = niceStep(safeMax, 3);
+  let axisMax = Math.ceil(safeMax / step) * step;
+  if (axisMax >= 50) {
+    step = niceStep(safeMax, 2);
+    axisMax = Math.ceil(safeMax / step) * step;
+  }
+  const ticks = [];
+  for (let t = 0; t <= axisMax + step * 0.001; t += step) ticks.push(Math.round(t));
+  return { axisMax, ticks };
+}
+
+// Only every Nth x-axis label is shown once there are more bars than fit
+// legibly — same bar count, just less crowded text underneath.
+function labelStride(n) {
+  const maxLabels = 8;
+  return n <= maxLabels ? 1 : Math.ceil(n / maxLabels);
+}
+
+function buildPlotHtml(buckets, field, color) {
+  const values = buckets.map(b => b[field] || 0);
+  const max = Math.max(...values);
+  const { axisMax, ticks } = niceScale(max);
+  const stride = labelStride(buckets.length);
+
+  const axisRows = ticks.map(t => {
+    const pct = axisMax > 0 ? (1 - t / axisMax) * 100 : 100;
+    return `<div class="an-axis-row" style="top:${pct}%"><span class="an-axis-label">${t}</span></div>`;
+  }).join('');
+
+  const barCols = buckets.map((b, i) => {
+    const v = b[field] || 0;
+    const pct = axisMax > 0 ? Math.max(v > 0 ? 2 : 0, (v / axisMax) * 100) : 0;
+    return `<div class="an-bar-col" data-i="${i}"><div class="an-bar" style="height:${pct}%;background:${color};opacity:.82"></div></div>`;
+  }).join('');
+
+  const xLabels = buckets.map((b, i) =>
+    `<div class="an-xaxis-label">${i % stride === 0 ? b.label : ''}</div>`
+  ).join('');
+
   return `
-    <svg viewBox="0 0 300 100" preserveAspectRatio="none" width="100%" height="100%">
-      <defs>
-        <linearGradient id="${gradId}" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0%" stop-color="${color}" stop-opacity="0.35"/>
-          <stop offset="100%" stop-color="${color}" stop-opacity="0"/>
-        </linearGradient>
-      </defs>
-      <path d="${area}" fill="url(#${gradId})" stroke="none"/>
-      <path d="${line}" fill="none" stroke="${color}" stroke-width="1.8"/>
-      <circle id="an-chart-dot" r="3.5" fill="${color}" stroke="#0b0e17" stroke-width="1.5" style="display:none"/>
-    </svg>
+    <div class="an-chart-plot">
+      <div class="an-axis-area">${axisRows}</div>
+      <div class="an-bars-row">${barCols}</div>
+      <div class="an-xaxis-row">${xLabels}</div>
+      <div class="an-chart-tooltip" id="an-chart-tooltip">
+        <div class="day" id="an-tooltip-day"></div>
+        <div class="val" id="an-tooltip-val"></div>
+      </div>
+    </div>
   `;
 }
 
-// Tracks cursor position over the chart, snaps to the nearest day, and
-// updates the guide line / dot / tooltip to show that day's exact count.
-function attachHover(wrap, points, meta) {
-  const guide   = document.getElementById('an-chart-guide');
+// Hovering a bar brightens it and shows a small tooltip anchored right
+// above that bar's own top edge — not a generic cursor-follow tooltip.
+function attachHover(plot, buckets, field, meta) {
   const tooltip = document.getElementById('an-chart-tooltip');
   const tDay    = document.getElementById('an-tooltip-day');
   const tVal    = document.getElementById('an-tooltip-val');
-  const dot     = document.getElementById('an-chart-dot');
-  const n = points.length;
 
-  wrap.addEventListener('mousemove', (e) => {
-    const rect = wrap.getBoundingClientRect();
-    const fx  = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
-    const idx = n > 1 ? Math.round(fx * (n - 1)) : 0;
-    const p   = points[idx];
-    if (!p) return;
+  plot.querySelectorAll('.an-bar-col').forEach((col) => {
+    const bar = col.querySelector('.an-bar');
+    col.addEventListener('mouseenter', () => {
+      const b = buckets[Number(col.dataset.i)];
+      if (!b || !bar) return;
+      bar.style.opacity = '1';
 
-    const pxX = (p.x / 300) * rect.width;
-    const pxY = (p.y / 100) * rect.height;
+      const plotRect = plot.getBoundingClientRect();
+      const barRect  = bar.getBoundingClientRect();
+      const left = barRect.left - plotRect.left + barRect.width / 2;
+      const top  = barRect.top  - plotRect.top;
 
-    if (guide) { guide.style.display = 'block'; guide.style.left = pxX + 'px'; }
-    if (dot)   { dot.style.display = 'block'; dot.setAttribute('cx', p.x); dot.setAttribute('cy', p.y); }
-    if (tooltip) {
-      tooltip.style.display = 'block';
-      tooltip.style.left = pxX + 'px';
-      if (tDay) tDay.textContent = fmtDayLabel(p.day);
-      if (tVal) tVal.textContent = `${p.value} ${meta.label.toLowerCase()}`;
-    }
-  });
-
-  wrap.addEventListener('mouseleave', () => {
-    if (guide) guide.style.display = 'none';
-    if (tooltip) tooltip.style.display = 'none';
-    if (dot) dot.style.display = 'none';
+      if (tooltip) {
+        tooltip.style.display = 'block';
+        tooltip.style.left = left + 'px';
+        tooltip.style.top  = top + 'px';
+        if (tDay) tDay.textContent = b.label;
+        if (tVal) tVal.textContent = `${b[field] || 0} ${meta.label.toLowerCase()}`;
+      }
+    });
+    col.addEventListener('mouseleave', () => {
+      if (bar) bar.style.opacity = '.82';
+      if (tooltip) tooltip.style.display = 'none';
+    });
   });
 }
 
@@ -145,100 +238,81 @@ function renderChart() {
   if (!container) return;
   const field = currentMetric;
   const meta  = METRICS[field];
-  const rows  = historyCache?.filled || [];
-  const total = rows.reduce((sum, r) => sum + (r[field] || 0), 0);
+  const buckets = historyCache?.buckets || [];
+  const total = buckets.reduce((sum, b) => sum + (b[field] || 0), 0);
   const hasData = total > 0;
 
   container.innerHTML = `
-    <div class="an-chart-head">
-      <div class="an-chart-total">${total}</div>
-      <button class="an-metric-btn" id="an-metric-btn">
-        <span class="an-metric-dot" style="background:${meta.color}"></span>
-        ${meta.label}
-        <span class="car">▾</span>
-      </button>
-      <div class="an-metric-menu" id="an-metric-menu">
-        ${Object.entries(METRICS).map(([key, m]) => `
-          <div class="an-metric-item ${key === field ? 'active' : ''}" data-metric="${key}">
-            <span class="an-metric-dot" style="background:${m.color}"></span>${m.label}
-          </div>
-        `).join('')}
+    <div class="an-chart-topbar">
+      <div class="an-chart-title">Usage</div>
+      <div class="an-range-dd">
+        <button class="an-range-btn" id="an-range-btn">
+          <span id="an-range-btn-label">${rangeLabel(currentRange)}</span>
+          <span class="car"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        </button>
+        <div class="an-range-menu" id="an-range-menu">
+          ${RANGES.map(r => `
+            <div class="an-range-item ${r === currentRange ? 'active' : ''}" data-range="${r}">
+              <span class="an-range-check">${r === currentRange ? '✓' : ''}</span>${rangeLabel(r)}
+            </div>
+          `).join('')}
+        </div>
       </div>
     </div>
-    <div class="an-chart-sub">${RANGE_LABELS[currentRange] || ''}</div>
+    <div class="an-tabs-row" id="an-tabs-row">
+      ${Object.entries(METRICS).map(([key, m]) => `
+        <button class="an-tab ${key === field ? 'active' : ''}" data-metric="${key}">${m.label}</button>
+      `).join('')}
+    </div>
+    <div class="an-chart-total">${total} ${pluralize(total, meta)}</div>
     <div class="an-chart-svg-wrap" id="an-chart-svg-wrap">
       ${hasData ? '' : `<div class="an-chart-empty">No ${meta.label.toLowerCase()} recorded in this range yet.</div>`}
-      <div class="an-chart-guide" id="an-chart-guide"></div>
-      <div class="an-chart-tooltip" id="an-chart-tooltip">
-        <div class="day" id="an-tooltip-day"></div>
-        <div class="val" id="an-tooltip-val"></div>
-      </div>
     </div>
   `;
 
-  const btn  = document.getElementById('an-metric-btn');
-  const menu = document.getElementById('an-metric-menu');
-  btn?.addEventListener('click', (e) => {
+  const rangeBtn  = document.getElementById('an-range-btn');
+  const rangeMenu = document.getElementById('an-range-menu');
+  rangeBtn?.addEventListener('click', (e) => {
     e.stopPropagation();
-    menu.classList.toggle('open');
-    btn.classList.toggle('open');
+    rangeMenu.classList.toggle('open');
+    rangeBtn.classList.toggle('open');
   });
-  menu?.querySelectorAll('.an-metric-item').forEach(item => {
+  rangeMenu?.querySelectorAll('.an-range-item').forEach(item => {
     item.addEventListener('click', () => {
-      currentMetric = item.dataset.metric;
+      currentRange = item.dataset.range;
+      loadAndRender();
+    });
+  });
+
+  document.getElementById('an-tabs-row')?.querySelectorAll('.an-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      currentMetric = tab.dataset.metric;
       renderChart();
     });
   });
 
   const wrap = document.getElementById('an-chart-svg-wrap');
   if (hasData && wrap) {
-    const points = computePoints(rows, field);
-    wrap.insertAdjacentHTML('afterbegin', buildSvgMarkup(points, meta.color, field));
-    attachHover(wrap, points, meta);
+    wrap.insertAdjacentHTML('afterbegin', buildPlotHtml(buckets, field, meta.color));
+    const plot = wrap.querySelector('.an-chart-plot');
+    if (plot) attachHover(plot, buckets, field, meta);
   }
 }
 
 async function loadAndRender() {
-  let from, to;
-  if (currentRange === 'custom' && customFrom && customTo) {
-    from = customFrom; to = customTo;
-  } else {
-    ({ from, to } = rangeToDates(currentRange));
-  }
+  const { from, to } = rangeToDates(currentRange);
   const rows = await fetchHistory(from, to);
-  historyCache = { filled: fillDays(rows, from, to), from, to };
+  const days = fillDays(rows, from, to);
+  const { granularity, buckets } = bucketDays(days, currentRange === 'year');
+  historyCache = { buckets, granularity, from, to };
   renderChart();
 }
 
 export function initAnalytics() {
-  document.querySelectorAll('.an-pill').forEach(pill => {
-    pill.addEventListener('click', () => {
-      document.querySelectorAll('.an-pill').forEach(p => p.classList.remove('active'));
-      pill.classList.add('active');
-      currentRange = pill.dataset.range;
-      const customRow = document.getElementById('an-custom-range');
-      if (currentRange === 'custom') {
-        if (customRow) customRow.style.display = 'flex';
-        return; // wait for Apply
-      }
-      if (customRow) customRow.style.display = 'none';
-      loadAndRender();
-    });
-  });
-
-  document.getElementById('an-apply-btn')?.addEventListener('click', () => {
-    const from = document.getElementById('an-from')?.value;
-    const to   = document.getElementById('an-to')?.value;
-    if (!from || !to) return;
-    customFrom = from;
-    customTo   = to;
-    loadAndRender();
-  });
-
-  // Click-outside closes the open metric dropdown
+  // Click-outside closes the open range dropdown
   document.addEventListener('click', () => {
-    document.querySelectorAll('.an-metric-menu.open').forEach(m => m.classList.remove('open'));
-    document.querySelectorAll('.an-metric-btn.open').forEach(b => b.classList.remove('open'));
+    document.querySelectorAll('.an-range-menu.open').forEach(m => m.classList.remove('open'));
+    document.querySelectorAll('.an-range-btn.open').forEach(b => b.classList.remove('open'));
   });
 
   loadAndRender();
