@@ -490,14 +490,26 @@ textarea.edit-val{min-height:38px}
 
 /* ── Plan Cards v2 ────────────────────────────────────────────── */
 .pcv2-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-.pcv2-card{background:linear-gradient(165deg,rgba(148,152,168,.05),rgba(11,14,23,.2));border:1px solid #232838;border-radius:20px;padding:28px 26px 26px;position:relative;transition:border-color .2s,transform .2s;cursor:pointer}
-.pcv2-card::after{display:none}
+/* Same teal→violet→pink gradient-border sweep as the profile card and
+   billing card (--grad-card-border via the padding-box/border-box trick),
+   so the whole Plan & Billing page shares one consistent frame style.
+   The tint layer is semi-transparent, so an opaque solid layer sits
+   between it and the border-box gradient — otherwise the vivid border
+   colors bleed straight through the interior instead of staying in the
+   1.5px ring. */
+.pcv2-card{background:linear-gradient(165deg,rgba(148,152,168,.05),rgba(11,14,23,.2)) padding-box,linear-gradient(var(--bg2),var(--bg2)) padding-box,var(--grad-card-border) border-box;border:1.5px solid transparent;border-radius:20px;padding:28px 26px 26px;position:relative;overflow:hidden;transition:transform .2s;cursor:pointer}
+/* Soft ambient glow bleeding in from the top-right corner — color matches
+   each card's own accent (teal/violet/pink). The gradient box is centered
+   exactly on the corner point (top:0;right:0 + translate 50%/-50%) so its
+   brightest point always sits right at the corner instead of drifting
+   inward, however tall or short the card is. */
+.pcv2-card::before{content:'';position:absolute;top:0;right:0;width:380px;height:380px;transform:translate(50%,-50%);border-radius:50%;background:radial-gradient(circle,var(--card-glow,rgba(148,152,168,.07)) 0%,rgba(0,0,0,0) 65%);pointer-events:none;z-index:0}
 .pcv2-card>*{position:relative;z-index:1}
 .pcv2-card:hover{transform:translateY(-1px)}
-.pcv2-card.current{background:linear-gradient(165deg,rgba(94,234,212,.07),rgba(11,14,23,.2));border-color:rgba(94,234,212,.28)}
+.pcv2-card.current{background:linear-gradient(165deg,rgba(94,234,212,.07),rgba(11,14,23,.2)) padding-box,linear-gradient(var(--bg2),var(--bg2)) padding-box,var(--grad-card-border) border-box;--card-glow:rgba(94,234,212,.16)}
 .pcv2-card.current:hover{transform:none}
-.pcv2-featured{background:linear-gradient(165deg,rgba(168,85,247,.15),rgba(11,14,23,.3));border-color:rgba(168,85,247,.5)}
-.pcv2-card#plan-agency{background:linear-gradient(165deg,rgba(236,72,153,.07),rgba(11,14,23,.2));border-color:rgba(236,72,153,.28)}
+.pcv2-featured{background:linear-gradient(165deg,rgba(168,85,247,.15),rgba(11,14,23,.3)) padding-box,linear-gradient(var(--bg2),var(--bg2)) padding-box,var(--grad-card-border) border-box;--card-glow:rgba(168,85,247,.22)}
+.pcv2-card#plan-agency{background:linear-gradient(165deg,rgba(236,72,153,.07),rgba(11,14,23,.2)) padding-box,linear-gradient(var(--bg2),var(--bg2)) padding-box,var(--grad-card-border) border-box;--card-glow:rgba(236,72,153,.18)}
 .pcv2-pop{position:absolute;top:16px;right:16px;background:linear-gradient(90deg,#a855f7,#ec4899);color:#fff;font-size:9px;font-weight:700;padding:5px 12px;border-radius:20px;white-space:nowrap;letter-spacing:.05em}
 .pcv2-badge-icon{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:8px;font-size:10px;flex-shrink:0}
 .pcv2-tier{display:flex;align-items:center;gap:9px;font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--teal2);margin-bottom:0}
@@ -525,7 +537,15 @@ textarea.edit-val{min-height:38px}
 
 /* ── Billing card ─────────────────────────────────────────────── */
 .billing-card-border{background:linear-gradient(var(--bg2),var(--bg2)) padding-box,var(--grad-card-border) border-box;border:1.5px solid transparent;border-radius:20px;overflow:hidden;margin-bottom:14px}
-.billing-card{background:#0b0e17;overflow:hidden}
+.billing-card{background:var(--bg3);overflow:hidden;position:relative}
+/* Clean, even navy base (matches the app's other cards) with just the
+   top-right corner glow for accent — the diagonal color wash across the
+   whole card read muddy/uneven, the corner glow alone is enough accent. */
+.billing-card::before{content:'';position:absolute;top:0;right:0;width:380px;height:380px;transform:translate(50%,-50%);border-radius:50%;background:radial-gradient(circle,var(--card-glow,rgba(148,152,168,.07)) 0%,rgba(0,0,0,0) 65%);pointer-events:none;z-index:0}
+.billing-card:has(.badge-starter)::before{--card-glow:rgba(94,234,212,.2)}
+.billing-card:has(.badge-pro)::before{--card-glow:rgba(168,85,247,.26)}
+.billing-card:has(.badge-agency)::before{--card-glow:rgba(236,72,153,.22)}
+.billing-card>*{position:relative;z-index:1}
 
 /* Header */
 .bc-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:24px 28px 4px}
