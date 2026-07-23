@@ -3,6 +3,15 @@ import { SERVER_URL, PLAN_LABELS, PLAN_QUOTAS } from './config.js';
 import { state } from './state.js';
 import { fmtDate, daysUntil, showSaved } from './helpers.js';
 
+const MANAGE_BILLING_ICON = `<svg class="bc-manage-icon" width="16" height="12" viewBox="0 0 24 18" fill="none">
+  <defs><linearGradient id="bc-manage-grad" x1="0" y1="0" x2="24" y2="18" gradientUnits="userSpaceOnUse">
+    <stop offset="0" stop-color="#6366f1"/><stop offset="1" stop-color="#ec4899"/>
+  </linearGradient></defs>
+  <rect x="0.5" y="0.5" width="23" height="17" rx="3" fill="url(#bc-manage-grad)"/>
+  <rect x="0.5" y="5" width="23" height="3" fill="rgba(255,255,255,.3)"/>
+</svg>`;
+const MANAGE_BILLING_LABEL = `${MANAGE_BILLING_ICON} Manage billing`;
+
 export async function openCheckout(plan) {
   const { userEmail, emailVerified } = await chrome.storage.sync.get(['userEmail', 'emailVerified']);
   if (!userEmail || !emailVerified) {
@@ -272,9 +281,7 @@ export function renderBillingCard(plan, used, quota, billing) {
           <div class="bc-plan-title">${price}<span class="bc-plan-price">/mo</span></div>
         </div>
         <div class="bc-header-right">
-          <button class="bc-manage-btn" id="bc-manage-btn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> Manage billing
-
-          </button>
+          <button class="bc-manage-btn" id="bc-manage-btn">${MANAGE_BILLING_LABEL}</button>
         </div>
       </div>
       <div class="bc-body-divider"></div>
@@ -289,7 +296,7 @@ export function renderBillingCard(plan, used, quota, billing) {
       const { userEmail } = await chrome.storage.sync.get(['userEmail']);
       if (!userEmail) {
         alert('Please add your subscription email in Settings first.');
-        if (btn) { btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> Manage billing'; btn.disabled = false; }
+        if (btn) { btn.innerHTML = MANAGE_BILLING_LABEL; btn.disabled = false; }
         return;
       }
       const res  = await fetch(SERVER_URL + '/billing-portal', {
@@ -307,7 +314,7 @@ export function renderBillingCard(plan, used, quota, billing) {
       alert('Connection error. Check your internet and try again.');
     } finally {
       const b = document.getElementById('bc-manage-btn');
-      if (b) { b.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg> Manage billing'; b.disabled = false; }
+      if (b) { b.innerHTML = MANAGE_BILLING_LABEL; b.disabled = false; }
     }
   });
 }
