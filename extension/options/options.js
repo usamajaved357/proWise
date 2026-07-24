@@ -87,6 +87,10 @@ document.querySelectorAll('.pcv2-btn[data-plan]').forEach(btn => {
 
 // ── Navigation shortcuts ──────────────────────────────────────────────────────
 document.getElementById('goto-sub-btn')?.addEventListener('click', () => switchSection('subscription'));
+document.getElementById('ud-audits-upgrade-link')?.addEventListener('click', (e) => {
+  e.preventDefault();
+  switchSection('subscription');
+});
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 async function init() {

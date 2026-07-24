@@ -244,7 +244,11 @@ function renderChart() {
 
   container.innerHTML = `
     <div class="an-chart-topbar">
-      <div class="an-chart-title">Usage</div>
+      <div class="an-tabs-row" id="an-tabs-row">
+        ${Object.entries(METRICS).map(([key, m]) => `
+          <button class="an-tab ${key === field ? 'active' : ''}" data-metric="${key}">${m.label}</button>
+        `).join('')}
+      </div>
       <div class="an-range-dd">
         <button class="an-range-btn" id="an-range-btn">
           <span id="an-range-btn-label">${rangeLabel(currentRange)}</span>
@@ -258,11 +262,6 @@ function renderChart() {
           `).join('')}
         </div>
       </div>
-    </div>
-    <div class="an-tabs-row" id="an-tabs-row">
-      ${Object.entries(METRICS).map(([key, m]) => `
-        <button class="an-tab ${key === field ? 'active' : ''}" data-metric="${key}">${m.label}</button>
-      `).join('')}
     </div>
     <div class="an-chart-total">${total} ${pluralize(total, meta)}</div>
     <div class="an-chart-svg-wrap" id="an-chart-svg-wrap">
