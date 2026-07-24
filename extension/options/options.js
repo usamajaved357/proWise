@@ -91,6 +91,10 @@ document.getElementById('ud-audits-upgrade-link')?.addEventListener('click', (e)
   e.preventDefault();
   switchSection('subscription');
 });
+document.getElementById('ud-jobaudits-upgrade-link')?.addEventListener('click', (e) => {
+  e.preventDefault();
+  switchSection('subscription');
+});
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 async function init() {

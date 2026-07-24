@@ -122,6 +122,7 @@ export function updatePlanUI(plan, used, quota, billing = {}, auditInfo = {}, jo
   if (gaugeProposals) gaugeProposals.style.setProperty('--gauge-pct', pct + '%');
 
   // Job Audits — separate pool from Proposals (see server/modules/usage.js).
+  // Not included on the Basic plan, same "locked" treatment as Profile audits.
   const jaLimit = jobAuditInfo.jobAuditLimit ?? 0;
   const jaUsed  = jobAuditInfo.usedJobAudits ?? 0;
   const jaPct   = jaLimit > 0 ? Math.min(100, (jaUsed / jaLimit) * 100) : 0;
@@ -131,6 +132,16 @@ export function updatePlanUI(plan, used, quota, billing = {}, auditInfo = {}, jo
   if (jaLimEl) jaLimEl.textContent = jaLimit;
   const gaugeJobAudits = document.getElementById('ud-gauge-jobaudits');
   if (gaugeJobAudits) gaugeJobAudits.style.setProperty('--gauge-pct', jaPct + '%');
+  const jaGaugeWrap = document.getElementById('ud-jobaudits-gauge');
+  if (jaGaugeWrap) jaGaugeWrap.classList.toggle('locked', jaLimit === 0);
+  const jaUsedNumEl = document.getElementById('ud-jobaudits-usednum');
+  if (jaUsedNumEl) jaUsedNumEl.style.display = jaLimit === 0 ? 'none' : '';
+  const jaBignumEl = document.getElementById('ud-jobaudits-bignum');
+  if (jaBignumEl) jaBignumEl.style.display = jaLimit === 0 ? '' : 'none';
+  const jaFootEl = document.getElementById('ud-jobaudits-footnote');
+  const jaHintEl = document.getElementById('ud-jobaudits-upgrade-hint');
+  if (jaFootEl) jaFootEl.style.display = jaLimit === 0 ? 'none' : '';
+  if (jaHintEl) jaHintEl.style.display = jaLimit === 0 ? '' : 'none';
 
   const _ue = document.getElementById('ud-urgency');
   if (_ue) {

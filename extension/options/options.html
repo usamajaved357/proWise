@@ -1230,8 +1230,8 @@ textarea.edit-val{min-height:38px}
           <div class="ud-urgency" id="ud-urgency"></div>
         </div>
 
-        <!-- Job Audits (same combined pool as Proposals) -->
-        <div class="us-card">
+        <!-- Job Audits (own pool, separate from Proposals — see server/modules/usage.js) -->
+        <div class="us-card" id="ud-jobaudits-card">
           <div class="us-card-head">
             <div class="us-icon us-icon-blue">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 3.5H6.5C5.67 3.5 5 4.17 5 5V19C5 19.83 5.67 20.5 6.5 20.5H17.5C18.33 20.5 19 19.83 19 19V5C19 4.17 18.33 3.5 17.5 3.5H15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><rect x="9" y="2.5" width="6" height="3" rx="1" stroke="currentColor" stroke-width="1.6"/><path d="M8.5 12L10.7 14.2L15.5 9.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -1239,13 +1239,15 @@ textarea.edit-val{min-height:38px}
             <div class="us-card-label">Job audits</div>
           </div>
           <div class="us-gauge-row" style="--gauge-color:#a855f7;--gauge-glow:rgba(168,85,247,.14)">
-            <div class="us-gauge">
+            <div class="us-gauge" id="ud-jobaudits-gauge">
               <div class="us-gauge-ring" id="ud-gauge-jobaudits" style="--gauge-pct:0%"></div>
               <div class="us-gauge-hole"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M9 3.5H6.5C5.67 3.5 5 4.17 5 5V19C5 19.83 5.67 20.5 6.5 20.5H17.5C18.33 20.5 19 19.83 19 19V5C19 4.17 18.33 3.5 17.5 3.5H15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><rect x="9" y="2.5" width="6" height="3" rx="1" stroke="currentColor" stroke-width="1.5"/><path d="M8.5 12L10.7 14.2L15.5 9.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
             </div>
-            <div class="us-big-num"><strong id="ud-jobaudits-used">0</strong> of <span id="ud-jobaudits-limit">2</span> used</div>
+            <div class="us-big-num" id="ud-jobaudits-usednum"><strong id="ud-jobaudits-used">0</strong> of <span id="ud-jobaudits-limit">2</span> used</div>
+            <div class="us-big-num" id="ud-jobaudits-bignum" style="display:none">Not on your plan</div>
           </div>
-          <div class="us-footnote">Resets <span id="ud-jobaudits-reset-date">monthly</span></div>
+          <div class="us-footnote" id="ud-jobaudits-footnote">Resets <span id="ud-jobaudits-reset-date">monthly</span></div>
+          <div class="us-footnote" id="ud-jobaudits-upgrade-hint" style="display:none"><a href="#" class="us-footnote-link" id="ud-jobaudits-upgrade-link">Upgrade to Pro or Agency</a></div>
         </div>
 
         <!-- Profile Audits -->
