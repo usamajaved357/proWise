@@ -97,17 +97,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
           const stats    = buyer.stats  || {};
           const loc      = buyer.location || {};
 
-          // Time posted
-          const postedOn = job.postedOn ? new Date(job.postedOn) : null;
-          const mins     = postedOn ? Math.round((Date.now() - postedOn.getTime()) / 60000) : null;
-          function fmtAge(m) {
-            if (!m) return null;
-            if (m < 60)    return m + ' minutes ago';
-            if (m < 1440)  return Math.floor(m / 60) + ' hours ago';
-            if (m < 10080) return Math.floor(m / 1440) + ' days ago';
-            return Math.floor(m / 10080) + ' weeks ago';
-          }
-
           // Hire rate
           const jobsPosted      = (buyer.jobs || {}).postedCount || 0;
           const totalWithHires  = stats.totalJobsWithHires || 0;
@@ -143,8 +132,11 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             numberOfPositions:   activity.numberOfPositionsToHire  ?? 1,
 
             // Time
-            timePostedMinutes:   mins,
-            timePosted:          fmtAge(mins),
+            // timePosted/timePostedMinutes intentionally omitted — same reasoning
+            // as proposalCount above: this was recomputed from job.postedOn and
+            // drifted from what Upwork actually renders (a job shown as "2 weeks
+            // ago" came back as "1 week ago"). job-reader.js's DOM-parsed value,
+            // read straight off the text the user is looking at, is ground truth.
             lastBuyerActivity:   activity.lastBuyerActivity        || null,
 
             // Client

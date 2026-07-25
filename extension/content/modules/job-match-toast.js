@@ -32,15 +32,24 @@ window.SnagAI.showMatchToast = async function() {
     if (!prof.name && !prof.jss && !prof._readAt) return;
 
     const filters        = prof.jobFilters || {};
-    const hired          = job.jobStats?.hiredCount || 0;
     const jobUnavailable = job.jobStats?.jobUnavailable || false;
-    const autoSkip       = filters.autoSkipHired !== false;
 
-    // Nothing useful to tell the user in these cases.
-    if (jobUnavailable || (hired > 0 && autoSkip)) return;
+    // Only skip for a genuinely gone job — the page shows its own "no
+    // longer available" messaging elsewhere for that case. "Already
+    // hired" is NOT skipped here: autoSkipHired only controls whether
+    // SnagAI.generate() silently declines to write a proposal for a
+    // closed job — it has nothing to do with whether this toast should
+    // warn the user, and this toast is exactly where that warning
+    // belongs (calcWinProbability already reports it as a risk item).
+    if (jobUnavailable) return;
 
-    const wp      = SnagAI.calcWinProbability(job.jobStats || {}, prof, filters);
-    const reasons = wp.riskItems || [];
+    const wp = SnagAI.calcWinProbability(job.jobStats || {}, prof, filters);
+    // "Already hired" is the one reason that makes every other one moot —
+    // applying is pointless regardless of how well you'd otherwise match.
+    // Always float it to the top so it can't get lost below 4-5 other
+    // rows the user has no real reason to read past.
+    const isHiredReason = r => /already hired/i.test(r);
+    const reasons = [...(wp.riskItems || [])].sort((a, b) => (isHiredReason(b) ? 1 : 0) - (isHiredReason(a) ? 1 : 0));
     const isGood  = reasons.length === 0;
 
     const title      = isGood ? wp.verdict + ' match' : reasons.length + ' mismatch' + (reasons.length > 1 ? 'es' : '');
@@ -66,12 +75,18 @@ window.SnagAI.showMatchToast = async function() {
       </div>
       ${!isGood ? `
       <div class="sn-mt-dropdown" id="sn-mt-dropdown">
-        ${reasons.map(r => `
+        ${reasons.map(r => {
+          // probability.js wraps the key phrase of each reason in {{...}} —
+          // turn that into a colored span, same color for every factor, no
+          // bold/size change so it still reads like the rest of the sentence.
+          const text = SnagAI.esc(r).replace(/\{\{(.+?)\}\}/g, '<span class="sn-mt-highlight">$1</span>');
+          return `
           <div class="sn-mt-reason">
             <span class="sn-mt-reason-dot"></span>
-            <span class="sn-mt-reason-text">${SnagAI.esc(r)}</span>
+            <span class="sn-mt-reason-text">${text}</span>
           </div>
-        `).join('')}
+        `;
+        }).join('')}
       </div>` : ''}
     `;
     document.body.appendChild(toast);

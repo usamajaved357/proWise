@@ -1318,4 +1318,7 @@
 .sn-mt-dropdown.sn-mt-dropdown-open { max-height: 260px; overflow-y: auto; border-top: 1px solid var(--sn-border); }
 .sn-mt-reason { display: flex; align-items: flex-start; gap: 8px; padding: 9px 14px; font-size: 12px; color: var(--sn-white2); line-height: 1.5; }
 .sn-mt-reason:not(:last-child) { border-bottom: 1px solid var(--sn-border); }
-.sn-mt-reason-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--sn-red); margin-top: 5px; flex-shrink: 0; }
+.sn-mt-reason-dot { width: 4px; height: 4px; border-radius: 50%; background: var(--sn-red); margin-top: 6px; flex-shrink: 0; }
+/* Same accent color across every factor's key phrase — color only, no
+   bold/size change, so it still reads like the rest of the sentence. */
+.sn-mt-highlight { color: #ec4899; }
