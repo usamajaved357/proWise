@@ -764,8 +764,9 @@ function renderPortfolioItemV2(list, p, pi, allProfiles, profileIdx, autoOpen) {
     item.classList.toggle('port-has-link', hasLinks);
     item.classList.toggle('port-no-link', !hasLinks);
 
-    const CHECK_ICON = '✓';
+    const CHECK_ICON = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><defs><linearGradient id="pfBadgeGrad" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse"><stop stop-color="#a855f7"/><stop offset="1" stop-color="#ec4899"/></linearGradient></defs><path d="M12 2C13.5 2 14.2 3.5 15.5 4C16.8 4.5 18.5 3.8 19.3 4.7C20.2 5.5 19.5 7.2 20 8.5C20.5 9.8 22 10.5 22 12C22 13.5 20.5 14.2 20 15.5C19.5 16.8 20.2 18.5 19.3 19.3C18.5 20.2 16.8 19.5 15.5 20C14.2 20.5 13.5 22 12 22C10.5 22 9.8 20.5 8.5 20C7.2 19.5 5.5 20.2 4.7 19.3C3.8 18.5 4.5 16.8 4 15.5C3.5 14.2 2 13.5 2 12C2 10.5 3.5 9.8 4 8.5C4.5 7.2 3.8 5.5 4.7 4.7C5.5 3.8 7.2 4.5 8.5 4C9.8 3.5 10.5 2 12 2Z" fill="url(#pfBadgeGrad)"/><path d="M8.5 12.5L11 15L15.5 9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
     const WARN_ICON   = '!';
+    const LINK_ICON = '<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>';
 
     const firstUrl = hasLinks ? (p.urls || []).find(u => u && u.trim()) : null;
     const fullUrl  = firstUrl ? (firstUrl.startsWith('http') ? firstUrl : 'https://' + firstUrl) : null;
@@ -777,7 +778,7 @@ function renderPortfolioItemV2(list, p, pi, allProfiles, profileIdx, autoOpen) {
         : '<div class="pi-missing-btn">' + WARN_ICON + '</div>') +
       '<div class="pi-name">' + _esc(p.title || 'Untitled') + '</div>' +
       (hasLinks
-        ? '<a class="pi-url-text" href="' + _esc(fullUrl) + '" target="_blank">' + _esc(displayUrl) + '</a>'
+        ? '<a class="pi-url-text" href="' + _esc(fullUrl) + '" target="_blank">' + LINK_ICON + _esc(displayUrl) + '</a>'
         : '<div class="pi-no-url-text">No URL</div>');
 
     if (!hasLinks) {
@@ -1044,7 +1045,7 @@ export function renderProfileCard(container, profile, idx, allProfiles, primaryP
       <div class="pr-stat"><div class="pr-stat-n">${profile.jobs || '—'}</div><div class="pr-stat-l">Jobs</div></div>
       <div class="pr-stat"><div class="pr-stat-n">${profile.hours || '—'}</div><div class="pr-stat-l">Hours</div></div>
     </div>
-    ${readAt ? `<div class="pr-foot"><div class="pr-sync-dot"></div><div class="pr-sync-txt">Synced ${readAt} &nbsp;·&nbsp; ${profile.url || ''}</div></div>` : ''}
+    ${readAt ? `<div class="pr-foot"><div class="pr-sync-dot"></div><div class="pr-sync-txt"><span class="pr-sync-label">Synced ${readAt}</span><span class="pr-sync-sep">&middot;</span><span class="pr-sync-url">${_esc(profile.url || '')}</span></div></div>` : ''}
   `;
 
   card.querySelector(`#sync-profile-${idx}`)?.addEventListener('click', () => {
@@ -1059,32 +1060,32 @@ export function renderProfileCard(container, profile, idx, allProfiles, primaryP
     await deleteProfileEntry(profile);
     renderProfilesPage();
   });
-  container.appendChild(card);
-
   // Job Filters moved to Settings → Job Filters — it applies to the primary
   // profile only, not per-card, so it no longer belongs inside each profile
   // card here. See renderJobFiltersSettings() in settings.js.
 
-  // Portfolio — label + subtitle outside the card frame
-  const portLbl = document.createElement('div');
-  portLbl.className = 'pr-card-block-lbl';
-  portLbl.style.cssText = 'margin-bottom:4px;margin-top:20px';
-  portLbl.textContent = 'Portfolio · ' + portfolios.length + ' items' + (portsOk > 0 ? ', ' + portsOk + ' linked' : '');
-  const portSub = document.createElement('div');
-  portSub.style.cssText = 'font-size:11px;color:rgba(240,238,255,.22);margin-bottom:10px;line-height:1.55;font-weight:400';
-  portSub.textContent = 'Snag AI matches your portfolio projects to each job by skills and description, then references the most relevant linked ones in your cover letter.';
-  container.appendChild(portLbl);
-  container.appendChild(portSub);
+  // Portfolio — lives inside the same card now, as its own section below the
+  // synced footer (divided by a border-top, same pattern as .pr-stats/.pr-foot)
+  // instead of a separate floating label + a second bordered box.
+  const allLinked = portfolios.length > 0 && portsOk === portfolios.length;
+  const portSection = document.createElement('div');
+  portSection.className = 'pr-section';
+  portSection.innerHTML = `
+    <div class="pr-sec-hdr">
+      <div class="pr-sec-top">
+        <div class="pr-sec-lbl"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg> Portfolio</div>
+        ${portfolios.length ? `<div class="pr-port-badge ${allLinked ? 'all-linked' : ''}">${portsOk}/${portfolios.length} linked</div>` : ''}
+      </div>
+      <div class="st-group-desc" style="margin-top:4px;margin-bottom:0;font-size:10.5px">Matches projects to each job by skills, referencing the most relevant ones in your cover letter.</div>
+    </div>
+    <div class="pi-list" id="port-list-${idx}"></div>
+    ${!portfolios.length ? '<div style="font-size:11.5px;color:rgba(240,238,234,.2);padding:12px 0;font-style:italic">No portfolio items — sync to import from Upwork.</div>' : ''}
+    ${portfolios.length > 0 && portsOk === 0 ? `<div style="margin:10px 0 4px;padding:9px 12px;background:rgba(250,204,21,.04);border:1px solid rgba(250,204,21,.15);border-radius:8px;font-size:11px;color:rgba(250,204,21,.55);line-height:1.55">No URLs added — go to your Upwork profile, add portfolio links there, then re-sync.</div>` : ''}
+  `;
+  card.appendChild(portSection);
+  container.appendChild(card);
 
-  const portBlock = document.createElement('div');
-  portBlock.className = 'pr-card-block';
-  portBlock.style.cssText = 'padding:4px 22px;margin-bottom:20px';
-  portBlock.innerHTML =
-    `<div class="pi-list" id="port-list-${idx}"></div>` +
-    (!portfolios.length ? '<div style="font-size:11.5px;color:rgba(240,238,234,.2);padding:12px 0;font-style:italic">No portfolio items — sync to import from Upwork.</div>' : '') +
-    (portfolios.length > 0 && portsOk === 0 ? `<div style="margin:4px 0 10px;padding:9px 12px;background:rgba(250,204,21,.04);border:1px solid rgba(250,204,21,.15);border-radius:8px;font-size:11px;color:rgba(250,204,21,.55);line-height:1.55">No URLs added — go to your Upwork profile, add portfolio links there, then re-sync.</div>` : '');
-
-  const portList = portBlock.querySelector(`#port-list-${idx}`);
+  const portList = portSection.querySelector(`#port-list-${idx}`);
   if (isAgency) {
     // Read-only rendering — no edit/save capability, since agency portfolio
     // has no write-back path in this UI.
@@ -1096,14 +1097,13 @@ export function renderProfileCard(container, profile, idx, allProfiles, primaryP
       row.innerHTML =
         '<div class="pi-name">' + _esc(p.title || 'Untitled') + '</div>' +
         (url
-          ? '<a class="pi-url-text" href="' + _esc(url) + '" target="_blank">' + _esc(url.replace(/^https?:\/\//, '')) + '</a>'
+          ? '<a class="pi-url-text" href="' + _esc(url) + '" target="_blank"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>' + _esc(url.replace(/^https?:\/\//, '')) + '</a>'
           : '<div class="pi-no-url-text">No URL</div>');
       portList.appendChild(row);
     });
   } else {
     portfolios.forEach((p, pi) => renderPortfolioItemV2(portList, p, pi, allProfiles, idx));
   }
-  container.appendChild(portBlock);
 }
 
 // ── Primary profile resolution (used by Settings → Job Filters) ──────────────
