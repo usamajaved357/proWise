@@ -1272,3 +1272,50 @@
 /* Insight rows (free-reasoning analysis) */
 .sn-sb-insight { display:flex; align-items:flex-start; gap:8px; padding:6px 14px; border-bottom:1px solid rgba(255,255,255,.04); }
 .sn-sb-insight:last-child { border-bottom:none; }
+
+/* ── Job match toast — top-right notification on job page load ───────────── */
+#sn-match-toast {
+  position: fixed; top: 20px; right: 20px; z-index: 2147483645;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  width: 300px;
+  /* Same teal→violet→pink gradient border used on the extension's own
+     pages (Subscription, Settings, etc.), thinner (1px) per the same
+     "lighter width" pass applied there. The dropdown expands inside this
+     same box, so it shares this border rather than needing its own. */
+  background: linear-gradient(var(--sn-bg2), var(--sn-bg2)) padding-box,
+              linear-gradient(120deg, rgba(45,212,191,.55), rgba(168,85,247,.45), rgba(236,72,153,.5)) border-box;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  box-shadow: 0 12px 32px rgba(0,0,0,.45);
+  overflow: hidden;
+  animation: sn-mt-in .25s ease-out;
+}
+@keyframes sn-mt-in { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+.sn-mt-row { display: flex; align-items: center; gap: 10px; padding: 12px 14px; }
+.sn-mt-logo {
+  width: 24px; height: 24px; flex-shrink: 0;
+  border-radius: 7px; overflow: hidden;
+  display: flex; align-items: center; justify-content: center;
+}
+.sn-mt-logo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.sn-mt-title {
+  flex: 1; font-size: 13px; font-weight: 500; min-width: 0;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.sn-mt-chevron, .sn-mt-close {
+  flex-shrink: 0; width: 22px; height: 22px; padding: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255,255,255,.06); border: none; border-radius: 50%;
+  color: var(--sn-white2); cursor: pointer; transition: background .15s, color .15s;
+}
+.sn-mt-chevron:hover { background: rgba(255,255,255,.12); }
+/* Light red tint marks this specifically as the dismiss/cancel action. */
+.sn-mt-close { background: rgba(248,113,113,.12); color: rgba(248,113,113,.85); }
+.sn-mt-close:hover { background: rgba(248,113,113,.2); }
+.sn-mt-chevron svg { transition: transform .2s; }
+.sn-mt-chevron-open svg { transform: rotate(180deg); }
+.sn-mt-dropdown { max-height: 0; overflow: hidden; transition: max-height .22s ease; }
+.sn-mt-dropdown.sn-mt-dropdown-open { max-height: 260px; overflow-y: auto; border-top: 1px solid var(--sn-border); }
+.sn-mt-reason { display: flex; align-items: flex-start; gap: 8px; padding: 9px 14px; font-size: 12px; color: var(--sn-white2); line-height: 1.5; }
+.sn-mt-reason:not(:last-child) { border-bottom: 1px solid var(--sn-border); }
+.sn-mt-reason-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--sn-red); margin-top: 5px; flex-shrink: 0; }

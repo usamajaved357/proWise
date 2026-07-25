@@ -156,11 +156,19 @@ window.SnagAI.calcWinProbability = function(jobStats, profile, filters) {
     ? profileSkillsList.join(' ')
     : (profile.skills || '')) + ' ' + (profile.title || '');
 
+  // Hoisted so the risk-items section below (which checks this against the
+  // user's own minSkillMatch filter) can reuse the same computed values
+  // instead of recomputing them.
+  let skillMatchPct = null;
+  let skillMissing  = [];
+
   const profileSkillsLower = profileSkillsStr.toLowerCase();
   if (jobSkillsNorm.length > 0 && profileSkillsStr.trim().length > 0) {
     const matched  = jobSkillsNorm.filter(s => profileSkillsLower.includes(s));
     const missing  = rawJobSkills.filter((s, i) => !profileSkillsLower.includes(jobSkillsNorm[i]));
     const matchPct = Math.round((matched.length / jobSkillsNorm.length) * 100);
+    skillMatchPct = matchPct;
+    skillMissing  = missing;
 
     if (matchPct >= 75) {
       matchScore += 10;
@@ -205,6 +213,7 @@ window.SnagAI.calcWinProbability = function(jobStats, profile, filters) {
   const _maxRatePct    = flt.maxRateMismatch      ?? 50;
   const _warnLocFilt   = flt.warnLocationFilter  ?? true;
   const _warnTierMis   = flt.warnTierMismatch    ?? true;
+  const _minSkillMatch = flt.minSkillMatch       ?? 30;
 
   // filterNotes maps factor label → note shown on that factor's pill when filter is violated
   const filterNotes = {};
@@ -273,12 +282,23 @@ window.SnagAI.calcWinProbability = function(jobStats, profile, filters) {
     filterNotes['Payment'] = 'you require verified payment';
   }
 
-  // Rate mismatch — add to risk if above user threshold
-  if (userRate && clientRate) {
-    const _ratePct = Math.round(((userRate - clientRate) / clientRate) * 100);
+  // Rate mismatch — only a risk when YOUR rate is below the client's
+  // average by more than the threshold (you'd be underselling yourself /
+  // it signals a lower-budget client than you'd want). Charging more than
+  // the client's average is not a mismatch — that's already scored as a
+  // positive above (see matchFactors 'Hourly rate').
+  if (userRate && clientRate && userRate < clientRate) {
+    const _ratePct = Math.round(((clientRate - userRate) / clientRate) * 100);
     if (_ratePct > _maxRatePct) {
-      riskItems.push('Your $' + userRate + '/hr is ' + _ratePct + '% above client avg $' + clientRate + '/hr');
+      riskItems.push('Your $' + userRate + '/hr is ' + _ratePct + '% below client avg $' + clientRate + '/hr');
     }
+  }
+
+  // Skill match — below the user's own minSkillMatch threshold
+  if (_minSkillMatch > 0 && skillMatchPct !== null && skillMatchPct < _minSkillMatch) {
+    riskItems.push(skillMatchPct + '% skill overlap — below your ' + _minSkillMatch + '% minimum'
+      + (skillMissing.length ? ' (missing: ' + skillMissing.slice(0, 3).join(', ') + ')' : ''));
+    filterNotes['Skills'] = 'below your ' + _minSkillMatch + '% minimum';
   }
 
   // Location filter — warn if job has explicit location restrictions

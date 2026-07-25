@@ -1,7 +1,7 @@
 // ── Snag AI Content — entry point ─────────────────────────────────────────────
 // Modules loaded before this file (via manifest):
 //   utils.js → job-reader.js → probability.js → panel.js →
-//   page-paywall.js → page-alert.js → page-proposal.js
+//   page-paywall.js → job-match-toast.js → page-proposal.js
 (function () {
   'use strict';
 
@@ -304,22 +304,15 @@
       const refineInstruction = SnagAI.state.refineInstruction || '';
 
       if (!refineInstruction) {
-        const jobFilters   = prof.jobFilters || {};
-        const autoSkip      = jobFilters.autoSkipHired !== false;
-        const minScore      = jobFilters.minAlertScore ?? 60;
-        const hired         = job.jobStats?.hiredCount || 0;
-        const jobUnavailable = job.jobStats?.jobUnavailable || false;
+        const jobFilters = prof.jobFilters || {};
+        const autoSkip    = jobFilters.autoSkipHired !== false;
+        const hired       = job.jobStats?.hiredCount || 0;
 
-        // Auto-skip immediately if hired and user enabled that filter
+        // Auto-skip immediately if hired and user enabled that filter.
+        // (The old pre-generation "prob alert" modal that used to live here
+        // has been replaced by the top-right match toast — see
+        // job-match-toast.js — which now runs on page load instead.)
         if (hired > 0 && autoSkip) { SnagAI.closePanel(); return; }
-
-        const preWp   = SnagAI.calcWinProbability(job.jobStats || {}, prof, jobFilters);
-        const hasRisk = (preWp.riskItems || []).length > 0;
-
-        if (jobUnavailable || hired > 0 || preWp.combined < minScore || hasRisk) {
-          const blocked = await SnagAI.showProbAlert(preWp, hired, jobUnavailable);
-          if (blocked) return;
-        }
       }
 
       SnagAI.showLoading();
@@ -370,6 +363,7 @@
         SnagAI.injectUI();
         SnagAI.injectSidebar();
         setTimeout(() => cacheJobData().then(() => _restoreBtnIfAnalysed()), 500);
+        SnagAI.showMatchToast();
       }
     }
   }).observe(document.body, { childList: true, subtree: true });
@@ -378,5 +372,6 @@
     SnagAI.injectUI();
     SnagAI.injectSidebar();
     cacheJobData().then(() => _restoreBtnIfAnalysed());
+    SnagAI.showMatchToast();
   }, 1500);
 })();

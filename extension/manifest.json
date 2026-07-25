@@ -30,7 +30,7 @@
         "content/modules/job-analyser.js",
         "content/modules/sidebar.js",
         "content/modules/page-paywall.js",
-        "content/modules/page-alert.js",
+        "content/modules/job-match-toast.js",
         "content/modules/page-proposal.js",
         "content/content.js"
       ],
@@ -83,5 +83,11 @@
     "128": "icons/icon128.png",
     "256": "icons/icon256.png"
   },
+  "web_accessible_resources": [
+    {
+      "resources": ["icons/icon128.png"],
+      "matches": ["https://www.upwork.com/*"]
+    }
+  ],
   "options_page": "options/options.html"
 }
