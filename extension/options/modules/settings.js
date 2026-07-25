@@ -54,9 +54,15 @@ export function initSettings() {
 // falls back to the only profile when there's just one, so a single-profile
 // plan needs no explicit "primary" to be set for this to work).
 export async function renderJobFiltersSettings() {
-  const body  = document.getElementById('jf-settings-body');
-  const empty = document.getElementById('jf-settings-empty');
+  const body        = document.getElementById('jf-settings-body');
+  const empty       = document.getElementById('jf-settings-empty');
+  const actionsSlot = document.getElementById('jf-header-actions');
   if (!body) return;
+
+  // The footer bar gets reparented into actionsSlot below on every call —
+  // clear it first, otherwise a re-render (e.g. primary profile switch)
+  // leaves the previous render's bar orphaned there and appends a second one.
+  if (actionsSlot) actionsSlot.innerHTML = '';
 
   const profile = await loadPrimaryProfileForFilters();
   if (!profile) {
@@ -68,4 +74,9 @@ export async function renderJobFiltersSettings() {
   body.style.display = '';
   if (empty) empty.style.display = 'none';
   renderJobFilters(body, profile);
+
+  // Reset/Apply live in the card header, aligned with the title, instead of
+  // their own row — reparent the bar renderJobFilters just built.
+  const footerBar = document.getElementById('jf-filter-footer-top');
+  if (actionsSlot && footerBar) actionsSlot.appendChild(footerBar);
 }

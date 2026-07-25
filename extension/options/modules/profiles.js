@@ -322,11 +322,11 @@ const MAX_JOB_AGE_OPTIONS = [
 function jfFmt(id, raw) {
   raw = parseInt(raw);
   switch (id) {
-    case 'maxInterviewing': return raw === 0 ? 'Off' : raw + '+';
-    case 'maxInvitesSent':  return raw === 0 ? 'Off' : raw + '+';
+    case 'maxInterviewing': return raw === 0 ? 'Off' : String(raw);
+    case 'maxInvitesSent':  return raw === 0 ? 'Off' : String(raw);
     case 'minClientRating': return (raw / 10).toFixed(1) + '★';
     case 'minHireRate':     return raw + '%';
-    case 'maxRateMismatch': return raw + '%↑';
+    case 'maxRateMismatch': return raw + '%';
     case 'minSkillMatch':   return raw + '%';
     default:                return String(raw);
   }
@@ -518,10 +518,13 @@ export function renderJobFilters(body, profile) {
   let dirty = false;
 
   function updateFooterVisibility() {
+    // document.getElementById, not body.querySelector — the footer bar gets
+    // reparented into the card header by settings.js after render, so it's
+    // no longer inside body's subtree; ids are unique on the page regardless.
     const isCustom  = body.querySelector('.jf-seg-opt[data-preset="custom"]')?.classList.contains('jf-active');
-    const resetBtn  = body.querySelector('#jf-reset');
-    const applyBtn  = body.querySelector('#jf-save');
-    const bar       = body.querySelector('#jf-filter-footer-top');
+    const resetBtn  = document.getElementById('jf-reset');
+    const applyBtn  = document.getElementById('jf-save');
+    const bar       = document.getElementById('jf-filter-footer-top');
     if (resetBtn) resetBtn.style.display = isCustom ? '' : 'none';
     if (applyBtn) applyBtn.style.display = dirty ? '' : 'none';
     if (bar) bar.style.display = (isCustom || dirty) ? '' : 'none';
@@ -672,9 +675,9 @@ export function renderJobFilters(body, profile) {
   body.querySelectorAll('.jf-seg-opt').forEach(btn => btn.addEventListener('click', () => applyPreset(btn.dataset.preset)));
 
   // Reset
-  body.querySelector('#jf-reset')?.addEventListener('click', () => applyPreset('balanced'));
+  document.getElementById('jf-reset')?.addEventListener('click', () => applyPreset('balanced'));
 
-  body.querySelector('#jf-save')?.addEventListener('click', () => save(true));
+  document.getElementById('jf-save')?.addEventListener('click', () => save(true));
 
   // Highlight active preset on load — if none match, select the "Custom"
   // tile instead of leaving a preset looking selected when it isn't.

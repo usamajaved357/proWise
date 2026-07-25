@@ -1008,7 +1008,7 @@ textarea.edit-val{min-height:38px}
 .jf-tog-sm.on{background:var(--grad-brand)}.jf-tog-sm.on .jf-tok{transform:translateX(10px)}
 .jf-tog-sm.off{background:#1b2030}
 .jf-filter-footer{display:flex;align-items:center;justify-content:space-between;padding:12px 0 2px}
-.jf-filter-footer-top{padding:0 0 10px;justify-content:flex-end;gap:8px}
+.jf-filter-footer-top{padding:0;justify-content:flex-end;gap:8px}
 .btn-apply-filters{display:inline-flex;align-items:center;gap:4px;padding:5px 13px;border-radius:999px;background:linear-gradient(90deg,#7c6ef5,#a855f7);color:#fff;font-size:11px;font-weight:700;border:none;cursor:pointer;font-family:inherit;letter-spacing:-.01em;transition:opacity .12s}
 .btn-apply-filters:hover{opacity:.87}
 .btn-apply-filters i{font-size:11px}
@@ -1018,7 +1018,7 @@ textarea.edit-val{min-height:38px}
 
 
 /* ── Job filter category multi-select ─────────────────────────────────────── */
-.jf-category-wrap{border-top:1px solid rgba(255,255,255,.045);padding:14px 0 4px;margin-top:8px}
+.jf-category-wrap{padding:14px 0 4px;margin-top:8px}
 .jf-category-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:rgba(240,238,255,.22);margin-bottom:8px}
 .jf-cat-chips{display:flex;flex-wrap:wrap;gap:5px;min-height:20px;margin-bottom:8px}
 .jf-cat-chips-empty{font-size:11px;color:rgba(240,238,255,.2);font-style:italic}
@@ -1404,6 +1404,17 @@ textarea.edit-val{min-height:38px}
         </div>
       </div>
 
+      <!-- Job Filters — applies to your primary profile -->
+      <div class="card card-glow">
+        <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px!important">
+          <span style="display:flex;align-items:center;gap:8px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg> Job Filters</span>
+          <div id="jf-header-actions"></div>
+        </div>
+        <div class="st-group-desc" style="margin-bottom:14px;margin-top:0!important">Flags jobs that don't fit your criteria before you apply. Applies to your primary profile.</div>
+        <div id="jf-settings-body"></div>
+        <div id="jf-settings-empty" style="display:none;font-size:11.5px;color:rgba(240,238,234,.3);font-style:italic;padding:8px 0">Add a profile on the Profiles page to set up job filters.</div>
+      </div>
+
       <!-- Proposal Writing Settings -->
       <div class="card card-glow">
         <div class="card-title">
@@ -1437,17 +1448,6 @@ textarea.edit-val{min-height:38px}
           </div>
           <input type="hidden" id="length" value="medium">
         </div>
-      </div>
-
-      <!-- Job Filters — applies to your primary profile -->
-      <div class="card card-glow">
-        <div class="card-title">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-          Job Filters
-        </div>
-        <div class="st-group-desc" style="margin-bottom:14px">Flags jobs that don't fit your criteria before you apply. Applies to your primary profile.</div>
-        <div id="jf-settings-body"></div>
-        <div id="jf-settings-empty" style="display:none;font-size:11.5px;color:rgba(240,238,234,.3);font-style:italic;padding:8px 0">Add a profile on the Profiles page to set up job filters.</div>
       </div>
     </div><!-- /settings -->
 
