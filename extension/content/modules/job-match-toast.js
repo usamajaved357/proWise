@@ -16,7 +16,14 @@ window.SnagAI.showMatchToast = async function() {
     try {
       const storeData = await chrome.runtime.sendMessage({ type: 'GET_JOB_DATA' });
       if (storeData && job.jobStats) {
-        Object.entries(storeData).forEach(([k, v]) => { if (v !== null && v !== undefined) job.jobStats[k] = v; });
+        // timePosted/timePostedMinutes skipped here — the store's computed
+        // value has been unreliable (has shown "1 week" for a job Upwork
+        // itself displays as "2 weeks"), while job-reader.js's DOM value is
+        // read straight off the "Posted X ago" text on the page.
+        Object.entries(storeData).forEach(([k, v]) => {
+          if (k === 'timePosted' || k === 'timePostedMinutes') return;
+          if (v !== null && v !== undefined) job.jobStats[k] = v;
+        });
       }
     } catch(e) { /* fall back to DOM-parsed stats */ }
 

@@ -97,6 +97,21 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
           const stats    = buyer.stats  || {};
           const loc      = buyer.location || {};
 
+          // Time posted — job-reader.js's DOM scrape only searches the
+          // sidebar/activity sections (Proposals, Interviewing, etc.); the
+          // "Posted X ago" text lives near the job header, outside that scope,
+          // so this store read is the only real source for it.
+          const postedOn = job.postedOn ? new Date(job.postedOn) : null;
+          const mins     = postedOn ? Math.round((Date.now() - postedOn.getTime()) / 60000) : null;
+          function fmtAge(m) {
+            if (!m) return null;
+            const plural = (n, unit) => n + ' ' + unit + (n === 1 ? '' : 's') + ' ago';
+            if (m < 60)    return plural(m, 'minute');
+            if (m < 1440)  return plural(Math.floor(m / 60), 'hour');
+            if (m < 10080) return plural(Math.floor(m / 1440), 'day');
+            return plural(Math.floor(m / 10080), 'week');
+          }
+
           // Hire rate
           const jobsPosted      = (buyer.jobs || {}).postedCount || 0;
           const totalWithHires  = stats.totalJobsWithHires || 0;
@@ -120,6 +135,8 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
           // Talent type
           const talentMap = { 0: 'Any', 1: 'Independent', 2: 'Agency' };
 
+          console.log('[SnagAI] Time posted — raw:', job.postedOn, 'mins:', mins, 'formatted:', fmtAge(mins));
+
           return {
             // Activity
             // NOTE: proposalCount intentionally omitted — Upwork shows ranges to freelancers,
@@ -132,11 +149,9 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             numberOfPositions:   activity.numberOfPositionsToHire  ?? 1,
 
             // Time
-            // timePosted/timePostedMinutes intentionally omitted — same reasoning
-            // as proposalCount above: this was recomputed from job.postedOn and
-            // drifted from what Upwork actually renders (a job shown as "2 weeks
-            // ago" came back as "1 week ago"). job-reader.js's DOM-parsed value,
-            // read straight off the text the user is looking at, is ground truth.
+            timePostedMinutes:   mins,
+            timePosted:          fmtAge(mins),
+            postedOnRaw:         job.postedOn                       || null,
             lastBuyerActivity:   activity.lastBuyerActivity        || null,
 
             // Client

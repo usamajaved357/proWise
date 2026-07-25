@@ -93,7 +93,13 @@
       try {
         const storeData = await chrome.runtime.sendMessage({ type: 'GET_JOB_DATA' });
         if (storeData && job.jobStats) {
-          Object.entries(storeData).forEach(([k, v]) => { if (v !== null && v !== undefined) job.jobStats[k] = v; });
+          // timePosted/timePostedMinutes skipped — store's computed value has
+          // been unreliable; job-reader.js's DOM value (read from the "Posted
+          // X ago" text) is the reliable source for this field.
+          Object.entries(storeData).forEach(([k, v]) => {
+            if (k === 'timePosted' || k === 'timePostedMinutes') return;
+            if (v !== null && v !== undefined) job.jobStats[k] = v;
+          });
           console.log('[SnagAI] Job stats enriched from Vuex store:', storeData);
         } else {
           console.warn('[SnagAI] GET_JOB_DATA returned nothing — jobStats will rely on DOM-parsed values only:', job.jobStats);
@@ -142,7 +148,13 @@
       try {
         const storeData = await chrome.runtime.sendMessage({ type: 'GET_JOB_DATA' });
         if (storeData && job.jobStats) {
-          Object.entries(storeData).forEach(([k, v]) => { if (v !== null && v !== undefined) job.jobStats[k] = v; });
+          // timePosted/timePostedMinutes skipped — store's computed value has
+          // been unreliable; job-reader.js's DOM value (read from the "Posted
+          // X ago" text) is the reliable source for this field.
+          Object.entries(storeData).forEach(([k, v]) => {
+            if (k === 'timePosted' || k === 'timePostedMinutes') return;
+            if (v !== null && v !== undefined) job.jobStats[k] = v;
+          });
           console.log('[SnagAI] Job stats enriched from Vuex store:', storeData);
         } else {
           console.warn('[SnagAI] GET_JOB_DATA returned nothing — jobStats will rely on DOM-parsed values only:', job.jobStats);
@@ -187,7 +199,13 @@
       try {
         const storeData = await chrome.runtime.sendMessage({ type: 'GET_JOB_DATA' });
         if (storeData && job.jobStats) {
-          Object.entries(storeData).forEach(([k, v]) => { if (v !== null && v !== undefined) job.jobStats[k] = v; });
+          // timePosted/timePostedMinutes skipped — store's computed value has
+          // been unreliable; job-reader.js's DOM value (read from the "Posted
+          // X ago" text) is the reliable source for this field.
+          Object.entries(storeData).forEach(([k, v]) => {
+            if (k === 'timePosted' || k === 'timePostedMinutes') return;
+            if (v !== null && v !== undefined) job.jobStats[k] = v;
+          });
           console.log('[SnagAI] Job stats enriched from Vuex store:', storeData);
         } else {
           console.warn('[SnagAI] GET_JOB_DATA returned nothing — jobStats will rely on DOM-parsed values only:', job.jobStats);
@@ -295,6 +313,7 @@
         const storeData = await chrome.runtime.sendMessage({ type: 'GET_JOB_DATA' });
         if (storeData && job.jobStats) {
           Object.entries(storeData).forEach(([k, v]) => {
+            if (k === 'timePosted' || k === 'timePostedMinutes') return;
             if (v !== null && v !== undefined) job.jobStats[k] = v;
           });
           console.log('[SnagAI] Job stats from store:', storeData);

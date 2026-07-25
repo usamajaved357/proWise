@@ -192,7 +192,11 @@ window.SnagAI.getJob = function() {
   if (hirM) hiredCount = parseInt(hirM[1]);
 
   let timePosted = null, timePostedMinutes = null;
-  const tm = pageText2.match(/Posted\s+(\d+)\s+(minutes?|hours?|days?|weeks?)\s+ago/i)
+  // Searched over the FULL page text, not pageText2 — pageText2 is scoped to
+  // the sidebar/activity sections (Proposals, Interviewing, etc.) and the
+  // "Posted X ago" line lives near the job header instead, outside that
+  // scope, so it was never actually being found there.
+  const tm = document.body.innerText.match(/Posted\s+(\d+)\s+(minutes?|hours?|days?|weeks?)\s+ago/i)
           || pageText2.match(/(\d+)\s+(minutes?|hours?|days?|weeks?)\s+ago/i);
   if (tm) {
     const num = parseInt(tm[1]), unit = tm[2].toLowerCase();
