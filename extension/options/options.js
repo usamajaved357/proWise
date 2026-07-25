@@ -2,10 +2,10 @@
 import { PLAN_QUOTAS }                    from './modules/config.js';
 import { state }                          from './modules/state.js';
 import { loadStatus, updatePlanUI, upgradePlan, openCheckout } from './modules/subscription.js';
-import { renderProfilesPage }             from './modules/profiles.js';
+import { renderProfilesPage, initProfilesPage } from './modules/profiles.js';
 import { loadEmail, initEmail } from './modules/email.js';
-import { initSettings, applySettingsToUI } from './modules/settings.js';
-import { renderProfileSlots, initProfileUrls } from './modules/profile-urls.js';
+import { initSettings, applySettingsToUI, renderJobFiltersSettings } from './modules/settings.js';
+import { initAnalytics } from './modules/analytics.js';
 
 // ── Section navigation ────────────────────────────────────────────────────────
 function switchSection(name) {
@@ -29,7 +29,9 @@ if (_tab) switchSection(_tab);
 chrome.storage.onChanged.addListener((changes, area) => {
   if (area === 'local') {
     const hasProfile = Object.keys(changes).some(k =>
-      k.startsWith('profileFull_') || k === 'primaryProfileId' || k === 'registeredProfiles' || k === 'activeProfileId'
+      k.startsWith('profileFull_') || k.startsWith('agencyFull_') ||
+      k === 'primaryProfileId' || k === 'registeredProfiles' ||
+      k === 'registeredAgencies' || k === 'activeProfileId'
     );
     if (hasProfile) {
       // Skip re-render if only jobFilters changed — avoids collapsing the filter panel on every save
@@ -40,23 +42,27 @@ chrome.storage.onChanged.addListener((changes, area) => {
         );
         return changed.length === 1 && changed[0] === 'jobFilters';
       });
-      if (!onlyFilters) renderProfilesPage();
+      if (!onlyFilters) {
+        renderProfilesPage();
+        renderJobFiltersSettings();
+      }
       return;
     }
   }
   if (area !== 'sync') return;
   if (changes.registeredProfiles || changes.profile) {
     renderProfilesPage();
-    renderProfileSlots();
   }
-  if (changes.userPlan || changes.usageCount) {
-    const plan = changes.userPlan?.newValue;
-    const used = changes.usageCount?.newValue;
-    if (plan !== undefined || used !== undefined) {
-      chrome.storage.sync.get(['userPlan','usageCount','usageLimit'], s => {
-        updatePlanUI(s.userPlan || 'free', s.usageCount || 0, s.usageLimit || PLAN_QUOTAS[s.userPlan] || 2);
+  if (changes.userPlan || changes.usageCount || changes.usedAudits || changes.jobAuditLimit || changes.usedJobAudits) {
+    chrome.storage.sync.get(['userPlan','usageCount','usageLimit','auditLimit','usedAudits','jobAuditLimit','usedJobAudits'], s => {
+      updatePlanUI(s.userPlan || 'free', s.usageCount || 0, s.usageLimit || PLAN_QUOTAS[s.userPlan] || 2, {}, {
+        auditLimit: s.auditLimit ?? 0,
+        usedAudits: s.usedAudits ?? 0,
+      }, {
+        jobAuditLimit: s.jobAuditLimit ?? 0,
+        usedJobAudits: s.usedJobAudits ?? 0,
       });
-    }
+    });
   }
 });
 
@@ -84,17 +90,26 @@ document.querySelectorAll('.pcv2-btn[data-plan]').forEach(btn => {
 
 // ── Navigation shortcuts ──────────────────────────────────────────────────────
 document.getElementById('goto-sub-btn')?.addEventListener('click', () => switchSection('subscription'));
+document.getElementById('ud-audits-upgrade-link')?.addEventListener('click', (e) => {
+  e.preventDefault();
+  switchSection('subscription');
+});
+document.getElementById('ud-jobaudits-upgrade-link')?.addEventListener('click', (e) => {
+  e.preventDefault();
+  switchSection('subscription');
+});
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 async function init() {
   initEmail();
   initSettings();
-  initProfileUrls();
+  initProfilesPage();
 
   loadStatus();
   loadEmail();
-  renderProfileSlots();
   renderProfilesPage();
+  renderJobFiltersSettings();
+  initAnalytics();
 
   const { settings = {} } = await chrome.storage.sync.get(['settings']);
   applySettingsToUI(settings);

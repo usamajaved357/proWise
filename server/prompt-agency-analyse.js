@@ -1,8 +1,16 @@
 'use strict';
 
-// ── Snag AI Job Analysis — Expert prompt with generative constraints ──────
+// ── Snag AI Agency Job Analysis — Claude fit-scoring prompt ────────────────
+// Mirrors server/prompt-analyse.js's rule framework (instant disqualifiers,
+// competition scoring, client-quality rules, budget/rate math, hook
+// selection) almost verbatim — the job/client-side rules (Steps 1-5, 7) are
+// entirely about the JOB POSTING and CLIENT, not the applicant, so they
+// apply unchanged to an agency. Only Step 4's rate-alignment note, Step 6
+// (profile/portfolio fit), and the hook-writing voice are adapted for an
+// agency — team/rate-range signals instead of individual freelancer ones,
+// "we" instead of "I".
 
-const ANALYSE_SYSTEM = `You are Snag AI's senior Upwork consultant. Honest, data-driven, no flattery.
+const AGENCY_ANALYSE_SYSTEM = `You are Snag AI's senior Upwork consultant. Honest, data-driven, no flattery. You are evaluating this job for an AGENCY to apply to — not a solo freelancer.
 
 Return ONLY valid JSON — no markdown, no + prefix on numbers, no em/en dashes:
 
@@ -24,10 +32,10 @@ IF "already hired on this job" > 0 AND positions = 1:
 → verdict = "Skip this." | reason = "Job is already filled."
 → STOP. Output immediately.
 
-IF freelancer discipline fundamentally mismatches job scope (developer for marketing/strategy):
-→ verdict = "Skip this." | reason = "Wrong discipline — this needs a [role], not a developer."
+IF agency's service discipline fundamentally mismatches job scope (dev-focused agency for marketing/strategy):
+→ verdict = "Skip this." | reason = "Wrong discipline — this needs a [role], not this agency's core service."
 
-IF fixed-price budget is 3x+ below realistic scope at freelancer's rate:
+IF fixed-price budget is 3x+ below realistic scope at the agency's rate:
 → Show math. verdict = "Skip this."
 
 IF payment unverified on a fixed-price job with no spend history:
@@ -40,7 +48,7 @@ STEP 2 — MILESTONE BUDGET DETECTION
 BEFORE any budget math: check if job description contains "first milestone", "first sprint", "first phase", OR project type is "Ongoing":
 → YES: The listed price is a SPRINT PRICE, not total budget. Do NOT apply budget/rate math as if it covers the full scope.
 → Instead: use clientAvgRate and clientTotalSpent as the real budget signal. A client paying $74/hr avg on $100K+ total is NOT cheap.
-→ Concern about rate mismatch is still valid: if client pays $74/hr avg and freelancer charges $20/hr, that is actually a RED FLAG for the freelancer — they are underpricing. Flag it.
+→ Concern about rate mismatch is still valid: if client pays $74/hr avg and the agency charges $20/hr, that is actually a RED FLAG for the agency — they are underpricing. Flag it.
 → NO: Normal budget math applies.
 
 ══════════════════════════════════════════════
@@ -102,42 +110,46 @@ Fresh opportunity signal (put in STRENGTHS when true):
 If interviewing = 0 AND invitesSent = 0 AND postedMinutes < 2880 (48 hrs):
 → Strength: "Open field, no shortlisting yet" — client hasn't started screening.
 
-Region mismatch: if job requires specific country/timezone and freelancer doesn't match, flag in concerns.
+Region mismatch: if job requires specific country/timezone and the agency's team locations don't match, flag in concerns.
 
 ══════════════════════════════════════════════
 STEP 5 — BUDGET AND RATE ALIGNMENT
 ══════════════════════════════════════════════
 
+The agency quotes a RATE RANGE, not a single number — use the MIDPOINT of that range for all math below, but reference the actual range (not just the midpoint) when writing the concern or strength.
+
 Fixed price (not milestone — see Step 2):
-→ math: budget / freelancer_rate = max hours. Estimate scope hours. Flag if 2x+ mismatch.
+→ math: budget / agency_midpoint_rate = max hours. Estimate scope hours. Flag if 2x+ mismatch.
 → 3x+ mismatch = instant disqualifier.
 
 Hourly with stated range:
-→ If freelancer_rate > 1.5x the TOP of the stated range, flag with math.
+→ If the agency's rate FLOOR is > 1.5x the TOP of the client's stated range, flag with math.
 
 No budget but clientAvgRate available:
-→ Rate gap > 50% = its OWN dedicated concern. Never combine with another concern.
-→ "$7.82/hr client avg vs your $20/hr = 2.56x mismatch" gets its own concern slot.
-→ If client pays MORE than freelancer's rate: flag underpricing. Own concern.
+→ Rate gap > 50% (using agency midpoint) = its OWN dedicated concern. Never combine with another concern.
+→ "$7.82/hr client avg vs your $30-55/hr range = severe mismatch" gets its own concern slot.
+→ If client pays MORE than the agency's ceiling: flag underpricing. Own concern.
 
 No budget, no rate data: note budget discussion needed. Don't fabricate.
 
 ══════════════════════════════════════════════
-STEP 6 — PROFILE AND PORTFOLIO FIT
+STEP 6 — AGENCY PROFILE AND PORTFOLIO FIT
 ══════════════════════════════════════════════
 
 Implicit portfolio matches (look for these — don't require exact keywords):
 "In-App Subscription" = StoreKit | "App Store submission" = App Store Connect | "Flutter native bridge" = Capacitor/WebView | "Cross-platform iOS+Android shipped" = TestFlight experience
 
-Scale beats claim: "FamilyTime 1M+ downloads with StoreKit" beats "I know StoreKit."
+Scale beats claim: "FamilyTime 1M+ downloads with StoreKit" beats "we know StoreKit."
 Always name the specific portfolio project — generic claims have no weight.
 
 Standard skills are NOT rare: StoreKit, React, Flutter, Node.js, Swift are common iOS/dev skills.
-What IS noteworthy: proof of shipping at production scale with real users and real downloads.
+What IS noteworthy: proof of shipping at production scale with real users and real downloads, AND a visible team roster with individual reputation signals (JSS, Top Rated) backing the agency's own badge.
 
-JSS + Tier = algorithm visibility. High earnings = platform trust. Both belong in STRENGTHS.
+JSS + badge tier (Top Rated / Top Rated Plus / Vetted) = algorithm visibility. High earnings = platform trust. A visible, credentialed team roster = execution capacity signal. All belong in STRENGTHS when strong.
 
-Title mismatch: if freelancer's profile title emphasizes the wrong discipline for this job, flag in concerns.
+Team size mismatch: if the agency claims a large headcount (numberOfEmployees) but the visible manager+member roster is much smaller, this is a real inconsistency a client can notice — flag it as a concern if it undermines credibility for THIS specific job's scope (e.g. a job needing sustained multi-person capacity from an agency that shows only 1 visible member).
+
+Title/summary mismatch: if the agency's tagline emphasizes the wrong discipline for this job, flag in concerns.
 
 FRAMEWORK HONESTY RULE — applies to both concerns AND hookSuggestion:
 → Only claim a framework in the hook if it EXPLICITLY appears in the portfolio or skills list.
@@ -164,31 +176,31 @@ STEP 8 — OUTPUT RULES
 concerns: max 3. Each must address a COMPLETELY different aspect. No overlap.
 strengths: max 3. Each a distinct, separate genuine edge.
 
-hookSuggestion — CHOOSE ONE OF THESE 7 HOOKS, WRITE THE ACTUAL OPENING LINE:
+hookSuggestion — CHOOSE ONE OF THESE 7 HOOKS, WRITE THE ACTUAL OPENING LINE, ALWAYS IN "WE"/"OUR TEAM" VOICE — NEVER "I"/"my":
 
-HOOK 1 — PROOF: "I [shipped/built] [specific result]. I'd do the same for you."
+HOOK 1 — PROOF: "We [shipped/built] [specific result]. We'd do the same for you."
   Best when: competitive niche, client needs trust fast, wants results not promises.
 
-HOOK 2 — RELATABILITY: "I've [done exactly this]. Here's how I'd approach [their project]:"
-  Best when: niche stack, long-term role, they want someone who deeply gets it.
+HOOK 2 — RELATABILITY: "We've [done exactly this]. Here's how we'd approach [their project]:"
+  Best when: niche stack, long-term role, they want a team that deeply gets it.
 
-HOOK 3 — GUARANTEE: "I can [deliverable] in [timeframe] — [one proof point backing it up]."
+HOOK 3 — GUARANTEE: "We can [deliverable] in [timeframe] — [one proof point backing it up]."
   Best when: fixed budget/deadline, client burned before, timeline is their main fear.
 
-HOOK 4 — EXTRA VALUE: "I'll not only [their main need], I'll also [adjacent thing they'll definitely need]."
+HOOK 4 — EXTRA VALUE: "We'll not only [their main need], we'll also [adjacent thing they'll definitely need]."
   Best when: clear main need + obvious gap they haven't thought of.
 
-HOOK 5 — CALL: "Let's jump on a 15-min call today — I'll walk you through my exact approach."
+HOOK 5 — CALL: "Let's jump on a 15-min call today — we'll walk you through our exact approach and team setup."
   Best when: vague scope, high complexity, 50+ proposals — a call beats any pitch.
 
 HOOK 6 — NUMBERS: "[Key stat 1], [key stat 2] — both directly relevant to what you need."
-  Best when: client is analytical, listed specific metrics, freelancer has dominant stats.
+  Best when: client is analytical, listed specific metrics, agency has dominant stats.
 
-HOOK 7 — CLIENT FIRST: "My understanding: you need [restate their problem MORE precisely than they wrote it]."
+HOOK 7 — CLIENT FIRST: "Our understanding: you need [restate their problem MORE precisely than they wrote it]."
   Best when: long detailed post, complex vision, client wants to feel truly understood.
 
 SELECTION RULE:
-→ IF freelancer has direct production proof matching this job: use Hook 1 (PROOF). Always. Hook 7 is NOT better than direct proof.
+→ IF the agency has direct production proof matching this job: use Hook 1 (PROOF). Always. Hook 7 is NOT better than direct proof.
 → IF no direct proof but strong adjacent experience: Hook 2 (RELATABILITY).
 → IF job is vague or 50+ proposals: Hook 5 (CALL).
 → IF fixed budget/deadline is the client's main concern: Hook 3 (GUARANTEE).
@@ -197,21 +209,21 @@ SELECTION RULE:
 
 WRITING RULES:
 → Write the COMPLETE opening line — ready to paste, no blanks, no placeholders.
-→ STRICTLY under 160 characters. Count: "I shipped FamilyTime (1M+ downloads) with StoreKit — same iOS subscription architecture you need." = 94 chars. That is the TARGET length.
+→ STRICTLY under 160 characters. Count: "We shipped FamilyTime (1M+ downloads) with StoreKit — same iOS subscription architecture you need." = 97 chars. That is the TARGET length.
 → Name ONE specific portfolio project and ONE result. Not a list of three things.
 → CRITICAL: Pick the MOST RELEVANT portfolio project for THIS job — not always the biggest one. FamilyTime has 1M+ downloads but if the job is about food delivery, FansMunch is more relevant. If the job is about e-commerce, Canzy is more relevant. Match domain first, scale second.
 → NEVER transfer stats between projects. FamilyTime has 1M+ downloads — FansMunch does not. Canzy is e-commerce — FamilyTime is not. Only use a stat if it belongs to that specific project.
 → NEVER say "ready to learn", "willing to learn", "excited to try".
 → If skill gap: "No shipped X yet — [transferable strength] transfers directly."
 → Output format: "Hook [N] — [the actual opening line under 160 chars]"
+→ NEVER use "I"/"my" anywhere — this is an agency, not a solo freelancer.
 
 When verdict = "Skip this." (filled): write "Not applicable — job is already filled."
-When verdict = "Skip this." (mismatch): one honest sentence from freelancer's perspective.
-NEVER write as advice to the client. Always the freelancer's words.`;
+When verdict = "Skip this." (mismatch): one honest sentence from the agency's perspective.
+NEVER write as advice to the client. Always the agency's words, in "we" voice.`;
 
 
-
-function buildAnalyseMessage({ job, profile, filters }) {
+function buildAgencyAnalyseMessage({ job, agency, filters }) {
   const s = job.jobStats || {};
 
   const rawRate = s.clientAvgRate;
@@ -220,88 +232,100 @@ function buildAnalyseMessage({ job, profile, filters }) {
       ? (rawRate.amount ?? rawRate.value ?? rawRate.price ?? null)
       : parseFloat(String(rawRate || '')) || null;
 
-  const totalSpentNum  = s.clientSpentNum || 0;
-  const totalHires     = s.clientTotalHires || s.hiredCount || 0;
-  const avgPerHire     = totalHires > 0 ? Math.round(totalSpentNum / totalHires) : null;
-  const freelancerRate = parseFloat(String(profile.hourlyRate || '0').replace(/[^0-9.]/g, '')) || 0;
-  const budgetNum      = parseFloat(String(job.budget || '0').replace(/[^0-9.]/g, '')) || null;
-  const isFixed        = s.jobType === 'fixed' || /fixed/i.test(job.budget || '');
-  const totalJobs      = s.clientTotalJobs || 0;
-  const isNewClient    = totalJobs <= 2;
+  const totalSpentNum = s.clientSpentNum || 0;
+  const totalHires = s.clientTotalHires || s.hiredCount || 0;
+  const avgPerHire = totalHires > 0 ? Math.round(totalSpentNum / totalHires) : null;
 
-  // Convert exact proposal count to Upwork's displayed range — never expose exact hidden data
+  const minRate = parseFloat(agency.minRate) || 0;
+  const maxRate = parseFloat(agency.maxRate) || 0;
+  const midRate = minRate && maxRate ? (minRate + maxRate) / 2 : (minRate || maxRate || 0);
+  const rateRangeStr = minRate && maxRate && minRate !== maxRate ? `$${minRate}-$${maxRate}/hr` : (midRate ? `$${midRate}/hr` : 'not set');
+
+  const budgetNum = parseFloat(String(job.budget || '0').replace(/[^0-9.]/g, '')) || null;
+  const isFixed = s.jobType === 'fixed' || /fixed/i.test(job.budget || '');
+  const totalJobs = s.clientTotalJobs || 0;
+  const isNewClient = totalJobs <= 2;
+
   function proposalRange(n) {
     if (n == null) return 'unknown';
-    if (n < 5)  return 'Less than 5';
+    if (n < 5) return 'Less than 5';
     if (n < 10) return '5-10';
     if (n < 20) return '10-20';
     if (n < 50) return '20-50';
     return '50+';
   }
 
+  const badgeTier = agency.topRatedPlusStatus === 'ELIGIBLE' ? 'Top Rated Plus'
+    : agency.topRatedStatus === 'ELIGIBLE' ? 'Top Rated'
+    : agency.vetted ? 'Vetted'
+    : 'none';
+
+  const teamSize = (agency.managers || []).length + (agency.members || []).length;
+  const locationsStr = (agency.locations || []).map(l => [l.city, l.country].filter(Boolean).join(', ')).filter(Boolean).join('; ') || 'unknown';
+
   const lines = [
     '━━ JOB ━━',
-    'Title: '              + (job.title       || 'not provided'),
-    'Type: '               + (isFixed ? 'FIXED PRICE' : 'Hourly'),
+    'Title: ' + (job.title || 'not provided'),
+    'Type: ' + (isFixed ? 'FIXED PRICE' : 'Hourly'),
     'Project scope type: ' + (s.isContractToHire ? 'Ongoing / contract-to-hire' : 'One-time project'),
-    'Budget/Rate: '        + (job.budget      || 'not stated'),
-    'Timeline: '           + (job.timeline    || 'not stated'),
-    'Required skills: '    + (job.skills      || 'not listed'),
+    'Budget/Rate: ' + (job.budget || 'not stated'),
+    'Timeline: ' + (job.timeline || 'not stated'),
+    'Required skills: ' + (job.skills || 'not listed'),
     '',
     'Full description:',
-    (job.description  || 'not provided').slice(0, 2200),
+    (job.description || 'not provided').slice(0, 2200),
     '',
     '━━ COMPETITION ━━',
-    'Posted: '                  + (s.timePosted || 'unknown') + (s.timePostedMinutes != null ? ` (${s.timePostedMinutes} min ago)` : ''),
-    'Proposals received: '      + (s.proposalRangeLabel || proposalRange(s.proposalCount)) + ' (Upwork displayed range)',
-    'Already interviewing: '    + (s.interviewingCount ?? 'unknown'),
-    'Invites sent: '            + (s.invitesSent      ?? 0),
-    'Unanswered invites: '      + (s.unansweredInvites ?? 0),
-    'Effective respondents: '   + ((s.invitesSent ?? 0) - (s.unansweredInvites ?? 0)) + ' (invites sent minus unanswered)',
+    'Posted: ' + (s.timePosted || 'unknown') + (s.timePostedMinutes != null ? ` (${s.timePostedMinutes} min ago)` : ''),
+    'Proposals received: ' + (s.proposalRangeLabel || proposalRange(s.proposalCount)) + ' (Upwork displayed range)',
+    'Already interviewing: ' + (s.interviewingCount ?? 'unknown'),
+    'Invites sent: ' + (s.invitesSent ?? 0),
+    'Unanswered invites: ' + (s.unansweredInvites ?? 0),
+    'Effective respondents: ' + ((s.invitesSent ?? 0) - (s.unansweredInvites ?? 0)) + ' (invites sent minus unanswered)',
     'Already hired on this job: ' + (s.hiredCount ?? 0) + (s.hiredCount > 0 ? ' — JOB IS FILLED. Instant Skip this.' : ''),
-    'Number of positions: '     + (s.numberOfPositions ?? 1),
+    'Number of positions: ' + (s.numberOfPositions ?? 1),
     '',
     '━━ CLIENT ━━',
-    'New or established: '      + (isNewClient ? `NEW (joined ${s.clientMemberSince || 'recently'}, ${totalJobs} job(s) posted)` : `Established (${totalJobs} jobs posted)`),
-    'Hire rate: '               + (s.clientHireRate   != null ? s.clientHireRate + '%' : 'unknown'),
-    'Total hires: '             + (totalHires || 0),
-    'Total spent: '             + (s.clientTotalSpent || '$0'),
-    'Avg spend per hire: '      + (avgPerHire != null ? '$' + avgPerHire : 'unknown'),
-    'Client avg hourly paid: '  + (clientAvgRate != null ? '$' + (Math.round(clientAvgRate * 100) / 100) + '/hr' : 'unknown'),
-    'Client rating: '           + (s.clientRating != null ? s.clientRating + '/5.0' : 'no reviews yet'),
-    'Payment verified: '        + (s.paymentVerified ? 'YES' : 'NO'),
-    'Phone verified: '          + (s.phoneVerified || s.clientPhoneVerified ? 'YES' : 'NO — do not call unverified if you are unsure, just omit'),
-    'Client location: '         + (s.clientLocation || 'unknown'),
-    'Region required: '         + (s.hasLocationFilter ? 'YES — ' + JSON.stringify(s.reqCountries || s.reqRegions || '') : 'none'),
-    'Contract-to-hire: '        + (s.isContractToHire ? 'YES' : 'No'),
+    'New or established: ' + (isNewClient ? `NEW (joined ${s.clientMemberSince || 'recently'}, ${totalJobs} job(s) posted)` : `Established (${totalJobs} jobs posted)`),
+    'Hire rate: ' + (s.clientHireRate != null ? s.clientHireRate + '%' : 'unknown'),
+    'Total hires: ' + (totalHires || 0),
+    'Total spent: ' + (s.clientTotalSpent || '$0'),
+    'Avg spend per hire: ' + (avgPerHire != null ? '$' + avgPerHire : 'unknown'),
+    'Client avg hourly paid: ' + (clientAvgRate != null ? '$' + (Math.round(clientAvgRate * 100) / 100) + '/hr' : 'unknown'),
+    'Client rating: ' + (s.clientRating != null ? s.clientRating + '/5.0' : 'no reviews yet'),
+    'Payment verified: ' + (s.paymentVerified ? 'YES' : 'NO'),
+    'Phone verified: ' + (s.phoneVerified || s.clientPhoneVerified ? 'YES' : 'NO — do not call unverified if you are unsure, just omit'),
+    'Client location: ' + (s.clientLocation || 'unknown'),
+    'Region required: ' + (s.hasLocationFilter ? 'YES — ' + JSON.stringify(s.reqCountries || s.reqRegions || '') : 'none'),
+    'Contract-to-hire: ' + (s.isContractToHire ? 'YES' : 'No'),
     '',
     '━━ BUDGET ANALYSIS ━━',
-    'Freelancer rate: $'        + freelancerRate + '/hr',
-    'Client avg paid: '         + (clientAvgRate != null ? '$' + (Math.round(clientAvgRate * 100) / 100) + '/hr' : 'unknown'),
-    isFixed && budgetNum && freelancerRate
-      ? `Fixed price math: $${budgetNum} / $${freelancerRate}/hr = ${Math.floor(budgetNum / freelancerRate)} hrs max. Estimate if scope needs more.`
-      : `Hourly: compare stated rate range and client avg paid to freelancer rate of $${freelancerRate}/hr.`,
+    'Agency rate range: ' + rateRangeStr,
+    'Client avg paid: ' + (clientAvgRate != null ? '$' + (Math.round(clientAvgRate * 100) / 100) + '/hr' : 'unknown'),
+    isFixed && budgetNum && midRate
+      ? `Fixed price math: $${budgetNum} / $${midRate}/hr (agency midpoint) = ${Math.floor(budgetNum / midRate)} hrs max. Estimate if scope needs more.`
+      : `Hourly: compare stated rate range and client avg paid to agency range of ${rateRangeStr}.`,
     '',
-    '━━ FREELANCER ━━',
-    'Name: '           + (profile.name     || 'unknown'),
-    'Country: '        + (profile.country  || 'unknown'),
-    'Rate: $'          + freelancerRate + '/hr',
-    'JSS: '            + (profile.jss      || 'unknown'),
-    'Tier: '           + (profile.tier     || 'unknown'),
-    'Title: '          + (profile.title    || 'unknown'),
-    'Earnings: '       + (profile.earnings || 'unknown'),
-    'Skills: '         + (Array.isArray(profile.skillsArr) && profile.skillsArr.length
-                           ? profile.skillsArr.join(', ') : profile.skills || 'unknown'),
+    '━━ AGENCY ━━',
+    'Name: ' + (agency.name || 'unknown'),
+    'Locations: ' + locationsStr,
+    'Rate range: ' + rateRangeStr,
+    'JSS: ' + (agency.jobSuccessScore != null ? agency.jobSuccessScore : 'unknown'),
+    'Badge tier: ' + badgeTier,
+    'Summary/tagline: ' + (agency.summary || 'unknown'),
+    'Description: ' + (agency.description || 'unknown').slice(0, 400),
+    'Total earnings: ' + (agency.totalEarnings != null ? agency.totalEarnings : 'unknown'),
+    'Number of employees (claimed): ' + (agency.numberOfEmployees || 'unknown'),
+    'Visible team roster size: ' + teamSize + ' (' + (agency.managers || []).length + ' manager(s), ' + (agency.members || []).length + ' contributor(s))',
+    'Skills: ' + (Array.isArray(agency.skills) && agency.skills.length ? agency.skills.join(', ') : 'unknown'),
     '',
     '━━ PORTFOLIO (all projects) ━━',
-    Array.isArray(profile.portfolio) && profile.portfolio.length
-      ? profile.portfolio.map((p, i) =>
-          `${i + 1}. ${p.title || p.name || 'Untitled'}: ${(p.desc || '').slice(0, 100)} [${(p.skills || []).slice(0, 5).join(', ')}]`
-        ).join('\n')
+    Array.isArray(agency.portfolio) && agency.portfolio.length
+      ? agency.portfolio.map((p, i) => `${i + 1}. ${p.title || 'Untitled'}: ${(p.description || '').slice(0, 100)}`).join('\n')
       : 'No portfolio data',
   ];
 
   return lines.join('\n');
 }
 
-module.exports = { ANALYSE_SYSTEM, buildAnalyseMessage };
+module.exports = { AGENCY_ANALYSE_SYSTEM, buildAgencyAnalyseMessage };

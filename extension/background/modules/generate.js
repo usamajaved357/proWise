@@ -1,30 +1,14 @@
 // ── Proposal generation ───────────────────────────────────────────────────────
-const SERVER = 'https://prowise-4e5t.onrender.com'; // Production
-// const SERVER = 'http://localhost:3000'; // Local Host
+// const SERVER = 'https://prowise-4e5t.onrender.com'; // Production
+const SERVER = 'http://localhost:3000'; // Local Host
 
-export async function handleGenerate(payload) {
-  const [syncData, localData] = await Promise.all([
-    chrome.storage.sync.get(['userEmail', 'anonId', 'settings']),
-    chrome.storage.local.get(['registeredProfiles', 'activeProfileId', 'primaryProfileId', 'deviceId'])
-  ]);
+import { resolvePrimaryEntity } from './primary-profile.js';
+import { handleAgencyCoverLetter } from './agency-generate.js';
+import { syncUsageToStorage } from './sync-usage.js';
 
-  const regProfiles = localData.registeredProfiles || [];
-  const primaryId   = localData.primaryProfileId;
-
-  const primaryMeta =
-    (primaryId && regProfiles.find(p => p && p.id === primaryId && (p.name || p.jss || p._readAt))) ||
-    regProfiles.find(p => p && (p.name || p.jss || p._readAt)) ||
-    regProfiles[0];
-
-  let profileFull = null;
-  if (primaryMeta?.id) {
-    const localKey  = 'profileFull_' + primaryMeta.id;
-    const stored    = await new Promise(resolve => chrome.storage.local.get([localKey], resolve));
-    profileFull = stored[localKey] || null;
-  }
-
-  const baseProfile = profileFull || syncData.profile || {};
-  const profile = {
+function buildFreelancerProfile(profileFull) {
+  const baseProfile = profileFull || {};
+  return {
     ...baseProfile,
     skills:    Array.isArray(baseProfile.skillsArr) && baseProfile.skillsArr.length
                  ? baseProfile.skillsArr.join(', ')
@@ -34,6 +18,34 @@ export async function handleGenerate(payload) {
     portfolio: baseProfile.portfolios || baseProfile.portfolio || [],
     extra:     baseProfile.extra || '',
   };
+}
+
+export async function handleGenerate(payload) {
+  const primary = await resolvePrimaryEntity();
+
+  // Primary is an agency — delegate entirely to the agency-shaped request.
+  // handleAgencyCoverLetter's response shape ({coverLetter, answers}) is a
+  // subset of what freelancer callers of handleGenerate expect ({letter,...}),
+  // so normalize it to look like a /proposal response.
+  if (primary?.type === 'agency') {
+    const result = await handleAgencyCoverLetter({
+      jobData: payload.job,
+      instruction: payload.refineInstruction || '',
+      existingCL: payload.currentLetter || '',
+      questions: [],
+    }, primary.data);
+    if (result?.showPaywall || result?.error) return result;
+    return { success: true, letter: result.coverLetter, freeRevision: result.freeRevision, wasRevision: result.wasRevision };
+  }
+
+  const [syncData, localData] = await Promise.all([
+    chrome.storage.sync.get(['userEmail', 'anonId', 'settings']),
+    chrome.storage.local.get(['deviceId'])
+  ]);
+
+  const profileFull = primary?.data || null;
+  const baseProfile  = profileFull || syncData.profile || {};
+  const profile = buildFreelancerProfile(baseProfile);
 
   let anonId = syncData.anonId;
   if (!anonId) {
@@ -61,40 +73,26 @@ export async function handleGenerate(payload) {
   const data = await res.json();
   if (res.status === 402 || data.showPaywall) return { showPaywall: true, plan: data.plan, error: data.error, usage: data };
   if (!res.ok) throw new Error(data.error || 'Server error');
+  await syncUsageToStorage(data.usage);
+  data.wasRevision = !!payload.refineInstruction;
   return data;
 }
 
 // ── Cover letter generation from proposal submission page ──────────────────
 export async function handleCoverLetter(msg) {
-  const [syncData, localData] = await Promise.all([
-    chrome.storage.sync.get(['userEmail', 'anonId', 'settings']),
-    chrome.storage.local.get(['registeredProfiles', 'activeProfileId', 'primaryProfileId', 'deviceId'])
-  ]);
+  const primary = await resolvePrimaryEntity();
 
-  const regProfiles = localData.registeredProfiles || [];
-  const primaryId   = localData.primaryProfileId;
-  const primaryMeta =
-    (primaryId && regProfiles.find(p => p && p.id === primaryId && (p.name || p.jss || p._readAt))) ||
-    regProfiles.find(p => p && (p.name || p.jss || p._readAt)) ||
-    regProfiles[0];
-
-  let profileFull = null;
-  if (primaryMeta?.id) {
-    const localKey = 'profileFull_' + primaryMeta.id;
-    const stored   = await new Promise(r => chrome.storage.local.get([localKey], r));
-    profileFull = stored[localKey] || null;
+  if (primary?.type === 'agency') {
+    return handleAgencyCoverLetter(msg, primary.data);
   }
 
-  const baseProfile = profileFull || {};
-  const profile = {
-    ...baseProfile,
-    skills:    Array.isArray(baseProfile.skillsArr) && baseProfile.skillsArr.length
-                 ? baseProfile.skillsArr.join(', ')
-                 : (typeof baseProfile.skills === 'string' ? baseProfile.skills : ''),
-    skillsArr: Array.isArray(baseProfile.skillsArr) ? baseProfile.skillsArr : [],
-    portfolio: baseProfile.portfolios || baseProfile.portfolio || [],
-    extra:     baseProfile.extra || '',
-  };
+  const [syncData, localData] = await Promise.all([
+    chrome.storage.sync.get(['userEmail', 'anonId', 'settings']),
+    chrome.storage.local.get(['deviceId'])
+  ]);
+
+  const profileFull = primary?.data || null;
+  const profile = buildFreelancerProfile(profileFull);
 
   let anonId = syncData.anonId;
   if (!anonId) {
@@ -136,6 +134,7 @@ export async function handleCoverLetter(msg) {
   const data = await res.json();
   if (res.status === 402 || data.showPaywall) return { showPaywall: true, error: data.error };
   if (!res.ok) throw new Error(data.error || 'Server error');
+  await syncUsageToStorage(data.usage);
 
   const coverLetter = (data.letter || data.coverLetter || (typeof data === 'string' ? data : '')).trim();
 
@@ -163,6 +162,7 @@ export async function handleCoverLetter(msg) {
 
     const data2 = await res2.json();
     console.log('[SnagAI] Phase 2 questions field:', JSON.stringify(data2?.questions)?.slice(0, 150));
+    await syncUsageToStorage(data2.usage);
 
     const answers = (data2?.questions || '')
       .split('\n')
@@ -172,5 +172,5 @@ export async function handleCoverLetter(msg) {
     return { coverLetter: msg.existingCL, answers };
   }
 
-  return { coverLetter, answers: [] };
+  return { coverLetter, answers: [], freeRevision: data.freeRevision, wasRevision: !!refineInstruction };
 }

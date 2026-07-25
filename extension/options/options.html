@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <title>Snag AI</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.24.0/dist/tabler-icons.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -16,51 +19,67 @@
   --radius:16px;--radius-sm:10px;--radius-xs:7px;--radius-lg:20px;
   --shadow:0 4px 24px rgba(0,0,0,.4);
   --indigo:#6366f1;--indigo-bg:rgba(99,102,241,.08);--indigo-border:rgba(99,102,241,.25);
+  --teal:#2dd4bf;--teal2:#5eead4;--teal-bg:rgba(45,212,191,.14);
+  --violet:#a855f7;--violet2:#c084fc;--violet-bg:rgba(168,85,247,.14);
+  --pink:#ec4899;
+  --grad-brand:linear-gradient(90deg,#2dd4bf,#a855f7);
+  --grad-brand-diag:linear-gradient(135deg,#2dd4bf,#a855f7);
+  --grad-badge:linear-gradient(90deg,#a855f7,#ec4899);
+  --grad-card-border:linear-gradient(120deg,rgba(45,212,191,.55),rgba(168,85,247,.45),rgba(236,72,153,.5));
+  --grad-nav-active:linear-gradient(90deg,rgba(45,212,191,.14),rgba(168,85,247,.14));
+  --grad-selected:linear-gradient(145deg,rgba(168,85,247,.14),rgba(45,212,191,.06));
 }
 html,body{height:100%}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--white);font-size:14px;line-height:1.5;min-height:100vh}
+body{font-family:'Manrope',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--white);font-size:14px;line-height:1.5;min-height:100vh}
+.emoji-icon{font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif;color:initial}
+.font-display{font-family:'Sora',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
 a{text-decoration:none;color:inherit}
 
 /* ── Layout ── */
 .layout{display:flex;min-height:100vh}
-.main{flex:1;padding:44px 56px;max-width:860px;overflow-y:auto}
+.main{flex:1;padding:26px 56px 44px;max-width:860px;overflow-y:auto}
 .section{display:none}.section.active{display:block}
 
 /* ── Sidebar ── */
 .sidebar{width:224px;background:var(--bg2);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto}
 .sb-logo-link{display:flex;align-items:center;gap:10px;padding:22px 20px 20px;border-bottom:1px solid var(--border);transition:opacity .15s}
 .sb-logo-link:hover{opacity:.8}
-.sb-icon{width:34px;height:34px;border-radius:9px;background:var(--indigo);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sb-icon{width:34px;height:34px;flex-shrink:0}
+.sb-icon img{width:100%;height:100%;display:block}
 .sb-brand{display:flex;flex-direction:column}
-.sb-name{font-size:15px;font-weight:700;letter-spacing:-.01em}
+.sb-name{font-family:'Sora',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:15px;font-weight:700;letter-spacing:-.01em}
 .sb-ver{font-size:10px;color:var(--white3);margin-top:1px}
 .sb-nav{padding:12px 10px;flex:1}
-.sb-item{display:flex;align-items:center;gap:9px;padding:9px 12px;font-size:13px;font-weight:500;color:var(--white3);cursor:pointer;border-radius:var(--radius-sm);transition:all .15s;margin-bottom:1px;border-left:2px solid transparent}
+.sb-item{display:flex;align-items:center;gap:9px;padding:9px 12px;font-size:13px;font-weight:500;color:var(--white3);cursor:pointer;border-radius:var(--radius-sm);transition:all .15s;margin-bottom:1px;border-left:1px solid transparent}
 .sb-item:hover{color:rgba(240,238,234,.75);background:rgba(255,255,255,.04);border-left-color:rgba(255,255,255,.1)}
-.sb-item.active{color:var(--white);background:rgba(99,102,241,.09);font-weight:600;border-left-color:var(--indigo)}
-.sb-dot{display:none}
+.sb-item.active{color:var(--white);background:var(--grad-nav-active);font-weight:600;border-left-color:rgba(168,85,247,.35)}
+.sb-dot{display:block;width:3px;height:18px;border-radius:2px;background:transparent;flex-shrink:0}
+.sb-item.active .sb-dot{background:linear-gradient(180deg,#2dd4bf,#a855f7,#ec4899)}
+.sb-emoji{font-size:14px;line-height:1;flex-shrink:0;font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif;color:initial}
 .sb-divider{height:1px;background:var(--border);margin:10px 0}
 /* Sidebar plan widget */
 .sb-plan{padding:12px 14px 16px;border-top:1px solid rgba(255,255,255,.05)}
 .sb-plan-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
-.sb-plan-badge{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:2px 8px;border-radius:20px;background:rgba(255,255,255,.06);color:rgba(240,238,234,.4);border:1px solid rgba(255,255,255,.09)}
+.sb-plan-badge{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:3px 8px;border-radius:20px;background:var(--teal-bg);color:var(--teal2);border:none}
 .sb-plan-badge.badge-starter{background:rgba(255,255,255,.06);color:rgba(240,238,234,.4);border-color:rgba(255,255,255,.09)}
-.sb-plan-badge.badge-pro{background:rgba(99,102,241,.12);color:rgba(170,168,252,.85);border-color:rgba(99,102,241,.28)}
+.sb-plan-badge.badge-pro{background:var(--violet-bg);color:var(--violet2);border:none}
 .sb-plan-badge.badge-agency{background:rgba(255,255,255,.06);color:rgba(240,238,234,.4);border-color:rgba(255,255,255,.09)}
 .sb-plan-rem{font-size:10.5px;color:rgba(240,238,234,.3)}
 .sb-plan-bar-wrap{height:2px;background:rgba(255,255,255,.07);border-radius:2px;margin-bottom:5px;overflow:hidden}
-.sb-plan-bar{height:100%;border-radius:2px;background:var(--indigo);transition:width .4s}
+.sb-plan-bar{height:100%;border-radius:2px;background:var(--grad-brand);transition:width .4s}
 .sb-plan-count{font-size:10px;color:rgba(240,238,234,.25)}
 
 /* ── Section label (UpCat-style uppercase gold tag above headings) ── */
-.sec-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.13em;color:var(--indigo);opacity:.82;margin-bottom:6px}
+.sec-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.13em;color:var(--violet2);opacity:.82;margin-bottom:6px}
 
 /* ── Section headers ── */
-.section-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:32px;gap:16px}
+.section-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;gap:16px}
 .section-header-left .section-title{font-size:24px;font-weight:800;letter-spacing:-.03em;margin-bottom:4px}
 .section-header-left .section-sub{font-size:13px;color:var(--white3);line-height:1.6}
-.section-title-solo{font-size:24px;font-weight:800;letter-spacing:-.03em;margin-bottom:4px}
-.section-sub-solo{font-size:13px;color:var(--white3);margin-bottom:32px;line-height:1.6}
+/* Matches .section-title (used on Profiles) so every page's heading is
+   the same size instead of Profiles alone looking smaller/more compact. */
+.section-title-solo{font-family:'Sora',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:24px;font-weight:800;letter-spacing:-.03em;margin-bottom:4px}
+.section-sub-solo{font-size:13px;color:var(--white3);margin-bottom:18px;line-height:1.6}
 
 /* ── Buttons ── */
 .btn-primary{padding:9px 20px;background:var(--gold);color:#0a0e1a;border:none;border-radius:var(--radius-sm);font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s;letter-spacing:-.01em}
@@ -76,6 +95,10 @@ a{text-decoration:none;color:inherit}
 .card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:22px;margin-bottom:14px}
 .card-title{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--white3);margin-bottom:16px;display:flex;align-items:center;gap:8px}
 .card-title svg{flex-shrink:0;opacity:.7}
+/* Opt-in modifier — same gradient border as the Plan & Billing cards,
+   applied only to specific cards (not every .card) so this doesn't
+   ripple into unrelated pages. Border color only, no corner glow. */
+.card.card-glow{background:linear-gradient(var(--bg2),var(--bg2)) padding-box,var(--grad-card-border) border-box;border:1px solid transparent;overflow:hidden}
 
 /* ── Form fields ── */
 .field{margin-bottom:14px}
@@ -88,12 +111,12 @@ a{text-decoration:none;color:inherit}
 
 /* ── No profiles empty state ── */
 .empty-state{text-align:center;padding:60px 32px;background:var(--bg2);border:1px solid var(--border);border-radius:14px;box-shadow:0 4px 24px rgba(0,0,0,.2)}
-.empty-icon{width:64px;height:64px;margin:0 auto 24px;display:flex;align-items:center;justify-content:center;background:rgba(99,102,241,.08);border:1px solid rgba(99,102,241,.2);border-radius:50%}
+.empty-icon{width:64px;height:64px;margin:0 auto 24px;display:flex;align-items:center;justify-content:center;background:var(--violet-bg);border:1px solid rgba(168,85,247,.2);border-radius:50%}
 .empty-title{font-size:17px;font-weight:700;margin-bottom:10px;letter-spacing:-.025em;color:var(--white)}
 .empty-desc{font-size:13px;color:var(--white3);line-height:1.75;margin-bottom:24px;max-width:340px;margin-left:auto;margin-right:auto}
 .empty-url-form{display:flex;gap:8px;max-width:420px;margin:0 auto 14px}
 .empty-url-input{flex:1;background:var(--bg3);border:1px solid var(--border);border-radius:9px;padding:10px 14px;font-size:12px;color:var(--white);font-family:inherit;outline:none;transition:border-color .15s,box-shadow .15s}
-.empty-url-input:focus{border-color:rgba(99,102,241,.5);box-shadow:0 0 0 3px rgba(99,102,241,.08)}
+.empty-url-input:focus{border-color:rgba(168,85,247,.5);box-shadow:0 0 0 3px rgba(168,85,247,.08)}
 .empty-url-input::placeholder{color:var(--white4)}
 .empty-url-hint{font-size:11px;color:var(--white4);line-height:1.6;max-width:360px;margin:0 auto}
 .empty-url-hint strong{color:var(--white3)}
@@ -262,7 +285,7 @@ textarea.edit-val{min-height:38px}
 .audit-feature-icon{font-size:18px;margin-bottom:6px}
 .audit-feature-title{font-size:12px;font-weight:700;margin-bottom:4px;color:var(--white)}
 .audit-feature-desc{font-size:11px;color:var(--white3);line-height:1.6}
-.badge-primary{display:inline-flex;align-items:center;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:2px 8px;border-radius:20px;background:rgba(99,102,241,.15);color:rgba(176,174,252,.9);border:1px solid rgba(99,102,241,.3);white-space:nowrap;flex-shrink:0}
+.badge-primary{display:inline-flex;align-items:center;font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:3px 9px;border-radius:20px;background:var(--grad-badge);color:#fff;border:none;white-space:nowrap;flex-shrink:0}
 .btn-set-primary{padding:4px 10px;background:rgba(255,255,255,.04);border:1px solid var(--border2);border-radius:20px;font-size:10px;font-weight:600;color:var(--white3);cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap;flex-shrink:0}
 .btn-set-primary:hover{border-color:var(--gold-border);color:var(--gold);background:var(--gold-bg)}
 .port-item-meta{padding:0 14px 10px;display:flex;flex-direction:column;gap:6px}
@@ -396,93 +419,190 @@ textarea.edit-val{min-height:38px}
 
 /* ── Usage Stats Grid ─────────────────────────────────────────── */
 .us-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px}
-.us-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:22px 22px 20px;position:relative;overflow:hidden;transition:border-color .2s}
-.us-card:hover{border-color:rgba(255,255,255,.1)}
-.us-card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
-.us-icon{width:34px;height:34px;border-radius:9px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;color:rgba(240,238,234,.4)}
-.us-icon-blue{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.08);color:rgba(240,238,234,.4)}
-.us-icon-purple{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.08);color:rgba(240,238,234,.4)}
-.us-plan-badge{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.06);color:rgba(240,238,234,.5);border:1px solid rgba(255,255,255,.1)}
-.us-plan-badge.badge-starter{background:rgba(255,255,255,.06);color:rgba(240,238,234,.55);border-color:rgba(255,255,255,.1)}
-.us-plan-badge.badge-pro{background:rgba(99,102,241,.12);color:rgba(170,168,252,.9);border-color:rgba(99,102,241,.28)}
-.us-plan-badge.badge-agency{background:rgba(255,255,255,.06);color:rgba(240,238,234,.55);border-color:rgba(255,255,255,.1)}
+/* Same gradient border as the Plan & Billing / Settings cards, for a
+   consistent look across the whole extension. */
+.us-card{background:linear-gradient(var(--bg2),var(--bg2)) padding-box,var(--grad-card-border) border-box;border:1px solid transparent;border-radius:18px;padding:10px 20px 18px;position:relative;overflow:hidden;display:flex;flex-direction:column}
+.us-card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+/* All three header badges share one accent color instead of each card
+   having its own — consistent with the rest of the app's violet accent. */
+.us-icon{width:26px;height:26px;border-radius:8px;background:var(--violet-bg);border:none;display:flex;align-items:center;justify-content:center;color:var(--violet2)}
+.us-icon-blue{background:var(--violet-bg);color:var(--violet2)}
+.us-icon-purple{background:var(--violet-bg);color:var(--violet2)}
+.us-plan-badge{display:none}
 .us-soon-tag{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.04);color:rgba(240,238,234,.35);border:1px solid rgba(255,255,255,.08)}
-.us-big-num{font-size:42px;font-weight:800;line-height:1;letter-spacing:-.05em;color:var(--white);margin-bottom:3px}
+.us-card-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.09em;color:rgba(240,238,234,.4)}
+.us-gauge-row{display:flex;align-items:center;gap:16px;margin-bottom:10px}
+.us-gauge{position:relative;width:70px;height:70px;flex-shrink:0}
+/* Unused portion of the ring gets a soft violet tint instead of near-
+   invisible dark grey, so the track reads as part of the design rather
+   than disappearing into the card background. */
+.us-gauge-ring{position:absolute;inset:0;border-radius:50%;background:conic-gradient(var(--gauge-color,#2dd4bf) var(--gauge-pct,0%),rgba(168,85,247,.16) 0deg);z-index:1}
+.us-gauge-hole{position:absolute;inset:7px;border-radius:50%;background:var(--bg2);z-index:2;display:flex;align-items:center;justify-content:center;color:var(--gauge-color,#2dd4bf)}
+.us-gauge.locked .us-gauge-ring{background:conic-gradient(rgba(168,85,247,.1) 0%,rgba(168,85,247,.1) 0deg)}
+.us-gauge.locked .us-gauge-hole{color:rgba(192,132,252,.6)}
+/* Center gauge icon swaps to a padlock when the feature isn't on the
+   plan — the feature's own icon (clipboard, etc.) stays as the header
+   badge, only the gauge center indicates "locked". */
+.us-gauge-icon-locked{display:none}
+.us-gauge.locked .us-gauge-icon-default{display:none}
+.us-gauge.locked .us-gauge-icon-locked{display:block}
+.us-big-num{font-size:20px;font-weight:700;line-height:1.3;letter-spacing:-.02em;color:var(--white)}
+/* "Not on your plan" is much longer than the usual "X of Y used" — a
+   smaller size keeps it to 2 lines instead of wrapping to 3. */
+#ud-audits-bignum,#ud-jobaudits-bignum{font-size:15px;line-height:1.35}
 .us-num-dim{color:var(--white4)}
-.us-big-label{font-size:11px;color:rgba(240,238,234,.45);margin-bottom:14px}
-.us-bar-track{height:5px;background:rgba(255,255,255,.06);border-radius:999px;overflow:hidden;margin-bottom:9px}
-.us-bar{height:100%;border-radius:999px;background:var(--indigo);transition:width .6s cubic-bezier(.4,0,.2,1)}
-.us-footnote{font-size:10.5px;color:rgba(240,238,234,.38);line-height:1.55}
+.us-big-label{font-size:12px;color:rgba(240,238,234,.4);margin-top:2px}
+.us-bar-track,.us-bar{display:none}
+.us-footnote{font-size:11px;color:rgba(240,238,234,.35);line-height:1.5;padding-top:10px;border-top:1px solid #171b26;margin-top:auto}
 .us-footnote strong{color:rgba(240,238,234,.65);font-weight:600}
+.us-footnote a,.us-footnote-link{color:var(--violet2);text-decoration:none}
+
+/* ── Analytics: usage chart ────────────────────────────────────── */
+/* Same gradient border as the Plan & Billing / Settings / usage cards. */
+.an-chart-card{background:linear-gradient(var(--bg2),var(--bg2)) padding-box,var(--grad-card-border) border-box;border:1px solid transparent;border-radius:18px;padding:24px 26px 22px;position:relative;overflow:visible}
+
+/* Top bar — metric tabs + Upwork-style "Last 7 days ▾" range dropdown,
+   sharing one row instead of a title row above a separate tabs row. */
+.an-chart-topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;position:relative}
+.an-range-dd{position:relative;flex-shrink:0}
+.an-range-btn{display:flex;align-items:center;gap:7px;padding:6px 10px;border-radius:8px;border:1px solid rgba(168,85,247,.35);background:rgba(168,85,247,.1);color:var(--white);font-size:12.5px;font-weight:600;font-family:inherit;cursor:pointer;white-space:nowrap}
+.an-range-btn:hover{background:rgba(168,85,247,.18);border-color:rgba(168,85,247,.5)}
+.an-range-btn .car{display:flex;align-items:center;opacity:.7;transition:transform .15s}
+.an-range-btn.open .car{transform:rotate(180deg)}
+.an-range-menu{position:absolute;top:calc(100% + 6px);right:0;background:#10141f;border:1px solid #232838;border-radius:10px;padding:4px;min-width:140px;box-shadow:0 12px 30px rgba(0,0,0,.5);z-index:5;display:none}
+.an-range-menu.open{display:block}
+.an-range-item{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:7px;font-size:12px;font-weight:600;color:var(--white2);cursor:pointer;white-space:nowrap}
+.an-range-item:hover{background:rgba(255,255,255,.05)}
+.an-range-item.active{color:var(--white)}
+.an-range-check{width:14px;flex-shrink:0;color:var(--violet2);font-size:12px}
+
+/* Metric tabs — "Cover letters | Job audits | Profile audits" */
+.an-tabs-row{display:flex;align-items:center;gap:20px;align-self:stretch;border-bottom:1px solid #171b26}
+.an-tab{background:none;border:none;padding:0 0 10px;font-size:12.5px;font-weight:700;font-family:inherit;color:rgba(148,152,168,.65);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+.an-tab:hover{color:var(--white2)}
+.an-tab.active{color:var(--white);border-bottom-color:var(--white)}
+
+.an-chart-total{font-size:19px;font-weight:700;color:var(--white);letter-spacing:-.02em;margin-top:16px;margin-bottom:14px}
+.an-chart-svg-wrap{width:100%;height:130px;position:relative}
+.an-chart-empty{height:100%;display:flex;align-items:center;justify-content:center;color:rgba(240,238,234,.3);font-size:11px;text-align:center;padding:0 20px}
+
+/* Axis + bars — plain HTML/CSS (not SVG) so axis text never gets stretched
+   by a non-uniformly scaled viewBox, and tooltip positioning can just read
+   real element rects instead of re-deriving coordinates by hand. */
+.an-chart-plot{position:relative;height:100%;margin-left:28px;padding-bottom:18px;box-sizing:border-box}
+/* Scoped to the exact same box as .an-bars-row (bottom:18px) so the 0%
+   gridline lands precisely on the bars' baseline instead of 18px below it. */
+.an-axis-area{position:absolute;left:0;right:0;top:0;bottom:18px}
+.an-axis-row{position:absolute;left:0;right:0;height:1px;background:rgba(255,255,255,.06)}
+.an-axis-label{position:absolute;left:-28px;top:-5px;width:22px;text-align:right;font-size:9px;color:rgba(240,238,234,.32);font-variant-numeric:tabular-nums}
+/* Columns always divide the row evenly (flex:1) so bars never overlap no
+   matter how many buckets there are — the bar itself is capped at a max
+   width so it doesn't blow up into a giant block when there are only a
+   few columns, but shrinks below that freely as columns get tighter. */
+.an-bars-row{position:absolute;left:0;right:0;top:0;bottom:18px;display:flex;align-items:flex-end}
+.an-bar-col{flex:1;min-width:0;height:100%;display:flex;align-items:flex-end;justify-content:center;position:relative}
+.an-bar{width:65%;max-width:34px;min-width:3px;border-radius:3px 3px 1px 1px;transition:opacity .12s;cursor:pointer}
+.an-xaxis-row{position:absolute;left:0;right:0;bottom:0;height:18px;display:flex}
+.an-xaxis-label{flex:1;min-width:0;text-align:center;font-size:9.5px;color:rgba(240,238,234,.32);padding-top:5px;white-space:nowrap;overflow:visible}
+.an-chart-tooltip{position:absolute;transform:translate(-50%,calc(-100% - 8px));background:#171b26;border:1px solid #2a3040;border-radius:6px;padding:4px 8px;white-space:nowrap;pointer-events:none;display:none;z-index:6}
+.an-chart-tooltip .day{font-size:9.5px;color:rgba(240,238,234,.4);line-height:1.3}
+.an-chart-tooltip .val{font-size:11.5px;font-weight:700;color:var(--white);line-height:1.3}
 
 /* ── Plan Cards v2 ────────────────────────────────────────────── */
 .pcv2-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-.pcv2-card{background:rgba(255,255,255,.025);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px 20px 20px;position:relative;transition:border-color .2s,transform .2s;cursor:pointer}
-.pcv2-card::after{content:'';position:absolute;top:0;right:0;width:180px;height:180px;background:radial-gradient(circle at top right,rgba(99,102,241,.12) 0%,rgba(99,102,241,.04) 50%,transparent 75%);pointer-events:none;z-index:0;border-radius:inherit}
-.pcv2-featured::after{width:220px;height:220px;background:radial-gradient(circle at top right,rgba(99,102,241,.24) 0%,rgba(99,102,241,.1) 40%,rgba(99,102,241,.03) 65%,transparent 80%)}
+.pcv2-card{background:linear-gradient(165deg,rgba(148,152,168,.05),rgba(11,14,23,.2));border:1px solid #232838;border-radius:20px;padding:28px 26px 26px;position:relative;overflow:hidden;transition:border-color .2s,transform .2s;cursor:pointer}
+/* Soft ambient glow bleeding in from the top-right corner — color matches
+   each card's own accent (teal/violet/pink). The gradient box is centered
+   exactly on the corner point (top:0;right:0 + translate 50%/-50%) so its
+   brightest point always sits right at the corner instead of drifting
+   inward, however tall or short the card is. */
+.pcv2-card::before{content:'';position:absolute;top:0;right:0;width:380px;height:380px;transform:translate(50%,-50%);border-radius:50%;background:radial-gradient(circle,var(--card-glow,rgba(148,152,168,.07)) 0%,rgba(0,0,0,0) 65%);pointer-events:none;z-index:0}
 .pcv2-card>*{position:relative;z-index:1}
-.pcv2-card:hover{border-color:rgba(255,255,255,.14);transform:translateY(-1px)}
-.pcv2-card.current{border-color:rgba(52,211,153,.3);background:rgba(52,211,153,.02)}
-.pcv2-card.current:hover{border-color:rgba(52,211,153,.4);transform:none}
-.pcv2-featured{border-color:rgba(99,102,241,.35);background:rgba(99,102,241,.04)}
-.pcv2-featured:hover{border-color:rgba(99,102,241,.55)}
-.pcv2-pop{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--indigo);color:#fff;font-size:9px;font-weight:700;padding:4px 14px;border-radius:20px;white-space:nowrap;letter-spacing:.07em}
-.pcv2-tier{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--white3);margin-bottom:8px}
-.pcv2-price{font-size:34px;font-weight:800;line-height:1;letter-spacing:-.04em;color:var(--white);margin-bottom:16px}
-.pcv2-price span{font-size:13px;font-weight:400;color:var(--white3)}
-.pcv2-sep{height:1px;background:var(--border);margin-bottom:14px}
-.pcv2-list{list-style:none;display:flex;flex-direction:column;gap:9px;margin-bottom:20px}
-.pcv2-list li{display:flex;align-items:flex-start;gap:9px;font-size:12px;font-weight:500;color:var(--white2);line-height:1.4}
-.pcv2-check{width:17px;height:17px;border-radius:50%;background:rgba(52,211,153,.13);border:1px solid rgba(52,211,153,.28);color:#4ade80;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;flex-shrink:0;margin-top:1px}
-.pcv2-check-gold{background:rgba(99,102,241,.14);border-color:rgba(99,102,241,.35);color:rgba(170,168,252,.9)}
-.pcv2-btn{width:100%;padding:10px;border-radius:999px;font-size:12px;font-weight:700;cursor:pointer;border:none;font-family:inherit;transition:all .15s;letter-spacing:.01em}
-.pcv2-btn-outline{background:transparent;border:1px solid var(--border2);color:var(--white2)}
-.pcv2-btn-outline:hover{border-color:var(--indigo);color:rgba(170,168,252,.9);background:rgba(99,102,241,.06)}
-.pcv2-btn-gold{background:var(--indigo);color:#fff}
+.pcv2-card:hover{transform:translateY(-1px)}
+.pcv2-card.current{background:linear-gradient(165deg,rgba(94,234,212,.07),rgba(11,14,23,.2));border-color:rgba(94,234,212,.28);--card-glow:rgba(94,234,212,.16)}
+.pcv2-card.current:hover{transform:none}
+.pcv2-featured{background:linear-gradient(165deg,rgba(168,85,247,.15),rgba(11,14,23,.3));border-color:rgba(168,85,247,.5);--card-glow:rgba(168,85,247,.22)}
+.pcv2-card#plan-agency{background:linear-gradient(165deg,rgba(236,72,153,.07),rgba(11,14,23,.2));border-color:rgba(236,72,153,.28);--card-glow:rgba(236,72,153,.18)}
+.pcv2-pop{position:absolute;top:16px;right:16px;background:linear-gradient(90deg,#a855f7,#ec4899);color:#fff;font-size:9px;font-weight:700;padding:5px 12px;border-radius:20px;white-space:nowrap;letter-spacing:.05em}
+.pcv2-badge-icon{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:8px;font-size:10px;flex-shrink:0}
+.pcv2-tier{display:flex;align-items:center;gap:9px;font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;color:var(--teal2);margin-bottom:0}
+.pcv2-price{font-size:38px;font-weight:800;line-height:1;letter-spacing:-.03em;color:var(--white);margin:16px 0}
+.pcv2-price span{font-size:14px;font-weight:400;color:var(--white3)}
+.pcv2-sep{height:1px;background:#232838;margin-bottom:16px}
+.pcv2-list{list-style:none;display:flex;flex-direction:column;gap:11px;margin-bottom:22px}
+.pcv2-list li{display:flex;align-items:flex-start;gap:10px;font-size:12.5px;font-weight:500;color:#c6cbda;line-height:1.5}
+.pcv2-check{width:18px;height:18px;border-radius:50%;background:var(--teal-bg);color:var(--teal2);display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;margin-top:1px}
+.pcv2-check-gold{background:var(--violet-bg);color:var(--violet2)}
+.pcv2-check-pink{background:rgba(245,169,199,.15);color:#f5a9c7}
+.pcv2-check-x{background:transparent;color:#3a4054}
+.pcv2-list li.pcv2-disabled{color:#4b5164}
+.pcv2-btn{width:100%;padding:12px 0;border-radius:999px;font-size:13.5px;font-weight:700;cursor:pointer;border:none;font-family:inherit;transition:all .15s;letter-spacing:.01em}
+.pcv2-btn-outline{background:transparent;border:1px solid #232838;color:var(--white2)}
+.pcv2-btn-outline:hover{border-color:rgba(255,255,255,.3);color:var(--white)}
+.pcv2-btn-gold{background:linear-gradient(90deg,#a855f7,#ec4899);color:#fff}
 .pcv2-btn-gold:hover{opacity:.88;transform:translateY(-1px)}
-.pcv2-btn-current{background:transparent;border:none;color:var(--green);font-size:12.5px;font-weight:700;cursor:default;letter-spacing:.01em}
+.pcv2-btn-current{background:rgba(94,234,212,.08);border:1px solid rgba(94,234,212,.3);color:var(--teal2);font-size:13.5px;font-weight:700;cursor:default;letter-spacing:.01em}
 .pcv2-btn-current:hover{transform:none;filter:none}
+.pcv2-btn-agency{background:transparent;border:1px solid rgba(236,72,153,.4);color:#f5a9c7}
+.pcv2-btn-agency:hover{background:rgba(236,72,153,.08)}
 @keyframes pcv2-pulse{0%{box-shadow:0 0 0 0 rgba(201,168,76,.55)}65%{box-shadow:0 0 0 10px rgba(201,168,76,0)}100%{box-shadow:0 0 0 0 rgba(201,168,76,0)}}
 .pcv2-card.plan-selecting{animation:pcv2-pulse .55s ease-out}
 
 /* ── Billing card ─────────────────────────────────────────────── */
-.billing-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:14px;transition:border-color .2s}
-.billing-card:hover{border-color:rgba(255,255,255,.1)}
+.billing-card-border{background:linear-gradient(var(--bg2),var(--bg2)) padding-box,var(--grad-card-border) border-box;border:1.5px solid transparent;border-radius:20px;overflow:hidden;margin-bottom:32px}
+.billing-card{background:var(--bg2);overflow:hidden;position:relative}
+/* Clean, even navy base (matches the app's other cards) with just the
+   top-right corner glow for accent. Offset up/right of the button (not
+   centered on it) and stretched over a much wider, slower fade so the
+   circle's edge dissolves into the background instead of stopping as a
+   visible ring. */
+.billing-card::before{content:'';position:absolute;top:-40px;right:-40px;width:520px;height:520px;border-radius:50%;background:radial-gradient(circle,var(--card-glow-core,rgba(148,152,168,.14)) 0%,var(--card-glow,rgba(148,152,168,.04)) 30%,rgba(0,0,0,0) 68%);pointer-events:none;z-index:0}
+.billing-card:has(.badge-starter)::before{--card-glow-core:rgba(94,234,212,.2);--card-glow:rgba(45,212,191,.06)}
+.billing-card:has(.badge-pro)::before{--card-glow-core:rgba(196,132,252,.22);--card-glow:rgba(168,85,247,.07)}
+.billing-card:has(.badge-agency)::before{--card-glow-core:rgba(244,143,177,.19);--card-glow:rgba(236,72,153,.06)}
+.billing-card>*{position:relative;z-index:1}
 
 /* Header */
-.bc-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:22px 24px 20px}
+.bc-header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:24px 28px 4px}
 .bc-header-left{display:flex;flex-direction:column;gap:5px}
-.bc-badges-row{display:flex;align-items:center;gap:9px;margin-bottom:3px}
-.bc-plan-badge{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;padding:3px 10px;border-radius:20px}
-.bc-plan-badge.badge-starter{background:rgba(255,255,255,.06);color:rgba(240,238,234,.55);border:1px solid rgba(255,255,255,.1)}
-.bc-plan-badge.badge-pro{background:rgba(99,102,241,.12);color:rgba(170,168,252,.9);border:1px solid rgba(99,102,241,.28)}
-.bc-plan-badge.badge-agency{background:rgba(255,255,255,.06);color:rgba(240,238,234,.55);border:1px solid rgba(255,255,255,.1)}
+.bc-badges-row{display:flex;align-items:center;gap:10px;margin-bottom:3px}
+.bc-plan-badge{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:8px;font-size:11px}
+.bc-plan-badge.badge-starter{background:var(--teal-bg);color:var(--teal2)}
+.bc-plan-badge.badge-pro{background:var(--violet-bg);color:var(--violet2)}
+.bc-plan-badge.badge-agency{background:rgba(245,169,199,.15);color:#f5a9c7}
+.bc-plan-badge.badge-free{background:rgba(255,255,255,.08);color:rgba(240,238,234,.6)}
+.bc-plan-name{font-size:15px;font-weight:800;text-transform:uppercase;letter-spacing:.06em}
+.bc-plan-name.badge-starter{color:var(--teal2)}
+.bc-plan-name.badge-pro{color:var(--violet2)}
+.bc-plan-name.badge-agency{color:#f5a9c7}
+.bc-plan-name.badge-free{color:rgba(240,238,234,.6)}
 .bc-status{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600}
 .bc-status-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
 .bc-active{color:#4ade80}.bc-active .bc-status-dot{background:#4ade80;box-shadow:0 0 7px rgba(74,222,128,.65)}
 .bc-canceling{color:#facc15}.bc-canceling .bc-status-dot{background:#facc15;box-shadow:0 0 7px rgba(250,204,21,.55)}
 .bc-canceled{color:var(--red)}.bc-canceled .bc-status-dot{background:var(--red)}
-.bc-plan-title{font-size:16px;font-weight:700;letter-spacing:-.025em;color:var(--white);line-height:1.2}
-.bc-plan-price{font-size:14px;font-weight:500;color:rgba(240,238,234,.4);margin-left:4px}
+.bc-plan-title{font-size:38px;font-weight:800;letter-spacing:-.03em;color:var(--white);line-height:1;margin:14px 0 6px}
+.bc-plan-price{font-size:14px;font-weight:400;color:rgba(240,238,234,.4);margin-left:4px}
 .bc-plan-quota{font-size:11.5px;color:rgba(240,238,234,.35);margin-top:1px}
 .bc-header-right{display:flex;align-items:flex-start;flex-shrink:0;padding-top:2px}
-.bc-manage-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:999px;color:rgba(240,238,234,.6);font-size:12px;font-weight:600;transition:all .15s;font-family:inherit;cursor:pointer;white-space:nowrap}
-.bc-manage-btn:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);color:var(--white)}
+.bc-manage-btn{display:inline-flex;align-items:center;gap:8px;padding:10px 20px 10px 14px;background:rgba(168,85,247,.1);border:1px solid rgba(168,85,247,.35);border-radius:999px;color:var(--white);font-size:12.5px;font-weight:600;transition:all .15s;font-family:inherit;cursor:pointer;white-space:nowrap}
+.bc-manage-btn:hover{background:rgba(168,85,247,.18);border-color:rgba(168,85,247,.5)}
 .bc-manage-btn:disabled{opacity:.4;cursor:default}
-.bc-body-divider{height:1px;background:var(--border);margin:0}
+.bc-manage-btn .bc-manage-icon{flex-shrink:0}
+.bc-body-divider{height:1px;background:#171b26;margin:14px 0 0}
 
 /* Stats strip */
-.bc-stats{display:grid;grid-template-columns:1fr 1px 1fr 1px 1fr;align-items:center;padding:0;background:rgba(0,0,0,.12)}
-.bc-stat{padding:16px 22px;display:flex;flex-direction:column;gap:5px}
-.bc-sdiv{width:1px;height:52px;background:var(--border);align-self:center}
-.bc-slabel{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(240,238,234,.28)}
-.bc-sval{font-size:15px;font-weight:700;color:var(--white);letter-spacing:-.02em;line-height:1}
-.bc-sval-gold{color:rgba(170,168,252,.85)}
+.bc-stats{display:grid;grid-template-columns:1fr 1px 1fr 1px 1fr;align-items:center;padding:0;background:transparent}
+.bc-stat{padding:18px 28px;display:flex;flex-direction:column;gap:5px}
+.bc-sdiv{width:1px;height:52px;background:#171b26;align-self:center}
+.bc-slabel{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(240,238,234,.35)}
+.bc-sval{font-size:17px;font-weight:700;color:var(--white);letter-spacing:-.02em;line-height:1}
+.bc-sval-gold{color:var(--violet2)}
 .bc-sval-amber{color:#facc15}
-.bc-sval-indigo{color:rgba(170,168,252,.88)}
+.bc-sval-indigo{color:var(--violet2)}
 .bc-sval-red{color:var(--red)}
 .bc-ssub{font-size:10px;color:rgba(240,238,234,.28);font-weight:500;line-height:1.3}
-.bc-stats-pending{display:flex;align-items:center;gap:8px;padding:16px 22px;font-size:11.5px;color:rgba(240,238,234,.28);font-style:italic;background:rgba(0,0,0,.12)}
+.bc-stats-pending{display:flex;align-items:center;gap:8px;padding:18px 28px;font-size:11.5px;color:rgba(240,238,234,.28);font-style:italic;background:transparent}
 
 /* ── Usage stats grid ──────────────────────────────────────────── */
 
@@ -577,14 +697,40 @@ textarea.edit-val{min-height:38px}
 .st-opt.active .st-opt-name{color:var(--gold)}
 .st-opt.active .st-opt-sub{color:rgba(201,168,76,.6)}
 .st-divider{height:1px;background:var(--border);margin:24px 0}
-/* Email card redesign for settings */
-.st-email-card{display:flex;align-items:center;gap:14px;padding:16px;background:rgba(255,255,255,.03);border:1px solid var(--border2);border-radius:var(--radius-sm)}
-.st-email-icon{width:38px;height:38px;border-radius:10px;background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:var(--green)}
-.st-email-info{flex:1;min-width:0}
-.st-email-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--white3);margin-bottom:3px}
-.st-email-val{font-size:13px;font-weight:600;color:var(--white);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.st-email-edit{margin-top:12px;padding-top:12px;border-top:1px solid var(--border)}
-#email-verified-badge{line-height:0;flex-shrink:0;display:inline-flex;align-items:center;margin-top:2px}
+/* Account email card — same gradient border as the Plan & Billing cards.
+   Border color only, no corner glow. */
+.acct-card{border-radius:16px;background:linear-gradient(var(--bg2),var(--bg2)) padding-box,var(--grad-card-border) border-box;border:1px solid transparent;overflow:hidden;margin-bottom:24px}
+.acct-card-head{display:flex;align-items:center;gap:8px;padding:20px 26px 0}
+.acct-card-head .ic{font-size:13px;opacity:.6;display:flex;align-items:center}
+.acct-card-head .lbl{font-size:11.5px;font-weight:800;letter-spacing:.08em;color:#6B7284}
+.acct-card-body{padding:18px 26px 22px}
+.acct-row{display:flex;align-items:center;justify-content:space-between;gap:16px;border-radius:13px;background:rgba(168,85,247,.05);border:1px solid rgba(168,85,247,.16);padding:16px 18px}
+.acct-row-left{display:flex;align-items:center;gap:14px;min-width:0}
+.acct-iconbox{width:38px;height:38px;border-radius:10px;background:rgba(45,212,191,.14);display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#5EEAD4}
+.acct-sublabel{font-size:10.5px;font-weight:800;letter-spacing:.06em;color:#565D70}
+.acct-valrow{display:flex;align-items:center;gap:2px;margin-top:3px}
+.acct-val{font-family:'Sora',sans-serif;font-size:14px;font-weight:700;color:#F5F6FA;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.acct-val.unset{color:#4B5164}
+.acct-check{display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.acct-action-btn{flex-shrink:0;padding:5px 12px;border-radius:999px;border:1px solid rgba(168,85,247,.35);background:rgba(168,85,247,.1);color:#C084FC;font-size:11px;font-weight:700;font-family:inherit;cursor:pointer;transition:background .15s,border-color .15s}
+.acct-action-btn:hover{background:rgba(168,85,247,.18);border-color:rgba(168,85,247,.5)}
+.acct-edit{margin-top:16px}
+.acct-edit-row{display:flex;align-items:center;gap:12px}
+.acct-inp-wrap{position:relative;flex:1;min-width:0}
+.acct-inp{width:100%;box-sizing:border-box;padding:9px 44px 9px 16px;border-radius:999px;border:1px solid rgba(168,85,247,.2);background:rgba(168,85,247,.05);color:#E7E9F0;font-size:13px;font-family:inherit;outline:none;transition:border-color .15s}
+.acct-inp:focus{border-color:#6366f1}
+.acct-inp-clear{position:absolute;right:10px;top:50%;transform:translateY(-50%);width:20px;height:20px;border-radius:50%;border:none;background:rgba(248,113,113,.14);color:#f87171;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .15s}
+.acct-inp-clear:hover{background:rgba(248,113,113,.24)}
+.acct-send-btn{flex-shrink:0;padding:9px 18px;border-radius:999px;border:none;background:#7C6EF5;color:#fff;font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;white-space:nowrap;transition:opacity .15s}
+.acct-send-btn:disabled{opacity:.6;cursor:default}
+.acct-row-cd{display:flex;align-items:center;gap:16px;flex-shrink:0}
+.acct-cancel-btn{font-size:13px;font-weight:700;color:#9199AB;background:none;border:none;cursor:pointer;padding:0;font-family:inherit}
+.acct-remove-btn{font-size:13px;font-weight:700;color:#F87171;background:none;border:none;cursor:pointer;padding:0;font-family:inherit}
+.acct-msg{font-size:12.5px;margin-top:10px;min-height:16px}
+.acct-waiting{margin-top:16px;padding:13px 16px;border-radius:13px;background:rgba(45,212,191,.06);border:1px solid rgba(45,212,191,.22);display:flex;align-items:flex-start;gap:10px}
+.acct-waiting .ic{color:#5EEAD4;flex-shrink:0;margin-top:1px}
+.acct-waiting .txt{font-size:12.5px;color:#C6CBDA;line-height:1.55}
+.acct-resend-btn{font-size:12px;color:#8B92A5;background:none;border:none;cursor:pointer;padding:0;font-family:inherit;text-decoration:underline;margin-top:6px;display:block}
 
 /* ── Job Filters ─────────────────────────────────────────────────────────── */
 .jf-section-hdr{display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;padding:2px 0}
@@ -623,9 +769,9 @@ textarea.edit-val{min-height:38px}
 .jf-sl-val{font-size:11px;font-weight:700;color:var(--gold);background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.22);padding:2px 10px;border-radius:20px;min-width:46px;text-align:center;transition:all .15s}
 .jf-sl-hint{font-size:10.5px;color:rgba(240,238,234,.28);margin-top:6px;line-height:1.5}
 .jf-sl{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:2px;outline:none;cursor:pointer;display:block;border:none}
-.jf-sl::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;border-radius:50%;background:#6366f1;cursor:pointer;box-shadow:0 0 0 2px rgba(99,102,241,.25),0 2px 6px rgba(0,0,0,.4);transition:box-shadow .15s}
-.jf-sl::-webkit-slider-thumb:hover{box-shadow:0 0 0 4px rgba(99,102,241,.2),0 2px 8px rgba(0,0,0,.5)}
-.jf-sl::-moz-range-thumb{width:13px;height:13px;border-radius:50%;background:#6366f1;cursor:pointer;border:none;box-shadow:0 0 0 2px rgba(99,102,241,.25)}
+.jf-sl::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;border-radius:50%;background:#fff;cursor:pointer;box-shadow:0 0 0 2px rgba(168,85,247,.35),0 2px 6px rgba(0,0,0,.4);transition:box-shadow .15s}
+.jf-sl::-webkit-slider-thumb:hover{box-shadow:0 0 0 4px rgba(168,85,247,.3),0 2px 8px rgba(0,0,0,.5)}
+.jf-sl::-moz-range-thumb{width:13px;height:13px;border-radius:50%;background:#fff;cursor:pointer;border:none;box-shadow:0 0 0 2px rgba(168,85,247,.35)}
 
 /* Select */
 .jf-select{width:100%;padding:8px 11px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:9px;color:var(--white);font-size:12px;font-family:inherit;outline:none;cursor:pointer;transition:border-color .2s;margin-top:4px}
@@ -734,94 +880,121 @@ textarea.edit-val{min-height:38px}
 .pr-sel-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:14px}
 .pr-sel-card{background:var(--bg2);border:1.5px solid var(--border);border-radius:13px;padding:14px 16px;cursor:pointer;transition:all .15s;position:relative}
 .pr-sel-card:hover{border-color:rgba(255,255,255,.14);background:rgba(255,255,255,.03)}
-.pr-sel-card.active{background:rgba(99,102,241,.08);border-color:rgba(99,102,241,.45)}
+.pr-sel-card.active{background:var(--grad-selected);border-color:rgba(168,85,247,.45)}
 .pr-sel-card.pr-add{background:transparent;border:1.5px dashed rgba(255,255,255,.1);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:90px}
-.pr-sel-card.pr-add:hover{border-color:rgba(99,102,241,.4);background:rgba(99,102,241,.04)}
+.pr-sel-card.pr-add:hover{border-color:rgba(168,85,247,.4);background:rgba(168,85,247,.04)}
 .pr-sel-av{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;margin-bottom:10px;overflow:hidden;flex-shrink:0}
 .pr-sel-av img{width:100%;height:100%;object-fit:cover;display:block}
-.pr-sel-card.active .pr-sel-av{background:var(--indigo)}
+.pr-sel-card.active .pr-sel-av{background:var(--grad-brand-diag)}
 .pr-sel-card:not(.active) .pr-sel-av{background:rgba(255,255,255,.1);color:rgba(240,238,234,.4)}
 .pr-sel-card.pr-add .pr-sel-av{display:none}
 .pr-sel-name{font-size:12.5px;font-weight:700;letter-spacing:-.015em;margin-bottom:3px}
-.pr-sel-card.active .pr-sel-name{color:rgba(196,194,248,.9)}
+.pr-sel-card.active .pr-sel-name{color:#fafafc}
 .pr-sel-card:not(.active) .pr-sel-name{color:rgba(240,238,234,.42)}
 .pr-sel-meta{font-size:10.5px}
-.pr-sel-card.active .pr-sel-meta{color:rgba(180,178,248,.45)}
+.pr-sel-card.active .pr-sel-meta{color:var(--teal2)}
 .pr-sel-card:not(.active) .pr-sel-meta{color:rgba(240,238,234,.22)}
-.pr-sel-tag{position:absolute;top:10px;right:10px;font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:2px 7px;border-radius:20px;background:rgba(99,102,241,.15);color:#8b8cf0;border:1px solid rgba(99,102,241,.28)}
+.pr-sel-toprow{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:8px}
+.pr-sel-tag{font-size:8.5px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:2px 7px;border-radius:20px;background:var(--grad-badge);color:#fff;border:none;flex-shrink:0}
 .pr-add-icon{font-size:20px;color:rgba(240,238,234,.22)}
 .pr-add-lbl{font-size:11px;font-weight:600;color:rgba(240,238,234,.22)}
 .pr-sel-card.pr-add:hover .pr-add-icon,.pr-sel-card.pr-add:hover .pr-add-lbl{color:var(--indigo)}
+.pr-sel-type{font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--teal2)}
+.pr-sel-type-agency,.pr-sel-type-freelancer{color:var(--teal2)}
 
 /* ── Profile detail card ───────────────────────────────────────────────────── */
-.pr-detail{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:14px}
-.pr-hdr{padding:20px 22px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:14px}
-.pr-av{width:48px;height:48px;border-radius:50%;background:var(--indigo);display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;color:#fff;flex-shrink:0;letter-spacing:-.02em;overflow:hidden}
+.pr-detail{background:linear-gradient(var(--bg2),var(--bg2)) padding-box,var(--grad-card-border) border-box;border:1.5px solid transparent;border-radius:var(--radius-lg);overflow:hidden;margin-bottom:14px}
+.pr-hdr{padding:24px 26px 6px;display:flex;align-items:flex-start;gap:14px}
+.pr-av{width:56px;height:56px;border-radius:50%;background:#12151f;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;color:var(--violet2);flex-shrink:0;letter-spacing:-.02em;overflow:hidden}
 .pr-av img{width:100%;height:100%;object-fit:cover;display:block}
 .pr-av-pending{background:rgba(255,255,255,.06);color:rgba(240,238,234,.2)}
 .pr-info{flex:1;min-width:0}
 .pr-name-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:3px}
-.pr-name{font-size:17px;font-weight:800;color:var(--white);letter-spacing:-.035em}
+.pr-name{font-family:'Sora',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:19px;font-weight:700;color:var(--white);letter-spacing:-.02em}
 .pr-tier-badge{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;padding:3px 8px;border-radius:20px;background:rgba(52,211,153,.08);color:#34d399;border:1px solid rgba(52,211,153,.18)}
 .pr-meta{font-size:11.5px;color:var(--white3);margin-bottom:11px;line-height:1.5}
 .pr-acts{display:flex;align-items:center;gap:7px}
 .pr-hdr-right{display:flex;align-items:center;gap:7px;flex-shrink:0;align-self:flex-start;padding-top:2px}
 .pr-card-block{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px 22px;margin-bottom:16px}
 .pr-card-block-lbl{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.13em;color:rgba(240,238,234,.25);margin-bottom:12px}
-.btn-make-primary{background:none;border:none;font-family:inherit;cursor:pointer;font-size:11px;color:rgba(99,102,241,.6);padding:0;margin-top:5px;display:inline-block;transition:color .12s;letter-spacing:-.01em}
-.btn-make-primary:hover{color:rgba(99,102,241,.9)}
+.btn-make-primary{background:none;border:none;font-family:inherit;cursor:pointer;font-size:11px;color:rgba(192,132,252,.7);padding:0;margin-top:5px;display:inline-block;transition:color .12s;letter-spacing:-.01em}
+.btn-make-primary:hover{color:var(--violet2)}
+.btn-sync-circle{width:28px;height:28px;border-radius:50%;background:var(--grad-brand-diag);color:#fff;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:opacity .15s;flex-shrink:0}
+.btn-sync-circle:hover{opacity:.86}
+#section-profiles .btn-indigo{background:var(--grad-brand)}
 .btn-indigo{display:inline-flex;align-items:center;gap:5px;padding:8px 18px;border-radius:999px;background:var(--indigo);color:#fff;font-size:12px;font-weight:700;border:none;cursor:pointer;font-family:inherit;transition:opacity .12s;letter-spacing:-.01em;white-space:nowrap}
 .btn-indigo:hover{opacity:.86}
 .btn-indigo i{font-size:12px}
-.btn-indigo-outline{display:inline-flex;align-items:center;gap:5px;padding:7px 16px;border-radius:999px;background:transparent;color:rgba(99,102,241,.85);font-size:12px;font-weight:600;border:1.5px solid rgba(99,102,241,.32);cursor:pointer;font-family:inherit;transition:all .12s;white-space:nowrap}
-.btn-indigo-outline:hover{background:var(--indigo-bg);border-color:rgba(99,102,241,.55)}
+.btn-indigo-outline{display:inline-flex;align-items:center;gap:5px;padding:7px 16px;border-radius:999px;background:transparent;color:var(--violet2);font-size:12px;font-weight:600;border:1.5px solid rgba(168,85,247,.4);cursor:pointer;font-family:inherit;transition:all .12s;white-space:nowrap}
+.btn-indigo-outline:hover{background:var(--violet-bg);border-color:rgba(168,85,247,.6)}
 .btn-indigo-outline i{font-size:12px}
-.btn-icon-del{width:30px;height:30px;border-radius:8px;background:transparent;border:1px solid rgba(255,255,255,.1);color:rgba(240,238,234,.35);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
-.btn-icon-del:hover{background:rgba(248,113,113,.1);border-color:rgba(248,113,113,.35);color:var(--red)}
+.btn-icon-del{width:28px;height:28px;border-radius:50%;background:rgba(248,113,113,.12);border:1px solid rgba(248,113,113,.35);color:var(--red);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;flex-shrink:0}
+.btn-icon-del:hover{background:rgba(248,113,113,.2);border-color:rgba(248,113,113,.5)}
 
 /* ── Profile stats ─────────────────────────────────────────────────────────── */
-.pr-stats{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid rgba(255,255,255,.04)}
-.pr-stat{padding:16px 0;text-align:center;border-right:1px solid rgba(255,255,255,.03)}
-.pr-stat:last-child{border-right:none}
-.pr-stat-n{font-size:17px;font-weight:700;color:rgba(240,238,234,.88);letter-spacing:-.03em;line-height:1;margin-bottom:5px}
-.pr-stat-l{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:rgba(240,238,234,.18)}
-.pr-foot{padding:9px 22px;border-top:1px solid rgba(255,255,255,.04);display:flex;align-items:center;gap:6px}
+.pr-stats{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid #171b26;padding:4px 26px}
+.pr-stat{padding:8px 10px;text-align:center;border-left:1px solid #171b26;display:flex;flex-direction:column;align-items:center}
+.pr-stat:first-child{border-left:none}
+.pr-stat-n{font-size:21px;font-weight:700;color:#f5f6fa;letter-spacing:-.03em;line-height:1;margin-bottom:5px}
+.pr-stat-n-highlight{color:var(--teal2)}
+.pr-stat-l{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#565d70}
+.pr-foot{padding:10px 26px;border-top:1px solid #171b26;display:flex;align-items:center;gap:8px}
 .pr-sync-dot{width:5px;height:5px;border-radius:50%;background:#34d399;flex-shrink:0}
-.pr-sync-txt{font-size:11px;color:rgba(240,238,234,.2)}
+.pr-sync-txt{font-size:11px;color:#6b7284;display:flex;align-items:center;gap:6px;min-width:0;flex:1}
+.pr-sync-label{flex-shrink:0;color:#868da0}
+.pr-sync-sep{flex-shrink:0;opacity:.4}
+.pr-sync-url{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;color:#565d70}
 
 /* ── Profile sections (portfolio, filters) ─────────────────────────────────── */
-.pr-section{border-top:1px solid var(--border);padding:16px 22px}
-.pr-sec-hdr{margin-bottom:10px}
-.pr-sec-lbl{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.13em;color:rgba(240,238,234,.25)}
+.pr-section{border-top:1px solid #171b26;padding:20px 26px}
+.pr-sec-hdr{margin-bottom:14px}
+.pr-sec-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.pr-sec-lbl{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--white);display:flex;align-items:center;gap:8px}
+.pr-sec-lbl svg{flex-shrink:0;opacity:.7}
+.pr-port-badge{flex-shrink:0;display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:3px 9px;border-radius:999px;white-space:nowrap;background:rgba(255,255,255,.05);color:rgba(240,238,234,.45);border:1px solid rgba(255,255,255,.09)}
+.pr-port-badge.all-linked{background:rgba(52,211,153,.08);color:#34d399;border-color:rgba(52,211,153,.2)}
+.pr-port-badge.missing{background:rgba(248,113,113,.1);color:#f87171;border-color:rgba(248,113,113,.25)}
 
 /* ── Portfolio item row (new design) ───────────────────────────────────────── */
-.pi-list{display:flex;flex-direction:column}
-.port-v2-card:not(.editing){display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid rgba(255,255,255,.035);background:transparent;border-top:none;border-left:none;border-right:none;border-radius:0;overflow:visible;cursor:default}
-.port-v2-card:not(.editing):last-child{border-bottom:none}
+.pi-list{display:flex;flex-direction:column;gap:6px}
+.port-v2-card:not(.editing){display:flex;align-items:center;gap:9px;padding:7px 14px;background:rgba(255,255,255,.022);border:1px solid rgba(255,255,255,.045)!important;border-radius:999px!important;overflow:visible;cursor:default;transition:background .12s,border-color .12s}
+.port-v2-card:not(.editing):hover{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.09)!important}
 .port-v2-card:not(.editing)::before{display:none!important}
-.pi-name{flex:1;font-size:11px;font-weight:400;color:rgba(240,238,234,.45);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.pi-check-ok{width:16px;height:16px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
-.pi-missing-btn{width:16px;height:16px;flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:50%;transition:background .12s}
-.pi-missing-btn:hover{background:rgba(250,204,21,.06)}
-.pi-url-text{font-size:10.5px;color:rgba(99,102,241,.65);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:160px;flex-shrink:0;text-decoration:none;cursor:pointer;transition:color .12s}
-.pi-url-text:hover{color:rgba(99,102,241,1);text-decoration:underline}
-.pi-no-url-text{font-size:10.5px;color:rgba(240,238,234,.22);flex-shrink:0;white-space:nowrap;font-style:italic}
+.pi-name{flex:1;font-size:10.5px;font-weight:400;color:rgba(240,238,234,.45);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pi-check-ok{width:15px;height:15px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.pi-check-ok svg{overflow:visible}
+.pi-missing-btn{width:15px;height:15px;flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;border-radius:50%;background:rgba(248,113,113,.14);border:1px solid rgba(248,113,113,.4);color:#f87171;font-size:9px;font-weight:700;transition:background .12s;box-sizing:border-box}
+.pi-missing-btn:hover{background:rgba(245,194,107,.22)}
+.pi-url-text{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;color:rgba(129,140,248,.75);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:175px;flex-shrink:0;text-decoration:none;cursor:pointer;transition:color .12s}
+.pi-url-text svg{flex-shrink:0;opacity:.8}
+.pi-url-text:hover{color:#a5b4fc;text-decoration:underline}
+.pi-no-url-text{font-size:10px;font-weight:600;color:rgba(248,113,113,.6);flex-shrink:0;white-space:nowrap}
 
 /* ── Filter segmented control ──────────────────────────────────────────────── */
-.jf-seg{background:transparent;border-radius:0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
-.jf-seg-opt{padding:13px 16px;border-radius:14px;text-align:left;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:10px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.025);user-select:none}
-.jf-seg-opt.jf-active{background:rgba(99,102,241,.1);border-color:rgba(99,102,241,.45)}
+.jf-seg{background:transparent;border-radius:0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+/* Job-filter presets need a 4th ("Custom") column — scoped so it doesn't
+   also stretch the Proposal Length picker, which shares the .jf-seg class
+   but only has 3 options. */
+.jf-seg-presets{grid-template-columns:repeat(4,1fr)}
+.jf-seg-opt{padding:9px 12px;border-radius:12px;text-align:left;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:7px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.025);user-select:none}
+.jf-seg-opt.jf-active{background:var(--grad-selected);border-color:rgba(168,85,247,.45)}
 .jf-seg-opt:not(.jf-active):hover{background:rgba(255,255,255,.045);border-color:rgba(255,255,255,.14)}
+/* Custom isn't a real preset to click into — it just reflects state, so no
+   pointer cursor/hover affordance, and it never shows the checkmark. */
+.jf-seg-custom{cursor:default}
+.jf-seg-custom:hover{background:rgba(255,255,255,.025);border-color:rgba(255,255,255,.08)}
+.jf-seg-custom.jf-active:hover{background:var(--grad-selected);border-color:rgba(168,85,247,.45)}
+.jf-seg-custom .jf-seg-ck{display:none}
 .jf-seg-ck{width:14px;height:14px;border-radius:50%;border:1.5px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:all .15s}
-.jf-seg-opt.jf-active .jf-seg-ck{background:rgba(99,102,241,.2);border-color:rgba(99,102,241,.5)}
-.jf-seg-ck svg{display:none;color:#8b8cf0}
+.jf-seg-opt.jf-active .jf-seg-ck{background:rgba(168,85,247,.2);border-color:rgba(168,85,247,.5)}
+.jf-seg-ck svg{display:none;color:var(--violet2)}
 .jf-seg-opt.jf-active .jf-seg-ck svg{display:block}
 .jf-seg-txt{display:flex;flex-direction:column;gap:1px}
 .jf-seg-name{font-size:11.5px;font-weight:700}
-.jf-seg-opt.jf-active .jf-seg-name{color:#c4c2f8}
+.jf-seg-opt.jf-active .jf-seg-name{color:#fafafc}
 .jf-seg-opt:not(.jf-active) .jf-seg-name{color:rgba(240,238,234,.28)}
 .jf-seg-sub{font-size:9.5px}
-.jf-seg-opt.jf-active .jf-seg-sub{color:rgba(180,178,248,.4)}
+.jf-seg-opt.jf-active .jf-seg-sub{color:var(--teal2)}
 .jf-seg-opt:not(.jf-active) .jf-seg-sub{color:rgba(240,238,234,.18)}
 
 /* ── Filter groups 2×2 ─────────────────────────────────────────────────────── */
@@ -829,9 +1002,10 @@ textarea.edit-val{min-height:38px}
 .jf-group{background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.05);border-radius:10px;padding:12px 14px}
 .jf-group-lbl{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.11em;color:rgba(240,238,234,.22);margin-bottom:10px;display:flex;align-items:center;gap:6px}
 .jf-group-lbl svg{flex-shrink:0;opacity:.7}
-.jf-select{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:7px;color:rgba(240,238,234,.7);font-size:11px;font-weight:600;padding:3px 8px;font-family:inherit;cursor:pointer;outline:none;transition:border-color .15s}
-.jf-select:focus{border-color:rgba(99,102,241,.4)}
-.jf-toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(6px);background:#111827;border:1px solid rgba(99,102,241,.35);color:rgba(240,238,234,.85);font-size:12.5px;font-weight:600;padding:10px 20px;border-radius:10px;z-index:999999;pointer-events:none;opacity:0;transition:opacity .2s,transform .2s;display:flex;align-items:center;gap:8px;white-space:nowrap;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+.jf-emoji{font-size:11px;line-height:1;flex-shrink:0;font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif;color:initial;display:inline-flex;align-items:center;justify-content:center;position:relative;top:-1px}
+.jf-row2 .jf-select{-webkit-appearance:none;appearance:none;width:88px;background:rgba(255,255,255,.05) url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="%23999aab" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>') no-repeat right 6px center;background-size:9px;border:1px solid rgba(255,255,255,.1);border-radius:7px;color:rgba(240,238,234,.7);font-size:11px;font-weight:600;padding:3px 20px 3px 8px;font-family:inherit;cursor:pointer;outline:none;transition:border-color .15s}
+.jf-row2 .jf-select:focus{border-color:rgba(99,102,241,.4)}
+.jf-toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(6px);background:#111827;border:1px solid rgba(168,85,247,.35);color:rgba(240,238,234,.85);font-size:12.5px;font-weight:600;padding:10px 20px;border-radius:10px;z-index:999999;pointer-events:none;opacity:0;transition:opacity .2s,transform .2s;display:flex;align-items:center;gap:8px;white-space:nowrap}
 .jf-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 .jf-group-lbl i{font-size:12px}
 .jf-row2{display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.035)}
@@ -841,19 +1015,20 @@ textarea.edit-val{min-height:38px}
 .jf-row2-val{font-size:11px;font-weight:700;color:rgba(240,238,234,.78);min-width:26px;text-align:right}
 .jf-tog-sm{width:24px;height:14px;border-radius:10px;position:relative;cursor:pointer;flex-shrink:0;transition:background .15s}
 .jf-tok{position:absolute;top:2px;left:2px;width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.9);transition:transform .15s}
-.jf-tog-sm.on{background:var(--indigo)}.jf-tog-sm.on .jf-tok{transform:translateX(10px)}
-.jf-tog-sm.off{background:rgba(255,255,255,.1)}
-.jf-filter-footer{display:flex;align-items:center;justify-content:space-between;padding:14px 0 2px}
-.btn-apply-filters{display:inline-flex;align-items:center;gap:6px;padding:10px 24px;border-radius:999px;background:var(--indigo);color:#fff;font-size:13px;font-weight:700;border:none;cursor:pointer;font-family:inherit;letter-spacing:-.01em;transition:opacity .12s}
+.jf-tog-sm.on{background:var(--grad-brand)}.jf-tog-sm.on .jf-tok{transform:translateX(10px)}
+.jf-tog-sm.off{background:#1b2030}
+.jf-filter-footer{display:flex;align-items:center;justify-content:space-between;padding:12px 0 2px}
+.jf-filter-footer-top{padding:0;justify-content:flex-end;gap:8px}
+.btn-apply-filters{display:inline-flex;align-items:center;gap:4px;padding:5px 13px;border-radius:999px;background:linear-gradient(90deg,#7c6ef5,#a855f7);color:#fff;font-size:11px;font-weight:700;border:none;cursor:pointer;font-family:inherit;letter-spacing:-.01em;transition:opacity .12s}
 .btn-apply-filters:hover{opacity:.87}
-.btn-apply-filters i{font-size:15px}
-.btn-reset-plain{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:999px;font-family:inherit;cursor:pointer;font-size:12px;font-weight:600;color:rgba(240,238,234,.45);transition:all .15s;padding:9px 18px}
+.btn-apply-filters i{font-size:11px}
+.btn-reset-plain{background:#12151f;border:1px solid #232838;border-radius:999px;font-family:inherit;cursor:pointer;font-size:11px;font-weight:700;color:#9199ab;transition:all .15s;padding:5px 12px}
 .btn-reset-plain:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.18);color:rgba(240,238,234,.7)}
 .jf-sl-compact{width:52px;height:3px;cursor:pointer;flex-shrink:0;accent-color:var(--indigo)}
 
 
 /* ── Job filter category multi-select ─────────────────────────────────────── */
-.jf-category-wrap{border-top:1px solid rgba(255,255,255,.045);padding:14px 0 4px;margin-top:8px}
+.jf-category-wrap{padding:14px 0 4px;margin-top:8px}
 .jf-category-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:rgba(240,238,255,.22);margin-bottom:8px}
 .jf-cat-chips{display:flex;flex-wrap:wrap;gap:5px;min-height:20px;margin-bottom:8px}
 .jf-cat-chips-empty{font-size:11px;color:rgba(240,238,255,.2);font-style:italic}
@@ -949,16 +1124,8 @@ textarea.edit-val{min-height:38px}
   <!-- ── Sidebar ── -->
   <div class="sidebar">
     <a href="https://snagai.netlify.app" target="_blank" class="sb-logo-link">
-      <div class="sb-icon">
-        <svg width="24" height="24" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <rect x="5" y="5" width="64" height="78" rx="10" stroke="white" stroke-width="5.5" fill="none"/>
-          <line x1="14" y1="23" x2="57" y2="23" stroke="white" stroke-width="5" stroke-linecap="round"/>
-          <line x1="14" y1="35" x2="57" y2="35" stroke="white" stroke-width="5" stroke-linecap="round"/>
-          <line x1="14" y1="47" x2="57" y2="47" stroke="white" stroke-width="5" stroke-linecap="round"/>
-          <line x1="14" y1="59" x2="40" y2="59" stroke="white" stroke-width="5" stroke-linecap="round"/>
-          <circle cx="76" cy="77" r="23" fill="#4338ca"/>
-          <polygon points="80,59 70,78 77,78 73,95 88,74 81,74" fill="white"/>
-        </svg>
+      <div class="sb-icon" id="sb-icon">
+        <img src="../icons/icon128.png" alt="Snag AI">
       </div>
       <div class="sb-brand">
         <div class="sb-name">Snag AI</div>
@@ -969,35 +1136,43 @@ textarea.edit-val{min-height:38px}
     <nav class="sb-nav">
       <div class="sb-item active" data-section="profiles">
         <div class="sb-dot"></div>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span class="sb-emoji">👤</span>
         Profiles
       </div>
-      <div class="sb-item" data-section="subscription">
+      <div class="sb-item" data-section="analytics">
         <div class="sb-dot"></div>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
-        Subscription
+        <span class="sb-emoji">📊</span>
+        Analytics
       </div>
       <div class="sb-item" data-section="settings">
         <div class="sb-dot"></div>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span class="sb-emoji">⚙️</span>
         Settings
+      </div>
+      <div class="sb-item" data-section="subscription">
+        <div class="sb-dot"></div>
+        <span class="sb-emoji">💳</span>
+        Subscription
       </div>
       <div class="sb-divider"></div>
       <div class="sb-item" data-section="howto">
         <div class="sb-dot"></div>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        <span class="sb-emoji">📖</span>
         How to use
       </div>
       <div class="sb-item" data-section="terms">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        <div class="sb-dot"></div>
+        <span class="sb-emoji">📄</span>
         Terms of Service
       </div>
       <div class="sb-item" data-section="privacy">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        <div class="sb-dot"></div>
+        <span class="sb-emoji">🛡️</span>
         Privacy Policy
       </div>
       <div class="sb-item" data-section="refund">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><path d="M1 10h22"/><path d="M8 15h.01M12 15h4"/></svg>
+        <div class="sb-dot"></div>
+        <span class="sb-emoji">↩️</span>
         Refund Policy
       </div>
     </nav>
@@ -1019,7 +1194,6 @@ textarea.edit-val{min-height:38px}
     <div class="section active" id="section-profiles">
       <div class="section-header">
         <div class="section-header-left">
-          <div class="sec-label">Profiles</div>
           <div class="section-title">Your Profiles</div>
           <div class="section-sub">Paste your Upwork profile URL, then click "Sync Profile" on your profile page to read your data.</div>
         </div>
@@ -1043,7 +1217,7 @@ textarea.edit-val{min-height:38px}
       <div id="no-profiles-msg" style="display:none">
         <div class="empty-state">
           <div class="empty-icon">
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="rgba(139,140,240,.7)" stroke-width="1.5" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <span class="emoji-icon" style="font-size:28px;line-height:1">👤</span>
           </div>
           <div class="empty-title">Add your Upwork profile</div>
           <div class="empty-desc">Paste your Upwork profile URL. After saving, open your profile page and click the <strong style="color:rgba(240,238,255,.7)">"Sync Profile"</strong> pill that appears in the bottom-right corner.</div>
@@ -1061,13 +1235,13 @@ textarea.edit-val{min-height:38px}
           <div class="empty-url-hint">After saving, click <strong>Open &amp; Sync</strong> in the profile card, then click <strong>Sync Profile</strong> on the Upwork page — takes about 5 seconds.</div>
         </div>
       </div>
+
     </div><!-- /profiles -->
 
-    <!-- ══ SUBSCRIPTION ══ -->
-    <div class="section" id="section-subscription">
-      <div class="sec-label">Subscription</div>
-      <div class="section-title-solo">Plan &amp; Billing</div>
-      <div class="section-sub-solo">Track your usage and manage your plan.</div>
+    <!-- ══ ANALYTICS ══ -->
+    <div class="section" id="section-analytics">
+      <div class="section-title-solo">Analytics</div>
+      <div class="section-sub-solo">Track your usage and monthly limits.</div>
 
       <!-- Usage Stats Grid -->
       <div class="us-grid">
@@ -1075,100 +1249,131 @@ textarea.edit-val{min-height:38px}
         <div class="us-card">
           <div class="us-card-head">
             <div class="us-icon">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M3 11.5L20 3.5L14.5 20.5L11 13L3 11.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/><path d="M11 13L20 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
             </div>
-            <div class="us-plan-badge" id="ud-plan-badge">Free</div>
+            <div class="us-card-label">Proposals</div>
           </div>
-          <div class="us-big-num" id="ud-proposals-rem">2</div>
-          <div class="us-big-label">proposals remaining</div>
-          <div class="us-bar-track"><div class="us-bar" id="ud-bar" style="width:0%"></div></div>
-          <div class="us-footnote"><strong id="ud-used">0</strong> used · <span id="ud-limit">2</span> total · resets <span id="ud-reset-date">monthly</span></div>
+          <div class="us-gauge-row" style="--gauge-color:#2dd4bf;--gauge-glow:rgba(45,212,191,.14)">
+            <div class="us-gauge">
+              <div class="us-gauge-ring" id="ud-gauge-proposals" style="--gauge-pct:0%"></div>
+              <div class="us-gauge-hole"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 11.5L20 3.5L14.5 20.5L11 13L3 11.5Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"/><path d="M11 13L20 3.5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg></div>
+            </div>
+            <div class="us-big-num"><strong id="ud-used">0</strong> of <span id="ud-limit">2</span> used</div>
+          </div>
+          <div class="us-footnote">Resets <span id="ud-reset-date">monthly</span></div>
           <div class="ud-urgency" id="ud-urgency"></div>
         </div>
 
-        <!-- Profiles -->
-        <div class="us-card">
+        <!-- Job Audits (own pool, separate from Proposals — see server/modules/usage.js) -->
+        <div class="us-card" id="ud-jobaudits-card">
           <div class="us-card-head">
             <div class="us-icon us-icon-blue">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M9 3.5H6.5C5.67 3.5 5 4.17 5 5V19C5 19.83 5.67 20.5 6.5 20.5H17.5C18.33 20.5 19 19.83 19 19V5C19 4.17 18.33 3.5 17.5 3.5H15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><rect x="9" y="2.5" width="6" height="3" rx="1" stroke="currentColor" stroke-width="1.6"/><path d="M8.5 12L10.7 14.2L15.5 9.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </div>
+            <div class="us-card-label">Job audits</div>
           </div>
-          <div class="us-big-num" id="ud-profiles-used">0</div>
-          <div class="us-big-label">profiles added</div>
-          <div class="us-bar-track"><div class="us-bar" id="ud-profiles-bar" style="width:0%"></div></div>
-          <div class="us-footnote">of <strong id="ud-profiles-limit">1</strong> allowed on your plan</div>
+          <div class="us-gauge-row" style="--gauge-color:#a855f7;--gauge-glow:rgba(168,85,247,.14)">
+            <div class="us-gauge" id="ud-jobaudits-gauge">
+              <div class="us-gauge-ring" id="ud-gauge-jobaudits" style="--gauge-pct:0%"></div>
+              <div class="us-gauge-hole">
+                <svg class="us-gauge-icon-default" width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M9 3.5H6.5C5.67 3.5 5 4.17 5 5V19C5 19.83 5.67 20.5 6.5 20.5H17.5C18.33 20.5 19 19.83 19 19V5C19 4.17 18.33 3.5 17.5 3.5H15" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/><rect x="9" y="2.5" width="6" height="3" rx="1" stroke="currentColor" stroke-width="1.5"/><path d="M8.5 12L10.7 14.2L15.5 9.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <svg class="us-gauge-icon-locked" width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M8 11V7.5C8 5.29 9.79 3.5 12 3.5C14.21 3.5 16 5.29 16 7.5V11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+              </div>
+            </div>
+            <div class="us-big-num" id="ud-jobaudits-usednum"><strong id="ud-jobaudits-used">0</strong> of <span id="ud-jobaudits-limit">2</span> used</div>
+            <div class="us-big-num" id="ud-jobaudits-bignum" style="display:none">Not on your plan</div>
+          </div>
+          <div class="us-footnote" id="ud-jobaudits-footnote">Resets <span id="ud-jobaudits-reset-date">monthly</span></div>
+          <div class="us-footnote" id="ud-jobaudits-upgrade-hint" style="display:none"><a href="#" class="us-footnote-link" id="ud-jobaudits-upgrade-link">Upgrade to Pro or Agency</a></div>
         </div>
 
-        <!-- Audits — coming soon -->
-        <div class="us-card us-card-dim">
+        <!-- Profile Audits -->
+        <div class="us-card" id="ud-audits-card">
           <div class="us-card-head">
             <div class="us-icon us-icon-purple">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" stroke-width="1.7"/><path d="M8 11V7.5C8 5.29 9.79 3.5 12 3.5C14.21 3.5 16 5.29 16 7.5V11" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
             </div>
-            <div class="us-soon-tag">Soon</div>
+            <div class="us-card-label">Profile audits</div>
           </div>
-          <div class="us-big-num us-num-dim">—</div>
-          <div class="us-big-label">profile audits</div>
-          <div class="us-bar-track"><div class="us-bar" style="width:0%"></div></div>
-          <div class="us-footnote">Coming in next update</div>
+          <div class="us-gauge-row" style="--gauge-color:#a855f7;--gauge-glow:rgba(168,85,247,.14)">
+            <div class="us-gauge" id="ud-audits-gauge">
+              <div class="us-gauge-ring" id="ud-gauge-audits" style="--gauge-pct:0%"></div>
+              <div class="us-gauge-hole"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="9" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M8 11V7.5C8 5.29 9.79 3.5 12 3.5C14.21 3.5 16 5.29 16 7.5V11" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+            </div>
+            <div class="us-big-num" id="ud-audits-bignum">Not on your plan</div>
+          </div>
+          <div class="us-footnote" id="ud-audits-footnote"><strong id="ud-audits-used">0</strong> of <span id="ud-audits-limit">0</span> used · resets <span id="ud-audits-reset-date">monthly</span></div>
+          <div class="us-footnote" id="ud-audits-upgrade-hint" style="display:none"><a href="#" class="us-footnote-link" id="ud-audits-upgrade-link">Upgrade to Pro or Agency</a></div>
         </div>
       </div>
+
+      <!-- Usage chart -->
+      <div class="an-chart-card" id="an-chart"></div>
+    </div><!-- /analytics -->
+
+    <!-- ══ SUBSCRIPTION ══ -->
+    <div class="section" id="section-subscription">
+      <div class="section-title-solo">Plan &amp; Billing</div>
+      <div class="section-sub-solo">Manage your plan and billing.</div>
 
       <!-- Billing card — rendered by JS for paid users -->
       <div id="billing-card-wrap"></div>
 
       <!-- Plans -->
-      <div class="card" style="overflow:visible">
-        <div class="card-title">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      <div class="card" style="overflow:visible;background:transparent;border:none;padding:0">
+        <div class="card-title" style="color:rgba(240,238,234,.4)">
+          <span style="font-size:12px">☆</span>
           <span id="plan-section-title">Choose a plan</span>
         </div>
         <div class="pcv2-grid">
 
-          <!-- Starter -->
+          <!-- Basic (internal key: starter) -->
           <div class="pcv2-card" id="plan-starter">
-            <div class="pcv2-tier">STARTER</div>
+            <div class="pcv2-tier"><span class="pcv2-badge-icon" style="background:var(--teal-bg);color:var(--teal2)">◆</span>BASIC</div>
             <div class="pcv2-price">$19<span>/mo</span></div>
             <div class="pcv2-sep"></div>
             <ul class="pcv2-list">
-              <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;margin-top:1px"><path d="M12 2C13.5 2 14.2 3.5 15.5 4C16.8 4.5 18.5 3.8 19.3 4.7C20.2 5.5 19.5 7.2 20 8.5C20.5 9.8 22 10.5 22 12C22 13.5 20.5 14.2 20 15.5C19.5 16.8 20.2 18.5 19.3 19.3C18.5 20.2 16.8 19.5 15.5 20C14.2 20.5 13.5 22 12 22C10.5 22 9.8 20.5 8.5 20C7.2 19.5 5.5 20.2 4.7 19.3C3.8 18.5 4.5 16.8 4 15.5C3.5 14.2 2 13.5 2 12C2 10.5 3.5 9.8 4 8.5C4.5 7.2 3.8 5.5 4.7 4.7C5.5 3.8 7.2 4.5 8.5 4C9.8 3.5 10.5 2 12 2Z" fill="#6366f1"/><path d="M8.5 12.5L11 15L15.5 9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>150 proposals / month</li>
-              <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;margin-top:1px"><path d="M12 2C13.5 2 14.2 3.5 15.5 4C16.8 4.5 18.5 3.8 19.3 4.7C20.2 5.5 19.5 7.2 20 8.5C20.5 9.8 22 10.5 22 12C22 13.5 20.5 14.2 20 15.5C19.5 16.8 20.2 18.5 19.3 19.3C18.5 20.2 16.8 19.5 15.5 20C14.2 20.5 13.5 22 12 22C10.5 22 9.8 20.5 8.5 20C7.2 19.5 5.5 20.2 4.7 19.3C3.8 18.5 4.5 16.8 4 15.5C3.5 14.2 2 13.5 2 12C2 10.5 3.5 9.8 4 8.5C4.5 7.2 3.8 5.5 4.7 4.7C5.5 3.8 7.2 4.5 8.5 4C9.8 3.5 10.5 2 12 2Z" fill="#6366f1"/><path d="M8.5 12.5L11 15L15.5 9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>1 Upwork profile</li>
-              <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;margin-top:1px"><path d="M12 2C13.5 2 14.2 3.5 15.5 4C16.8 4.5 18.5 3.8 19.3 4.7C20.2 5.5 19.5 7.2 20 8.5C20.5 9.8 22 10.5 22 12C22 13.5 20.5 14.2 20 15.5C19.5 16.8 20.2 18.5 19.3 19.3C18.5 20.2 16.8 19.5 15.5 20C14.2 20.5 13.5 22 12 22C10.5 22 9.8 20.5 8.5 20C7.2 19.5 5.5 20.2 4.7 19.3C3.8 18.5 4.5 16.8 4 15.5C3.5 14.2 2 13.5 2 12C2 10.5 3.5 9.8 4 8.5C4.5 7.2 3.8 5.5 4.7 4.7C5.5 3.8 7.2 4.5 8.5 4C9.8 3.5 10.5 2 12 2Z" fill="#6366f1"/><path d="M8.5 12.5L11 15L15.5 9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>AI cover letters</li>
-              <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;margin-top:1px"><path d="M12 2C13.5 2 14.2 3.5 15.5 4C16.8 4.5 18.5 3.8 19.3 4.7C20.2 5.5 19.5 7.2 20 8.5C20.5 9.8 22 10.5 22 12C22 13.5 20.5 14.2 20 15.5C19.5 16.8 20.2 18.5 19.3 19.3C18.5 20.2 16.8 19.5 15.5 20C14.2 20.5 13.5 22 12 22C10.5 22 9.8 20.5 8.5 20C7.2 19.5 5.5 20.2 4.7 19.3C3.8 18.5 4.5 16.8 4 15.5C3.5 14.2 2 13.5 2 12C2 10.5 3.5 9.8 4 8.5C4.5 7.2 3.8 5.5 4.7 4.7C5.5 3.8 7.2 4.5 8.5 4C9.8 3.5 10.5 2 12 2Z" fill="#6366f1"/><path d="M8.5 12.5L11 15L15.5 9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Job analysis &amp; risk alerts</li>
-              <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;margin-top:1px"><path d="M12 2C13.5 2 14.2 3.5 15.5 4C16.8 4.5 18.5 3.8 19.3 4.7C20.2 5.5 19.5 7.2 20 8.5C20.5 9.8 22 10.5 22 12C22 13.5 20.5 14.2 20 15.5C19.5 16.8 20.2 18.5 19.3 19.3C18.5 20.2 16.8 19.5 15.5 20C14.2 20.5 13.5 22 12 22C10.5 22 9.8 20.5 8.5 20C7.2 19.5 5.5 20.2 4.7 19.3C3.8 18.5 4.5 16.8 4 15.5C3.5 14.2 2 13.5 2 12C2 10.5 3.5 9.8 4 8.5C4.5 7.2 3.8 5.5 4.7 4.7C5.5 3.8 7.2 4.5 8.5 4C9.8 3.5 10.5 2 12 2Z" fill="#6366f1"/><path d="M8.5 12.5L11 15L15.5 9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Win probability scoring</li>
+              <li><span class="pcv2-check">✓</span>1 Upwork profile (freelancer or agency)</li>
+              <li><span class="pcv2-check">✓</span>150 AI-written cover letters per month, 1 free revision each</li>
+              <li><span class="pcv2-check">✓</span>Smart job matching alerts</li>
+              <li class="pcv2-disabled"><span class="pcv2-check pcv2-check-x">✕</span>AI job audits</li>
+              <li class="pcv2-disabled"><span class="pcv2-check pcv2-check-x">✕</span>Profile audit</li>
+              <li class="pcv2-disabled"><span class="pcv2-check pcv2-check-x">✕</span>Priority support</li>
             </ul>
-            <button class="pcv2-btn pcv2-btn-outline" data-plan="starter">Get Starter →</button>
+            <button class="pcv2-btn pcv2-btn-outline" data-plan="starter">Get Basic →</button>
           </div>
 
           <!-- Pro -->
           <div class="pcv2-card pcv2-featured" id="plan-pro">
             <div class="pcv2-pop">Best Value</div>
-            <div class="pcv2-tier" style="color:rgba(170,168,252,.85)">PRO</div>
-            <div class="pcv2-price" style="color:rgba(196,194,248,.95)">$39<span>/mo</span></div>
+            <div class="pcv2-tier" style="color:var(--violet2)"><span class="pcv2-badge-icon" style="background:var(--violet-bg);color:var(--violet2)">◆◆</span>PRO</div>
+            <div class="pcv2-price">$35<span>/mo</span></div>
             <div class="pcv2-sep"></div>
             <ul class="pcv2-list">
-              <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;margin-top:1px"><path d="M12 2C13.5 2 14.2 3.5 15.5 4C16.8 4.5 18.5 3.8 19.3 4.7C20.2 5.5 19.5 7.2 20 8.5C20.5 9.8 22 10.5 22 12C22 13.5 20.5 14.2 20 15.5C19.5 16.8 20.2 18.5 19.3 19.3C18.5 20.2 16.8 19.5 15.5 20C14.2 20.5 13.5 22 12 22C10.5 22 9.8 20.5 8.5 20C7.2 19.5 5.5 20.2 4.7 19.3C3.8 18.5 4.5 16.8 4 15.5C3.5 14.2 2 13.5 2 12C2 10.5 3.5 9.8 4 8.5C4.5 7.2 3.8 5.5 4.7 4.7C5.5 3.8 7.2 4.5 8.5 4C9.8 3.5 10.5 2 12 2Z" fill="#6366f1"/><path d="M8.5 12.5L11 15L15.5 9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>400 proposals / month</li>
-              <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;margin-top:1px"><path d="M12 2C13.5 2 14.2 3.5 15.5 4C16.8 4.5 18.5 3.8 19.3 4.7C20.2 5.5 19.5 7.2 20 8.5C20.5 9.8 22 10.5 22 12C22 13.5 20.5 14.2 20 15.5C19.5 16.8 20.2 18.5 19.3 19.3C18.5 20.2 16.8 19.5 15.5 20C14.2 20.5 13.5 22 12 22C10.5 22 9.8 20.5 8.5 20C7.2 19.5 5.5 20.2 4.7 19.3C3.8 18.5 4.5 16.8 4 15.5C3.5 14.2 2 13.5 2 12C2 10.5 3.5 9.8 4 8.5C4.5 7.2 3.8 5.5 4.7 4.7C5.5 3.8 7.2 4.5 8.5 4C9.8 3.5 10.5 2 12 2Z" fill="#6366f1"/><path d="M8.5 12.5L11 15L15.5 9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>3 Upwork profiles</li>
-              <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;margin-top:1px"><path d="M12 2C13.5 2 14.2 3.5 15.5 4C16.8 4.5 18.5 3.8 19.3 4.7C20.2 5.5 19.5 7.2 20 8.5C20.5 9.8 22 10.5 22 12C22 13.5 20.5 14.2 20 15.5C19.5 16.8 20.2 18.5 19.3 19.3C18.5 20.2 16.8 19.5 15.5 20C14.2 20.5 13.5 22 12 22C10.5 22 9.8 20.5 8.5 20C7.2 19.5 5.5 20.2 4.7 19.3C3.8 18.5 4.5 16.8 4 15.5C3.5 14.2 2 13.5 2 12C2 10.5 3.5 9.8 4 8.5C4.5 7.2 3.8 5.5 4.7 4.7C5.5 3.8 7.2 4.5 8.5 4C9.8 3.5 10.5 2 12 2Z" fill="#6366f1"/><path d="M8.5 12.5L11 15L15.5 9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Everything in Starter</li>
-              <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;margin-top:1px"><path d="M12 2C13.5 2 14.2 3.5 15.5 4C16.8 4.5 18.5 3.8 19.3 4.7C20.2 5.5 19.5 7.2 20 8.5C20.5 9.8 22 10.5 22 12C22 13.5 20.5 14.2 20 15.5C19.5 16.8 20.2 18.5 19.3 19.3C18.5 20.2 16.8 19.5 15.5 20C14.2 20.5 13.5 22 12 22C10.5 22 9.8 20.5 8.5 20C7.2 19.5 5.5 20.2 4.7 19.3C3.8 18.5 4.5 16.8 4 15.5C3.5 14.2 2 13.5 2 12C2 10.5 3.5 9.8 4 8.5C4.5 7.2 3.8 5.5 4.7 4.7C5.5 3.8 7.2 4.5 8.5 4C9.8 3.5 10.5 2 12 2Z" fill="#6366f1"/><path d="M8.5 12.5L11 15L15.5 9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Portfolio auto-matching</li>
-              <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;margin-top:1px"><path d="M12 2C13.5 2 14.2 3.5 15.5 4C16.8 4.5 18.5 3.8 19.3 4.7C20.2 5.5 19.5 7.2 20 8.5C20.5 9.8 22 10.5 22 12C22 13.5 20.5 14.2 20 15.5C19.5 16.8 20.2 18.5 19.3 19.3C18.5 20.2 16.8 19.5 15.5 20C14.2 20.5 13.5 22 12 22C10.5 22 9.8 20.5 8.5 20C7.2 19.5 5.5 20.2 4.7 19.3C3.8 18.5 4.5 16.8 4 15.5C3.5 14.2 2 13.5 2 12C2 10.5 3.5 9.8 4 8.5C4.5 7.2 3.8 5.5 4.7 4.7C5.5 3.8 7.2 4.5 8.5 4C9.8 3.5 10.5 2 12 2Z" fill="#6366f1"/><path d="M8.5 12.5L11 15L15.5 9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Profile strength analysis</li>
+              <li><span class="pcv2-check pcv2-check-gold">✓</span>1 Upwork profile (freelancer or agency)</li>
+              <li><span class="pcv2-check pcv2-check-gold">✓</span>400 AI-written cover letters per month, 1 free revision each</li>
+              <li><span class="pcv2-check pcv2-check-gold">✓</span>Smart job matching alerts</li>
+              <li><span class="pcv2-check pcv2-check-gold">✓</span>AI job audits</li>
+              <li><span class="pcv2-check pcv2-check-gold">✓</span>Monthly profile audit</li>
+              <li class="pcv2-disabled"><span class="pcv2-check pcv2-check-x">✕</span>Priority support</li>
             </ul>
-            <button class="pcv2-btn pcv2-btn-gold" data-plan="pro">Get Pro →</button>
+            <button class="pcv2-btn pcv2-btn-gold" data-plan="pro">Get Pro</button>
           </div>
 
           <!-- Agency -->
           <div class="pcv2-card" id="plan-agency">
-            <div class="pcv2-tier">AGENCY</div>
-            <div class="pcv2-price">$69<span>/mo</span></div>
+            <div class="pcv2-tier" style="color:#f5a9c7"><span class="pcv2-badge-icon" style="background:rgba(245,169,199,.15);color:#f5a9c7">◆◆◆</span>AGENCY</div>
+            <div class="pcv2-price">$55<span>/mo</span></div>
             <div class="pcv2-sep"></div>
             <ul class="pcv2-list">
-              <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;margin-top:1px"><path d="M12 2C13.5 2 14.2 3.5 15.5 4C16.8 4.5 18.5 3.8 19.3 4.7C20.2 5.5 19.5 7.2 20 8.5C20.5 9.8 22 10.5 22 12C22 13.5 20.5 14.2 20 15.5C19.5 16.8 20.2 18.5 19.3 19.3C18.5 20.2 16.8 19.5 15.5 20C14.2 20.5 13.5 22 12 22C10.5 22 9.8 20.5 8.5 20C7.2 19.5 5.5 20.2 4.7 19.3C3.8 18.5 4.5 16.8 4 15.5C3.5 14.2 2 13.5 2 12C2 10.5 3.5 9.8 4 8.5C4.5 7.2 3.8 5.5 4.7 4.7C5.5 3.8 7.2 4.5 8.5 4C9.8 3.5 10.5 2 12 2Z" fill="#6366f1"/><path d="M8.5 12.5L11 15L15.5 9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>900 proposals / month</li>
-              <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;margin-top:1px"><path d="M12 2C13.5 2 14.2 3.5 15.5 4C16.8 4.5 18.5 3.8 19.3 4.7C20.2 5.5 19.5 7.2 20 8.5C20.5 9.8 22 10.5 22 12C22 13.5 20.5 14.2 20 15.5C19.5 16.8 20.2 18.5 19.3 19.3C18.5 20.2 16.8 19.5 15.5 20C14.2 20.5 13.5 22 12 22C10.5 22 9.8 20.5 8.5 20C7.2 19.5 5.5 20.2 4.7 19.3C3.8 18.5 4.5 16.8 4 15.5C3.5 14.2 2 13.5 2 12C2 10.5 3.5 9.8 4 8.5C4.5 7.2 3.8 5.5 4.7 4.7C5.5 3.8 7.2 4.5 8.5 4C9.8 3.5 10.5 2 12 2Z" fill="#6366f1"/><path d="M8.5 12.5L11 15L15.5 9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>5 Upwork profiles</li>
-              <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;margin-top:1px"><path d="M12 2C13.5 2 14.2 3.5 15.5 4C16.8 4.5 18.5 3.8 19.3 4.7C20.2 5.5 19.5 7.2 20 8.5C20.5 9.8 22 10.5 22 12C22 13.5 20.5 14.2 20 15.5C19.5 16.8 20.2 18.5 19.3 19.3C18.5 20.2 16.8 19.5 15.5 20C14.2 20.5 13.5 22 12 22C10.5 22 9.8 20.5 8.5 20C7.2 19.5 5.5 20.2 4.7 19.3C3.8 18.5 4.5 16.8 4 15.5C3.5 14.2 2 13.5 2 12C2 10.5 3.5 9.8 4 8.5C4.5 7.2 3.8 5.5 4.7 4.7C5.5 3.8 7.2 4.5 8.5 4C9.8 3.5 10.5 2 12 2Z" fill="#6366f1"/><path d="M8.5 12.5L11 15L15.5 9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Everything in Pro</li>
-              <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;margin-top:1px"><path d="M12 2C13.5 2 14.2 3.5 15.5 4C16.8 4.5 18.5 3.8 19.3 4.7C20.2 5.5 19.5 7.2 20 8.5C20.5 9.8 22 10.5 22 12C22 13.5 20.5 14.2 20 15.5C19.5 16.8 20.2 18.5 19.3 19.3C18.5 20.2 16.8 19.5 15.5 20C14.2 20.5 13.5 22 12 22C10.5 22 9.8 20.5 8.5 20C7.2 19.5 5.5 20.2 4.7 19.3C3.8 18.5 4.5 16.8 4 15.5C3.5 14.2 2 13.5 2 12C2 10.5 3.5 9.8 4 8.5C4.5 7.2 3.8 5.5 4.7 4.7C5.5 3.8 7.2 4.5 8.5 4C9.8 3.5 10.5 2 12 2Z" fill="#6366f1"/><path d="M8.5 12.5L11 15L15.5 9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Team &amp; multi-freelancer use</li>
-              <li><svg width="15" height="15" viewBox="0 0 24 24" fill="none" style="flex-shrink:0;margin-top:1px"><path d="M12 2C13.5 2 14.2 3.5 15.5 4C16.8 4.5 18.5 3.8 19.3 4.7C20.2 5.5 19.5 7.2 20 8.5C20.5 9.8 22 10.5 22 12C22 13.5 20.5 14.2 20 15.5C19.5 16.8 20.2 18.5 19.3 19.3C18.5 20.2 16.8 19.5 15.5 20C14.2 20.5 13.5 22 12 22C10.5 22 9.8 20.5 8.5 20C7.2 19.5 5.5 20.2 4.7 19.3C3.8 18.5 4.5 16.8 4 15.5C3.5 14.2 2 13.5 2 12C2 10.5 3.5 9.8 4 8.5C4.5 7.2 3.8 5.5 4.7 4.7C5.5 3.8 7.2 4.5 8.5 4C9.8 3.5 10.5 2 12 2Z" fill="#6366f1"/><path d="M8.5 12.5L11 15L15.5 9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Priority processing</li>
+              <li><span class="pcv2-check pcv2-check-pink">✓</span>Both freelancer and agency profiles</li>
+              <li><span class="pcv2-check pcv2-check-pink">✓</span>700 AI-written cover letters per month, 1 free revision each</li>
+              <li><span class="pcv2-check pcv2-check-pink">✓</span>Smart job matching alerts</li>
+              <li><span class="pcv2-check pcv2-check-pink">✓</span>AI job audits</li>
+              <li><span class="pcv2-check pcv2-check-pink">✓</span>Audits for both profiles</li>
+              <li><span class="pcv2-check pcv2-check-pink">✓</span>Priority support</li>
             </ul>
-            <button class="pcv2-btn pcv2-btn-outline" data-plan="agency">Get Agency →</button>
+            <button class="pcv2-btn pcv2-btn-agency" data-plan="agency">Get Agency</button>
           </div>
 
         </div>
@@ -1179,37 +1384,49 @@ textarea.edit-val{min-height:38px}
 
     <!-- ══ SETTINGS ══ -->
     <div class="section" id="section-settings">
-      <div class="sec-label">Settings</div>
       <div class="section-title-solo">Settings</div>
       <div class="section-sub-solo">Customize how Snag AI works for you.</div>
 
       <!-- Account Email -->
-      <div class="card">
-        <div class="card-title">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-          Account Email
-        </div>
-        <div class="st-email-card">
-          <div class="st-email-icon">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-          </div>
-          <div class="st-email-info">
-            <div class="st-email-label">Subscription email</div>
-            <div style="display:flex;align-items:center;gap:4px">
-              <div class="st-email-val" id="email-val">Not set</div>
-              <span id="email-verified-badge" style="display:none"></span>
+      <div class="acct-card">
+        <div class="acct-card-head"><span class="ic"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></span><span class="lbl">ACCOUNT EMAIL</span></div>
+        <div class="acct-card-body">
+          <div class="acct-row">
+            <div class="acct-row-left">
+              <div class="acct-iconbox">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M3.5 6.5C3.5 5.4 4.4 4.5 5.5 4.5H18.5C19.6 4.5 20.5 5.4 20.5 6.5V17.5C20.5 18.6 19.6 19.5 18.5 19.5H5.5C4.4 19.5 3.5 18.6 3.5 17.5V6.5Z" stroke="currentColor" stroke-width="1.6"/><path d="M4 7L12 13L20 7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+              <div style="min-width:0">
+                <div class="acct-sublabel">SUBSCRIPTION EMAIL</div>
+                <div class="acct-valrow">
+                  <span class="acct-val unset" id="email-val">Not set</span>
+                  <span class="acct-check" id="email-verified-badge" style="display:none"></span>
+                </div>
+              </div>
+            </div>
+            <button class="acct-action-btn" id="email-toggle">Add &amp; Verify</button>
+            <div class="acct-row-cd" id="email-row-cd" style="display:none">
+              <button class="acct-cancel-btn" id="email-cancel-btn">Cancel</button>
+              <button class="acct-remove-btn" id="email-delete-btn" style="display:none">Delete</button>
             </div>
           </div>
-          <button class="btn-email-toggle" id="email-toggle">Add</button>
-        </div>
-        <div class="st-email-edit" id="email-edit" style="display:none">
-          <input type="email" id="email-inp" placeholder="your@email.com" style="width:100%;padding:9px 12px;background:rgba(255,255,255,.05);border:1px solid var(--border2);border-radius:var(--radius-sm);color:var(--white);font-size:13px;outline:none;margin-bottom:10px;font-family:inherit">
-          <button class="btn-primary" id="email-save" style="font-size:12px;padding:8px 18px">Save email</button>
+          <div class="acct-edit" id="email-edit" style="display:none"></div>
         </div>
       </div>
 
+      <!-- Job Filters — applies to your primary profile -->
+      <div class="card card-glow">
+        <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px!important">
+          <span style="display:flex;align-items:center;gap:8px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg> Job Filters</span>
+          <div id="jf-header-actions"></div>
+        </div>
+        <div class="st-group-desc" style="margin-bottom:14px;margin-top:0!important">Flags jobs that don't fit your criteria before you apply. Applies to your primary profile.</div>
+        <div id="jf-settings-body"></div>
+        <div id="jf-settings-empty" style="display:none;font-size:11.5px;color:rgba(240,238,234,.3);font-style:italic;padding:8px 0">Add a profile on the Profiles page to set up job filters.</div>
+      </div>
+
       <!-- Proposal Writing Settings -->
-      <div class="card">
+      <div class="card card-glow">
         <div class="card-title">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.287 1.288L3 12l5.8 1.9a2 2 0 0 1 1.288 1.287L12 21l1.9-5.8a2 2 0 0 1 1.287-1.288L21 12l-5.8-1.9a2 2 0 0 1-1.288-1.287Z"/></svg>
           Proposal Writing
@@ -1246,7 +1463,6 @@ textarea.edit-val{min-height:38px}
 
     <!-- ══ HOW TO USE ══ -->
     <div class="section" id="section-howto">
-      <div class="sec-label">Documentation</div>
       <div class="section-title-solo">How Snag AI works</div>
       <div class="section-sub-solo">Everything you need — from first setup to writing proposals that win. Read this once, apply it every session.</div>
 
@@ -1286,7 +1502,7 @@ textarea.edit-val{min-height:38px}
           <p style="margin-top:10px"><strong>Win Probability</strong> — How competitive is this slot right now. Based on time since posting, how many proposals are in, how many interviews are active, and whether the client is a reliable hirer.</p>
           <p style="margin-top:10px"><strong>Profile Match</strong> — How well your profile fits this specific job. Based on skill overlap, your JSS vs the job's minimum, your rate vs the listed budget, and any tier or location requirements.</p>
           <p style="margin-top:10px">Below the scores, every factor that went into both scores is listed with its individual contribution. Red factors mean skip or think twice, green factors confirm a good fit.</p>
-          <p style="margin-top:10px">In Profiles → Job Filters, three presets are available. Conservative is for protecting Connects — tight limits on proposal count, hire rate, and minimum score. Balanced is the default with sensible thresholds. Aggressive applies minimal filtering so you decide manually. Individual sliders let you fine-tune: max proposals, max interviewing, min hire rate, min client rating, min client spend, rate mismatch tolerance, job age, and skill match. Toggle auto-skip if hired to dismiss closed listings without a prompt. The alert is a guide, not a gatekeeper — click Write Proposal on any job regardless of what the scores show.</p>
+          <p style="margin-top:10px">In Settings → Job Filters, three presets are available. Conservative is for protecting Connects — tight limits on proposal count, hire rate, and client quality. Balanced is the default with sensible thresholds. Aggressive applies minimal filtering so you decide manually. Any manual change automatically switches to Custom. Individual controls let you fine-tune: max proposals, max interviewing, max invites sent, min hire rate, min client rating, min client spend, payment verified, rate mismatch tolerance, job age, and skill match. Toggle auto-skip if hired to dismiss closed listings without a prompt. Filters apply to your primary profile. The alert is a guide, not a gatekeeper — click Write Proposal on any job regardless of what the scores show.</p>
         </div>
         <div class="legal-section">
           <div class="legal-section-title">AI Proposal Writing</div>
@@ -1327,7 +1543,6 @@ textarea.edit-val{min-height:38px}
 
     <!-- ══ TERMS OF SERVICE ══ -->
     <div class="section" id="section-terms">
-      <div class="sec-label">Legal</div>
       <div class="section-title-solo">Terms of Service</div>
       <div class="section-sub-solo">Last updated June 2025 &nbsp;·&nbsp; Snag AI Chrome Extension</div>
 
@@ -1409,7 +1624,6 @@ textarea.edit-val{min-height:38px}
 
     <!-- ══ PRIVACY POLICY ══ -->
     <div class="section" id="section-privacy">
-      <div class="sec-label">Legal</div>
       <div class="section-title-solo">Privacy Policy</div>
       <div class="section-sub-solo">Last updated June 2025 &nbsp;·&nbsp; Snag AI Chrome Extension</div>
 
@@ -1495,7 +1709,6 @@ textarea.edit-val{min-height:38px}
 
     <!-- ══ REFUND POLICY ══ -->
     <div class="section" id="section-refund">
-      <div class="sec-label">Legal</div>
       <div class="section-title-solo">Refund Policy</div>
       <div class="section-sub-solo">Last updated June 2025 &nbsp;·&nbsp; Snag AI Chrome Extension</div>
 

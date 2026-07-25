@@ -1,21 +1,31 @@
 'use strict';
 
+// ── POST /agency-proposal ────────────────────────────────────────────────
+// Mirrors server/routes/proposal.js's engineering (email/usage gating,
+// client-name extraction, {{PRICE}}/{{TIMELINE}} placeholder math, em-dash
+// stripping, bold conversion) but takes an `agency` payload shaped like
+// extension/background/modules/agency-data.js's output instead of a
+// freelancer `profile`, and uses the agency prompt/rate-range math.
+
 const express = require('express');
 const router  = express.Router();
-const { callClaude, extractClientName, SYSTEM, buildUserMessage, processBold } = require('../modules/claude');
+const { callClaude, extractClientName, processBold } = require('../modules/claude');
+const { buildAgencyUserMessage } = require('../prompt-agency-proposal');
 const { canGenerate, recordUsage, canAnonGenerate, recordAnonUsage, getUserStatus, hasFreeRevision, consumeFreeRevision } = require('../modules/usage');
 const { getAnon, getUser, getAnonByDevice, upsertAnon } = require('../modules/db');
 
 router.post('/', async (req, res) => {
-  const { job, profile, settings, email: userEmail, anonId, deviceId } = req.body;
+  const { job, agency, settings, email: userEmail, anonId, deviceId } = req.body;
 
   if (!job?.title && !job?.description) {
     return res.status(400).json({ error: 'Could not read job from page.' });
   }
+  if (!agency?.name) {
+    return res.status(400).json({ error: 'Could not read agency profile.' });
+  }
 
   const isRealEmail = userEmail && userEmail.includes('@') && !userEmail.includes('propwise.local');
 
-  // Require email — no more anonymous free trials
   if (!isRealEmail) {
     return res.status(403).json({
       error: 'Please add and verify your email in Settings to use Snag AI.',
@@ -23,10 +33,8 @@ router.post('/', async (req, res) => {
     });
   }
 
-  // Email must be verified before generating proposals
   try {
     const userRecord = await getUser(userEmail);
-    // Existing paid users are grandfathered in (don't lock them out)
     const isPaid = userRecord?.plan && userRecord.plan !== 'free' && userRecord.active !== false;
     if (!isPaid && !userRecord?.email_verified) {
       return res.status(403).json({
@@ -36,7 +44,6 @@ router.post('/', async (req, res) => {
     }
   } catch(e) { /* db error — proceed rather than block */ }
 
-  // Device check for free tier: 1 free trial per device
   if (deviceId) {
     try {
       const existingDevice = await getAnonByDevice(deviceId);
@@ -59,8 +66,7 @@ router.post('/', async (req, res) => {
 
   try {
     // A refinement on a job that hasn't used its 1 free revision yet bypasses
-    // the pool gate entirely — it doesn't cost the user anything, so it
-    // shouldn't be blocked by an empty pool either.
+    // the pool gate entirely — see routes/proposal.js for the full reasoning.
     const freeRevision = isRealEmail && isRefinement && await hasFreeRevision(userEmail, job);
 
     if (!freeRevision) {
@@ -68,7 +74,7 @@ router.post('/', async (req, res) => {
         const ok = await canGenerate(userEmail);
         if (!ok) {
           const status = await getUserStatus(userEmail);
-          console.log(`Limit reached: ${userEmail} | plan: ${status.plan} | used: ${status.used}/${status.limit}`);
+          console.log(`[AGENCY_PROPOSAL] Limit reached: ${userEmail} | plan: ${status.plan} | used: ${status.used}/${status.limit}`);
           return res.status(402).json({
             error: status.plan === 'free'
               ? 'You\'ve used your 2 free proposals. Subscribe to keep winning jobs.'
@@ -80,7 +86,6 @@ router.post('/', async (req, res) => {
       } else if (anonId) {
         const ok = await canAnonGenerate(anonId);
         if (!ok) {
-          console.log(`Anon limit reached: ${anonId}`);
           return res.status(402).json({
             error: 'You\'ve used your 2 free proposals. Subscribe to keep winning jobs.',
             showPaywall: true,
@@ -90,7 +95,6 @@ router.post('/', async (req, res) => {
       }
     }
 
-    // Sanitize client name — reject common English words that aren't first names
     const NOT_A_NAME = new Set([
       'this','that','the','and','for','our','but','all','has','with','your',
       'they','have','from','will','been','when','more','also','just','than',
@@ -104,54 +108,40 @@ router.post('/', async (req, res) => {
     if (job.clientName && NOT_A_NAME.has(job.clientName.toLowerCase())) {
       job.clientName = '';
     }
-
-    // Only call Claude for name extraction when review text actually exists
     if (!job.clientName && job.reviewText && job.reviewText.length > 20) {
       job.clientName = await extractClientName(job.reviewText, job.description || '');
     }
-    console.log('Client name:', job.clientName || 'not found');
+    console.log('[AGENCY_PROPOSAL] Client name:', job.clientName || 'not found');
 
     const categories        = Array.isArray(req.body.categories) ? req.body.categories : [];
-    const freelancerType    = req.body.freelancerType    || 'developer';
 
-    const rawPortfolios = profile.portfolio || [];
-    console.log('[DEBUG] portfolios received:', rawPortfolios.length);
-    rawPortfolios.forEach((p, i) => {
-      console.log(`  [${i}] title="${p.title||p.name||'?'}" urls=${JSON.stringify(p.urls||[p.url||''])} skills=${JSON.stringify(p.skills||[])} desc="${(p.desc||'').slice(0,40)}"`);
-    });
+    const minRate = parseFloat(agency.minRate) || 0;
+    const maxRate = parseFloat(agency.maxRate) || 0;
+    const midRate = minRate && maxRate ? (minRate + maxRate) / 2 : (minRate || maxRate || 0);
 
-    const hourlyRate = parseFloat((profile.hourlyRate || '0').replace(/[^0-9.]/g, '')) || 0;
-    console.log(`[PRICING] jobType=${job.jobStats?.jobType||'unknown'} budget="${job.budget||''}" isOngoing=${/more than 6 months|ongoing|long.?term|part.?time/i.test((job.description||'').toLowerCase())}`);
-    const { msg: userMsg, systemWithLimit } = buildUserMessage({ job, profile, settings, refineInstruction, currentLetter, freelancerType, categories });
-
-    const ptStart = userMsg.indexOf('PORTFOLIO (match');
-    const ptEnd   = userMsg.indexOf('\n\n', ptStart);
-    if (ptStart > -1) console.log('[DEBUG] portfolioText in prompt:\n' + userMsg.slice(ptStart, ptEnd > -1 ? ptEnd : ptStart + 400));
+    console.log(`[AGENCY_PROPOSAL] Auditing agency: ${agency.name} | Rate: ${minRate}-${maxRate}`);
+    const { msg: userMsg, systemWithLimit } = buildAgencyUserMessage({ job, agency, settings, refineInstruction, currentLetter, categories });
 
     const result = await callClaude(systemWithLimit, userMsg);
 
-    // Education tip — override TIP2 when no portfolio URLs so user knows to add them
-    const hasPortfolioUrls = (profile.portfolio || []).some(p =>
-      (p.urls && p.urls.some(u => u && u.trim())) || (p.url && p.url.trim())
-    );
+    const hasPortfolioUrls = (agency.portfolio || []).some(p => p.url && p.url.trim());
     if (!hasPortfolioUrls && result.tips) {
-      result.tips[1] = 'Add live URLs to your portfolio items in Options → Profiles. The AI selects the 2 most relevant ones per job and explains how they match — this significantly improves proposal quality across all categories.';
+      result.tips[1] = 'Add live project URLs to your agency portfolio in Options → Agency Profiles. The AI selects the 2 most relevant ones per job and explains how they match — this significantly improves proposal quality across all categories.';
     }
 
-    // Replace {{PRICE}} and {{TIMELINE}} placeholders using Claude's hour estimate
-    if (result.hours) console.log(`[SCOPE] Claude hour estimate: ${result.hours}`);
+    if (result.hours) console.log(`[AGENCY_PROPOSAL] Claude hour estimate: ${result.hours}`);
     if (result.letter && result.letter.includes('{{PRICE}}') !== result.letter.includes('{{TIMELINE}}')) {
-      console.warn('[SCOPE] WARNING: Claude used only one placeholder — both {{PRICE}} and {{TIMELINE}} are required');
+      console.warn('[AGENCY_PROPOSAL] WARNING: Claude used only one placeholder — both {{PRICE}} and {{TIMELINE}} are required');
     }
-    if (result.letter && result.letter.includes('{{') && hourlyRate > 0) {
+    if (result.letter && result.letter.includes('{{') && midRate > 0) {
       const hoursStr = result.hours || '';
       const hm = hoursStr.match(/(\d+)\s*[-–]\s*(\d+)|(\d+)/);
       if (hm) {
         const loHrs = parseInt(hm[1] || hm[3]);
         const hiHrs = parseInt(hm[2] || hm[3]);
 
-        const loPrice = Math.round(loHrs * hourlyRate / 500) * 500;
-        const hiPrice = Math.round(hiHrs * hourlyRate / 500) * 500;
+        const loPrice = Math.round(loHrs * midRate / 500) * 500;
+        const hiPrice = Math.round(hiHrs * midRate / 500) * 500;
         const priceStr = loPrice === hiPrice
           ? `$${loPrice.toLocaleString()}`
           : `$${loPrice.toLocaleString()}-$${hiPrice.toLocaleString()}`;
@@ -159,16 +149,12 @@ router.post('/', async (req, res) => {
         const loWeeks = Math.ceil(loHrs / 40);
         const hiWeeks = Math.ceil(hiHrs / 40);
 
-        function weeksToMonths(w) {
-          return Math.round(w / 4.3 * 2) / 2; // round to nearest 0.5
-        }
+        function weeksToMonths(w) { return Math.round(w / 4.3 * 2) / 2; }
 
         let timeline;
         if (hiWeeks <= 10) {
-          // Short project — say weeks
           timeline = loWeeks === hiWeeks ? loWeeks + ' weeks' : loWeeks + '-' + hiWeeks + ' weeks';
         } else {
-          // Long project — say months as a clean single range
           const loM = Math.floor(weeksToMonths(loWeeks));
           const hiM = Math.ceil(weeksToMonths(hiWeeks));
           timeline = loM === hiM ? loM + ' months' : loM + '-' + hiM + ' months';
@@ -181,16 +167,15 @@ router.post('/', async (req, res) => {
           .replace(/\{\{PRICE\}\}/g, priceStr)
           .replace(/\{\{TIMELINE\}\}/g, timeline);
 
-        console.log(`[SCOPE] Claude estimated ${loHrs}-${hiHrs} hrs → ${priceStr}, ${timeline}`);
+        console.log(`[AGENCY_PROPOSAL] Estimated ${loHrs}-${hiHrs} hrs at $${midRate}/hr midpoint → ${priceStr}, ${timeline}`);
       }
     }
 
-    // Strip em dashes and fix sentence capitalization
     if (result.letter) {
       result.letter = result.letter
-        .replace(/\s*—\s*/g, '. ')                           // em dash with spaces → period
-        .replace(/—/g, ', ')                                 // em dash without spaces → comma
-        .replace(/\.\s+([a-z])/g, (m, c) => '. ' + c.toUpperCase()); // capitalize after period
+        .replace(/\s*—\s*/g, '. ')
+        .replace(/—/g, ', ')
+        .replace(/\.\s+([a-z])/g, (m, c) => '. ' + c.toUpperCase());
     }
 
     if (result.letter) result.letter = processBold(result.letter);
@@ -208,17 +193,15 @@ router.post('/', async (req, res) => {
       }
     }
 
-    // Every job gets 1 free revision per billing month (tracked by hashing
-    // title+description — see hasFreeRevision). The 1st revision on a given
-    // job doesn't touch the pool; the 2nd+ revision on that same job, or any
-    // fresh generation, costs 1 unit like normal.
+    // 1 free revision per job per billing month — see routes/proposal.js for
+    // the full reasoning. 2nd+ revision on the same job, or any fresh
+    // generation, costs 1 unit from the main pool like normal.
     if (isRealEmail) {
       if (freeRevision) {
         await consumeFreeRevision(userEmail, job);
       } else {
         await recordUsage(userEmail);
       }
-      // Store deviceId on first free usage so same device can't reuse another email
       if (!isRefinement && deviceId) {
         try { await upsertAnon(userEmail, { device_id: deviceId }); } catch(e) {}
       }
@@ -228,7 +211,7 @@ router.post('/', async (req, res) => {
 
     res.json({ success: true, ...result });
   } catch(err) {
-    console.error('Proposal error:', err.message);
+    console.error('[AGENCY_PROPOSAL] Error:', err.message);
     res.status(500).json({ error: err.message });
   }
 });

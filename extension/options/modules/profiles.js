@@ -1,7 +1,44 @@
 // ── Profiles section — cards, skills, portfolio, save ────────────────────────
-import { PLAN_LIMITS, SKILLS_SHOW } from './config.js';
+import { PLAN_PROFILE_LIMITS, SKILLS_SHOW } from './config.js';
 import { state } from './state.js';
 import { showSaved, getSkillsArr, _esc } from './helpers.js';
+
+// ── Agency data normalizer ────────────────────────────────────────────────
+// Maps agencyFull_<slug>'s field names onto the same shape freelancer cards
+// already expect (name/jss/earnings/jobs/hours/title/rate/tierKey/country/
+// profilePicUrl/portfolios) so renderProfileCard needs almost no branching —
+// per the "same card, same sync flow, just a tag" requirement, agencies are
+// rendered through the exact same code path as freelancers, just fed
+// normalized data. Job Filters and portfolio editing stay freelancer-only
+// (agency has no jobFilters concept, and its portfolio is read-only scraped
+// data, not meant to be hand-edited here) — renderProfileCard skips those
+// blocks when profile._type === 'agency'.
+function normalizeAgencyForCard(entry, full) {
+  if (!full) return entry;
+  const badge = full.topRatedPlusStatus === 'ELIGIBLE' ? 'Top Rated Plus'
+    : full.topRatedStatus === 'ELIGIBLE' ? 'Top Rated'
+    : full.vetted ? 'Vetted' : '';
+  const rate = (full.minRate != null && full.maxRate != null)
+    ? (full.minRate === full.maxRate ? '$' + full.minRate + '/hr' : '$' + full.minRate + '-$' + full.maxRate + '/hr')
+    : '';
+  const loc0 = (full.locations || [])[0];
+  const country = loc0 ? [loc0.city, loc0.country].filter(Boolean).join(', ') : '';
+  return {
+    ...entry,
+    name:           full.name || '',
+    jss:            full.jobSuccessScore != null ? full.jobSuccessScore + '%' : '',
+    earnings:       full.totalEarnings != null ? '$' + full.totalEarnings : '',
+    jobs:           full.totalJobs || '',
+    hours:          full.totalHours || '',
+    title:          full.summary || '',
+    rate,
+    tierKey:        '',
+    tier:           badge,
+    country,
+    profilePicUrl:  full.photo || '',
+    portfolios:     (full.portfolio || []).map(p => ({ title: p.title, urls: p.url ? [p.url] : [], desc: p.description || '' })),
+  };
+}
 
 // ── Skills expand/collapse ────────────────────────────────────────────────────
 export function renderSkillsExpand(wrap, skillsArr, expanded) {
@@ -244,37 +281,60 @@ const UPWORK_CATEGORIES = {
 const JF_DEFAULTS = {
   maxProposals: 50, maxInterviewing: 3, maxInvitesSent: 5,
   minClientRating: 4.0, minHireRate: 30, minClientSpent: 0,
-  requirePaymentVerified: false, warnZeroSpent: true,
-  maxRateMismatch: 50, maxJobAgeDays: 7,
+  requirePaymentVerified: false,
+  maxRateMismatch: 50, maxJobAgeMinutes: 1440,
   minSkillMatch: 30, warnLocationFilter: true, warnTierMismatch: true,
-  minAlertScore: 60, autoSkipHired: true,
+  autoSkipHired: true,
   categories: [],
 };
 const JF_PRESETS = {
-  conservative: { maxProposals: 20, maxInterviewing: 1, maxInvitesSent: 3, minClientRating: 4.5, minHireRate: 50, minClientSpent: 1000, requirePaymentVerified: true, warnZeroSpent: true, maxRateMismatch: 30, maxJobAgeDays: 3, minSkillMatch: 50, warnLocationFilter: true, warnTierMismatch: true, minAlertScore: 70, autoSkipHired: true },
+  conservative: { maxProposals: 15, maxInterviewing: 1, maxInvitesSent: 3, minClientRating: 4.5, minHireRate: 50, minClientSpent: 1000, requirePaymentVerified: true, maxRateMismatch: 30, maxJobAgeMinutes: 60, minSkillMatch: 50, warnLocationFilter: true, warnTierMismatch: true, autoSkipHired: true },
   balanced:     { ...JF_DEFAULTS },
-  aggressive:   { maxProposals: 50, maxInterviewing: 5, maxInvitesSent: 10, minClientRating: 3.0, minHireRate: 15, minClientSpent: 0, requirePaymentVerified: false, warnZeroSpent: false, maxRateMismatch: 80, maxJobAgeDays: 0, minSkillMatch: 10, warnLocationFilter: false, warnTierMismatch: false, minAlertScore: 40, autoSkipHired: false },
+  aggressive:   { maxProposals: 51, maxInterviewing: 5, maxInvitesSent: 10, minClientRating: 3.0, minHireRate: 15, minClientSpent: 0, requirePaymentVerified: false, maxRateMismatch: 80, maxJobAgeMinutes: 0, minSkillMatch: 10, warnLocationFilter: false, warnTierMismatch: false, autoSkipHired: false },
 };
+
+// Matches Upwork's own displayed proposal-count buckets, ascending. 51 (last
+// tier) represents "50+" — our data can never confirm more than 50, so it's
+// the most permissive setting (effectively never warns).
+const MAX_PROPOSALS_OPTIONS = [
+  { value: 5,  label: 'Less than 5' },
+  { value: 10, label: '5 to 10' },
+  { value: 15, label: '10 to 15' },
+  { value: 50, label: '20 to 50' },
+  { value: 51, label: '50+' },
+];
+
+// Job-age threshold in minutes, ascending — sub-day granularity because the
+// early-bird advantage on Upwork is a matter of minutes/hours, not days.
+// "20 minutes" was dropped (too close to 10/30 to matter); "Any" (0) keeps
+// the existing off/no-limit convention used by the other filters.
+const MAX_JOB_AGE_OPTIONS = [
+  { value: 10,   label: '10 minutes' },
+  { value: 30,   label: '30 minutes' },
+  { value: 60,   label: '1 hour' },
+  { value: 120,  label: '2 hours' },
+  { value: 360,  label: '6 hours' },
+  { value: 720,  label: '12 hours' },
+  { value: 1440, label: '24 hours' },
+  { value: 0,    label: 'Any' },
+];
 
 function jfFmt(id, raw) {
   raw = parseInt(raw);
   switch (id) {
-    case 'maxProposals':    return raw >= 50 ? '50+' : String(raw);
-    case 'maxInterviewing': return raw === 0 ? 'Off' : raw + '+';
-    case 'maxInvitesSent':  return raw === 0 ? 'Off' : raw + '+';
+    case 'maxInterviewing': return raw === 0 ? 'Off' : String(raw);
+    case 'maxInvitesSent':  return raw === 0 ? 'Off' : String(raw);
     case 'minClientRating': return (raw / 10).toFixed(1) + '★';
     case 'minHireRate':     return raw + '%';
-    case 'maxRateMismatch': return raw + '%↑';
-    case 'maxJobAgeDays':   return raw === 0 ? 'Any' : raw === 1 ? '24h' : raw + 'd';
+    case 'maxRateMismatch': return raw + '%';
     case 'minSkillMatch':   return raw + '%';
-    case 'minAlertScore':   return '< ' + raw;
     default:                return String(raw);
   }
 }
 
 function jfTrack(sl) {
   const pct = ((sl.value - sl.min) / (sl.max - sl.min)) * 100;
-  sl.style.background = `linear-gradient(to right,#6366f1 ${pct}%,rgba(255,255,255,.08) ${pct}%)`;
+  sl.style.background = `linear-gradient(to right,#2dd4bf 0%,#a855f7 ${pct}%,rgba(255,255,255,.08) ${pct}%)`;
 }
 
 function jfBadgeInfo(filters) {
@@ -285,13 +345,13 @@ function jfBadgeInfo(filters) {
   return { text: custom.length ? custom.length + ' custom' : 'Default', def: !custom.length };
 }
 
-function renderJobFilters(body, profile) {
+export function renderJobFilters(body, profile) {
   if (!profile?.id || !body) return;
   const F = { ...JF_DEFAULTS, ...(profile.jobFilters || {}) };
 
   function sl(id, label, min, max, step, val, desc) {
     const pct = ((val - min) / (max - min)) * 100;
-    const bg = `linear-gradient(to right,#6366f1 ${pct}%,rgba(255,255,255,.08) ${pct}%)`;
+    const bg = `linear-gradient(to right,#2dd4bf 0%,#a855f7 ${pct}%,rgba(255,255,255,.08) ${pct}%)`;
     return `<div class="jf-row2">
       <span class="jf-row2-name">${label}</span>
       <div class="jf-row2-right">
@@ -314,20 +374,30 @@ function renderJobFilters(body, profile) {
   }
 
   const ICK = '<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';
-  const I_COMP  = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>';
-  const I_QUAL  = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
-  const I_MATCH = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>';
-  const I_ALERT = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>';
+  const I_COMP  = '<span class="jf-emoji">👥</span>';
+  const I_QUAL  = '<span class="jf-emoji">⭐</span>';
+  const I_MATCH = '<span class="jf-emoji">↕️</span>';
+  const I_ALERT = '<span class="jf-emoji">🔔</span>';
 
   const spentVal = v => [0,100,1000,10000,100000].map(n => `<option value="${n}"${F.minClientSpent===n?' selected':''}>${n===0?'Any':n>=1000?'$'+(n/1000)+'K+':'$'+n+'+'}</option>`).join('');
+  const proposalsOpts = () => MAX_PROPOSALS_OPTIONS.map(o => `<option value="${o.value}"${F.maxProposals===o.value?' selected':''}>${o.label}</option>`).join('');
+  const jobAgeOpts = () => MAX_JOB_AGE_OPTIONS.map(o => `<option value="${o.value}"${F.maxJobAgeMinutes===o.value?' selected':''}>${o.label}</option>`).join('');
 
   body.innerHTML = `
-    <div class="jf-seg">
+    <div class="jf-filter-footer jf-filter-footer-top" id="jf-filter-footer-top">
+      <button class="btn-reset-plain" id="jf-reset" style="display:none">Reset Filters</button>
+      <button class="btn-apply-filters" id="jf-save" style="display:none">
+        <span style="font-size:11px">✓</span>
+        Apply filters
+      </button>
+    </div>
+
+    <div class="jf-seg jf-seg-presets">
       <div class="jf-seg-opt" data-preset="conservative">
         <div class="jf-seg-ck">${ICK}</div>
         <div class="jf-seg-txt"><div class="jf-seg-name">Conservative</div><div class="jf-seg-sub">Protect Connects</div></div>
       </div>
-      <div class="jf-seg-opt jf-active" data-preset="balanced">
+      <div class="jf-seg-opt" data-preset="balanced">
         <div class="jf-seg-ck">${ICK}</div>
         <div class="jf-seg-txt"><div class="jf-seg-name">Balanced</div><div class="jf-seg-sub">Recommended</div></div>
       </div>
@@ -335,12 +405,16 @@ function renderJobFilters(body, profile) {
         <div class="jf-seg-ck">${ICK}</div>
         <div class="jf-seg-txt"><div class="jf-seg-name">Aggressive</div><div class="jf-seg-sub">Apply broadly</div></div>
       </div>
+      <div class="jf-seg-opt jf-seg-custom" data-preset="custom">
+        <div class="jf-seg-ck">${ICK}</div>
+        <div class="jf-seg-txt"><div class="jf-seg-name">Custom</div><div class="jf-seg-sub">Your own mix</div></div>
+      </div>
     </div>
 
     <div class="jf-groups">
       <div class="jf-group">
         <div class="jf-group-lbl">${I_COMP}Competition</div>
-        ${sl('maxProposals',    'Max proposals',    5,  55,  5, Math.min(F.maxProposals, 55), 'Warn if job has more bids than this')}
+        <div class="jf-row2"><span class="jf-row2-name">Max proposals</span><div class="jf-row2-right"><select class="jf-select" id="js-maxProposals" title="Warn if job has more bids than this">${proposalsOpts()}</select></div></div>
         ${sl('maxInterviewing', 'Max interviewing', 0,  10,  1, F.maxInterviewing,            'Warn if this many are shortlisted')}
         ${sl('maxInvitesSent',  'Max invites sent', 0,  15,  1, F.maxInvitesSent,             'Warn if client sent this many invites')}
       </div>
@@ -349,18 +423,16 @@ function renderJobFilters(body, profile) {
         ${sl('minHireRate',     'Min hire rate',    0, 100,  5, F.minHireRate,                'Warn if client hires less than this %')}
         ${sl('minClientRating', 'Min rating',      10,  50,  5, Math.round(F.minClientRating * 10), 'Warn if rating below this')}
         <div class="jf-row2"><span class="jf-row2-name">Min client spent</span><div class="jf-row2-right"><select class="jf-select" id="js-minClientSpent">${spentVal()}</select></div></div>
-        ${tog('requirePaymentVerified', 'Payment verified', F.requirePaymentVerified, 'Warn if payment not verified')}
-        ${tog('warnZeroSpent',          'Warn $0 clients',  F.warnZeroSpent,          'Warn if client never spent on Upwork')}
       </div>
       <div class="jf-group">
         <div class="jf-group-lbl">${I_MATCH}Match &amp; age</div>
         ${sl('minSkillMatch',   'Min skill match',  0,  80, 10, F.minSkillMatch,   'Warn if skill overlap below this %')}
         ${sl('maxRateMismatch', 'Rate mismatch',   10, 100, 10, F.maxRateMismatch, 'Warn if your rate is this % above avg')}
-        ${sl('maxJobAgeDays',   'Max job age',      0,  14,  1, F.maxJobAgeDays,   'Warn if older than this — 0 = any age')}
+        <div class="jf-row2"><span class="jf-row2-name">Max job age</span><div class="jf-row2-right"><select class="jf-select" id="js-maxJobAgeMinutes" title="Warn if older than this — Any = no limit">${jobAgeOpts()}</select></div></div>
       </div>
       <div class="jf-group">
         <div class="jf-group-lbl">${I_ALERT}Alert behaviour</div>
-        ${sl('minAlertScore', 'Min alert score', 30, 80, 5, F.minAlertScore, 'Show alert when score is under this')}
+        ${tog('requirePaymentVerified', 'Payment verified', F.requirePaymentVerified, 'Warn if payment not verified')}
         ${tog('autoSkipHired',      'Auto-skip hired',    F.autoSkipHired,      'Close panel if someone already hired')}
         ${tog('warnLocationFilter', 'Location filter',    F.warnLocationFilter, 'Warn if job has location restrictions')}
         ${tog('warnTierMismatch',   'Tier mismatch',      F.warnTierMismatch,   'Warn if job requires a tier you lack')}
@@ -383,13 +455,6 @@ function renderJobFilters(body, profile) {
       <div class="jf-category-hint" style="margin-top:8px">Select all subcategories that apply — the AI uses these to tailor every cover letter to your specific field and expertise.</div>
     </div>
 
-    <div class="jf-filter-footer">
-      <button class="btn-reset-plain" id="jf-reset">Reset Filters</button>
-      <button class="btn-apply-filters" id="jf-save">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-        Apply filters
-      </button>
-    </div>
   `;
 
   function readFilters() {
@@ -403,13 +468,11 @@ function renderJobFilters(body, profile) {
       minHireRate:            s('minHireRate'),
       minClientSpent:         parseInt(body.querySelector('#js-minClientSpent')?.value ?? 0),
       requirePaymentVerified: t('requirePaymentVerified'),
-      warnZeroSpent:          t('warnZeroSpent'),
       maxRateMismatch:        s('maxRateMismatch'),
-      maxJobAgeDays:          s('maxJobAgeDays'),
+      maxJobAgeMinutes:       s('maxJobAgeMinutes'),
       minSkillMatch:          s('minSkillMatch'),
       warnLocationFilter:     t('warnLocationFilter'),
       warnTierMismatch:       t('warnTierMismatch'),
-      minAlertScore:          s('minAlertScore'),
       autoSkipHired:          t('autoSkipHired'),
       categories: Array.from(body.querySelectorAll('.jf-cat-chip-tag')).map(el => el.dataset.val).filter(Boolean),
     };
@@ -430,25 +493,59 @@ function renderJobFilters(body, profile) {
           if (!t) {
             t = document.createElement('div');
             t.id = 'snagai-filter-toast';
-            t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e1d32;border:1px solid rgba(99,102,241,.4);color:rgba(240,238,255,.85);font-size:12.5px;font-weight:600;padding:10px 20px;border-radius:999px;z-index:99999;pointer-events:none;opacity:0;transition:opacity .2s;font-family:-apple-system,BlinkMacSystemFont,sans-serif;display:flex;align-items:center;gap:7px';
-            t.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg> Filters saved';
+            t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e1d32;border:1px solid rgba(168,85,247,.4);color:rgba(240,238,255,.85);font-size:12.5px;font-weight:600;padding:10px 20px;border-radius:999px;z-index:99999;pointer-events:none;opacity:0;transition:opacity .2s;display:flex;align-items:center;gap:7px';
+            t.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2dd4bf" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg> Filters saved';
             document.body.appendChild(t);
           }
           t.style.opacity = '1';
           clearTimeout(t._timer);
           t._timer = setTimeout(() => { t.style.opacity = '0'; }, 2000);
+
+          // Apply was clicked and the save landed — nothing left unsaved.
+          dirty = false;
+          updateFooterVisibility();
         }
       });
     });
   }
 
-  const SL_IDS = ['maxProposals','maxInterviewing','maxInvitesSent','minClientRating','minHireRate','maxRateMismatch','maxJobAgeDays','minSkillMatch','minAlertScore'];
-  const TG_IDS = ['warnZeroSpent','requirePaymentVerified','warnLocationFilter','warnTierMismatch','autoSkipHired'];
+  const SL_IDS = ['maxInterviewing','maxInvitesSent','minClientRating','minHireRate','maxRateMismatch','minSkillMatch'];
+  const TG_IDS = ['requirePaymentVerified','warnLocationFilter','warnTierMismatch','autoSkipHired'];
+
+  // dirty tracks whether the user has touched a filter since the last time
+  // "Apply filters" was clicked (or since load). Fields already autosave on
+  // every change — this only drives the Reset/Apply button visibility below.
+  let dirty = false;
+
+  function updateFooterVisibility() {
+    // document.getElementById, not body.querySelector — the footer bar gets
+    // reparented into the card header by settings.js after render, so it's
+    // no longer inside body's subtree; ids are unique on the page regardless.
+    const isCustom  = body.querySelector('.jf-seg-opt[data-preset="custom"]')?.classList.contains('jf-active');
+    const resetBtn  = document.getElementById('jf-reset');
+    const applyBtn  = document.getElementById('jf-save');
+    const bar       = document.getElementById('jf-filter-footer-top');
+    if (resetBtn) resetBtn.style.display = isCustom ? '' : 'none';
+    if (applyBtn) applyBtn.style.display = dirty ? '' : 'none';
+    if (bar) bar.style.display = (isCustom || dirty) ? '' : 'none';
+  }
+
+  function clearPresetActive() {
+    body.querySelectorAll('.jf-seg-opt').forEach(b => b.classList.toggle('jf-active', b.dataset.preset === 'custom'));
+  }
+
+  // Called from every individual filter control (slider/toggle/select) —
+  // switches the segmented row to "Custom" and reveals the Apply button.
+  function markDirty() {
+    dirty = true;
+    clearPresetActive();
+    updateFooterVisibility();
+  }
 
   function applyPreset(name) {
     const P = JF_PRESETS[name]; if (!P) return;
     SL_IDS.forEach(id => {
-      let val = id === 'minClientRating' ? Math.round(P[id] * 10) : id === 'maxProposals' ? Math.min(P[id], 55) : P[id];
+      let val = id === 'minClientRating' ? Math.round(P[id] * 10) : P[id];
       const el = body.querySelector('#js-' + id);
       if (el) { el.value = val; jfTrack(el); const v = body.querySelector('#jv-' + id); if (v) v.textContent = jfFmt(id, val); }
     });
@@ -460,7 +557,13 @@ function renderJobFilters(body, profile) {
     });
     const sp = body.querySelector('#js-minClientSpent');
     if (sp) sp.value = P.minClientSpent;
+    const mp = body.querySelector('#js-maxProposals');
+    if (mp) mp.value = P.maxProposals;
+    const ja = body.querySelector('#js-maxJobAgeMinutes');
+    if (ja) ja.value = P.maxJobAgeMinutes;
     body.querySelectorAll('.jf-seg-opt').forEach(b => b.classList.toggle('jf-active', b.dataset.preset === name));
+    dirty = false;
+    updateFooterVisibility();
     save();
   }
 
@@ -471,7 +574,7 @@ function renderJobFilters(body, profile) {
       const id = el.id.replace('js-', '');
       const v = body.querySelector('#jv-' + id);
       if (v) v.textContent = jfFmt(id, parseInt(el.value));
-      body.querySelectorAll('.jf-seg-opt').forEach(b => b.classList.remove('jf-active'));
+      markDirty();
     });
     el.addEventListener('change', save);
   });
@@ -485,7 +588,7 @@ function renderJobFilters(body, profile) {
       const cb = body.querySelector('#jt-' + id);
       if (cb) {
         cb.checked = togEl.classList.contains('on');
-        body.querySelectorAll('.jf-seg-opt').forEach(b => b.classList.remove('jf-active'));
+        markDirty();
         save();
       }
     });
@@ -493,7 +596,19 @@ function renderJobFilters(body, profile) {
 
   // Min client spent select
   body.querySelector('#js-minClientSpent')?.addEventListener('change', () => {
-    body.querySelectorAll('.jf-seg-opt').forEach(b => b.classList.remove('jf-active'));
+    markDirty();
+    save();
+  });
+
+  // Max proposals select
+  body.querySelector('#js-maxProposals')?.addEventListener('change', () => {
+    markDirty();
+    save();
+  });
+
+  // Max job age select
+  body.querySelector('#js-maxJobAgeMinutes')?.addEventListener('change', () => {
+    markDirty();
     save();
   });
 
@@ -560,21 +675,27 @@ function renderJobFilters(body, profile) {
   body.querySelectorAll('.jf-seg-opt').forEach(btn => btn.addEventListener('click', () => applyPreset(btn.dataset.preset)));
 
   // Reset
-  body.querySelector('#jf-reset')?.addEventListener('click', () => applyPreset('balanced'));
+  document.getElementById('jf-reset')?.addEventListener('click', () => applyPreset('balanced'));
 
-  body.querySelector('#jf-save')?.addEventListener('click', () => save(true));
+  document.getElementById('jf-save')?.addEventListener('click', () => save(true));
 
-  // Highlight active preset on load
-  ['conservative','balanced','aggressive'].forEach(name => {
+  // Highlight active preset on load — if none match, select the "Custom"
+  // tile instead of leaving a preset looking selected when it isn't.
+  const matchedPreset = ['conservative','balanced','aggressive'].find(name => {
     const P = JF_PRESETS[name];
-    const match = Object.keys(JF_DEFAULTS).every(k => {
+    return Object.keys(JF_DEFAULTS).every(k => {
       const a = F[k] ?? JF_DEFAULTS[k]; const b = P[k] ?? JF_DEFAULTS[k];
       return typeof a === 'number' ? Math.abs(a - b) < 0.01 : a === b;
     });
-    if (match) {
-      body.querySelectorAll('.jf-seg-opt').forEach(btn => btn.classList.toggle('jf-active', btn.dataset.preset === name));
-    }
   });
+  if (matchedPreset) {
+    body.querySelectorAll('.jf-seg-opt').forEach(btn => btn.classList.toggle('jf-active', btn.dataset.preset === matchedPreset));
+  } else {
+    clearPresetActive();
+  }
+  // dirty stays false here — this reflects already-saved state, not a
+  // pending change, so Apply should stay hidden even if Custom is selected.
+  updateFooterVisibility();
 }
 
 // ── Save card ─────────────────────────────────────────────────────────────────
@@ -643,18 +764,9 @@ function renderPortfolioItemV2(list, p, pi, allProfiles, profileIdx, autoOpen) {
     item.classList.toggle('port-has-link', hasLinks);
     item.classList.toggle('port-no-link', !hasLinks);
 
-    const CHECK_ICON =
-      '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">' +
-        '<path d="M12 2C13.5 2 14.2 3.5 15.5 4C16.8 4.5 18.5 3.8 19.3 4.7C20.2 5.5 19.5 7.2 20 8.5C20.5 9.8 22 10.5 22 12C22 13.5 20.5 14.2 20 15.5C19.5 16.8 20.2 18.5 19.3 19.3C18.5 20.2 16.8 19.5 15.5 20C14.2 20.5 13.5 22 12 22C10.5 22 9.8 20.5 8.5 20C7.2 19.5 5.5 20.2 4.7 19.3C3.8 18.5 4.5 16.8 4 15.5C3.5 14.2 2 13.5 2 12C2 10.5 3.5 9.8 4 8.5C4.5 7.2 3.8 5.5 4.7 4.7C5.5 3.8 7.2 4.5 8.5 4C9.8 3.5 10.5 2 12 2Z" fill="#6366f1"/>' +
-        '<path d="M8.5 12.5L11 15L15.5 9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>' +
-      '</svg>';
-
-    const WARN_ICON =
-      '<svg width="18" height="18" viewBox="0 0 24 24" fill="none">' +
-        '<circle cx="12" cy="12" r="9" stroke="rgba(250,204,21,.4)" stroke-width="1.5"/>' +
-        '<line x1="12" y1="8" x2="12" y2="13" stroke="rgba(250,204,21,.75)" stroke-width="1.8" stroke-linecap="round"/>' +
-        '<circle cx="12" cy="16" r="0.8" fill="rgba(250,204,21,.75)"/>' +
-      '</svg>';
+    const CHECK_ICON = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none"><defs><linearGradient id="pfBadgeGrad" x1="0" y1="0" x2="24" y2="24" gradientUnits="userSpaceOnUse"><stop stop-color="#a855f7"/><stop offset="1" stop-color="#ec4899"/></linearGradient></defs><path d="M12 2C13.5 2 14.2 3.5 15.5 4C16.8 4.5 18.5 3.8 19.3 4.7C20.2 5.5 19.5 7.2 20 8.5C20.5 9.8 22 10.5 22 12C22 13.5 20.5 14.2 20 15.5C19.5 16.8 20.2 18.5 19.3 19.3C18.5 20.2 16.8 19.5 15.5 20C14.2 20.5 13.5 22 12 22C10.5 22 9.8 20.5 8.5 20C7.2 19.5 5.5 20.2 4.7 19.3C3.8 18.5 4.5 16.8 4 15.5C3.5 14.2 2 13.5 2 12C2 10.5 3.5 9.8 4 8.5C4.5 7.2 3.8 5.5 4.7 4.7C5.5 3.8 7.2 4.5 8.5 4C9.8 3.5 10.5 2 12 2Z" fill="url(#pfBadgeGrad)"/><path d="M8.5 12.5L11 15L15.5 9" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    const WARN_ICON   = '!';
+    const LINK_ICON = '<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>';
 
     const firstUrl = hasLinks ? (p.urls || []).find(u => u && u.trim()) : null;
     const fullUrl  = firstUrl ? (firstUrl.startsWith('http') ? firstUrl : 'https://' + firstUrl) : null;
@@ -666,14 +778,14 @@ function renderPortfolioItemV2(list, p, pi, allProfiles, profileIdx, autoOpen) {
         : '<div class="pi-missing-btn">' + WARN_ICON + '</div>') +
       '<div class="pi-name">' + _esc(p.title || 'Untitled') + '</div>' +
       (hasLinks
-        ? '<a class="pi-url-text" href="' + _esc(fullUrl) + '" target="_blank">' + _esc(displayUrl) + '</a>'
+        ? '<a class="pi-url-text" href="' + _esc(fullUrl) + '" target="_blank">' + LINK_ICON + _esc(displayUrl) + '</a>'
         : '<div class="pi-no-url-text">No URL</div>');
 
     if (!hasLinks) {
       const missingBtn = item.querySelector('.pi-missing-btn');
       let tip = null;
 
-      missingBtn.addEventListener('mouseenter', () => {
+      item.addEventListener('mouseenter', () => {
         if (tip) return;
         const rect = missingBtn.getBoundingClientRect();
         tip = document.createElement('div');
@@ -682,9 +794,8 @@ function renderPortfolioItemV2(list, p, pi, allProfiles, profileIdx, autoOpen) {
           'background:#1a1830;border:1px solid rgba(250,204,21,.28);' +
           'color:rgba(240,238,255,.78);font-size:11px;font-weight:500;line-height:1.5;' +
           'padding:8px 12px;border-radius:8px;max-width:240px;' +
-          'font-family:-apple-system,BlinkMacSystemFont,sans-serif;' +
           'box-shadow:0 6px 20px rgba(0,0,0,.45);';
-        tip.textContent = 'Missing URL — add this project\'s link to your Upwork portfolio, then re-sync.';
+        tip.textContent = 'Missing URL, add this project\'s link to your Upwork portfolio, then re-sync.';
 
         // Arrow pointing down toward the icon
         const arrow = document.createElement('div');
@@ -707,7 +818,7 @@ function renderPortfolioItemV2(list, p, pi, allProfiles, profileIdx, autoOpen) {
         tip.style.top  = top  + 'px';
       });
 
-      missingBtn.addEventListener('mouseleave', () => {
+      item.addEventListener('mouseleave', () => {
         if (tip) { tip.remove(); tip = null; }
       });
     }
@@ -768,17 +879,83 @@ function renderPortfolioItemV2(list, p, pi, allProfiles, profileIdx, autoOpen) {
 }
 
 // ── Profile card renderer ─────────────────────────────────────────────────────
+// Auto-detects freelancer vs agency from the URL shape and routes into the
+// correct underlying storage array — the plan-wide combined limit is checked
+// by the caller before this runs. Returns true on success, false on an
+// invalid/unrecognized URL.
+async function registerProfileUrl(url) {
+  const isAgencyUrl     = url.includes('upwork.com/agencies/');
+  const isFreelancerUrl = url.includes('upwork.com/freelancers/');
+  if (!url || (!isAgencyUrl && !isFreelancerUrl)) return false;
+
+  if (isAgencyUrl) {
+    const slug = url.split('/agencies/')[1]?.split('/')[0]?.split('?')[0] || '';
+    if (!slug) return false;
+    const stored = await new Promise(r => chrome.storage.local.get(['registeredAgencies'], r));
+    const agencies = stored.registeredAgencies || [];
+    const id = 'agency_' + (agencies.length + 1) + '_' + Date.now();
+    agencies.push({ url, slug, id, syncEnabled: true });
+    await new Promise(r => chrome.storage.local.set({ registeredAgencies: agencies }, r));
+  } else {
+    const stored = await new Promise(r => chrome.storage.local.get(['registeredProfiles'], r));
+    const profiles = stored.registeredProfiles || [];
+    const id = 'profile_' + (profiles.length + 1) + '_' + Date.now();
+    profiles.push({ url, id, syncEnabled: true });
+    await new Promise(r => chrome.storage.local.set({ registeredProfiles: profiles }, r));
+  }
+  return true;
+}
+
+// Wires the static "Add your Upwork profile" empty-state form (options.html
+// #empty-profile-url-inp / #empty-save-profile-btn) — a one-time listener
+// attach, called once from options.js's init(), since the button lives in
+// static markup rather than being recreated on every renderProfilesPage().
+export function initProfilesPage() {
+  document.getElementById('empty-save-profile-btn')?.addEventListener('click', async () => {
+    const inp = document.getElementById('empty-profile-url-inp');
+    const url = (inp?.value || '').trim();
+    const ok  = await registerProfileUrl(url);
+    if (!ok) {
+      if (inp) { inp.style.borderColor = 'var(--red)'; setTimeout(() => inp.style.borderColor = '', 2000); }
+      return;
+    }
+    await renderProfilesPage();
+    chrome.tabs.create({ url });
+  });
+}
+
+// Deletes a profile entry regardless of type — fetches fresh from the
+// CORRECT underlying array (registeredProfiles vs registeredAgencies) and
+// removes the matching id, rather than trusting the in-memory merged list
+// (which no longer maps 1:1 to either storage array once both types are
+// combined for display).
+async function deleteProfileEntry(profile) {
+  if (profile._type === 'agency') {
+    const { registeredAgencies = [] } = await new Promise(r => chrome.storage.local.get(['registeredAgencies'], r));
+    const updated = registeredAgencies.filter(a => a && a.id !== profile.id);
+    await chrome.storage.local.set({ registeredAgencies: updated });
+    if (profile.slug) chrome.storage.local.remove('agencyFull_' + profile.slug);
+  } else {
+    const { registeredProfiles = [] } = await new Promise(r => chrome.storage.local.get(['registeredProfiles'], r));
+    const updated = registeredProfiles.filter(p => p && p.id !== profile.id);
+    await chrome.storage.local.set({ registeredProfiles: updated });
+    if (profile.id) chrome.storage.local.remove('profileFull_' + profile.id);
+  }
+}
+
+// ── Profile card renderer — shared by both freelancer and agency entries ────
 export function renderProfileCard(container, profile, idx, allProfiles, primaryProfileId) {
   const card = document.createElement('div');
   card.className = 'pr-detail';
   card.dataset.profileIdx = idx;
 
-  const synced        = !!(profile.name || profile.jss || profile._readAt);
-  const validProfiles = allProfiles.filter(p => p && p.url);
-  const isPrimary     = validProfiles.length <= 1
-    ? true : (primaryProfileId ? profile.id === primaryProfileId : idx === 0);
-  const portfolios    = profile.portfolios || [];
-  const portsOk       = portfolios.filter(p => p.urls && p.urls.some(u => u && u.trim())).length;
+  const isAgency       = profile._type === 'agency';
+  const synced         = !!(profile.name || profile.jss || profile._readAt);
+  const validProfiles  = allProfiles.filter(p => p && p.url);
+  const isPrimary      = validProfiles.length > 1
+    && (primaryProfileId ? profile.id === primaryProfileId : idx === 0);
+  const portfolios     = profile.portfolios || [];
+  const portsOk        = portfolios.filter(p => p.urls && p.urls.some(u => u && u.trim())).length;
 
   function ini(name) {
     return (name || '').trim().split(/\s+/).map(w => w[0] || '').slice(0, 2).join('').toUpperCase() || '?';
@@ -796,10 +973,10 @@ export function renderProfileCard(container, profile, idx, allProfiles, primaryP
           <div class="pr-meta" style="font-style:italic">${profile.url || ''}</div>
           <div class="pr-acts">
             <button class="btn-indigo" id="open-pending-${idx}">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg> Open &amp; Sync
+              <span class="emoji-icon" style="font-size:11px;line-height:1">↻</span> Open &amp; Sync
             </button>
             ${!isPrimary && validProfiles.length > 1 ? `<button class="btn-indigo-outline" id="btn-primary-${idx}">★ Make Primary</button>` : ''}
-            <button class="btn-icon-del" title="Remove profile"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6M9 6V4h6v2"/></svg></button>
+            <button class="btn-icon-del" title="Remove profile"><span style="font-size:13px;line-height:1">🗑️</span></button>
           </div>
         </div>
       </div>
@@ -808,25 +985,24 @@ export function renderProfileCard(container, profile, idx, allProfiles, primaryP
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(240,238,234,.12)" stroke-width="1.5" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
         </div>
         <div style="font-size:13px;font-weight:700;color:rgba(240,238,234,.25);margin-bottom:5px">No data yet</div>
-        <div style="font-size:11.5px;color:rgba(240,238,234,.15);line-height:1.7;max-width:300px;margin:0 auto">Click <strong style="color:rgba(240,238,234,.28)">Open &amp; Sync</strong> above, then click the "Sync Profile" pill in the bottom-right corner of the page.</div>
+        <div style="font-size:11.5px;color:rgba(240,238,234,.15);line-height:1.7;max-width:300px;margin:0 auto">Click <strong style="color:rgba(240,238,234,.28)">Open &amp; Sync</strong> above, then click the "${isAgency ? 'Sync' : 'Sync Profile'}" pill in the bottom-right corner of the page.</div>
       </div>`;
     card.querySelector(`#open-pending-${idx}`)?.addEventListener('click', () => chrome.tabs.create({ url: profile.url }));
     card.querySelector(`#btn-primary-${idx}`)?.addEventListener('click', () => {
       chrome.runtime.sendMessage({ type: 'SET_PRIMARY_PROFILE', profileId: profile.id }, () => renderProfilesPage());
     });
-    card.querySelector('.btn-icon-del')?.addEventListener('click', () => {
+    card.querySelector('.btn-icon-del')?.addEventListener('click', async () => {
       if (!confirm('Remove this profile?')) return;
-      const id = profile.id; allProfiles.splice(idx, 1);
-      chrome.storage.local.set({ registeredProfiles: allProfiles });
-      if (id) chrome.storage.local.remove('profileFull_' + id);
+      await deleteProfileEntry(profile);
       renderProfilesPage();
     });
     container.appendChild(card); return;
   }
 
-  // Tier text
+  // Tier text (freelancer badge keys only — agency's badge is already a
+  // plain string set by normalizeAgencyForCard, e.g. "Top Rated Plus")
   const tierLabels = { expert: 'Expert Vetted', top_rated_plus: 'Top Rated Plus', top_rated: 'Top Rated', rising: 'Rising Talent' };
-  const tierTxt    = tierLabels[profile.tierKey] || '';
+  const tierTxt    = isAgency ? (profile.tier || '') : (tierLabels[profile.tierKey] || '');
 
   // Two-line meta: title on line 1, rate · tier · country on line 2
   const metaTitle = profile.title || '';
@@ -854,22 +1030,22 @@ export function renderProfileCard(container, profile, idx, allProfiles, primaryP
           <span class="pr-name">${profile.name || 'Unknown'}</span>
           ${isPrimary ? '<span class="badge-primary">Primary</span>' : ''}
         </div>
-        ${metaTitle ? `<div class="pr-meta" style="color:rgba(240,238,234,.5);font-size:12.5px;margin-bottom:3px">${metaTitle}</div>` : ''}
+        ${metaTitle ? `<div class="pr-meta" style="color:#9199ab;font-size:13.5px;margin-bottom:3px">${metaTitle}</div>` : ''}
         ${metaSub ? `<div class="pr-meta" style="font-size:11px;color:rgba(240,238,255,.32);letter-spacing:.01em">${metaSub}</div>` : ''}
         ${!isPrimary && validProfiles.length > 1 ? `<button class="btn-make-primary" id="btn-primary-${idx}">Make this profile primary</button>` : ''}
       </div>
       <div class="pr-hdr-right">
-        <button class="btn-indigo" id="sync-profile-${idx}">${SYNC_ICON} Sync</button>
+        <button class="btn-sync-circle" id="sync-profile-${idx}" title="Sync">${SYNC_ICON}</button>
         <button class="btn-icon-del" title="Remove profile">${DEL_ICON}</button>
       </div>
     </div>
     <div class="pr-stats">
-      <div class="pr-stat"><div class="pr-stat-n">${profile.jss || '—'}</div><div class="pr-stat-l">JSS</div></div>
+      <div class="pr-stat"><div class="pr-stat-n pr-stat-n-highlight">${profile.jss || '—'}</div><div class="pr-stat-l">JSS</div></div>
       <div class="pr-stat"><div class="pr-stat-n">${profile.earnings || '—'}</div><div class="pr-stat-l">Earned</div></div>
       <div class="pr-stat"><div class="pr-stat-n">${profile.jobs || '—'}</div><div class="pr-stat-l">Jobs</div></div>
       <div class="pr-stat"><div class="pr-stat-n">${profile.hours || '—'}</div><div class="pr-stat-l">Hours</div></div>
     </div>
-    ${readAt ? `<div class="pr-foot"><div class="pr-sync-dot"></div><div class="pr-sync-txt">Synced ${readAt} &nbsp;·&nbsp; ${profile.url || ''}</div></div>` : ''}
+    ${readAt ? `<div class="pr-foot"><div class="pr-sync-dot"></div><div class="pr-sync-txt"><span class="pr-sync-label">Synced ${readAt}</span><span class="pr-sync-sep">&middot;</span><span class="pr-sync-url">${_esc(profile.url || '')}</span></div></div>` : ''}
   `;
 
   card.querySelector(`#sync-profile-${idx}`)?.addEventListener('click', () => {
@@ -879,77 +1055,115 @@ export function renderProfileCard(container, profile, idx, allProfiles, primaryP
   card.querySelector(`#btn-primary-${idx}`)?.addEventListener('click', () => {
     chrome.runtime.sendMessage({ type: 'SET_PRIMARY_PROFILE', profileId: profile.id }, () => renderProfilesPage());
   });
-  card.querySelector('.btn-icon-del')?.addEventListener('click', () => {
+  card.querySelector('.btn-icon-del')?.addEventListener('click', async () => {
     if (!confirm('Remove this profile?')) return;
-    const id = profile.id; allProfiles.splice(idx, 1);
-    chrome.storage.local.set({ registeredProfiles: allProfiles });
-    if (id) chrome.storage.local.remove('profileFull_' + id);
+    await deleteProfileEntry(profile);
     renderProfilesPage();
   });
+  // Job Filters moved to Settings → Job Filters — it applies to the primary
+  // profile only, not per-card, so it no longer belongs inside each profile
+  // card here. See renderJobFiltersSettings() in settings.js.
+
+  // Portfolio — lives inside the same card now, as its own section below the
+  // synced footer (divided by a border-top, same pattern as .pr-stats/.pr-foot)
+  // instead of a separate floating label + a second bordered box.
+  const allLinked = portfolios.length > 0 && portsOk === portfolios.length;
+  const portSection = document.createElement('div');
+  portSection.className = 'pr-section';
+  portSection.innerHTML = `
+    <div class="pr-sec-hdr">
+      <div class="pr-sec-top">
+        <div class="pr-sec-lbl"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg> Portfolio</div>
+        ${portfolios.length ? (allLinked
+          ? `<div class="pr-port-badge all-linked">${portfolios.length} linked</div>`
+          : `<div class="pr-port-badge missing">${portfolios.length - portsOk} missing</div>`) : ''}
+      </div>
+      <div class="st-group-desc" style="margin-top:4px;margin-bottom:0;font-size:10.5px">Matches projects to each job by skills, referencing the most relevant ones in your cover letter.</div>
+    </div>
+    <div class="pi-list" id="port-list-${idx}"></div>
+    ${!portfolios.length ? '<div style="font-size:11.5px;color:rgba(240,238,234,.2);padding:12px 0;font-style:italic">No portfolio items — sync to import from Upwork.</div>' : ''}
+    ${portfolios.length > 0 && portsOk === 0 ? `<div style="margin:10px 0 4px;padding:9px 12px;background:rgba(250,204,21,.04);border:1px solid rgba(250,204,21,.15);border-radius:8px;font-size:11px;color:rgba(250,204,21,.55);line-height:1.55">No URLs added — go to your Upwork profile, add portfolio links there, then re-sync.</div>` : ''}
+  `;
+  card.appendChild(portSection);
   container.appendChild(card);
 
-  // Portfolio — label + subtitle outside the card frame
-  const portLbl = document.createElement('div');
-  portLbl.className = 'pr-card-block-lbl';
-  portLbl.style.cssText = 'margin-bottom:4px;margin-top:20px';
-  portLbl.textContent = 'Portfolio · ' + portfolios.length + ' items' + (portsOk > 0 ? ', ' + portsOk + ' linked' : '');
-  const portSub = document.createElement('div');
-  portSub.style.cssText = 'font-size:11px;color:rgba(240,238,255,.22);margin-bottom:10px;line-height:1.55;font-weight:400';
-  portSub.textContent = 'Snag AI matches your portfolio projects to each job by skills and description, then references the most relevant linked ones in your cover letter.';
+  const portList = portSection.querySelector(`#port-list-${idx}`);
+  if (isAgency) {
+    // Read-only rendering — no edit/save capability, since agency portfolio
+    // has no write-back path in this UI.
+    portfolios.forEach(p => {
+      const hasLink = p.urls && p.urls.some(u => u && u.trim());
+      const url = hasLink ? p.urls.find(u => u && u.trim()) : null;
+      const row = document.createElement('div');
+      row.className = 'port-v2-card';
+      row.innerHTML =
+        '<div class="pi-name">' + _esc(p.title || 'Untitled') + '</div>' +
+        (url
+          ? '<a class="pi-url-text" href="' + _esc(url) + '" target="_blank"><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>' + _esc(url.replace(/^https?:\/\//, '')) + '</a>'
+          : '<div class="pi-no-url-text">No URL</div>');
+      portList.appendChild(row);
+    });
+  } else {
+    portfolios.forEach((p, pi) => renderPortfolioItemV2(portList, p, pi, allProfiles, idx));
+  }
+}
 
-  // Filters label — outside the card frame (comes first now)
-  const filtersLbl = document.createElement('div');
-  filtersLbl.className = 'pr-card-block-lbl';
-  filtersLbl.style.cssText = 'margin-bottom:8px;margin-top:20px';
-  filtersLbl.textContent = 'Job Filters';
-  container.appendChild(filtersLbl);
+// ── Primary profile resolution (used by Settings → Job Filters) ──────────────
+// Same fallback chain used by job-match-toast.js: explicit primary, else the
+// active profile, else whichever one profile exists — so a single-profile
+// plan just works without the user ever having to designate a "primary".
+export async function loadPrimaryProfileForFilters() {
+  const localStored = await new Promise(resolve =>
+    chrome.storage.local.get(['registeredProfiles', 'activeProfileId', 'primaryProfileId'], resolve));
+  const registered = (localStored.registeredProfiles || []).filter(p => p && p.url);
+  if (!registered.length) return null;
 
-  // Filters card
-  const filtersBlock = document.createElement('div');
-  filtersBlock.className = 'pr-card-block';
-  filtersBlock.innerHTML = `<div id="jf-body-${idx}"></div>`;
-  container.appendChild(filtersBlock);
-  renderJobFilters(filtersBlock.querySelector(`#jf-body-${idx}`), profile);
+  const primaryId   = localStored.primaryProfileId || localStored.activeProfileId;
+  const primaryMeta = (primaryId && registered.find(p => p?.id === primaryId)) || registered[0];
+  if (!primaryMeta?.id) return null;
 
-  // Portfolio label + card (below filters)
-  container.appendChild(portLbl);
-  container.appendChild(portSub);
-
-  const portBlock = document.createElement('div');
-  portBlock.className = 'pr-card-block';
-  portBlock.style.cssText = 'padding:4px 22px;margin-bottom:20px';
-  portBlock.innerHTML =
-    `<div class="pi-list" id="port-list-${idx}"></div>` +
-    (!portfolios.length ? '<div style="font-size:11.5px;color:rgba(240,238,234,.2);padding:12px 0;font-style:italic">No portfolio items — sync to import from Upwork.</div>' : '') +
-    (portfolios.length > 0 && portsOk === 0 ? `<div style="margin:4px 0 10px;padding:9px 12px;background:rgba(250,204,21,.04);border:1px solid rgba(250,204,21,.15);border-radius:8px;font-size:11px;color:rgba(250,204,21,.55);line-height:1.55">No URLs added — go to your Upwork profile, add portfolio links there, then re-sync.</div>` : '');
-
-  const portList = portBlock.querySelector(`#port-list-${idx}`);
-  portfolios.forEach((p, pi) => renderPortfolioItemV2(portList, p, pi, allProfiles, idx));
-  container.appendChild(portBlock);
+  const localKey  = 'profileFull_' + primaryMeta.id;
+  const localFull = await new Promise(resolve => chrome.storage.local.get([localKey], resolve));
+  const full = localFull[localKey];
+  return full ? { ...primaryMeta, ...full } : primaryMeta;
 }
 
 // ── Profiles page (main entry point) ─────────────────────────────────────────
 export async function renderProfilesPage() {
   const [syncStored, localStored] = await Promise.all([
     chrome.storage.sync.get(['userPlan']),
-    chrome.storage.local.get(['registeredProfiles','activeProfileId','primaryProfileId'])
+    chrome.storage.local.get(['registeredProfiles','registeredAgencies','activeProfileId','primaryProfileId'])
   ]);
   const userPlan           = syncStored.userPlan || 'free';
   const registeredProfiles = localStored.registeredProfiles || [];
+  const registeredAgencies = localStored.registeredAgencies || [];
   const primaryProfileId   = localStored.primaryProfileId || null;
 
-  const registered = registeredProfiles.filter(p => p && p.url);
-  const localKeys  = registered.map(p => p.id ? 'profileFull_' + p.id : null).filter(Boolean);
-  const localFull  = localKeys.length
+  // Combine both types into one list — a "profile" is either a freelancer
+  // profile or an agency profile, registered against the same plan-wide
+  // slot count (PLAN_PROFILE_LIMITS), shown in the same card UI with only a
+  // type tag distinguishing them.
+  const registeredF = registeredProfiles.filter(p => p && p.url).map(p => ({ ...p, _type: 'freelancer' }));
+  const registeredA = registeredAgencies.filter(a => a && a.url).map(a => ({ ...a, _type: 'agency' }));
+  const registered  = [...registeredF, ...registeredA];
+
+  const localKeys = registered.map(p =>
+    p._type === 'agency' ? (p.slug ? 'agencyFull_' + p.slug : null) : (p.id ? 'profileFull_' + p.id : null)
+  ).filter(Boolean);
+  const localFull = localKeys.length
     ? await new Promise(resolve => chrome.storage.local.get(localKeys, resolve))
     : {};
 
   const mergedProfiles = registered.map(p => {
+    if (p._type === 'agency') {
+      const full = p.slug ? localFull['agencyFull_' + p.slug] : null;
+      return normalizeAgencyForCard(p, full);
+    }
     const full = p.id ? localFull['profileFull_' + p.id] : null;
     return full ? { ...p, ...full } : p;
   });
 
-  const limit     = PLAN_LIMITS[userPlan] || 1;
+  const limit     = PLAN_PROFILE_LIMITS[userPlan] || 1;
   const container = document.getElementById('profiles-container');
   const noMsg     = document.getElementById('no-profiles-msg');
   const addBtn    = document.getElementById('add-profile-btn');
@@ -964,6 +1178,11 @@ export async function renderProfilesPage() {
   addBtn.style.display = 'none';
 
   const validProfiles = mergedProfiles.filter(p => p && p.url);
+  // Only show the selector row (and the primary tag/logic) when more than one
+  // profile actually exists, or there's room under the plan limit to add a
+  // second one — a single-profile plan (or a single profile so far, at cap)
+  // has nothing to switch between and "primary" is a meaningless concept.
+  const showSelGrid = mergedProfiles.length > 1 || mergedProfiles.length < limit;
 
   // ── Profile selector grid ──────────────────────────────────────────────────
   const selGrid = document.createElement('div');
@@ -984,8 +1203,10 @@ export async function renderProfilesPage() {
 
   mergedProfiles.forEach((p, i) => {
     const synced    = !!(p.name || p.jss || p._readAt);
-    const isPrimary = validProfiles.length <= 1 ? true : (primaryProfileId ? p.id === primaryProfileId : i === 0);
+    const isPrimary = validProfiles.length > 1 && (primaryProfileId ? p.id === primaryProfileId : i === 0);
     const ini       = initials(p.name);
+    const isAgencyP = p._type === 'agency';
+    const typeChip  = `<div class="pr-sel-type ${isAgencyP ? 'pr-sel-type-agency' : 'pr-sel-type-freelancer'}">${isAgencyP ? 'Agency' : 'Freelancer'}</div>`;
 
     const card = document.createElement('div');
     card.className = 'pr-sel-card' + (i === (state.currentSlide || 0) ? ' active' : '');
@@ -993,7 +1214,7 @@ export async function renderProfilesPage() {
       ? '<img src="' + p.profilePicUrl + '" alt="' + (p.name || '') + '">'
       : ini;
     card.innerHTML =
-      (isPrimary ? '<div class="pr-sel-tag">Primary</div>' : '') +
+      '<div class="pr-sel-toprow">' + typeChip + (isPrimary ? '<div class="pr-sel-tag">Primary</div>' : '') + '</div>' +
       '<div class="pr-sel-av">' + avContent + '</div>' +
       '<div class="pr-sel-name">' + (p.name || 'Profile ' + (i + 1)) + '</div>' +
       '<div class="pr-sel-meta">' + (synced
@@ -1014,13 +1235,13 @@ export async function renderProfilesPage() {
     addCard.innerHTML = '<span class="pr-add-icon" style="font-size:22px;font-weight:300;line-height:1">+</span><span class="pr-add-lbl">Add profile</span>';
 
     addPanel.innerHTML = `
-      <div style="background:var(--bg2);border:1px solid rgba(99,102,241,.25);border-radius:16px;padding:22px 24px">
+      <div style="background:var(--bg2);border:1px solid rgba(168,85,247,.25);border-radius:16px;padding:22px 24px">
         <div style="font-size:13px;font-weight:700;color:rgba(240,238,255,.75);margin-bottom:4px">Add Upwork profile</div>
-        <div style="font-size:12px;color:rgba(240,238,255,.3);margin-bottom:16px">Paste your Upwork profile URL. After saving, open the profile and click the <strong style="color:rgba(240,238,255,.45)">"Sync Profile"</strong> pill to read your data.</div>
+        <div style="font-size:12px;color:rgba(240,238,255,.3);margin-bottom:16px">Paste your Upwork freelancer <em>or</em> agency profile URL — Snag AI detects which one automatically. After saving, open it and click the sync pill to read your data.</div>
         <div style="display:flex;gap:8px;align-items:center">
-          <input id="pr-new-url-inp" type="url" placeholder="https://www.upwork.com/freelancers/~..."
+          <input id="pr-new-url-inp" type="url" placeholder="https://www.upwork.com/freelancers/~... or /agencies/..."
             style="flex:1;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);border-radius:999px;padding:9px 18px;color:#f0eeff;font-size:12.5px;font-family:inherit;outline:none;min-width:0;transition:border-color .15s">
-          <button id="pr-new-url-save" style="padding:9px 22px;border-radius:999px;background:#6366f1;color:#fff;font-size:12.5px;font-weight:700;border:none;cursor:pointer;font-family:inherit;flex-shrink:0">Save</button>
+          <button id="pr-new-url-save" style="padding:9px 22px;border-radius:999px;background:var(--grad-brand);color:#fff;font-size:12.5px;font-weight:700;border:none;cursor:pointer;font-family:inherit;flex-shrink:0">Save</button>
           <button id="pr-new-url-cancel" style="padding:8px 16px;border-radius:999px;background:transparent;border:1px solid rgba(255,255,255,.1);color:rgba(240,238,255,.4);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit;flex-shrink:0">Cancel</button>
         </div>
       </div>`;
@@ -1041,15 +1262,11 @@ export async function renderProfilesPage() {
     async function saveNewProfile() {
       const inp = addPanel.querySelector('#pr-new-url-inp');
       const url = (inp?.value || '').trim();
-      if (!url || !url.includes('upwork.com/freelancers/')) {
+      const ok  = await registerProfileUrl(url);
+      if (!ok) {
         if (inp) { inp.style.borderColor = 'rgba(248,113,113,.5)'; setTimeout(() => inp.style.borderColor = '', 2000); }
         return;
       }
-      const stored = await new Promise(r => chrome.storage.local.get(['registeredProfiles'], r));
-      const profiles = stored.registeredProfiles || [];
-      const id = 'profile_' + (profiles.length + 1) + '_' + Date.now();
-      profiles.push({ url, id, syncEnabled: true });
-      await new Promise(r => chrome.storage.local.set({ registeredProfiles: profiles }, r));
       renderProfilesPage();
     }
 
@@ -1059,8 +1276,10 @@ export async function renderProfilesPage() {
     selGrid.appendChild(addCard);
   }
 
-  container.appendChild(selGrid);
-  container.appendChild(addPanel);
+  if (showSelGrid) {
+    container.appendChild(selGrid);
+    container.appendChild(addPanel);
+  }
   container.appendChild(detailContainer);
 
   const initialIdx = Math.min(state.currentSlide || 0, mergedProfiles.length - 1);

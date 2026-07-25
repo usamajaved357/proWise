@@ -30,7 +30,7 @@
         "content/modules/job-analyser.js",
         "content/modules/sidebar.js",
         "content/modules/page-paywall.js",
-        "content/modules/page-alert.js",
+        "content/modules/job-match-toast.js",
         "content/modules/page-proposal.js",
         "content/content.js"
       ],
@@ -56,7 +56,18 @@
         "https://www.upwork.com/freelancers/*"
       ],
       "js": [
+        "jspdf.umd.min.js",
         "content/profile-reader.js"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://www.upwork.com/agencies/*"
+      ],
+      "js": [
+        "jspdf.umd.min.js",
+        "content/agency-reader.js"
       ],
       "run_at": "document_idle"
     }
@@ -67,8 +78,16 @@
   },
   "icons": {
     "16": "icons/icon16.png",
+    "32": "icons/icon32.png",
     "48": "icons/icon48.png",
-    "128": "icons/icon128.png"
+    "128": "icons/icon128.png",
+    "256": "icons/icon256.png"
   },
+  "web_accessible_resources": [
+    {
+      "resources": ["icons/icon128.png"],
+      "matches": ["https://www.upwork.com/*"]
+    }
+  ],
   "options_page": "options/options.html"
 }

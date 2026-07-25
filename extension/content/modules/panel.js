@@ -53,7 +53,20 @@ window.SnagAI.injectUI = function() {
       </svg>
     </button>
   `;
+  // Start hidden — reveal once we know the user is entitled, instead of
+  // showing then yanking it away once GET_STATUS resolves (that flash was
+  // the actual bug: it painted visible-by-default and hid it a beat later).
+  trig.style.visibility = 'hidden';
   document.body.appendChild(trig);
+
+  // This button is the only thing on the job page gated by "AI job audits"
+  // (Basic plan doesn't include it) — hide it entirely rather than showing
+  // a paywall, per product decision. Fail-open on a network error so a
+  // temporary GET_STATUS failure doesn't hide the button for an entitled
+  // user; the server still enforces the real gate on click either way.
+  chrome.runtime.sendMessage({ type: 'GET_STATUS' }).then(status => {
+    if (!(status && status.jobAuditLimit === 0)) trig.style.visibility = 'visible';
+  }).catch(() => { trig.style.visibility = 'visible'; });
 
   document.getElementById('sn-btn').addEventListener('click', () => SnagAI.toggle());
   document.getElementById('sn-close').addEventListener('click', () => SnagAI.closePanel());

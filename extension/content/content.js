@@ -1,7 +1,7 @@
 // ── Snag AI Content — entry point ─────────────────────────────────────────────
 // Modules loaded before this file (via manifest):
 //   utils.js → job-reader.js → probability.js → panel.js →
-//   page-paywall.js → page-alert.js → page-proposal.js
+//   page-paywall.js → job-match-toast.js → page-proposal.js
 (function () {
   'use strict';
 
@@ -67,7 +67,13 @@
     // Already analysed — open instantly with cached data, no API call
     const alreadyDone = await SnagAI.isJobAnalysed();
     if (alreadyDone) {
-      const cacheKey = 'sn_analysis_' + SnagAI.state.cachedJobId;
+      // Cache key must match job-analyser.js's primary-profile-suffixed
+      // scheme exactly, or this fast path silently misses the entry
+      // isJobAnalysed() just confirmed exists.
+      const { primaryProfileId, activeProfileId } = await new Promise(r =>
+        chrome.storage.local.get(['primaryProfileId', 'activeProfileId'], r));
+      const suffix   = (primaryProfileId || activeProfileId || 'default') + '_';
+      const cacheKey = 'sn_analysis_' + suffix + SnagAI.state.cachedJobId;
       chrome.storage.local.get([cacheKey], r => {
         const cached = r[cacheKey];
         if (cached?.analysis) SnagAI.renderAnalysis({ ...cached.analysis, fromCache: true });
@@ -82,11 +88,21 @@
 
     try {
       await new Promise(r => setTimeout(r, 600));
+      await SnagAI.waitForJobActivitySection();
       const job = SnagAI.getJob();
       try {
         const storeData = await chrome.runtime.sendMessage({ type: 'GET_JOB_DATA' });
         if (storeData && job.jobStats) {
-          Object.entries(storeData).forEach(([k, v]) => { if (v !== null && v !== undefined) job.jobStats[k] = v; });
+          // timePosted/timePostedMinutes skipped — store's computed value has
+          // been unreliable; job-reader.js's DOM value (read from the "Posted
+          // X ago" text) is the reliable source for this field.
+          Object.entries(storeData).forEach(([k, v]) => {
+            if (k === 'timePosted' || k === 'timePostedMinutes') return;
+            if (v !== null && v !== undefined) job.jobStats[k] = v;
+          });
+          console.log('[SnagAI] Job stats enriched from Vuex store:', storeData);
+        } else {
+          console.warn('[SnagAI] GET_JOB_DATA returned nothing — jobStats will rely on DOM-parsed values only:', job.jobStats);
         }
       } catch(e) {}
 
@@ -127,11 +143,21 @@
     SnagAI.showSidebarLoading();
 
     try {
+      await SnagAI.waitForJobActivitySection();
       const job = SnagAI.getJob();
       try {
         const storeData = await chrome.runtime.sendMessage({ type: 'GET_JOB_DATA' });
         if (storeData && job.jobStats) {
-          Object.entries(storeData).forEach(([k, v]) => { if (v !== null && v !== undefined) job.jobStats[k] = v; });
+          // timePosted/timePostedMinutes skipped — store's computed value has
+          // been unreliable; job-reader.js's DOM value (read from the "Posted
+          // X ago" text) is the reliable source for this field.
+          Object.entries(storeData).forEach(([k, v]) => {
+            if (k === 'timePosted' || k === 'timePostedMinutes') return;
+            if (v !== null && v !== undefined) job.jobStats[k] = v;
+          });
+          console.log('[SnagAI] Job stats enriched from Vuex store:', storeData);
+        } else {
+          console.warn('[SnagAI] GET_JOB_DATA returned nothing — jobStats will rely on DOM-parsed values only:', job.jobStats);
         }
       } catch(e) {}
 
@@ -166,13 +192,23 @@
   async function cacheJobData() { // returns promise — callers can .then()
     try {
       await new Promise(r => setTimeout(r, 1200));
+      await SnagAI.waitForJobActivitySection();
       const job = SnagAI.getJob();
       if (!job?.title && !job?.description) return;
 
       try {
         const storeData = await chrome.runtime.sendMessage({ type: 'GET_JOB_DATA' });
         if (storeData && job.jobStats) {
-          Object.entries(storeData).forEach(([k, v]) => { if (v !== null && v !== undefined) job.jobStats[k] = v; });
+          // timePosted/timePostedMinutes skipped — store's computed value has
+          // been unreliable; job-reader.js's DOM value (read from the "Posted
+          // X ago" text) is the reliable source for this field.
+          Object.entries(storeData).forEach(([k, v]) => {
+            if (k === 'timePosted' || k === 'timePostedMinutes') return;
+            if (v !== null && v !== undefined) job.jobStats[k] = v;
+          });
+          console.log('[SnagAI] Job stats enriched from Vuex store:', storeData);
+        } else {
+          console.warn('[SnagAI] GET_JOB_DATA returned nothing — jobStats will rely on DOM-parsed values only:', job.jobStats);
         }
       } catch(e) {}
 
@@ -269,6 +305,7 @@
       }
 
       await new Promise(r => setTimeout(r, 800));
+      await SnagAI.waitForJobActivitySection();
       const job = SnagAI.getJob();
 
       // Enrich jobStats from Vuex store — more reliable than DOM parsing for all activity stats
@@ -276,6 +313,7 @@
         const storeData = await chrome.runtime.sendMessage({ type: 'GET_JOB_DATA' });
         if (storeData && job.jobStats) {
           Object.entries(storeData).forEach(([k, v]) => {
+            if (k === 'timePosted' || k === 'timePostedMinutes') return;
             if (v !== null && v !== undefined) job.jobStats[k] = v;
           });
           console.log('[SnagAI] Job stats from store:', storeData);
@@ -285,31 +323,29 @@
       const refineInstruction = SnagAI.state.refineInstruction || '';
 
       if (!refineInstruction) {
-        const jobFilters   = prof.jobFilters || {};
-        const autoSkip      = jobFilters.autoSkipHired !== false;
-        const minScore      = jobFilters.minAlertScore ?? 60;
-        const hired         = job.jobStats?.hiredCount || 0;
-        const jobUnavailable = job.jobStats?.jobUnavailable || false;
+        const jobFilters = prof.jobFilters || {};
+        const autoSkip    = jobFilters.autoSkipHired !== false;
+        const hired       = job.jobStats?.hiredCount || 0;
 
-        // Auto-skip immediately if hired and user enabled that filter
+        // Auto-skip immediately if hired and user enabled that filter.
+        // (The old pre-generation "prob alert" modal that used to live here
+        // has been replaced by the top-right match toast — see
+        // job-match-toast.js — which now runs on page load instead.)
         if (hired > 0 && autoSkip) { SnagAI.closePanel(); return; }
-
-        const preWp   = SnagAI.calcWinProbability(job.jobStats || {}, prof, jobFilters);
-        const hasRisk = (preWp.riskItems || []).length > 0;
-
-        if (jobUnavailable || hired > 0 || preWp.combined < minScore || hasRisk) {
-          const blocked = await SnagAI.showProbAlert(preWp, hired, jobUnavailable);
-          if (blocked) return;
-        }
       }
 
       SnagAI.showLoading();
-      try {
-        const status = await chrome.runtime.sendMessage({ type: 'GET_STATUS' });
-        if (status && status.remaining !== undefined && status.remaining <= 0) {
-          SnagAI.showPaywall(status); return;
-        }
-      } catch(e) { /* let server enforce */ }
+      // Skip this client-side pre-check for revisions — a revision might be
+      // free (1 free revision per letter, server-enforced) even when the
+      // main pool is at 0, and this check has no way to know that in advance.
+      if (!refineInstruction) {
+        try {
+          const status = await chrome.runtime.sendMessage({ type: 'GET_STATUS' });
+          if (status && status.remaining !== undefined && status.remaining <= 0) {
+            SnagAI.showPaywall(status); return;
+          }
+        } catch(e) { /* let server enforce */ }
+      }
 
       await new Promise(r => setTimeout(r, 500));
       const jobWithReviews = SnagAI.getJob();
@@ -346,6 +382,7 @@
         SnagAI.injectUI();
         SnagAI.injectSidebar();
         setTimeout(() => cacheJobData().then(() => _restoreBtnIfAnalysed()), 500);
+        SnagAI.showMatchToast();
       }
     }
   }).observe(document.body, { childList: true, subtree: true });
@@ -354,5 +391,6 @@
     SnagAI.injectUI();
     SnagAI.injectSidebar();
     cacheJobData().then(() => _restoreBtnIfAnalysed());
+    SnagAI.showMatchToast();
   }, 1500);
 })();

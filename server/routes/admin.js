@@ -2,9 +2,8 @@
 
 const express = require('express');
 const router  = express.Router();
-const { currentMonth } = require('../modules/config');
 const { getUser, upsertUser, updateUser, supabase } = require('../modules/db');
-const { getUserStatus } = require('../modules/usage');
+const { getUserStatus, resetUsage } = require('../modules/usage');
 
 const SECRET = process.env.LICENSE_SECRET || 'dev-secret';
 
@@ -18,10 +17,10 @@ router.post('/activate', async (req, res) => {
 
   const existing = await getUser(email);
   if (existing) {
-    await updateUser(email, { plan, active: true, sub_id: 'manual', billing_month: currentMonth() });
+    await updateUser(email, { plan, active: true, sub_id: 'manual', usage_data: resetUsage() });
     console.log('Updated existing user:', email, '→', plan);
   } else {
-    await upsertUser(email, { plan, active: true, used: 0, billing_month: currentMonth() });
+    await upsertUser(email, { plan, active: true, usage_data: resetUsage() });
     console.log('Created new user:', email, '→', plan);
   }
 
@@ -35,7 +34,7 @@ router.post('/admin/grant', async (req, res) => {
   if (req.headers['x-admin-secret'] !== SECRET) return res.status(401).json({ error: 'Unauthorized' });
   const { email, plan = 'pro' } = req.body;
   if (!email) return res.status(400).json({ error: 'Email required' });
-  await upsertUser(email, { plan, active: true, used: 0, billing_month: currentMonth() });
+  await upsertUser(email, { plan, active: true, usage_data: resetUsage() });
   res.json({ ok: true, email, plan });
 });
 

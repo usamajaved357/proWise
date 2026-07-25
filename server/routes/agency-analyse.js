@@ -1,22 +1,23 @@
 'use strict';
 
-// ── POST /analyse ───────────────────────────────────────────────────────────
-// Receives job + profile + filters, calls Claude, returns structured analysis
+// ── POST /agency-analyse ────────────────────────────────────────────────────
+// Mirrors server/routes/analyse.js's engineering exactly — the deterministic
+// post-processing rules (Rule 4, Rule 10, Rule 11, Rule 14, Rule 4a,
+// competition-level enforcement, hook-length enforcement) all operate on
+// req.body.job.jobStats / job.description only, never on the applicant
+// profile, so they apply unchanged here. Only the prompt/message builder
+// and the "agency" field name differ.
 
 const express = require('express');
 const https   = require('https');
 const router  = express.Router();
-const { ANALYSE_SYSTEM, buildAnalyseMessage } = require('../prompt-analyse');
+const { AGENCY_ANALYSE_SYSTEM, buildAgencyAnalyseMessage } = require('../prompt-agency-analyse');
 const { canJobAudit, recordJobAuditUsage, getUserStatus } = require('../modules/usage');
 const { getUser } = require('../modules/db');
 
 router.post('/', async (req, res) => {
   try {
-    const { job, profile, filters, email: userEmail, anonId } = req.body;
-
-    if (!job || !profile) {
-      return res.status(400).json({ error: 'job and profile are required' });
-    }
+    const { job, agency, filters, email: userEmail } = req.body;
 
     // Job audits have their own pool, separate from cover-letter proposals —
     // see server/modules/usage.js's canJobAudit/recordJobAuditUsage.
@@ -54,37 +55,36 @@ router.post('/', async (req, res) => {
       });
     }
 
-    const userMessage = buildAnalyseMessage({ job, profile, filters });
-    console.log('[ANALYSE] Job:', (job.title || '').slice(0, 60));
+    if (!job || !agency) {
+      return res.status(400).json({ error: 'job and agency are required' });
+    }
 
-    const rawText = await callClaudeRaw(ANALYSE_SYSTEM, userMessage);
-    console.log('[ANALYSE] Raw response length:', rawText.length);
+    const userMessage = buildAgencyAnalyseMessage({ job, agency, filters });
+    console.log('[AGENCY_ANALYSE] Job:', (job.title || '').slice(0, 60));
 
-    // Extract JSON — Claude may wrap it in markdown fences
+    const rawText = await callClaudeRaw(AGENCY_ANALYSE_SYSTEM, userMessage);
+    console.log('[AGENCY_ANALYSE] Raw response length:', rawText.length);
+
     const jsonMatch = rawText.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
-      console.error('[ANALYSE] No JSON found in response:', rawText.slice(0, 200));
+      console.error('[AGENCY_ANALYSE] No JSON found in response:', rawText.slice(0, 200));
       return res.status(500).json({ error: 'No structured response from AI' });
     }
 
     let analysis;
     try {
-      // Sanitize invalid JSON patterns Claude sometimes produces:
-      // +5 → 5 (JSON doesn't allow leading + on numbers)
       const cleaned = jsonMatch[0].replace(/:\s*\+(\d)/g, ': $1');
       analysis = JSON.parse(cleaned);
     } catch(e) {
-      console.error('[ANALYSE] JSON parse error:', e.message);
-      console.error('[ANALYSE] Raw tail (last 200 chars):', (jsonMatch?.[0] || rawText).slice(-200));
+      console.error('[AGENCY_ANALYSE] JSON parse error:', e.message);
+      console.error('[AGENCY_ANALYSE] Raw tail (last 200 chars):', (jsonMatch?.[0] || rawText).slice(-200));
       return res.status(500).json({ error: 'Failed to parse AI response' });
     }
 
-    // Validate required fields
     if (!analysis.verdict) {
       return res.status(500).json({ error: 'Incomplete analysis — missing verdict' });
     }
 
-    // Filled-job responses return N/A — normalise to valid values
     if (!analysis.competitionPressure || analysis.competitionPressure === 'N/A') {
       analysis.competitionPressure = analysis.verdict === 'Skip this.' ? 'Extreme' : 'Moderate';
     }
@@ -92,20 +92,16 @@ router.post('/', async (req, res) => {
       analysis.profileFit = 'Moderate';
     }
 
-    // Ensure verdict text ends with a period
     const validVerdicts = ['Apply.', 'Apply carefully.', 'Skip this.'];
     if (!validVerdicts.includes(analysis.verdict)) {
-      // Fuzzy match
       if (/apply carefully/i.test(analysis.verdict)) analysis.verdict = 'Apply carefully.';
       else if (/skip/i.test(analysis.verdict)) analysis.verdict = 'Skip this.';
       else analysis.verdict = 'Apply.';
     }
 
-    // Ensure arrays exist
     analysis.concerns  = Array.isArray(analysis.concerns)  ? analysis.concerns  : [];
     analysis.strengths = Array.isArray(analysis.strengths) ? analysis.strengths : [];
 
-    // If job is filled and Claude returned empty arrays, inject the key concern
     if (analysis.verdict === 'Skip this.' && analysis.concerns.length === 0) {
       const jobStats = req.body.job?.jobStats || {};
       if (jobStats.hiredCount > 0) {
@@ -121,9 +117,8 @@ router.post('/', async (req, res) => {
                          || /fixed/i.test(req.body.job?.budget || '');
     const paymentOk       = req.body.job?.jobStats?.paymentVerified;
     if (isFixedPrice && !paymentOk && analysis.verdict === 'Apply.') {
-      console.log('[ANALYSE] Rule 4: unverified payment on fixed-price → forced to Apply carefully.');
+      console.log('[AGENCY_ANALYSE] Rule 4: unverified payment on fixed-price → forced to Apply carefully.');
       analysis.verdict = 'Apply carefully.';
-      // Add concern if not already present
       const hasPaymentConcern = analysis.concerns.some(c =>
         (c.title + c.detail).toLowerCase().includes('payment') ||
         (c.title + c.detail).toLowerCase().includes('verif')
@@ -138,7 +133,6 @@ router.post('/', async (req, res) => {
     }
 
     // ── RULE 10 ENFORCEMENT (server-side — deterministic, Claude-proof) ──────
-    // If both payment + phone are verified, remove any concern about new client track record
     const paymentVerified = req.body.job?.jobStats?.paymentVerified;
     const phoneVerified   = req.body.job?.jobStats?.phoneVerified || req.body.job?.jobStats?.clientPhoneVerified;
     if (paymentVerified && phoneVerified) {
@@ -164,7 +158,7 @@ router.post('/', async (req, res) => {
           const t = ((s.title || '') + ' ' + (s.detail || '')).toLowerCase();
           const praisesSpend = (t.includes('pay') || t.includes('spend') || t.includes('invest') || t.includes('budget'))
                             && (t.includes('fair') || t.includes('well') || t.includes('good') || t.includes('reliable') || t.includes('quality'));
-          if (praisesSpend) console.log('[ANALYSE] Rule 14: removed spend-praise strength for low avg/hire client ($' + avgPerHireCheck + '/hire)');
+          if (praisesSpend) console.log('[AGENCY_ANALYSE] Rule 14: removed spend-praise strength for low avg/hire client ($' + avgPerHireCheck + '/hire)');
           return !praisesSpend;
         });
       }
@@ -177,14 +171,13 @@ router.post('/', async (req, res) => {
         analysis.concerns = analysis.concerns.filter(c => {
           const t = ((c.title || '') + ' ' + (c.detail || '')).toLowerCase();
           const isPhone = t.includes('phone') && (t.includes('verif') || t.includes('missing') || t.includes('unverif'));
-          if (isPhone) console.log('[ANALYSE] Rule 11: removed phone concern for established client');
+          if (isPhone) console.log('[AGENCY_ANALYSE] Rule 11: removed phone concern for established client');
           return !isPhone;
         });
       }
 
       if (removedConcerns.length > 0) {
-        console.log('[ANALYSE] Rule 10: removed banned concerns:', removedConcerns);
-        // Add verified client to strengths if not already there
+        console.log('[AGENCY_ANALYSE] Rule 10: removed banned concerns:', removedConcerns);
         const hasVerifiedStrength = analysis.strengths.some(s =>
           s.title?.toLowerCase().includes('verif') || s.detail?.toLowerCase().includes('verif')
         );
@@ -198,7 +191,6 @@ router.post('/', async (req, res) => {
     }
 
     // ── RULE 4a ENFORCEMENT — milestone budget detection ──────────────────────
-    // Detect ongoing/milestone jobs and flag over-penalizing budget concerns
     const jobDesc  = (req.body.job?.description || '').toLowerCase();
     const isMilestone = /first milestone|first sprint|first phase|milestone 1/i.test(jobDesc)
                      || req.body.job?.jobStats?.isContractToHire;
@@ -206,8 +198,8 @@ router.post('/', async (req, res) => {
       analysis.concerns = analysis.concerns.map(c => {
         const text = ((c.title || '') + ' ' + (c.detail || '')).toLowerCase();
         if (text.includes('budget') || text.includes('hours') || text.includes('scope')) {
-          c._milestoneNote = true; // flag for debugging
-          console.log('[ANALYSE] Rule 4a: milestone job — budget concern may be overstated:', c.title);
+          c._milestoneNote = true;
+          console.log('[AGENCY_ANALYSE] Rule 4a: milestone job — budget concern may be overstated:', c.title);
         }
         return c;
       });
@@ -215,7 +207,6 @@ router.post('/', async (req, res) => {
 
     // ── COMPETITION LEVEL ENFORCEMENT (server-side — Claude-proof) ───────────
     const jobStats      = req.body.job?.jobStats || {};
-    // Parse proposalCount — Upwork sometimes returns "50+" as string
     const rawProposals  = jobStats.proposalCount;
     const proposals     = typeof rawProposals === 'string'
       ? (rawProposals.includes('+') ? parseInt(rawProposals) + 1 : parseInt(rawProposals) || 0)
@@ -224,10 +215,10 @@ router.post('/', async (req, res) => {
     const isShortTask   = !/3\+\s*month|long.term|ongoing/i.test(req.body.job?.description || '');
 
     function proposalLevel(p) {
-      if (p < 5)  return 0; // Low
-      if (p < 20) return 1; // Moderate
-      if (p < 50) return 2; // High
-      return 3;             // Extreme
+      if (p < 5)  return 0;
+      if (p < 20) return 1;
+      if (p < 50) return 2;
+      return 3;
     }
     function interviewLevel(i, short) {
       if (short) {
@@ -246,42 +237,38 @@ router.post('/', async (req, res) => {
     const computedPressure = LEVELS[computedLevel];
 
     if (analysis.competitionPressure !== computedPressure) {
-      console.log(`[ANALYSE] Competition corrected: ${analysis.competitionPressure} → ${computedPressure} (proposals=${proposals}, interviewing=${interviewing})`);
+      console.log(`[AGENCY_ANALYSE] Competition corrected: ${analysis.competitionPressure} → ${computedPressure} (proposals=${proposals}, interviewing=${interviewing})`);
       analysis.competitionPressure = computedPressure;
     }
 
-    // Cap arrays
     analysis.concerns  = analysis.concerns.slice(0, 3);
     analysis.strengths = analysis.strengths.slice(0, 3);
 
     // ── HOOK LENGTH ENFORCEMENT — hard cap at 160 chars ──────────────────────
     if (analysis.hookSuggestion) {
-      // Strip the "Hook N — " prefix
       let hook = analysis.hookSuggestion.replace(/^Hook\s*\d+\s*[—\-]\s*/i, '').trim();
       if (hook.length > 160) {
-        // Cut at the last sentence boundary within 160 chars
         const within = hook.slice(0, 160);
         const lastStop = Math.max(within.lastIndexOf('.'), within.lastIndexOf('!'), within.lastIndexOf('?'));
         if (lastStop > 80) {
           hook = hook.slice(0, lastStop + 1);
         } else {
-          // Fall back to last word boundary
           const lastSpace = within.lastIndexOf(' ');
           hook = hook.slice(0, lastSpace > 80 ? lastSpace : 157);
         }
-        console.log('[ANALYSE] Hook trimmed to:', hook.length, 'chars');
+        console.log('[AGENCY_ANALYSE] Hook trimmed to:', hook.length, 'chars');
       }
       analysis.hookSuggestion = hook;
     }
 
-    console.log(`[ANALYSE] Result: ${analysis.verdict} | competition=${analysis.competitionPressure} fit=${analysis.profileFit} | concerns:${analysis.concerns.length} strengths:${analysis.strengths.length}`);
+    console.log(`[AGENCY_ANALYSE] Result: ${analysis.verdict} | competition=${analysis.competitionPressure} fit=${analysis.profileFit} | concerns:${analysis.concerns.length} strengths:${analysis.strengths.length}`);
 
     await recordJobAuditUsage(userEmail);
     const status = await getUserStatus(userEmail);
     res.json({ success: true, analysis, usage: status });
 
   } catch(err) {
-    console.error('[ANALYSE] Unhandled error:', err.message);
+    console.error('[AGENCY_ANALYSE] Unhandled error:', err.message);
     res.status(500).json({ error: err.message || 'Analysis failed' });
   }
 });

@@ -2,6 +2,9 @@
 import { handleGenerate, handleCoverLetter } from './modules/generate.js';
 import { getStatus }    from './modules/status.js';
 import { handleAnalyse } from './modules/analyse.js';
+import { handleProfileAudit } from './modules/profile-audit.js';
+import { handleGetAgencyData } from './modules/agency-data.js';
+import { handleAgencyAudit } from './modules/agency-audit.js';
 
 // Generate a stable device UUID on first install
 chrome.runtime.onInstalled.addListener(() => {
@@ -25,6 +28,14 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   }
   if (msg.type === 'ANALYSE_JOB') {
     handleAnalyse(msg).then(sendResponse).catch(e => sendResponse({ error: e.message }));
+    return true;
+  }
+  if (msg.type === 'AUDIT_PROFILE') {
+    handleProfileAudit(msg).then(sendResponse).catch(e => sendResponse({ error: e.message }));
+    return true;
+  }
+  if (msg.type === 'AUDIT_AGENCY') {
+    handleAgencyAudit(msg).then(sendResponse).catch(e => sendResponse({ error: e.message }));
     return true;
   }
   if (msg.type === 'GET_STATUS') {
@@ -53,14 +64,31 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     return true;
   }
   if (msg.type === 'GET_JOB_DATA') {
-    // Reads job stats from window.__NUXT__.vuex.jobDetails — far more reliable than DOM parsing
+    // Reads job stats from window.__NUXT__.vuex.jobDetails — far more reliable
+    // than DOM parsing. This previously read jd synchronously, once, right
+    // after content.js's single setTimeout — the exact same hydration-race
+    // shape already found and fixed in agency-data.js (window.__NUXT__ exists
+    // immediately, but its vuex.jobDetails payload can still be empty/absent
+    // for a beat after that on slower loads or heavier sidebar content).
+    // A real audit run showed EVERY jobStats field come back null — not a
+    // partial miss — which matches a single read landing before hydration,
+    // not a broken selector. Poll the same way agency-data.js does instead
+    // of trusting the caller's fixed delay.
     chrome.scripting.executeScript({
       target: { tabId: sender.tab.id },
       world: 'MAIN',
-      func: () => {
+      func: async () => {
         try {
-          const jd      = window.__NUXT__?.vuex?.jobDetails;
-          if (!jd) return null;
+          let jd = null;
+          for (let i = 0; i < 15; i++) {
+            jd = window.__NUXT__?.vuex?.jobDetails;
+            if (jd && jd.job) break;
+            await new Promise(r => setTimeout(r, 300));
+          }
+          if (!jd) {
+            console.warn('[SnagAI] GET_JOB_DATA — window.__NUXT__.vuex.jobDetails never hydrated after 4.5s');
+            return null;
+          }
 
           const job      = jd.job      || {};
           const buyer    = jd.buyer    || {};
@@ -69,15 +97,19 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
           const stats    = buyer.stats  || {};
           const loc      = buyer.location || {};
 
-          // Time posted
+          // Time posted — job-reader.js's DOM scrape only searches the
+          // sidebar/activity sections (Proposals, Interviewing, etc.); the
+          // "Posted X ago" text lives near the job header, outside that scope,
+          // so this store read is the only real source for it.
           const postedOn = job.postedOn ? new Date(job.postedOn) : null;
           const mins     = postedOn ? Math.round((Date.now() - postedOn.getTime()) / 60000) : null;
           function fmtAge(m) {
             if (!m) return null;
-            if (m < 60)    return m + ' minutes ago';
-            if (m < 1440)  return Math.floor(m / 60) + ' hours ago';
-            if (m < 10080) return Math.floor(m / 1440) + ' days ago';
-            return Math.floor(m / 10080) + ' weeks ago';
+            const plural = (n, unit) => n + ' ' + unit + (n === 1 ? '' : 's') + ' ago';
+            if (m < 60)    return plural(m, 'minute');
+            if (m < 1440)  return plural(Math.floor(m / 60), 'hour');
+            if (m < 10080) return plural(Math.floor(m / 1440), 'day');
+            return plural(Math.floor(m / 10080), 'week');
           }
 
           // Hire rate
@@ -103,6 +135,8 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
           // Talent type
           const talentMap = { 0: 'Any', 1: 'Independent', 2: 'Agency' };
 
+          console.log('[SnagAI] Time posted — raw:', job.postedOn, 'mins:', mins, 'formatted:', fmtAge(mins));
+
           return {
             // Activity
             // NOTE: proposalCount intentionally omitted — Upwork shows ranges to freelancers,
@@ -117,6 +151,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             // Time
             timePostedMinutes:   mins,
             timePosted:          fmtAge(mins),
+            postedOnRaw:         job.postedOn                       || null,
             lastBuyerActivity:   activity.lastBuyerActivity        || null,
 
             // Client
@@ -256,11 +291,15 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             if (url && !urls.includes(url)) urls.push(url);
           });
           const skills = (p.tags || []).map(t => (t.ontologySkill && t.ontologySkill.prefLabel) || t.freeText || '').filter(Boolean);
-          return { title: p.title.trim(), desc: (p.description || '').trim().slice(0, 500), role: (p.role || '').trim(), urls, skills, _autoRead: true };
+          return { title: p.title.trim(), desc: (p.description || '').trim(), role: (p.role || '').trim(), urls, skills, _autoRead: true };
         });
       },
     }).then(results => sendResponse(results?.[0]?.result || []))
       .catch(() => sendResponse([]));
+    return true;
+  }
+  if (msg.type === 'GET_AGENCY_DATA') {
+    handleGetAgencyData(msg, sender).then(sendResponse).catch(() => sendResponse(null));
     return true;
   }
 });

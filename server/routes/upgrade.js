@@ -3,9 +3,9 @@
 const express = require('express');
 const router  = express.Router();
 const https   = require('https');
-const { PLANS, currentMonth } = require('../modules/config');
+const { PLANS } = require('../modules/config');
 const { getUser, updateUser }  = require('../modules/db');
-const { getUserStatus }        = require('../modules/usage');
+const { getUserStatus, resetUsage } = require('../modules/usage');
 
 const PRICE_IDS = {
   starter: process.env.PADDLE_PRICE_STARTER,
@@ -76,10 +76,10 @@ router.post('/', async (req, res) => {
       return res.status(400).json({ error: result.error.detail || 'Paddle could not update the subscription.' });
     }
 
-    const newLimit           = PLANS[plan]?.limit ?? 2;
+    const newLimit           = PLANS[plan]?.coverLetters?.limit ?? 2;
     const nextBilledAt       = result.data?.next_billed_at || user.next_billed_at || null;
     const currentPeriodStart = result.data?.current_billing_period?.starts_at || user.current_period_start || null;
-    await updateUser(email, { plan, billing_month: currentMonth(), next_billed_at: nextBilledAt, current_period_start: currentPeriodStart });
+    await updateUser(email, { plan, usage_data: resetUsage(), next_billed_at: nextBilledAt, current_period_start: currentPeriodStart });
     console.log(`Upgraded: ${email} → ${plan} (was ${user.plan})`);
 
     res.json({ ok: true, plan, limit: newLimit });

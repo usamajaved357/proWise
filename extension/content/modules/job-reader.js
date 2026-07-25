@@ -1,4 +1,23 @@
 // ── Job data extractor — reads Upwork job page ────────────────────────────────
+
+// getJob() reads the "Activity on this job" sidebar (Proposals, Interviewing,
+// etc.) synchronously via regex over document.body.innerText — there's no
+// Vuex fallback for these fields (proposalCount is deliberately excluded
+// from GET_JOB_DATA's Vuex read; see background.js), so if this sidebar
+// hasn't rendered yet when getJob() runs, those fields come back null with
+// no second chance. This is the same hydration-race shape already found and
+// fixed for GET_JOB_DATA's Vuex read and for agency-data.js's staff/portfolio
+// read — callers should await this before calling getJob() instead of
+// trusting a fixed setTimeout to have been long enough.
+window.SnagAI.waitForJobActivitySection = async function(maxAttempts = 12, intervalMs = 300) {
+  for (let i = 0; i < maxAttempts; i++) {
+    if (/\n(?:Proposals|Activity on this job)[:\s]/i.test(document.body.innerText)) return true;
+    await new Promise(r => setTimeout(r, intervalMs));
+  }
+  console.warn('[SnagAI] "Activity on this job" sidebar never appeared in page text after', maxAttempts * intervalMs, 'ms — proposalCount/interviewingCount will be null');
+  return false;
+};
+
 window.SnagAI.getJob = function() {
   const titleEl = (
     document.querySelector('h1[data-test="job-title"]') ||
@@ -124,9 +143,14 @@ window.SnagAI.getJob = function() {
       '[class*="AboutClient"]',
       '[class*="JobActivity"]',
     ];
+    // Some of these selectors (esp. '[data-test="sidebar"]' and
+    // '[class*="sidebar"]') also match Upwork's global left nav wrapper,
+    // which has nothing to do with the job stats — only keep a candidate
+    // if it actually contains the labels we're looking for.
+    const relevant = /Proposals|Interviewing|Activity on this job|About the client/i;
     const parts = sectionSelectors
       .map(s => document.querySelector(s)?.innerText || '')
-      .filter(Boolean);
+      .filter(t => t && relevant.test(t));
     if (parts.length) return parts.join('\n');
 
     // Smarter fallback: anchor on where the stats actually live in page text
@@ -142,12 +166,34 @@ window.SnagAI.getJob = function() {
     return m ? m[1] : null;
   }
 
-  const proposalsRaw = extractNum('Proposals');
+  // Captured with an optional trailing "+" (extractNum's generic regex
+  // doesn't keep it) so a literal Upwork "50+" can be told apart from a
+  // "20 to 50" range below — collapsing both to the same top-of-range
+  // number made every "20 to 50" job read and display as if it were a
+  // confirmed "50+", overstating competition.
+  const proposalsMatch = pageText2.match(/Proposals[:\s]+(\d+(?:\s+to\s+\d+)?\+?)/i);
+  const proposalsRaw   = proposalsMatch ? proposalsMatch[1] : null;
+  if (!proposalsRaw) {
+    console.warn('[SnagAI] Could not find "Proposals" in the scraped sidebar text. First 300 chars scanned:', pageText2.slice(0, 300));
+  }
   let proposalCount = null;
+  let proposalRangeLabel = null;
   if (proposalsRaw) {
     const nums = proposalsRaw.match(/\d+/g);
-    if (nums && nums.length >= 2) proposalCount = parseInt(nums[nums.length - 1]);
-    else if (nums) proposalCount = parseInt(nums[0]);
+    if (/\+/.test(proposalsRaw) && nums) {
+      // Genuinely "50+" per Upwork — not a range, safe to treat as exact.
+      proposalCount = parseInt(nums[0]);
+      proposalRangeLabel = nums[0] + '+';
+    } else if (nums && nums.length >= 2) {
+      // "20 to 50" — proposalCount keeps the upper bound for the existing
+      // scoring thresholds below, but the display label keeps the full
+      // range so nothing claims a certainty Upwork itself doesn't give.
+      proposalCount = parseInt(nums[1]);
+      proposalRangeLabel = nums[0] + '-' + nums[1];
+    } else if (nums) {
+      proposalCount = parseInt(nums[0]);
+      proposalRangeLabel = nums[0];
+    }
   }
 
   let lastViewed = null;
@@ -165,7 +211,11 @@ window.SnagAI.getJob = function() {
   if (hirM) hiredCount = parseInt(hirM[1]);
 
   let timePosted = null, timePostedMinutes = null;
-  const tm = pageText2.match(/Posted\s+(\d+)\s+(minutes?|hours?|days?|weeks?)\s+ago/i)
+  // Searched over the FULL page text, not pageText2 — pageText2 is scoped to
+  // the sidebar/activity sections (Proposals, Interviewing, etc.) and the
+  // "Posted X ago" line lives near the job header instead, outside that
+  // scope, so it was never actually being found there.
+  const tm = document.body.innerText.match(/Posted\s+(\d+)\s+(minutes?|hours?|days?|weeks?)\s+ago/i)
           || pageText2.match(/(\d+)\s+(minutes?|hours?|days?|weeks?)\s+ago/i);
   if (tm) {
     const num = parseInt(tm[1]), unit = tm[2].toLowerCase();
@@ -230,7 +280,7 @@ window.SnagAI.getJob = function() {
   })();
 
   const jobStats = {
-    proposalCount, lastViewed, interviewingCount, invitesSent, unansweredInvites, hiredCount,
+    proposalCount, proposalRangeLabel, lastViewed, interviewingCount, invitesSent, unansweredInvites, hiredCount,
     timePosted, timePostedMinutes, clientAvgRate, clientHireRate, clientTotalSpent, clientRating,
     reqJSS, reqTalentType, reqEnglish, paymentVerified, phoneVerified, clientSpentNum,
     jobSkills: skillsSet || [], jobUnavailable

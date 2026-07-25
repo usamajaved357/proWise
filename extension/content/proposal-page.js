@@ -7,6 +7,35 @@
   if (!location.href.includes('/nx/proposals/')) return;
   if (document.getElementById('sn-pp-btn')) return;
 
+  // ── Email readiness — red badge + toast on both buttons when the account
+  // isn't set up yet, instead of silently failing or a buried error string ──
+  let toastTimer = null;
+  function showEmailToast(msg) {
+    let toast = document.getElementById('sn-toast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'sn-toast';
+      toast.className = 'sn-toast';
+      document.body.appendChild(toast);
+    }
+    toast.textContent = msg;
+    requestAnimationFrame(() => toast.classList.add('sn-toast-show'));
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => toast.classList.remove('sn-toast-show'), 3200);
+  }
+
+  async function refreshEmailBadges() {
+    const { userEmail, emailVerified } = await chrome.storage.sync.get(['userEmail', 'emailVerified']);
+    const ready = !!(userEmail && userEmail.includes('@') && emailVerified);
+    document.getElementById('sn-pp-btn')?.classList.toggle('sn-needs-email', !ready);
+    document.getElementById('sn-cl-icon')?.classList.toggle('sn-needs-email', !ready);
+    return { ready, userEmail };
+  }
+
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area === 'sync' && (changes.userEmail || changes.emailVerified)) refreshEmailBadges();
+  });
+
   // ── Helpers ────────────────────────────────────────────────────────────────
 
   // Extract job ID from URL: /nx/proposals/job/~XXXX/apply/
@@ -124,6 +153,7 @@
         <path d="M12 2s.7 5.8 2.1 7.2C15.5 10.6 21 12 21 12s-5.5 1.4-6.9 2.8C12.7 16.2 12 22 12 22s-.7-5.8-2.1-7.2C8.5 13.4 3 12 3 12s5.5-1.4 6.9-2.8C11.3 7.8 12 2 12 2z"/>
       </svg>
       <div class="sn-cl-spin"></div>
+      <span class="sn-email-badge">!</span>
     `;
 
     container.appendChild(icon);
@@ -165,7 +195,7 @@
     const btn = document.createElement('button');
     btn.id = 'sn-pp-btn';
     btn.title = 'Snag AI — Write cover letter';
-    btn.innerHTML = LOGO_SVG;
+    btn.innerHTML = LOGO_SVG + '<span class="sn-email-badge">!</span>';
 
     // Chat box
     const box = document.createElement('div');
@@ -288,6 +318,14 @@
   // ── Generation ─────────────────────────────────────────────────────────────
   // source: 'inline' = textarea icon flow, 'chatbot' = floating button flow
   async function generate(jobData, source = 'chatbot') {
+    const { ready, userEmail } = await refreshEmailBadges();
+    if (!ready) {
+      showEmailToast(userEmail
+        ? 'Verify your email in Settings to use Snag AI.'
+        : 'Add your email in Settings to use Snag AI.');
+      return;
+    }
+
     const btn      = document.getElementById('sn-pp-btn');
     const box      = document.getElementById('sn-pp-box');
     const writeBtn = document.getElementById('sn-pp-write');
@@ -320,6 +358,10 @@
       // Re-fetch job data fresh in case it was updated
       const freshJob = await getCachedJob();
 
+      // Which profile (freelancer or agency) this uses is resolved entirely
+      // in the background via resolvePrimaryEntity() — whichever profile is
+      // marked primary on the Profiles page. No mode toggle needed here.
+
       // Phase 1 — generate cover letter (no questions, fast)
       const result = await chrome.runtime.sendMessage({
         type:      'GENERATE_COVER_LETTER',
@@ -348,7 +390,9 @@
           btn.classList.add('sn-pp-done');
           setTimeout(() => btn.classList.remove('sn-pp-done'), 2000);
         }
-        if (statusEl) statusEl.textContent = 'Cover letter ready ✓';
+        if (statusEl) statusEl.textContent = result?.wasRevision
+          ? (result?.freeRevision ? 'Revision updated · free' : 'Revision updated · 1 credit used')
+          : 'Cover letter ready ✓';
         if (dotEl) dotEl.className = 'sn-pp-status-dot';
       }
 
@@ -408,6 +452,7 @@
     const jobData = await getCachedJob();
     buildUI(jobData);
     injectTextareaIcon(clField, jobData);
+    refreshEmailBadges();
   });
 
   // Handle SPA navigation within proposals
@@ -419,6 +464,7 @@
         waitForCLField(async () => {
           const jobData = await getCachedJob();
           buildUI(jobData);
+          refreshEmailBadges();
         });
       }
     }
