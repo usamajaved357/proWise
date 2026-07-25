@@ -4,7 +4,7 @@ import { state }                          from './modules/state.js';
 import { loadStatus, updatePlanUI, upgradePlan, openCheckout } from './modules/subscription.js';
 import { renderProfilesPage, initProfilesPage } from './modules/profiles.js';
 import { loadEmail, initEmail } from './modules/email.js';
-import { initSettings, applySettingsToUI } from './modules/settings.js';
+import { initSettings, applySettingsToUI, renderJobFiltersSettings } from './modules/settings.js';
 import { initAnalytics } from './modules/analytics.js';
 
 // ── Section navigation ────────────────────────────────────────────────────────
@@ -42,7 +42,10 @@ chrome.storage.onChanged.addListener((changes, area) => {
         );
         return changed.length === 1 && changed[0] === 'jobFilters';
       });
-      if (!onlyFilters) renderProfilesPage();
+      if (!onlyFilters) {
+        renderProfilesPage();
+        renderJobFiltersSettings();
+      }
       return;
     }
   }
@@ -105,6 +108,7 @@ async function init() {
   loadStatus();
   loadEmail();
   renderProfilesPage();
+  renderJobFiltersSettings();
   initAnalytics();
 
   const { settings = {} } = await chrome.storage.sync.get(['settings']);

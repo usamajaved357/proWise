@@ -345,7 +345,7 @@ function jfBadgeInfo(filters) {
   return { text: custom.length ? custom.length + ' custom' : 'Default', def: !custom.length };
 }
 
-function renderJobFilters(body, profile) {
+export function renderJobFilters(body, profile) {
   if (!profile?.id || !body) return;
   const F = { ...JF_DEFAULTS, ...(profile.jobFilters || {}) };
 
@@ -392,7 +392,7 @@ function renderJobFilters(body, profile) {
       </button>
     </div>
 
-    <div class="jf-seg">
+    <div class="jf-seg jf-seg-presets">
       <div class="jf-seg-opt" data-preset="conservative">
         <div class="jf-seg-ck">${ICK}</div>
         <div class="jf-seg-txt"><div class="jf-seg-name">Conservative</div><div class="jf-seg-sub">Protect Connects</div></div>
@@ -1058,24 +1058,9 @@ export function renderProfileCard(container, profile, idx, allProfiles, primaryP
   });
   container.appendChild(card);
 
-  // Job Filters and portfolio EDITING are freelancer-only — agency has no
-  // jobFilters concept, and its portfolio is read-only scraped data (editing
-  // it here would need to write to agencyFull_<slug>, a path that doesn't
-  // exist and isn't a designed feature). Agency still gets a read-only
-  // portfolio list below so the data is visible, just not editable.
-  if (!isAgency) {
-    const filtersLbl = document.createElement('div');
-    filtersLbl.className = 'pr-card-block-lbl';
-    filtersLbl.style.cssText = 'margin-bottom:8px;margin-top:20px';
-    filtersLbl.textContent = 'Job Filters';
-    container.appendChild(filtersLbl);
-
-    const filtersBlock = document.createElement('div');
-    filtersBlock.className = 'pr-card-block';
-    filtersBlock.innerHTML = `<div id="jf-body-${idx}"></div>`;
-    container.appendChild(filtersBlock);
-    renderJobFilters(filtersBlock.querySelector(`#jf-body-${idx}`), profile);
-  }
+  // Job Filters moved to Settings → Job Filters — it applies to the primary
+  // profile only, not per-card, so it no longer belongs inside each profile
+  // card here. See renderJobFiltersSettings() in settings.js.
 
   // Portfolio — label + subtitle outside the card frame
   const portLbl = document.createElement('div');
@@ -1116,6 +1101,26 @@ export function renderProfileCard(container, profile, idx, allProfiles, primaryP
     portfolios.forEach((p, pi) => renderPortfolioItemV2(portList, p, pi, allProfiles, idx));
   }
   container.appendChild(portBlock);
+}
+
+// ── Primary profile resolution (used by Settings → Job Filters) ──────────────
+// Same fallback chain used by job-match-toast.js: explicit primary, else the
+// active profile, else whichever one profile exists — so a single-profile
+// plan just works without the user ever having to designate a "primary".
+export async function loadPrimaryProfileForFilters() {
+  const localStored = await new Promise(resolve =>
+    chrome.storage.local.get(['registeredProfiles', 'activeProfileId', 'primaryProfileId'], resolve));
+  const registered = (localStored.registeredProfiles || []).filter(p => p && p.url);
+  if (!registered.length) return null;
+
+  const primaryId   = localStored.primaryProfileId || localStored.activeProfileId;
+  const primaryMeta = (primaryId && registered.find(p => p?.id === primaryId)) || registered[0];
+  if (!primaryMeta?.id) return null;
+
+  const localKey  = 'profileFull_' + primaryMeta.id;
+  const localFull = await new Promise(resolve => chrome.storage.local.get([localKey], resolve));
+  const full = localFull[localKey];
+  return full ? { ...primaryMeta, ...full } : primaryMeta;
 }
 
 // ── Profiles page (main entry point) ─────────────────────────────────────────

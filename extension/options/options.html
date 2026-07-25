@@ -961,7 +961,11 @@ textarea.edit-val{min-height:38px}
 .pi-no-url-text{font-size:10.5px;color:rgba(240,238,234,.22);flex-shrink:0;white-space:nowrap;font-style:italic}
 
 /* ── Filter segmented control ──────────────────────────────────────────────── */
-.jf-seg{background:transparent;border-radius:0;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.jf-seg{background:transparent;border-radius:0;padding:0;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+/* Job-filter presets need a 4th ("Custom") column — scoped so it doesn't
+   also stretch the Proposal Length picker, which shares the .jf-seg class
+   but only has 3 options. */
+.jf-seg-presets{grid-template-columns:repeat(4,1fr)}
 .jf-seg-opt{padding:9px 12px;border-radius:12px;text-align:left;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:7px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.025);user-select:none}
 .jf-seg-opt.jf-active{background:var(--grad-selected);border-color:rgba(168,85,247,.45)}
 .jf-seg-opt:not(.jf-active):hover{background:rgba(255,255,255,.045);border-color:rgba(255,255,255,.14)}
@@ -1434,6 +1438,17 @@ textarea.edit-val{min-height:38px}
           <input type="hidden" id="length" value="medium">
         </div>
       </div>
+
+      <!-- Job Filters — applies to your primary profile -->
+      <div class="card card-glow">
+        <div class="card-title">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          Job Filters
+        </div>
+        <div class="st-group-desc" style="margin-bottom:14px">Flags jobs that don't fit your criteria before you apply. Applies to your primary profile.</div>
+        <div id="jf-settings-body"></div>
+        <div id="jf-settings-empty" style="display:none;font-size:11.5px;color:rgba(240,238,234,.3);font-style:italic;padding:8px 0">Add a profile on the Profiles page to set up job filters.</div>
+      </div>
     </div><!-- /settings -->
 
     <!-- ══ HOW TO USE ══ -->
@@ -1477,7 +1492,7 @@ textarea.edit-val{min-height:38px}
           <p style="margin-top:10px"><strong>Win Probability</strong> — How competitive is this slot right now. Based on time since posting, how many proposals are in, how many interviews are active, and whether the client is a reliable hirer.</p>
           <p style="margin-top:10px"><strong>Profile Match</strong> — How well your profile fits this specific job. Based on skill overlap, your JSS vs the job's minimum, your rate vs the listed budget, and any tier or location requirements.</p>
           <p style="margin-top:10px">Below the scores, every factor that went into both scores is listed with its individual contribution. Red factors mean skip or think twice, green factors confirm a good fit.</p>
-          <p style="margin-top:10px">In Profiles → Job Filters, three presets are available. Conservative is for protecting Connects — tight limits on proposal count, hire rate, and minimum score. Balanced is the default with sensible thresholds. Aggressive applies minimal filtering so you decide manually. Individual sliders let you fine-tune: max proposals, max interviewing, min hire rate, min client rating, min client spend, rate mismatch tolerance, job age, and skill match. Toggle auto-skip if hired to dismiss closed listings without a prompt. The alert is a guide, not a gatekeeper — click Write Proposal on any job regardless of what the scores show.</p>
+          <p style="margin-top:10px">In Settings → Job Filters, three presets are available. Conservative is for protecting Connects — tight limits on proposal count, hire rate, and client quality. Balanced is the default with sensible thresholds. Aggressive applies minimal filtering so you decide manually. Any manual change automatically switches to Custom. Individual controls let you fine-tune: max proposals, max interviewing, max invites sent, min hire rate, min client rating, min client spend, payment verified, rate mismatch tolerance, job age, and skill match. Toggle auto-skip if hired to dismiss closed listings without a prompt. Filters apply to your primary profile. The alert is a guide, not a gatekeeper — click Write Proposal on any job regardless of what the scores show.</p>
         </div>
         <div class="legal-section">
           <div class="legal-section-title">AI Proposal Writing</div>
