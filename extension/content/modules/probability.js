@@ -19,12 +19,16 @@ window.SnagAI.calcWinProbability = function(jobStats, profile, filters) {
   }
 
   const p = jobStats.proposalCount;
+  // Prefer Upwork's own displayed range ("20-50 bids") over a bare number —
+  // proposalCount is the top of that range for threshold comparisons below,
+  // but showing it alone reads as an exact count Upwork never actually gave.
+  const pLabel = jobStats.proposalRangeLabel ? jobStats.proposalRangeLabel + ' bids' : p + ' bids';
   if (p !== null && p !== undefined) {
-    if      (p <= 5)  { probScore += 20; probFactors.push({ label: 'Proposals', value: p + ' bids', delta: +20, note: 'Very low competition' }); }
-    else if (p <= 10) { probScore += 12; probFactors.push({ label: 'Proposals', value: p + ' bids', delta: +12, note: 'Low competition' }); }
-    else if (p <= 20) { probScore += 4;  probFactors.push({ label: 'Proposals', value: p + ' bids', delta: +4,  note: 'Moderate' }); }
-    else if (p <= 35) { probScore -= 5;  probFactors.push({ label: 'Proposals', value: p + '-50 bids', delta: -5,  note: 'High competition' }); }
-    else              { probScore -= 15; probFactors.push({ label: 'Proposals', value: '50+ bids', delta: -15, note: 'Very competitive' }); warnings.push('50+ proposals, very hard to stand out'); }
+    if      (p <= 5)  { probScore += 20; probFactors.push({ label: 'Proposals', value: pLabel, delta: +20, note: 'Very low competition' }); }
+    else if (p <= 10) { probScore += 12; probFactors.push({ label: 'Proposals', value: pLabel, delta: +12, note: 'Low competition' }); }
+    else if (p <= 20) { probScore += 4;  probFactors.push({ label: 'Proposals', value: pLabel, delta: +4,  note: 'Moderate' }); }
+    else if (p <= 35) { probScore -= 5;  probFactors.push({ label: 'Proposals', value: pLabel, delta: -5,  note: 'High competition' }); }
+    else              { probScore -= 15; probFactors.push({ label: 'Proposals', value: pLabel, delta: -15, note: 'Very competitive' }); warnings.push(pLabel + ', very hard to stand out'); }
   }
 
   const hr = jobStats.clientHireRate;
@@ -216,7 +220,7 @@ window.SnagAI.calcWinProbability = function(jobStats, profile, filters) {
   const _minSpent    = flt.minClientSpent         ?? 0;
   const _warnZero    = flt.warnZeroSpent          ?? true;
   const _reqPay      = flt.requirePaymentVerified ?? false;
-  const _maxAgeDays  = flt.maxJobAgeDays          ?? 7;
+  const _maxAgeMins  = flt.maxJobAgeMinutes       ?? 1440;
   const _maxRatePct    = flt.maxRateMismatch      ?? 50;
   const _warnLocFilt   = flt.warnLocationFilter  ?? true;
   const _warnTierMis   = flt.warnTierMismatch    ?? true;
@@ -229,7 +233,11 @@ window.SnagAI.calcWinProbability = function(jobStats, profile, filters) {
   // Proposals
   const _p = jobStats.proposalCount || 0;
   if (_maxProp > 0 && _p >= _maxProp) {
-    riskItems.push(_p >= 50 ? '{{50+ proposals}}, very high competition' : '{{' + _p + ' proposals}}, above your ' + _maxProp + ' limit');
+    // Show Upwork's own range (e.g. "20-50 proposals") instead of collapsing
+    // it to the top-of-range number, which reads as a confirmed count Upwork
+    // never actually gave.
+    const _propLabel = jobStats.proposalRangeLabel || String(_p);
+    riskItems.push(_p >= 50 ? '{{' + _propLabel + ' proposals}}, very high competition' : '{{' + _propLabel + ' proposals}}, above your ' + _maxProp + ' limit');
     filterNotes['Proposals'] = 'above your ' + _maxProp + ' limit';
   }
 
@@ -240,10 +248,14 @@ window.SnagAI.calcWinProbability = function(jobStats, profile, filters) {
     filterNotes['Interviewing'] = 'above your ' + _maxInt + ' limit';
   }
 
-  // Job age — 0 = Any
+  // Job age — 0 = Any. Threshold is minutes now (was days) — the early-bird
+  // advantage on Upwork is a matter of minutes/hours, day-level granularity
+  // couldn't express "warn me if this job is more than 2 hours old".
   const _ageMins = jobStats.timePostedMinutes || 0;
-  if (_maxAgeDays > 0 && _ageMins > _maxAgeDays * 1440) {
-    const _ageLabel = _maxAgeDays === 1 ? '24h' : _maxAgeDays + 'd';
+  if (_maxAgeMins > 0 && _ageMins > _maxAgeMins) {
+    const _ageLabel = _maxAgeMins < 60 ? _maxAgeMins + ' min'
+      : _maxAgeMins < 1440 ? Math.round(_maxAgeMins / 60) + ' hour' + (_maxAgeMins === 60 ? '' : 's')
+      : '24 hours';
     riskItems.push('Posted {{' + jobStats.timePosted + '}}, older than your ' + _ageLabel + ' limit');
     filterNotes['Posted'] = 'older than your ' + _ageLabel + ' limit';
   }

@@ -166,15 +166,34 @@ window.SnagAI.getJob = function() {
     return m ? m[1] : null;
   }
 
-  const proposalsRaw = extractNum('Proposals');
+  // Captured with an optional trailing "+" (extractNum's generic regex
+  // doesn't keep it) so a literal Upwork "50+" can be told apart from a
+  // "20 to 50" range below — collapsing both to the same top-of-range
+  // number made every "20 to 50" job read and display as if it were a
+  // confirmed "50+", overstating competition.
+  const proposalsMatch = pageText2.match(/Proposals[:\s]+(\d+(?:\s+to\s+\d+)?\+?)/i);
+  const proposalsRaw   = proposalsMatch ? proposalsMatch[1] : null;
   if (!proposalsRaw) {
     console.warn('[SnagAI] Could not find "Proposals" in the scraped sidebar text. First 300 chars scanned:', pageText2.slice(0, 300));
   }
   let proposalCount = null;
+  let proposalRangeLabel = null;
   if (proposalsRaw) {
     const nums = proposalsRaw.match(/\d+/g);
-    if (nums && nums.length >= 2) proposalCount = parseInt(nums[nums.length - 1]);
-    else if (nums) proposalCount = parseInt(nums[0]);
+    if (/\+/.test(proposalsRaw) && nums) {
+      // Genuinely "50+" per Upwork — not a range, safe to treat as exact.
+      proposalCount = parseInt(nums[0]);
+      proposalRangeLabel = nums[0] + '+';
+    } else if (nums && nums.length >= 2) {
+      // "20 to 50" — proposalCount keeps the upper bound for the existing
+      // scoring thresholds below, but the display label keeps the full
+      // range so nothing claims a certainty Upwork itself doesn't give.
+      proposalCount = parseInt(nums[1]);
+      proposalRangeLabel = nums[0] + '-' + nums[1];
+    } else if (nums) {
+      proposalCount = parseInt(nums[0]);
+      proposalRangeLabel = nums[0];
+    }
   }
 
   let lastViewed = null;
@@ -261,7 +280,7 @@ window.SnagAI.getJob = function() {
   })();
 
   const jobStats = {
-    proposalCount, lastViewed, interviewingCount, invitesSent, unansweredInvites, hiredCount,
+    proposalCount, proposalRangeLabel, lastViewed, interviewingCount, invitesSent, unansweredInvites, hiredCount,
     timePosted, timePostedMinutes, clientAvgRate, clientHireRate, clientTotalSpent, clientRating,
     reqJSS, reqTalentType, reqEnglish, paymentVerified, phoneVerified, clientSpentNum,
     jobSkills: skillsSet || [], jobUnavailable

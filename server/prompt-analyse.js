@@ -253,7 +253,7 @@ function buildAnalyseMessage({ job, profile, filters }) {
     '',
     '━━ COMPETITION ━━',
     'Posted: '                  + (s.timePosted || 'unknown') + (s.timePostedMinutes != null ? ` (${s.timePostedMinutes} min ago)` : ''),
-    'Proposals received: '      + proposalRange(s.proposalCount) + ' (Upwork displayed range)',
+    'Proposals received: '      + (s.proposalRangeLabel || proposalRange(s.proposalCount)) + ' (Upwork displayed range)',
     'Already interviewing: '    + (s.interviewingCount ?? 'unknown'),
     'Invites sent: '            + (s.invitesSent      ?? 0),
     'Unanswered invites: '      + (s.unansweredInvites ?? 0),

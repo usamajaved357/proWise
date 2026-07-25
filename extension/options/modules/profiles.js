@@ -282,27 +282,51 @@ const JF_DEFAULTS = {
   maxProposals: 50, maxInterviewing: 3, maxInvitesSent: 5,
   minClientRating: 4.0, minHireRate: 30, minClientSpent: 0,
   requirePaymentVerified: false, warnZeroSpent: true,
-  maxRateMismatch: 50, maxJobAgeDays: 7,
+  maxRateMismatch: 50, maxJobAgeMinutes: 1440,
   minSkillMatch: 30, warnLocationFilter: true, warnTierMismatch: true,
   minAlertScore: 60, autoSkipHired: true,
   categories: [],
 };
 const JF_PRESETS = {
-  conservative: { maxProposals: 20, maxInterviewing: 1, maxInvitesSent: 3, minClientRating: 4.5, minHireRate: 50, minClientSpent: 1000, requirePaymentVerified: true, warnZeroSpent: true, maxRateMismatch: 30, maxJobAgeDays: 3, minSkillMatch: 50, warnLocationFilter: true, warnTierMismatch: true, minAlertScore: 70, autoSkipHired: true },
+  conservative: { maxProposals: 15, maxInterviewing: 1, maxInvitesSent: 3, minClientRating: 4.5, minHireRate: 50, minClientSpent: 1000, requirePaymentVerified: true, warnZeroSpent: true, maxRateMismatch: 30, maxJobAgeMinutes: 60, minSkillMatch: 50, warnLocationFilter: true, warnTierMismatch: true, minAlertScore: 70, autoSkipHired: true },
   balanced:     { ...JF_DEFAULTS },
-  aggressive:   { maxProposals: 50, maxInterviewing: 5, maxInvitesSent: 10, minClientRating: 3.0, minHireRate: 15, minClientSpent: 0, requirePaymentVerified: false, warnZeroSpent: false, maxRateMismatch: 80, maxJobAgeDays: 0, minSkillMatch: 10, warnLocationFilter: false, warnTierMismatch: false, minAlertScore: 40, autoSkipHired: false },
+  aggressive:   { maxProposals: 51, maxInterviewing: 5, maxInvitesSent: 10, minClientRating: 3.0, minHireRate: 15, minClientSpent: 0, requirePaymentVerified: false, warnZeroSpent: false, maxRateMismatch: 80, maxJobAgeMinutes: 0, minSkillMatch: 10, warnLocationFilter: false, warnTierMismatch: false, minAlertScore: 40, autoSkipHired: false },
 };
+
+// Matches Upwork's own displayed proposal-count buckets, ascending. 51 (last
+// tier) represents "50+" — our data can never confirm more than 50, so it's
+// the most permissive setting (effectively never warns).
+const MAX_PROPOSALS_OPTIONS = [
+  { value: 5,  label: 'Less than 5' },
+  { value: 10, label: '5 to 10' },
+  { value: 15, label: '10 to 15' },
+  { value: 50, label: '20 to 50' },
+  { value: 51, label: '50+' },
+];
+
+// Job-age threshold in minutes, ascending — sub-day granularity because the
+// early-bird advantage on Upwork is a matter of minutes/hours, not days.
+// "20 minutes" was dropped (too close to 10/30 to matter); "Any" (0) keeps
+// the existing off/no-limit convention used by the other filters.
+const MAX_JOB_AGE_OPTIONS = [
+  { value: 10,   label: '10 minutes' },
+  { value: 30,   label: '30 minutes' },
+  { value: 60,   label: '1 hour' },
+  { value: 120,  label: '2 hours' },
+  { value: 360,  label: '6 hours' },
+  { value: 720,  label: '12 hours' },
+  { value: 1440, label: '24 hours' },
+  { value: 0,    label: 'Any' },
+];
 
 function jfFmt(id, raw) {
   raw = parseInt(raw);
   switch (id) {
-    case 'maxProposals':    return raw >= 50 ? '50+' : String(raw);
     case 'maxInterviewing': return raw === 0 ? 'Off' : raw + '+';
     case 'maxInvitesSent':  return raw === 0 ? 'Off' : raw + '+';
     case 'minClientRating': return (raw / 10).toFixed(1) + '★';
     case 'minHireRate':     return raw + '%';
     case 'maxRateMismatch': return raw + '%↑';
-    case 'maxJobAgeDays':   return raw === 0 ? 'Any' : raw === 1 ? '24h' : raw + 'd';
     case 'minSkillMatch':   return raw + '%';
     case 'minAlertScore':   return '< ' + raw;
     default:                return String(raw);
@@ -357,6 +381,8 @@ function renderJobFilters(body, profile) {
   const I_ALERT = '<span class="jf-emoji">🔔</span>';
 
   const spentVal = v => [0,100,1000,10000,100000].map(n => `<option value="${n}"${F.minClientSpent===n?' selected':''}>${n===0?'Any':n>=1000?'$'+(n/1000)+'K+':'$'+n+'+'}</option>`).join('');
+  const proposalsOpts = () => MAX_PROPOSALS_OPTIONS.map(o => `<option value="${o.value}"${F.maxProposals===o.value?' selected':''}>${o.label}</option>`).join('');
+  const jobAgeOpts = () => MAX_JOB_AGE_OPTIONS.map(o => `<option value="${o.value}"${F.maxJobAgeMinutes===o.value?' selected':''}>${o.label}</option>`).join('');
 
   body.innerHTML = `
     <div class="jf-seg">
@@ -377,7 +403,7 @@ function renderJobFilters(body, profile) {
     <div class="jf-groups">
       <div class="jf-group">
         <div class="jf-group-lbl">${I_COMP}Competition</div>
-        ${sl('maxProposals',    'Max proposals',    5,  55,  5, Math.min(F.maxProposals, 55), 'Warn if job has more bids than this')}
+        <div class="jf-row2"><span class="jf-row2-name">Max proposals</span><div class="jf-row2-right"><select class="jf-select" id="js-maxProposals" title="Warn if job has more bids than this">${proposalsOpts()}</select></div></div>
         ${sl('maxInterviewing', 'Max interviewing', 0,  10,  1, F.maxInterviewing,            'Warn if this many are shortlisted')}
         ${sl('maxInvitesSent',  'Max invites sent', 0,  15,  1, F.maxInvitesSent,             'Warn if client sent this many invites')}
       </div>
@@ -393,7 +419,7 @@ function renderJobFilters(body, profile) {
         <div class="jf-group-lbl">${I_MATCH}Match &amp; age</div>
         ${sl('minSkillMatch',   'Min skill match',  0,  80, 10, F.minSkillMatch,   'Warn if skill overlap below this %')}
         ${sl('maxRateMismatch', 'Rate mismatch',   10, 100, 10, F.maxRateMismatch, 'Warn if your rate is this % above avg')}
-        ${sl('maxJobAgeDays',   'Max job age',      0,  14,  1, F.maxJobAgeDays,   'Warn if older than this — 0 = any age')}
+        <div class="jf-row2"><span class="jf-row2-name">Max job age</span><div class="jf-row2-right"><select class="jf-select" id="js-maxJobAgeMinutes" title="Warn if older than this — Any = no limit">${jobAgeOpts()}</select></div></div>
       </div>
       <div class="jf-group">
         <div class="jf-group-lbl">${I_ALERT}Alert behaviour</div>
@@ -442,7 +468,7 @@ function renderJobFilters(body, profile) {
       requirePaymentVerified: t('requirePaymentVerified'),
       warnZeroSpent:          t('warnZeroSpent'),
       maxRateMismatch:        s('maxRateMismatch'),
-      maxJobAgeDays:          s('maxJobAgeDays'),
+      maxJobAgeMinutes:       s('maxJobAgeMinutes'),
       minSkillMatch:          s('minSkillMatch'),
       warnLocationFilter:     t('warnLocationFilter'),
       warnTierMismatch:       t('warnTierMismatch'),
@@ -479,13 +505,13 @@ function renderJobFilters(body, profile) {
     });
   }
 
-  const SL_IDS = ['maxProposals','maxInterviewing','maxInvitesSent','minClientRating','minHireRate','maxRateMismatch','maxJobAgeDays','minSkillMatch','minAlertScore'];
+  const SL_IDS = ['maxInterviewing','maxInvitesSent','minClientRating','minHireRate','maxRateMismatch','minSkillMatch','minAlertScore'];
   const TG_IDS = ['warnZeroSpent','requirePaymentVerified','warnLocationFilter','warnTierMismatch','autoSkipHired'];
 
   function applyPreset(name) {
     const P = JF_PRESETS[name]; if (!P) return;
     SL_IDS.forEach(id => {
-      let val = id === 'minClientRating' ? Math.round(P[id] * 10) : id === 'maxProposals' ? Math.min(P[id], 55) : P[id];
+      let val = id === 'minClientRating' ? Math.round(P[id] * 10) : P[id];
       const el = body.querySelector('#js-' + id);
       if (el) { el.value = val; jfTrack(el); const v = body.querySelector('#jv-' + id); if (v) v.textContent = jfFmt(id, val); }
     });
@@ -497,6 +523,10 @@ function renderJobFilters(body, profile) {
     });
     const sp = body.querySelector('#js-minClientSpent');
     if (sp) sp.value = P.minClientSpent;
+    const mp = body.querySelector('#js-maxProposals');
+    if (mp) mp.value = P.maxProposals;
+    const ja = body.querySelector('#js-maxJobAgeMinutes');
+    if (ja) ja.value = P.maxJobAgeMinutes;
     body.querySelectorAll('.jf-seg-opt').forEach(b => b.classList.toggle('jf-active', b.dataset.preset === name));
     save();
   }
@@ -530,6 +560,18 @@ function renderJobFilters(body, profile) {
 
   // Min client spent select
   body.querySelector('#js-minClientSpent')?.addEventListener('change', () => {
+    body.querySelectorAll('.jf-seg-opt').forEach(b => b.classList.remove('jf-active'));
+    save();
+  });
+
+  // Max proposals select
+  body.querySelector('#js-maxProposals')?.addEventListener('change', () => {
+    body.querySelectorAll('.jf-seg-opt').forEach(b => b.classList.remove('jf-active'));
+    save();
+  });
+
+  // Max job age select
+  body.querySelector('#js-maxJobAgeMinutes')?.addEventListener('change', () => {
     body.querySelectorAll('.jf-seg-opt').forEach(b => b.classList.remove('jf-active'));
     save();
   });
