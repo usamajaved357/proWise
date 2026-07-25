@@ -785,7 +785,7 @@ function renderPortfolioItemV2(list, p, pi, allProfiles, profileIdx, autoOpen) {
       const missingBtn = item.querySelector('.pi-missing-btn');
       let tip = null;
 
-      missingBtn.addEventListener('mouseenter', () => {
+      item.addEventListener('mouseenter', () => {
         if (tip) return;
         const rect = missingBtn.getBoundingClientRect();
         tip = document.createElement('div');
@@ -795,7 +795,7 @@ function renderPortfolioItemV2(list, p, pi, allProfiles, profileIdx, autoOpen) {
           'color:rgba(240,238,255,.78);font-size:11px;font-weight:500;line-height:1.5;' +
           'padding:8px 12px;border-radius:8px;max-width:240px;' +
           'box-shadow:0 6px 20px rgba(0,0,0,.45);';
-        tip.textContent = 'Missing URL — add this project\'s link to your Upwork portfolio, then re-sync.';
+        tip.textContent = 'Missing URL, add this project\'s link to your Upwork portfolio, then re-sync.';
 
         // Arrow pointing down toward the icon
         const arrow = document.createElement('div');
@@ -818,7 +818,7 @@ function renderPortfolioItemV2(list, p, pi, allProfiles, profileIdx, autoOpen) {
         tip.style.top  = top  + 'px';
       });
 
-      missingBtn.addEventListener('mouseleave', () => {
+      item.addEventListener('mouseleave', () => {
         if (tip) { tip.remove(); tip = null; }
       });
     }
@@ -1074,7 +1074,9 @@ export function renderProfileCard(container, profile, idx, allProfiles, primaryP
     <div class="pr-sec-hdr">
       <div class="pr-sec-top">
         <div class="pr-sec-lbl"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg> Portfolio</div>
-        ${portfolios.length ? `<div class="pr-port-badge ${allLinked ? 'all-linked' : ''}">${portsOk}/${portfolios.length} linked</div>` : ''}
+        ${portfolios.length ? (allLinked
+          ? `<div class="pr-port-badge all-linked">${portfolios.length} linked</div>`
+          : `<div class="pr-port-badge missing">${portfolios.length - portsOk} missing</div>`) : ''}
       </div>
       <div class="st-group-desc" style="margin-top:4px;margin-bottom:0;font-size:10.5px">Matches projects to each job by skills, referencing the most relevant ones in your cover letter.</div>
     </div>
