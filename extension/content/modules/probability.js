@@ -218,7 +218,6 @@ window.SnagAI.calcWinProbability = function(jobStats, profile, filters) {
   const _minRat      = flt.minClientRating        ?? 4.0;
   const _minHR       = flt.minHireRate            ?? 30;
   const _minSpent    = flt.minClientSpent         ?? 0;
-  const _warnZero    = flt.warnZeroSpent          ?? true;
   const _reqPay      = flt.requirePaymentVerified ?? false;
   const _maxAgeMins  = flt.maxJobAgeMinutes       ?? 1440;
   const _maxRatePct    = flt.maxRateMismatch      ?? 50;
@@ -293,15 +292,14 @@ window.SnagAI.calcWinProbability = function(jobStats, profile, filters) {
   // from a real "$0 spent" client, so this was firing a false "below your
   // minimum" mismatch on clients who'd simply hidden the number (even ones
   // with thousands of hires/hours, per their other visible stats).
+  // The separate "$0 spent" warning was dropped — minClientSpent already
+  // covers it (set it above 0 and a $0 client gets flagged the same way).
   const _spentKnown = jobStats.clientTotalSpent !== null && jobStats.clientTotalSpent !== undefined;
   const _spentNum   = jobStats.clientSpentNum || 0;
   if (_spentKnown && _minSpent > 0 && _spentNum < _minSpent) {
     const _fmtMin = _minSpent >= 1000 ? '$' + (_minSpent / 1000) + 'K' : '$' + _minSpent;
     riskItems.push('Client {{spent under ' + _fmtMin + '}}, below your minimum');
     filterNotes['Client spend'] = 'below your ' + _fmtMin + '+ minimum';
-  } else if (_spentKnown && _warnZero && _spentNum === 0) {
-    riskItems.push('{{$0 total spent}}, never paid a freelancer');
-    filterNotes['Client spend'] = 'flagged: $0 spent';
   }
 
   // Payment verified

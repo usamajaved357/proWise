@@ -281,16 +281,16 @@ const UPWORK_CATEGORIES = {
 const JF_DEFAULTS = {
   maxProposals: 50, maxInterviewing: 3, maxInvitesSent: 5,
   minClientRating: 4.0, minHireRate: 30, minClientSpent: 0,
-  requirePaymentVerified: false, warnZeroSpent: true,
+  requirePaymentVerified: false,
   maxRateMismatch: 50, maxJobAgeMinutes: 1440,
   minSkillMatch: 30, warnLocationFilter: true, warnTierMismatch: true,
-  minAlertScore: 60, autoSkipHired: true,
+  autoSkipHired: true,
   categories: [],
 };
 const JF_PRESETS = {
-  conservative: { maxProposals: 15, maxInterviewing: 1, maxInvitesSent: 3, minClientRating: 4.5, minHireRate: 50, minClientSpent: 1000, requirePaymentVerified: true, warnZeroSpent: true, maxRateMismatch: 30, maxJobAgeMinutes: 60, minSkillMatch: 50, warnLocationFilter: true, warnTierMismatch: true, minAlertScore: 70, autoSkipHired: true },
+  conservative: { maxProposals: 15, maxInterviewing: 1, maxInvitesSent: 3, minClientRating: 4.5, minHireRate: 50, minClientSpent: 1000, requirePaymentVerified: true, maxRateMismatch: 30, maxJobAgeMinutes: 60, minSkillMatch: 50, warnLocationFilter: true, warnTierMismatch: true, autoSkipHired: true },
   balanced:     { ...JF_DEFAULTS },
-  aggressive:   { maxProposals: 51, maxInterviewing: 5, maxInvitesSent: 10, minClientRating: 3.0, minHireRate: 15, minClientSpent: 0, requirePaymentVerified: false, warnZeroSpent: false, maxRateMismatch: 80, maxJobAgeMinutes: 0, minSkillMatch: 10, warnLocationFilter: false, warnTierMismatch: false, minAlertScore: 40, autoSkipHired: false },
+  aggressive:   { maxProposals: 51, maxInterviewing: 5, maxInvitesSent: 10, minClientRating: 3.0, minHireRate: 15, minClientSpent: 0, requirePaymentVerified: false, maxRateMismatch: 80, maxJobAgeMinutes: 0, minSkillMatch: 10, warnLocationFilter: false, warnTierMismatch: false, autoSkipHired: false },
 };
 
 // Matches Upwork's own displayed proposal-count buckets, ascending. 51 (last
@@ -328,7 +328,6 @@ function jfFmt(id, raw) {
     case 'minHireRate':     return raw + '%';
     case 'maxRateMismatch': return raw + '%↑';
     case 'minSkillMatch':   return raw + '%';
-    case 'minAlertScore':   return '< ' + raw;
     default:                return String(raw);
   }
 }
@@ -385,18 +384,30 @@ function renderJobFilters(body, profile) {
   const jobAgeOpts = () => MAX_JOB_AGE_OPTIONS.map(o => `<option value="${o.value}"${F.maxJobAgeMinutes===o.value?' selected':''}>${o.label}</option>`).join('');
 
   body.innerHTML = `
+    <div class="jf-filter-footer jf-filter-footer-top" id="jf-filter-footer-top">
+      <button class="btn-reset-plain" id="jf-reset" style="display:none">Reset Filters</button>
+      <button class="btn-apply-filters" id="jf-save" style="display:none">
+        <span style="font-size:11px">✓</span>
+        Apply filters
+      </button>
+    </div>
+
     <div class="jf-seg">
       <div class="jf-seg-opt" data-preset="conservative">
         <div class="jf-seg-ck">${ICK}</div>
         <div class="jf-seg-txt"><div class="jf-seg-name">Conservative</div><div class="jf-seg-sub">Protect Connects</div></div>
       </div>
-      <div class="jf-seg-opt jf-active" data-preset="balanced">
+      <div class="jf-seg-opt" data-preset="balanced">
         <div class="jf-seg-ck">${ICK}</div>
         <div class="jf-seg-txt"><div class="jf-seg-name">Balanced</div><div class="jf-seg-sub">Recommended</div></div>
       </div>
       <div class="jf-seg-opt" data-preset="aggressive">
         <div class="jf-seg-ck">${ICK}</div>
         <div class="jf-seg-txt"><div class="jf-seg-name">Aggressive</div><div class="jf-seg-sub">Apply broadly</div></div>
+      </div>
+      <div class="jf-seg-opt jf-seg-custom" data-preset="custom">
+        <div class="jf-seg-ck">${ICK}</div>
+        <div class="jf-seg-txt"><div class="jf-seg-name">Custom</div><div class="jf-seg-sub">Your own mix</div></div>
       </div>
     </div>
 
@@ -412,8 +423,6 @@ function renderJobFilters(body, profile) {
         ${sl('minHireRate',     'Min hire rate',    0, 100,  5, F.minHireRate,                'Warn if client hires less than this %')}
         ${sl('minClientRating', 'Min rating',      10,  50,  5, Math.round(F.minClientRating * 10), 'Warn if rating below this')}
         <div class="jf-row2"><span class="jf-row2-name">Min client spent</span><div class="jf-row2-right"><select class="jf-select" id="js-minClientSpent">${spentVal()}</select></div></div>
-        ${tog('requirePaymentVerified', 'Payment verified', F.requirePaymentVerified, 'Warn if payment not verified')}
-        ${tog('warnZeroSpent',          'Warn $0 clients',  F.warnZeroSpent,          'Warn if client never spent on Upwork')}
       </div>
       <div class="jf-group">
         <div class="jf-group-lbl">${I_MATCH}Match &amp; age</div>
@@ -423,7 +432,7 @@ function renderJobFilters(body, profile) {
       </div>
       <div class="jf-group">
         <div class="jf-group-lbl">${I_ALERT}Alert behaviour</div>
-        ${sl('minAlertScore', 'Min alert score', 30, 80, 5, F.minAlertScore, 'Show alert when score is under this')}
+        ${tog('requirePaymentVerified', 'Payment verified', F.requirePaymentVerified, 'Warn if payment not verified')}
         ${tog('autoSkipHired',      'Auto-skip hired',    F.autoSkipHired,      'Close panel if someone already hired')}
         ${tog('warnLocationFilter', 'Location filter',    F.warnLocationFilter, 'Warn if job has location restrictions')}
         ${tog('warnTierMismatch',   'Tier mismatch',      F.warnTierMismatch,   'Warn if job requires a tier you lack')}
@@ -446,13 +455,6 @@ function renderJobFilters(body, profile) {
       <div class="jf-category-hint" style="margin-top:8px">Select all subcategories that apply — the AI uses these to tailor every cover letter to your specific field and expertise.</div>
     </div>
 
-    <div class="jf-filter-footer">
-      <button class="btn-reset-plain" id="jf-reset">Reset Filters</button>
-      <button class="btn-apply-filters" id="jf-save">
-        <span style="font-size:12px">✓</span>
-        Apply filters
-      </button>
-    </div>
   `;
 
   function readFilters() {
@@ -466,13 +468,11 @@ function renderJobFilters(body, profile) {
       minHireRate:            s('minHireRate'),
       minClientSpent:         parseInt(body.querySelector('#js-minClientSpent')?.value ?? 0),
       requirePaymentVerified: t('requirePaymentVerified'),
-      warnZeroSpent:          t('warnZeroSpent'),
       maxRateMismatch:        s('maxRateMismatch'),
       maxJobAgeMinutes:       s('maxJobAgeMinutes'),
       minSkillMatch:          s('minSkillMatch'),
       warnLocationFilter:     t('warnLocationFilter'),
       warnTierMismatch:       t('warnTierMismatch'),
-      minAlertScore:          s('minAlertScore'),
       autoSkipHired:          t('autoSkipHired'),
       categories: Array.from(body.querySelectorAll('.jf-cat-chip-tag')).map(el => el.dataset.val).filter(Boolean),
     };
@@ -500,13 +500,44 @@ function renderJobFilters(body, profile) {
           t.style.opacity = '1';
           clearTimeout(t._timer);
           t._timer = setTimeout(() => { t.style.opacity = '0'; }, 2000);
+
+          // Apply was clicked and the save landed — nothing left unsaved.
+          dirty = false;
+          updateFooterVisibility();
         }
       });
     });
   }
 
-  const SL_IDS = ['maxInterviewing','maxInvitesSent','minClientRating','minHireRate','maxRateMismatch','minSkillMatch','minAlertScore'];
-  const TG_IDS = ['warnZeroSpent','requirePaymentVerified','warnLocationFilter','warnTierMismatch','autoSkipHired'];
+  const SL_IDS = ['maxInterviewing','maxInvitesSent','minClientRating','minHireRate','maxRateMismatch','minSkillMatch'];
+  const TG_IDS = ['requirePaymentVerified','warnLocationFilter','warnTierMismatch','autoSkipHired'];
+
+  // dirty tracks whether the user has touched a filter since the last time
+  // "Apply filters" was clicked (or since load). Fields already autosave on
+  // every change — this only drives the Reset/Apply button visibility below.
+  let dirty = false;
+
+  function updateFooterVisibility() {
+    const isCustom  = body.querySelector('.jf-seg-opt[data-preset="custom"]')?.classList.contains('jf-active');
+    const resetBtn  = body.querySelector('#jf-reset');
+    const applyBtn  = body.querySelector('#jf-save');
+    const bar       = body.querySelector('#jf-filter-footer-top');
+    if (resetBtn) resetBtn.style.display = isCustom ? '' : 'none';
+    if (applyBtn) applyBtn.style.display = dirty ? '' : 'none';
+    if (bar) bar.style.display = (isCustom || dirty) ? '' : 'none';
+  }
+
+  function clearPresetActive() {
+    body.querySelectorAll('.jf-seg-opt').forEach(b => b.classList.toggle('jf-active', b.dataset.preset === 'custom'));
+  }
+
+  // Called from every individual filter control (slider/toggle/select) —
+  // switches the segmented row to "Custom" and reveals the Apply button.
+  function markDirty() {
+    dirty = true;
+    clearPresetActive();
+    updateFooterVisibility();
+  }
 
   function applyPreset(name) {
     const P = JF_PRESETS[name]; if (!P) return;
@@ -528,6 +559,8 @@ function renderJobFilters(body, profile) {
     const ja = body.querySelector('#js-maxJobAgeMinutes');
     if (ja) ja.value = P.maxJobAgeMinutes;
     body.querySelectorAll('.jf-seg-opt').forEach(b => b.classList.toggle('jf-active', b.dataset.preset === name));
+    dirty = false;
+    updateFooterVisibility();
     save();
   }
 
@@ -538,7 +571,7 @@ function renderJobFilters(body, profile) {
       const id = el.id.replace('js-', '');
       const v = body.querySelector('#jv-' + id);
       if (v) v.textContent = jfFmt(id, parseInt(el.value));
-      body.querySelectorAll('.jf-seg-opt').forEach(b => b.classList.remove('jf-active'));
+      markDirty();
     });
     el.addEventListener('change', save);
   });
@@ -552,7 +585,7 @@ function renderJobFilters(body, profile) {
       const cb = body.querySelector('#jt-' + id);
       if (cb) {
         cb.checked = togEl.classList.contains('on');
-        body.querySelectorAll('.jf-seg-opt').forEach(b => b.classList.remove('jf-active'));
+        markDirty();
         save();
       }
     });
@@ -560,19 +593,19 @@ function renderJobFilters(body, profile) {
 
   // Min client spent select
   body.querySelector('#js-minClientSpent')?.addEventListener('change', () => {
-    body.querySelectorAll('.jf-seg-opt').forEach(b => b.classList.remove('jf-active'));
+    markDirty();
     save();
   });
 
   // Max proposals select
   body.querySelector('#js-maxProposals')?.addEventListener('change', () => {
-    body.querySelectorAll('.jf-seg-opt').forEach(b => b.classList.remove('jf-active'));
+    markDirty();
     save();
   });
 
   // Max job age select
   body.querySelector('#js-maxJobAgeMinutes')?.addEventListener('change', () => {
-    body.querySelectorAll('.jf-seg-opt').forEach(b => b.classList.remove('jf-active'));
+    markDirty();
     save();
   });
 
@@ -643,17 +676,23 @@ function renderJobFilters(body, profile) {
 
   body.querySelector('#jf-save')?.addEventListener('click', () => save(true));
 
-  // Highlight active preset on load
-  ['conservative','balanced','aggressive'].forEach(name => {
+  // Highlight active preset on load — if none match, select the "Custom"
+  // tile instead of leaving a preset looking selected when it isn't.
+  const matchedPreset = ['conservative','balanced','aggressive'].find(name => {
     const P = JF_PRESETS[name];
-    const match = Object.keys(JF_DEFAULTS).every(k => {
+    return Object.keys(JF_DEFAULTS).every(k => {
       const a = F[k] ?? JF_DEFAULTS[k]; const b = P[k] ?? JF_DEFAULTS[k];
       return typeof a === 'number' ? Math.abs(a - b) < 0.01 : a === b;
     });
-    if (match) {
-      body.querySelectorAll('.jf-seg-opt').forEach(btn => btn.classList.toggle('jf-active', btn.dataset.preset === name));
-    }
   });
+  if (matchedPreset) {
+    body.querySelectorAll('.jf-seg-opt').forEach(btn => btn.classList.toggle('jf-active', btn.dataset.preset === matchedPreset));
+  } else {
+    clearPresetActive();
+  }
+  // dirty stays false here — this reflects already-saved state, not a
+  // pending change, so Apply should stay hidden even if Custom is selected.
+  updateFooterVisibility();
 }
 
 // ── Save card ─────────────────────────────────────────────────────────────────
