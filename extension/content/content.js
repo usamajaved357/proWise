@@ -122,54 +122,6 @@
     }
   };
 
-  // ── Re-analyse (manual refresh, max 3 times per job) ─────────────────────
-  SnagAI.reAnalyse = async function() {
-    const status = await SnagAI.getReAnalyseStatus();
-    if (status.locked) return;
-
-    // Swap footer to loading state immediately
-    const footer = document.getElementById('sn-sb-footer');
-    if (footer) footer.innerHTML = `<span class="sn-sb-reanalyse-locked" style="opacity:.5">Re-analysing…</span>`;
-
-    SnagAI.showSidebarLoading();
-
-    try {
-      await SnagAI.waitForJobActivitySection();
-      const job = SnagAI.getJob();
-      try {
-        const storeData = await chrome.runtime.sendMessage({ type: 'GET_JOB_DATA' });
-        if (storeData && job.jobStats) {
-          // timePosted/timePostedMinutes skipped — store's computed value has
-          // been unreliable; job-reader.js's DOM value (read from the "Posted
-          // X ago" text) is the reliable source for this field.
-          Object.entries(storeData).forEach(([k, v]) => {
-            if (k === 'timePosted' || k === 'timePostedMinutes') return;
-            if (v !== null && v !== undefined) job.jobStats[k] = v;
-          });
-          console.log('[SnagAI] Job stats enriched from Vuex store:', storeData);
-        } else {
-          console.warn('[SnagAI] GET_JOB_DATA returned nothing — jobStats will rely on DOM-parsed values only:', job.jobStats);
-        }
-      } catch(e) {}
-
-      const localStored = await new Promise(r => chrome.storage.local.get(['registeredProfiles','activeProfileId','primaryProfileId'], r));
-      const regProfiles = localStored.registeredProfiles || [];
-      const primaryId   = localStored.primaryProfileId || localStored.activeProfileId;
-      const primaryMeta = (primaryId && regProfiles.find(p => p?.id === primaryId)) || regProfiles[0];
-      const localKey    = primaryMeta?.id ? 'profileFull_' + primaryMeta.id : null;
-      const localFull   = localKey ? await new Promise(r => chrome.storage.local.get([localKey], r)) : {};
-      const prof        = localFull[localKey] || primaryMeta || {};
-      const filters     = prof.jobFilters || {};
-
-      const analysis = await SnagAI.analyseJob(job, filters, true); // forceRefresh = true
-      SnagAI.renderAnalysis(analysis);
-
-    } catch(err) {
-      console.error('[SnagAI] Re-analyse error:', err.message);
-      SnagAI.showSidebarError(err.message || 'Re-analysis failed.');
-    }
-  };
-
   function openAndGenerate() {
     SnagAI.centerPanel();
     document.getElementById('sn-overlay').classList.add('vis');

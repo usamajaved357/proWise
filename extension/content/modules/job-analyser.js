@@ -75,17 +75,3 @@ window.SnagAI.isJobAnalysed = async function() {
     return !!(stored[cacheKey]?.analysis);
   } catch(e) { return false; }
 };
-
-/**
- * How many re-analyses have been used for this job (0 = never re-analysed).
- * Returns { used, remaining, locked }
- */
-window.SnagAI.getReAnalyseStatus = async function() {
-  const jobId = SnagAI.state.cachedJobId;
-  if (!jobId || jobId === 'current') return { used: 0, remaining: MAX_REANALYSES, locked: false };
-  const suffix = await primaryKeySuffix();
-  const reCountKey = REANALYSE_PREFIX + suffix + jobId;
-  const stored = await new Promise(r => chrome.storage.local.get([reCountKey], r));
-  const used   = stored[reCountKey] || 0;
-  return { used, remaining: MAX_REANALYSES - used, locked: used >= MAX_REANALYSES };
-};
