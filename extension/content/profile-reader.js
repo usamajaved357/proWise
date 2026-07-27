@@ -320,9 +320,10 @@
   let latestAuditResult  = null;
   let latestAuditProfile = null;
 
-  // ── Toolbar icons — shared so state changes can restore the original icon ────
-  const AUDIT_ICON_SVG = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>';
-  const SYNC_ICON_SVG  = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>';
+  // ── Toolbar icons ──────────────────────────────────────────────────────────
+  const AUDIT_ICON_SVG = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>';
+  const SYNC_ICON_SVG  = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>';
+  const LOGO_URL_PR    = chrome.runtime.getURL('icons/icon128.png');
 
   // ── Storage helpers ───────────────────────────────────────────────────────────
   const local = {
@@ -332,81 +333,185 @@
     )),
   };
 
-  // ── Inject toolbar — one shared capsule housing both Audit and Sync ──────────
-  // Two independent buttons, one frame — replaces the earlier two-separate-pills
-  // layout that looked disjointed floating side by side.
-  function injectToolbar(onAudit, onSync, showAudit = true) {
+  // ── Inject toolbar — single floating logo button + popup menu ────────────────
+  // Same button treatment as the job page's floating trigger (transparent
+  // circular logo, rotates while loading). Click opens a menu with Audit /
+  // Sync instead of two separate icons sitting in a row.
+  function injectToolbar(onAudit, onSync, showAudit = true, checkAuditGate = async () => ({ action: 'run' })) {
     if (document.getElementById('snagai-toolbar')) return;
 
     const style = document.createElement('style');
     style.textContent = `
       @keyframes snagai-pulse{0%,100%{opacity:1}50%{opacity:.4}}
       @keyframes snagai-spin{to{transform:rotate(360deg)}}
-      #snagai-toolbar{position:fixed;bottom:28px;right:28px;z-index:2147483646;display:flex;align-items:stretch;background:#111827;border:1px solid rgba(99,102,241,.28);border-radius:999px;box-shadow:0 8px 28px rgba(0,0,0,.45);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;transition:transform .2s,box-shadow .2s}
-      #snagai-toolbar:hover{transform:translateY(-2px);box-shadow:0 12px 36px rgba(0,0,0,.55)}
-      .snagai-tb-btn{display:flex;align-items:center;justify-content:center;background:none;border:none;padding:9px;cursor:pointer;position:relative;transition:background .15s}
-      .snagai-tb-btn:hover:not(:disabled){background:rgba(255,255,255,.06)}
-      .snagai-tb-btn:disabled{opacity:.6;cursor:default}
-      .snagai-tb-btn:first-child{border-radius:999px 0 0 999px}
-      .snagai-tb-btn:last-child{border-radius:0 999px 999px 0}
-      .snagai-tb-icon{width:24px;height:24px;background:#6366f1;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .2s}
-      .snagai-tb-div{width:1px;margin:8px 0;background:rgba(255,255,255,.1);flex-shrink:0}
-      .snagai-live-dot{position:absolute;top:6px;right:6px;width:6px;height:6px;background:#34d399;border-radius:50%;border:1.5px solid #111827;animation:snagai-pulse 2s ease-in-out infinite}
-      .snagai-spin-icon{display:inline-block;animation:snagai-spin .7s linear infinite}
-      .snagai-tb-tip{position:absolute;bottom:calc(100% + 9px);right:0;transform:translateY(4px);background:#1a1f2e;color:#f0eeea;font-size:11px;font-weight:500;line-height:1.3;padding:6px 10px;border-radius:7px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .15s,transform .15s;box-shadow:0 6px 20px rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.08)}
-      .snagai-tb-tip::after{content:'';position:absolute;top:100%;right:14px;border:5px solid transparent;border-top-color:#1a1f2e}
-      .snagai-tb-btn:hover .snagai-tb-tip{opacity:1;transform:translateY(0)}
+      #snagai-toolbar{position:fixed;bottom:28px;right:28px;z-index:2147483646;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+      /* Same size/position as the job page's floating trigger */
+      #snagai-main-btn{width:52px;height:52px;display:flex;align-items:center;justify-content:center;background:transparent;border:none;padding:0;cursor:pointer;border-radius:50%;filter:drop-shadow(0 4px 14px rgba(0,0,0,.4));transition:transform .2s,filter .2s}
+      #snagai-main-btn:hover{transform:translateY(-2px);filter:drop-shadow(0 6px 18px rgba(0,0,0,.5))}
+      #snagai-main-btn:disabled{cursor:default}
+      #snagai-main-logo{width:42px!important;height:42px!important;border-radius:50%!important;overflow:hidden!important;object-fit:cover!important;display:block!important;box-sizing:border-box!important}
+      #snagai-main-logo.snagai-main-logo-spin{animation:snagai-spin .9s linear infinite}
+      #snagai-main-btn.snagai-main-done{filter:drop-shadow(0 4px 14px rgba(5,150,105,.6))}
+      #snagai-main-btn.snagai-main-error{filter:drop-shadow(0 4px 14px rgba(220,38,38,.6))}
+
+      /* Menu — no card/panel background. Two small floating circular icon
+         buttons stacked above the main button, each with its own subtle
+         tinted ring instead of a boxed dropdown. */
+      #snagai-menu{position:absolute;bottom:calc(100% + 14px);right:5px;display:flex;flex-direction:column;align-items:center;gap:12px;opacity:0;transform:translateY(8px);pointer-events:none;transition:opacity .15s,transform .15s}
+      #snagai-menu.snagai-menu-open{opacity:1;transform:translateY(0);pointer-events:auto}
+      .snagai-menu-item{
+        width:38px;height:38px;border-radius:50%;
+        background: linear-gradient(rgba(17,24,39,.92), rgba(17,24,39,.92)) padding-box,
+                    linear-gradient(120deg, rgba(45,212,191,.75), rgba(168,85,247,.65), rgba(236,72,153,.7)) border-box;
+        border:1.5px solid transparent;
+        color:#c7d2fe;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative;flex-shrink:0;backdrop-filter:blur(6px);filter:drop-shadow(0 3px 10px rgba(0,0,0,.4));transition:transform .15s,filter .15s
+      }
+      .snagai-menu-item:hover{transform:scale(1.1);filter:drop-shadow(0 4px 14px rgba(0,0,0,.5))}
+      .snagai-menu-live-dot{position:absolute;top:-1px;right:-1px;width:7px;height:7px;background:#34d399;border-radius:50%;border:1.5px solid #0d1120;animation:snagai-pulse 2s ease-in-out infinite}
+      .snagai-menu-tip{position:absolute;right:calc(100% + 10px);top:50%;transform:translateY(-50%);background:#1a1f2e;color:#f0eeea;font-size:11px;font-weight:500;white-space:nowrap;padding:5px 10px;border-radius:7px;opacity:0;pointer-events:none;transition:opacity .15s;box-shadow:0 4px 14px rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.08)}
+      .snagai-menu-item:hover .snagai-menu-tip{opacity:1}
+      .snagai-menu-item.snagai-menu-locked{opacity:.35;cursor:not-allowed}
+      .snagai-menu-item.snagai-menu-locked:hover{transform:none}
+
+      #snagai-toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(8px);background:#1a1830;border:1px solid rgba(248,113,113,.3);color:rgba(240,238,255,.9);font-size:12px;font-weight:500;line-height:1.4;padding:10px 16px;border-radius:10px;max-width:280px;text-align:center;z-index:2147483647;opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;box-shadow:0 8px 24px rgba(0,0,0,.45)}
+      #snagai-toast.snagai-toast-show{opacity:1;transform:translateX(-50%) translateY(0)}
     `;
     document.head.appendChild(style);
 
+    // #snagai-toolbar's own position:fixed (see stylesheet above) already
+    // establishes the containing block #snagai-menu's position:absolute
+    // anchors to — no need for a separate position:relative wrapper, and
+    // setting one here as an inline style would win over the fixed rule by
+    // specificity and silently break the floating position entirely.
     const wrap = document.createElement('div');
     wrap.id = 'snagai-toolbar';
-
-    const auditBtn = document.createElement('button');
-    auditBtn.id = 'snagai-audit-btn';
-    auditBtn.className = 'snagai-tb-btn';
-    auditBtn.innerHTML = `
-      <div class="snagai-tb-icon">${AUDIT_ICON_SVG}</div>
-      <span class="snagai-tb-tip">Get an AI audit of this profile</span>
+    wrap.innerHTML = `
+      <button id="snagai-main-btn" title="Snag AI">
+        <img id="snagai-main-logo" src="${LOGO_URL_PR}" width="42" height="42" alt="">
+      </button>
+      <div id="snagai-menu">
+        ${showAudit ? `
+        <button class="snagai-menu-item" id="snagai-menu-audit">
+          ${AUDIT_ICON_SVG}
+          <span class="snagai-menu-tip">Audit this profile</span>
+        </button>` : ''}
+        <button class="snagai-menu-item" id="snagai-menu-sync">
+          ${SYNC_ICON_SVG}
+          <span class="snagai-menu-live-dot"></span>
+          <span class="snagai-menu-tip">Sync this profile</span>
+        </button>
+      </div>
     `;
-    auditBtn.addEventListener('click', () => onAudit(auditBtn));
+    document.body.appendChild(wrap);
 
-    const divider = document.createElement('div');
-    divider.className = 'snagai-tb-div';
+    const mainBtn = document.getElementById('snagai-main-btn');
+    const mainLogo = document.getElementById('snagai-main-logo');
+    const menu = document.getElementById('snagai-menu');
+    const auditMenuItem = document.getElementById('snagai-menu-audit');
 
-    const syncBtn = document.createElement('button');
-    syncBtn.id = 'snagai-sync-btn';
-    syncBtn.className = 'snagai-tb-btn';
-    syncBtn.innerHTML = `
-      <div class="snagai-tb-icon">${SYNC_ICON_SVG}</div>
-      <span class="snagai-live-dot"></span>
-      <span class="snagai-tb-tip">Sync this profile to Snag AI</span>
-    `;
+    let toastTimer = null;
+    function showGateToast(msg) {
+      let toast = document.getElementById('snagai-toast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'snagai-toast';
+        document.body.appendChild(toast);
+      }
+      toast.textContent = msg;
+      requestAnimationFrame(() => toast.classList.add('snagai-toast-show'));
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove('snagai-toast-show'), 3200);
+    }
 
-    syncBtn.addEventListener('click', async () => {
-      syncBtn.disabled = true;
-      const icon = syncBtn.querySelector('.snagai-tb-icon');
-      icon.innerHTML = `<span class="snagai-spin-icon" style="font-size:13px;color:#fff">↻</span>`;
+    function setState(state) {
+      // state: 'idle' | 'loading' | 'done' | 'error'
+      mainBtn.disabled = (state === 'loading');
+      mainLogo.classList.toggle('snagai-main-logo-spin', state === 'loading');
+      mainBtn.classList.toggle('snagai-main-done', state === 'done');
+      mainBtn.classList.toggle('snagai-main-error', state === 'error');
+      if (state === 'done' || state === 'error') {
+        setTimeout(() => mainBtn.classList.remove('snagai-main-done', 'snagai-main-error'), 2000);
+      }
+    }
+
+    function closeMenu() { menu.classList.remove('snagai-menu-open'); }
+    async function toggleMenu() {
+      const opening = !menu.classList.contains('snagai-menu-open');
+      menu.classList.toggle('snagai-menu-open');
+      // Reflect the gate visually as soon as the menu opens, not just after
+      // a failed click — a locked-looking button is clearer than a live one
+      // that silently refuses on click.
+      if (opening && auditMenuItem) {
+        const gate = await checkAuditGate();
+        auditMenuItem.classList.toggle('snagai-menu-locked', gate.action === 'blocked');
+      }
+    }
+
+    async function runAudit() {
+      closeMenu();
+      const gate = await checkAuditGate();
+
+      if (gate.action === 'blocked') {
+        showGateToast('No more profile audits available this month. Resets on your next billing cycle.');
+        return;
+      }
+
+      if (gate.action === 'cached') {
+        // Already audited this profile this cycle — show what's already
+        // there instead of spending another credit re-running it.
+        openAuditPanel();
+        renderAudit(gate.audit);
+        return;
+      }
+
+      setState('loading');
+      const panel = openAuditPanel();
+      // openAuditPanel() only builds the loading spinner when the panel
+      // doesn't exist yet — if it's already open from a previous run, force
+      // it back to loading now so a re-run doesn't leave the old result
+      // frozen on screen while the new audit fetches silently behind it.
+      const body = panel.querySelector('#snagai-audit-body');
+      if (body) body.innerHTML = `
+        <div class="sn-load">
+          <div class="sn-spin"></div>
+          <div class="sn-load-t">Auditing your profile…</div>
+          <div class="sn-load-s">Scoring 9 sections against top earner benchmarks</div>
+        </div>`;
+      const exportBtn = panel.querySelector('#snagai-audit-export');
+      if (exportBtn) exportBtn.disabled = true;
+      try {
+        await onAudit();
+        setState('done');
+      } catch(e) {
+        setState('error');
+        const body = document.getElementById('snagai-audit-body');
+        if (body) body.innerHTML = `<div style="padding:40px 24px;text-align:center;color:#f87171;font-size:13px">Audit failed: ${e.message}</div>`;
+      }
+    }
+
+    async function runSync() {
+      closeMenu();
+      setState('loading');
       try {
         await onSync();
-        icon.innerHTML = SYNC_ICON_SVG;
-        icon.style.background = '#16a34a';
+        setState('done');
       } catch(e) {
-        icon.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
-        icon.style.background = '#dc2626';
-        syncBtn.disabled = false;
+        setState('error');
       }
-    });
-
-    // Audit is gated by "Profile audit" (not on Basic) — Sync never is, so
-    // it always stays. Hide the button + divider entirely rather than a
-    // paywall, per product decision.
-    if (showAudit) {
-      wrap.appendChild(auditBtn);
-      wrap.appendChild(divider);
     }
-    wrap.appendChild(syncBtn);
-    document.body.appendChild(wrap);
+
+    // Audit is gated by "Profile audit" (not on Basic) — Sync never is. With
+    // only one real action left, skip the popup and sync directly instead of
+    // opening a one-item menu.
+    mainBtn.addEventListener('click', () => {
+      if (mainBtn.disabled) return;
+      if (!showAudit) { runSync(); return; }
+      toggleMenu();
+    });
+    document.addEventListener('click', (e) => { if (!wrap.contains(e.target)) closeMenu(); });
+
+    document.getElementById('snagai-menu-audit')?.addEventListener('click', runAudit);
+    document.getElementById('snagai-menu-sync')?.addEventListener('click', runSync);
   }
 
   // ── Audit: extract all profile data from page text ───────────────────────────
@@ -636,7 +741,8 @@
       #snagai-audit-panel *{box-sizing:border-box;font-family:inherit}
 
       .sn-hd{display:flex;align-items:center;gap:8px;padding:16px;border-bottom:1px solid rgba(255,255,255,.07);flex-shrink:0}
-      .sn-hd-ico{width:26px;height:26px;background:#6366f1;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+      .sn-hd-ico{width:26px;height:26px;background:transparent;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+      .sn-hd-ico img{width:26px!important;height:26px!important;border-radius:50%!important;overflow:hidden!important;object-fit:cover!important;display:block!important;box-sizing:border-box!important}
       .sn-hd-lbl{font-size:13px;font-weight:600;color:#f0eeea;flex:1}
       .sn-hd-export{display:flex;align-items:center;gap:5px;background:rgba(99,102,241,.12);border:1px solid rgba(99,102,241,.3);color:#a5a8f5;border-radius:999px;padding:5px 10px;font-size:10.5px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:background .15s,border-color .15s}
       .sn-hd-export:hover:not(:disabled){background:rgba(99,102,241,.2);border-color:rgba(99,102,241,.45)}
@@ -687,14 +793,7 @@
       panel.innerHTML = `
         <div class="sn-hd">
           <div class="sn-hd-ico">
-            <svg width="13" height="13" viewBox="0 0 100 100" fill="none">
-              <rect x="5" y="5" width="64" height="78" rx="10" stroke="white" stroke-width="7" fill="none"/>
-              <line x1="16" y1="24" x2="55" y2="24" stroke="white" stroke-width="7" stroke-linecap="round"/>
-              <line x1="16" y1="40" x2="55" y2="40" stroke="white" stroke-width="7" stroke-linecap="round"/>
-              <line x1="16" y1="56" x2="38" y2="56" stroke="white" stroke-width="7" stroke-linecap="round"/>
-              <circle cx="76" cy="77" r="23" fill="#4338ca"/>
-              <polygon points="80,59 70,78 77,78 73,95 88,74 81,74" fill="white"/>
-            </svg>
+            <img src="${LOGO_URL_PR}" width="26" height="26" alt="">
           </div>
           <span class="sn-hd-lbl">Profile Audit</span>
           <button class="sn-hd-export" id="snagai-audit-export" disabled title="Export as PDF">
@@ -1057,45 +1156,64 @@
       if (status && status.auditLimit === 0) showAuditBtn = false;
     } catch(e) {}
 
-    injectToolbar(async (btn) => {
-      btn.disabled = true;
-      const icon = btn.querySelector('.snagai-tb-icon');
-      icon.innerHTML = `<span class="snagai-spin-icon" style="font-size:13px;color:#fff">↻</span>`;
-      openAuditPanel();
-      try {
-        const auditData = await readAuditData();
-        // Clean snapshot of this run's profile fields, saved below for the
-        // *next* audit's code-verified diff — captured before we attach
-        // previousAudit/profileChanges context onto auditData.
-        const profileSnapshotForDiff = { ...auditData };
-        // Attach the last audit run for this profile so the model can check
-        // whether its own previous suggestions were actually implemented,
-        // instead of re-evaluating from a blank slate every time.
-        const lastAuditProfileKey = lastAuditKey + '_profile';
-        const { [lastAuditKey]: previousAudit, [lastAuditProfileKey]: previousProfileSnapshot } =
-          await local.get([lastAuditKey, lastAuditProfileKey]);
-        if (previousAudit) auditData.previousAudit = previousAudit;
-        if (previousProfileSnapshot) auditData.profileChanges = computeProfileChanges(previousProfileSnapshot, auditData);
-        latestAuditProfile = auditData;
-        console.log('[SnagAI] Audit data:', auditData);
-        const audit = await chrome.runtime.sendMessage({ type: 'AUDIT_PROFILE', profile: auditData });
-        if (audit?.error) throw new Error(audit.error);
-        renderAudit(audit);
-        await local.set({ [lastAuditKey]: audit, [lastAuditProfileKey]: profileSnapshotForDiff });
-        icon.innerHTML = AUDIT_ICON_SVG;
-        icon.style.background = '#16a34a';
-        btn.disabled = false;
-        btn.onclick = () => {
-          const p = document.getElementById('snagai-audit-panel');
-          if (!p) { openAuditPanel(); renderAudit(audit); }
-        };
-      } catch(e) {
-        const body = document.getElementById('snagai-audit-body');
-        if (body) body.innerHTML = `<div style="padding:40px 24px;text-align:center;color:#f87171;font-size:13px">Audit failed: ${e.message}</div>`;
-        icon.innerHTML = `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
-        icon.style.background = '#dc2626';
-        btn.disabled = false;
+    // Each plan allows a fixed number of profile audits per billing month
+    // (server enforces this — see canAudit/recordAuditUsage in usage.js).
+    // Client-side, this decides between three outcomes on click: show the
+    // cached report for THIS profile if it was already audited this same
+    // cycle (no server call, no credit spent); block with a toast if the
+    // cycle's credit(s) were spent on a different profile; otherwise let a
+    // fresh audit run. "This cycle" is tracked by tagging the cached audit
+    // with the month it was run in and comparing to the current month —
+    // simpler and self-contained vs. round-tripping billing-cycle dates.
+    const lastAuditMonthKey = lastAuditKey + '_month';
+    async function checkAuditGate() {
+      const nowMonth = new Date().toISOString().slice(0, 7);
+      const stored = await local.get([lastAuditKey, lastAuditMonthKey]);
+      const cachedAudit = stored[lastAuditKey];
+      const cachedMonth = stored[lastAuditMonthKey];
+      // No month tag means this was cached before that tracking existed —
+      // treat it as current rather than silently re-running (or worse,
+      // blocking) on a perfectly good existing report. Only a month tag
+      // that's explicitly a DIFFERENT month means "this is stale, allow a
+      // fresh run."
+      if (cachedAudit && (!cachedMonth || cachedMonth === nowMonth)) {
+        return { action: 'cached', audit: cachedAudit };
       }
+      try {
+        const status = await chrome.runtime.sendMessage({ type: 'GET_STATUS' });
+        if (status && status.remainingAudits === 0) return { action: 'blocked' };
+      } catch(e) { /* fail open — server still enforces the real gate */ }
+      return { action: 'run' };
+    }
+
+    injectToolbar(async () => {
+      // Panel is already open (injectToolbar's runAudit does that) with its
+      // own "Auditing your profile…" loading state; button loading/error
+      // state is also owned by the wrapper — this just does the actual work
+      // and throws on failure so the wrapper's catch handles it.
+      const auditData = await readAuditData();
+      // Clean snapshot of this run's profile fields, saved below for the
+      // *next* audit's code-verified diff — captured before we attach
+      // previousAudit/profileChanges context onto auditData.
+      const profileSnapshotForDiff = { ...auditData };
+      // Attach the last audit run for this profile so the model can check
+      // whether its own previous suggestions were actually implemented,
+      // instead of re-evaluating from a blank slate every time.
+      const lastAuditProfileKey = lastAuditKey + '_profile';
+      const { [lastAuditKey]: previousAudit, [lastAuditProfileKey]: previousProfileSnapshot } =
+        await local.get([lastAuditKey, lastAuditProfileKey]);
+      if (previousAudit) auditData.previousAudit = previousAudit;
+      if (previousProfileSnapshot) auditData.profileChanges = computeProfileChanges(previousProfileSnapshot, auditData);
+      latestAuditProfile = auditData;
+      console.log('[SnagAI] Audit data:', auditData);
+      const audit = await chrome.runtime.sendMessage({ type: 'AUDIT_PROFILE', profile: auditData });
+      if (audit?.error) throw new Error(audit.error);
+      renderAudit(audit);
+      await local.set({
+        [lastAuditKey]: audit,
+        [lastAuditProfileKey]: profileSnapshotForDiff,
+        [lastAuditMonthKey]: new Date().toISOString().slice(0, 7),
+      });
     }, async () => {
       const existing     = await local.get([localKey]);
       const existingFull = existing[localKey] || {};
@@ -1132,7 +1250,7 @@
       });
       console.log('[SnagAI] Save complete ✓');
 
-    }, showAuditBtn);
+    }, showAuditBtn, checkAuditGate);
   }
 
   if (document.readyState === 'complete') setTimeout(() => init(), 1500);
