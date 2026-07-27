@@ -23,21 +23,29 @@
 #sn-btn {
   width: 52px; height: 52px;
   display: flex; align-items: center; justify-content: center;
-  background: #6366f1;
-  color: #fff; border: none;
+  background: transparent;
+  color: #fff; border: none; padding: 0;
   border-radius: 50%;
   cursor: pointer;
-  box-shadow: 0 4px 20px rgba(99,102,241,.45);
-  transition: transform .2s ease, box-shadow .25s ease, outline-color .25s ease;
+  filter: drop-shadow(0 4px 14px rgba(0,0,0,.4));
+  transition: transform .2s ease, filter .25s ease;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   position: relative;
 }
 #sn-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 28px rgba(99,102,241,.6);
-  outline: 0.75px solid rgba(255,255,255,.6);
-  outline-offset: 4px;
+  filter: drop-shadow(0 6px 18px rgba(0,0,0,.5));
 }
+#sn-btn-logo {
+  width: 42px !important; height: 42px !important;
+  border-radius: 50% !important;
+  overflow: hidden !important;
+  object-fit: cover !important;
+  display: block !important;
+  box-sizing: border-box !important;
+}
+#sn-btn-logo.sn-btn-logo-spin { animation: sn-sb-spin .9s linear infinite; }
+#sn-btn.sn-btn-done { filter: drop-shadow(0 4px 14px rgba(5,150,105,.6)); }
 /* Tooltip */
 #sn-btn::before {
   content: '✦ Analyse this job with Snag AI';
@@ -1255,9 +1263,6 @@
 .sn-sb-reanalyse-btn:hover { border-color: rgba(99,102,241,.5); color: rgba(240,238,234,.7); }
 .sn-sb-recount { font-size: 9px; opacity: .55; }
 .sn-sb-reanalyse-locked { font-size: 9px; color: rgba(240,238,234,.18); }
-
-/* Button spinner animation */
-.sn-btn-spin { animation: sn-sb-spin .7s linear infinite; }
 
 /* ── Sidebar verdict hero ────────────────────────────────────────────────── */
 .sn-sb-verdict-hero { padding:18px 16px 16px; }

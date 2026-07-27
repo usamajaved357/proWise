@@ -44,13 +44,15 @@ window.SnagAI.injectUI = function() {
   `;
   document.body.appendChild(panel);
 
+  // Real extension icon — same treatment as the proposal page's floating
+  // button (transparent circle, no solid pill background).
+  const _LOGO_URL = chrome.runtime.getURL('icons/icon128.png');
+
   const trig = document.createElement('div');
   trig.id = 'sn-trigger';
   trig.innerHTML = `
     <button id="sn-btn" title="Analyse job">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M13 2L4.5 13.5H11L10 22L20.5 9.5H14L13 2Z" fill="white" stroke="white" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/>
-      </svg>
+      <img id="sn-btn-logo" src="${_LOGO_URL}" width="42" height="42" alt="">
     </button>
   `;
   // Start hidden — reveal once we know the user is entitled, instead of
@@ -61,12 +63,16 @@ window.SnagAI.injectUI = function() {
 
   // This button is the only thing on the job page gated by "AI job audits"
   // (Basic plan doesn't include it) — hide it entirely rather than showing
-  // a paywall, per product decision. Fail-open on a network error so a
-  // temporary GET_STATUS failure doesn't hide the button for an entitled
-  // user; the server still enforces the real gate on click either way.
+  // a paywall, per product decision. Fails CLOSED on error/unreachable
+  // server — e.g. local dev with no server running previously defaulted to
+  // showing the button even for a Basic-plan account, since an error
+  // response has no real jobAuditLimit to check. The server still enforces
+  // the real gate on click either way, so failing closed here just means an
+  // entitled user occasionally doesn't see the button during a genuine
+  // outage — far better than a non-entitled user always seeing it locally.
   chrome.runtime.sendMessage({ type: 'GET_STATUS' }).then(status => {
-    if (!(status && status.jobAuditLimit === 0)) trig.style.visibility = 'visible';
-  }).catch(() => { trig.style.visibility = 'visible'; });
+    if (status && !status.error && status.jobAuditLimit !== 0) trig.style.visibility = 'visible';
+  }).catch(() => { /* stays hidden */ });
 
   document.getElementById('sn-btn').addEventListener('click', () => SnagAI.toggle());
   document.getElementById('sn-close').addEventListener('click', () => SnagAI.closePanel());
