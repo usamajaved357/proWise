@@ -4,28 +4,36 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Snag AI — Win more Upwork jobs with proposals that actually convert</title>
-<meta name="description" content="Snag AI sits inside Upwork for freelancers and agencies alike — auditing jobs, auditing your profile, and writing cover letters on the same page you apply from.">
+<meta name="description" content="Snag AI audits jobs, audits your profile, and writes cover letters right on the page you apply from — for freelancer and agency profiles alike.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap">
 <style>
   * { box-sizing: border-box; }
-  body { margin: 0; background: #07090f; color: #E7E9F0; font-family: 'Manrope', sans-serif; }
+  body { margin: 0; background: #07090f; scroll-behavior: smooth; }
+  html { scroll-behavior: smooth; }
   ::selection { background: rgba(168,85,247,0.35); }
   a { color: #C084FC; }
   a:hover { color: #E0C3FF; }
-  html { scroll-behavior: smooth; }
   @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
   @keyframes floatSlow { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-14px); } }
   @keyframes spinSlow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
   @keyframes pulseGlow { 0%,100% { opacity: 0.55; } 50% { opacity: 1; } }
   @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
+  @keyframes scrollFade { 0% { opacity: 0; transform: translateY(0); } 15% { opacity: 1; } 85% { opacity: 1; } 100% { opacity: 0; transform: translateY(-6px); } }
+  @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+  @keyframes typingDot { 0%, 80%, 100% { opacity: 0.35; transform: translateY(0) scale(0.85); } 40% { opacity: 1; transform: translateY(-3px) scale(1); } }
+  @keyframes msgDot { 0%, 15%, 100% { transform: translateY(0); opacity: 0.4; } 7% { transform: translateY(-4px); opacity: 1; } }
+  @keyframes supportBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+  .faq-answer { display: none; font-size: 14px; color: #9199AB; line-height: 1.7; margin-top: 14px; }
+  .faq-item.open .faq-answer { display: block; }
+  .faq-item.open .faq-chevron { transform: rotate(180deg); }
   @media (max-width: 860px) {
-    header { padding: 18px 20px !important; }
     header nav { display: none !important; }
     section[data-screen-label="Hero"] h1 { font-size: 38px !important; }
-    section[data-screen-label="Hero"] > div[style*="grid-template-columns: 1.1fr 1fr"],
+    section[data-screen-label="Hero"] div[style*="grid-template-columns: 1.1fr 1fr"] { grid-template-columns: 1fr !important; }
     section#features .fx-row { grid-template-columns: 1fr !important; }
     section#features .fx-row > div { order: unset !important; }
+    section#how-it-works > div[style*="grid-template-columns: 1.1fr 1fr"] { grid-template-columns: 1fr !important; }
     section#pricing > div[style*="repeat(3, 1fr)"] { grid-template-columns: 1fr !important; }
     footer { flex-direction: column; align-items: flex-start !important; }
   }
@@ -57,21 +65,47 @@
     radial-gradient(1000px 700px at 100% 10%, rgba(236,72,153,0.08), transparent 60%),
     radial-gradient(1100px 800px at 50% 60%, rgba(168,85,247,0.06), transparent 60%);"></div>
 
+  <!-- hero background effect -->
+  <div style="position: absolute; top: 0; left: 0; right: 0; height: 1020px; pointer-events: none; z-index: 0; overflow: hidden;">
+    <div style="position: absolute; inset: 0; background-image:
+      linear-gradient(rgba(168,85,247,0.09) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(168,85,247,0.09) 1px, transparent 1px);
+      background-size: 56px 56px;
+      mask-image: radial-gradient(ellipse 1050px 680px at 50% 9%, black, transparent 72%);
+      -webkit-mask-image: radial-gradient(ellipse 1050px 680px at 50% 9%, black, transparent 72%);"></div>
+
+    <div style="position: absolute; inset: 0; background-image: radial-gradient(rgba(255,255,255,0.12) 1px, transparent 1px); background-size: 28px 28px;
+      mask-image: radial-gradient(ellipse 800px 520px at 50% 7%, black, transparent 70%);
+      -webkit-mask-image: radial-gradient(ellipse 800px 520px at 50% 7%, black, transparent 70%);"></div>
+
+    <div style="position: absolute; top: -280px; left: 50%; transform: translateX(-50%); width: 1060px; height: 720px; border-radius: 50%; background: radial-gradient(circle, rgba(168,85,247,0.3), transparent 62%); filter: blur(65px); animation: pulseGlow 7s ease-in-out infinite;"></div>
+    <div style="position: absolute; top: 50px; left: 3%; width: 520px; height: 520px; border-radius: 50%; background: radial-gradient(circle, rgba(45,212,191,0.22), transparent 68%); filter: blur(75px); animation: floatSlow 11s ease-in-out infinite;"></div>
+    <div style="position: absolute; top: 10px; right: 3%; width: 560px; height: 560px; border-radius: 50%; background: radial-gradient(circle, rgba(236,72,153,0.2), transparent 68%); filter: blur(75px); animation: floatSlow 13s ease-in-out infinite 1s;"></div>
+
+    <div style="position: absolute; top: -210px; left: 50%; transform: translateX(-50%); width: 820px; height: 820px; border-radius: 50%; border: 1px solid rgba(168,85,247,0.13);"></div>
+    <div style="position: absolute; top: -80px; left: 50%; transform: translateX(-50%); width: 620px; height: 620px; border-radius: 50%; border: 1px solid rgba(94,234,212,0.1);"></div>
+    <div style="position: absolute; top: 30px; left: 50%; transform: translateX(-50%); width: 440px; height: 440px; border-radius: 50%; border: 1px solid rgba(236,72,153,0.08);"></div>
+
+    <div style="position: absolute; inset: 0; background: linear-gradient(180deg, transparent 58%, #07090f 100%);"></div>
+  </div>
+
   <!-- NAV -->
-  <header style="position: relative; z-index: 2; display: flex; align-items: center; justify-content: space-between; padding: 22px 64px; max-width: 1280px; margin: 0 auto; box-sizing: border-box;">
-    <a href="#" style="display: flex; align-items: center; gap: 12px; text-decoration: none;">
+  <header data-screen-label="Nav" style="position: relative; z-index: 2; display: flex; align-items: center; justify-content: space-between; padding: 22px 64px; max-width: 1280px; margin: 0 auto; box-sizing: border-box;">
+    <div style="display: flex; align-items: center; gap: 12px;">
       <div style="position: relative; width: 36px; height: 36px; border-radius: 22%; overflow: hidden; flex-shrink: 0;">
         <div style="position: absolute; inset: 0; background: #0d0a1a;"></div>
         <div style="position: absolute; left: 50%; top: 50%; width: 78%; height: 78%; transform: translate(-50%,-50%); border-radius: 50%; mask-image: radial-gradient(circle, transparent 50%, black 56%, black 82%, transparent 86%); -webkit-mask-image: radial-gradient(circle, transparent 50%, black 56%, black 82%, transparent 86%); background: conic-gradient(from 200deg, #2DD4BF, #3B82F6 25%, #A855F7 55%, #EC4899 80%, #2DD4BF 100%);"></div>
         <div style="position: absolute; left: 50%; top: 50%; width: 42%; height: 42%; transform: translate(-50%,-50%); border-radius: 50%; background: #000;"></div>
       </div>
       <span style="font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 700; letter-spacing: -0.01em; color: #F5F6FA;">Snag AI</span>
-    </a>
+    </div>
 
-    <nav style="display: flex; align-items: center; gap: 34px;">
-      <a href="#features" style="font-size: 14px; font-weight: 600; color: #9199AB; text-decoration: none;">Features</a>
-      <a href="#how-it-works" style="font-size: 14px; font-weight: 600; color: #9199AB; text-decoration: none;">How it works</a>
-      <a href="#pricing" style="font-size: 14px; font-weight: 600; color: #9199AB; text-decoration: none;">Pricing</a>
+    <nav style="display: flex; align-items: center; gap: 30px;">
+      <a href="#features" style="font-size: 14px; font-weight: 600; color: #9199AB; text-decoration: none; position: relative;">Features</a>
+      <a href="#how-it-works" style="font-size: 14px; font-weight: 600; color: #9199AB; text-decoration: none; position: relative;">How it works</a>
+      <a href="#pricing" style="font-size: 14px; font-weight: 600; color: #9199AB; text-decoration: none; position: relative;">Pricing</a>
+      <a href="#faq" style="font-size: 14px; font-weight: 600; color: #9199AB; text-decoration: none; position: relative;">FAQ</a>
+      <a href="#reviews" style="font-size: 14px; font-weight: 600; color: #9199AB; text-decoration: none; position: relative;">Reviews</a>
     </nav>
 
     <div style="display: flex; align-items: center; gap: 14px;">
@@ -81,10 +115,10 @@
   </header>
 
   <!-- HERO -->
-  <section style="position: relative; z-index: 2; max-width: 1000px; margin: 0 auto; padding: 72px 40px 40px; text-align: center; box-sizing: border-box;">
-    <div style="display: inline-flex; align-items: center; gap: 8px; padding: 7px 16px; border-radius: 999px; background: rgba(168,85,247,0.1); border: 1px solid rgba(168,85,247,0.28); font-size: 12.5px; font-weight: 700; color: #C084FC; margin-bottom: 28px; animation: fadeUp 0.6s ease both;">
-      <span style="width: 6px; height: 6px; border-radius: 50%; background: #2DD4BF;"></span>
-      A Chrome extension built only for Upwork
+  <section data-screen-label="Hero" style="position: relative; z-index: 2; max-width: 1000px; margin: 0 auto; padding: 72px 40px 40px; text-align: center; box-sizing: border-box;">
+    <div style="display: inline-flex; align-items: center; gap: 8px; padding: 7px 18px; border-radius: 999px; background: rgba(168,85,247,0.1); border: 1px solid rgba(168,85,247,0.28); font-size: 12.5px; font-weight: 700; color: #C084FC; margin-bottom: 28px; animation: fadeUp 0.6s ease both;">
+      <span style="width: 6px; height: 6px; border-radius: 50%; background: #2DD4BF; flex-shrink: 0; animation: pulseGlow 1.6s ease-in-out infinite;"></span>
+      For Upwork Freelancers and Agencies
     </div>
 
     <h1 style="font-family: 'Sora', sans-serif; font-size: 60px; line-height: 1.08; font-weight: 700; letter-spacing: -0.03em; color: #FAFAFC; margin: 0 0 22px; animation: fadeUp 0.6s ease 0.05s both;">
@@ -92,393 +126,525 @@
     </h1>
 
     <p style="font-size: 18px; color: #9199AB; line-height: 1.6; max-width: 620px; margin: 0 auto 36px; animation: fadeUp 0.6s ease 0.1s both;">
-      Snag AI sits inside Upwork for freelancers and agencies alike — auditing jobs, auditing your profile, and writing cover letters on the same page you apply from.
+      Snag AI audits jobs, audits your profile, and writes cover letters right on the page you apply from — for freelancer and agency profiles alike.
     </p>
 
     <div style="display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 20px; animation: fadeUp 0.6s ease 0.15s both;">
-      <a href="#" style="padding: 15px 30px; border-radius: 999px; background: linear-gradient(90deg, #2DD4BF, #A855F7, #EC4899); color: #fff; font-size: 15.5px; font-weight: 700; text-decoration: none; box-shadow: 0 14px 30px -10px rgba(168,85,247,0.55);">Add to Chrome — it's free</a>
-      <a href="#pricing" style="padding: 15px 26px; border-radius: 999px; border: 1px solid #232838; color: #E7E9F0; font-size: 15px; font-weight: 700; text-decoration: none;">See pricing</a>
+      <a href="#features" style="padding: 15px 30px; border-radius: 999px; background: linear-gradient(90deg, #2DD4BF, #A855F7, #EC4899); color: #fff; font-size: 15.5px; font-weight: 700; text-decoration: none; box-shadow: 0 14px 30px -10px rgba(168,85,247,0.55);">See it in action</a>
+      <a href="#how-it-works" style="padding: 15px 26px; border-radius: 999px; border: 1px solid #232838; color: #E7E9F0; font-size: 15px; font-weight: 700; text-decoration: none;">How it works</a>
     </div>
     <div style="font-size: 13px; color: #565D70; animation: fadeUp 0.6s ease 0.2s both;">Plans start at $19/mo · Cancel anytime</div>
 
     <!-- product visual -->
-    <div style="position: relative; margin-top: 56px; max-width: 920px; margin-left: auto; margin-right: auto; animation: fadeUp 0.7s ease 0.25s both;">
-      <div style="position: absolute; inset: -1px; border-radius: 20px; background: linear-gradient(120deg, rgba(45,212,191,0.5), rgba(168,85,247,0.4), rgba(236,72,153,0.45)); filter: blur(1px);"></div>
-      <div style="position: relative; border-radius: 19px; background: #0B0E17; border: 1px solid #171B26; padding: 24px; text-align: left; overflow: hidden;">
-        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
-          <span style="width: 9px; height: 9px; border-radius: 50%; background: #2A3040;"></span>
-          <span style="width: 9px; height: 9px; border-radius: 50%; background: #2A3040;"></span>
-          <span style="width: 9px; height: 9px; border-radius: 50%; background: #2A3040;"></span>
+    <div style="position: relative; margin-top: 64px; animation: fadeUp 0.7s ease 0.25s both;">
+      <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 18px;">
+        <span style="width: 6px; height: 6px; border-radius: 50%; background: #5EEAD4;"></span>
+        <span style="font-size: 12px; font-weight: 800; letter-spacing: 0.1em; color: #5EEAD4;">REAL EXAMPLE</span>
+      </div>
+      <div style="position: relative; border-radius: 21px; background: #0B0E17; padding: 28px; text-align: left; overflow: hidden;">
+        <div style="position: absolute; inset: 0; background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 22px 22px;
+          mask-image: radial-gradient(ellipse 700px 340px at 20% 0%, black, transparent 70%);
+          -webkit-mask-image: radial-gradient(ellipse 700px 340px at 20% 0%, black, transparent 70%); pointer-events: none;"></div>
+        <div style="position: absolute; top: -80px; right: -60px; width: 360px; height: 360px; border-radius: 50%; background: radial-gradient(circle, rgba(168,85,247,0.12), transparent 68%); filter: blur(60px); pointer-events: none;"></div>
+        <div style="position: relative; display: flex; align-items: center; gap: 10px; margin-bottom: 22px;">
+          <span style="display: flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 999px; background: #10141F; border: 1px solid #1D2230; font-size: 11px; font-weight: 600; color: #7A8194;">
+            <span style="width: 5px; height: 5px; border-radius: 50%; background: #34D399;"></span>upwork.com/jobs
+          </span>
         </div>
-        <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; border-radius: 12px; background: #10141F; border: 1px solid #1D2230; padding: 14px 16px; margin-bottom: 16px;">
-          <div style="min-width: 0;">
-            <div style="font-size: 10px; font-weight: 800; letter-spacing: 0.06em; color: #565D70; margin-bottom: 4px;">JOB POST</div>
-            <div style="font-family: 'Sora', sans-serif; font-size: 14px; font-weight: 700; color: #F5F6FA; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">React Native Mobile App — Hardware Integration</div>
-          </div>
-          <div style="display: flex; gap: 6px; flex-shrink: 0;">
-            <span style="font-size: 11px; font-weight: 700; padding: 5px 10px; border-radius: 999px; background: rgba(94,234,212,0.14); color: #5EEAD4; white-space: nowrap;">96% match</span>
-          </div>
-        </div>
+        <div style="position: relative; display: grid; grid-template-columns: 1.1fr 1fr; gap: 22px; align-items: start;">
+          <div style="border-radius: 14px; background: #10141F; border: 1px solid #1D2230; padding: 22px; display: flex; flex-direction: column;">
+            <div style="font-size: 11px; font-weight: 800; letter-spacing: 0.06em; color: #565D70; margin-bottom: 12px;">JOB POST</div>
+            <div style="font-family: 'Sora', sans-serif; font-size: 16px; font-weight: 700; color: #F5F6FA; margin-bottom: 6px;">Senior React Native Developer — Bluetooth-Connected Fitness Hardware App</div>
+            <div style="font-size: 11.5px; color: #565D70; margin-bottom: 14px;">Posted yesterday · Worldwide</div>
 
-        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 14px;">
-          <span style="flex: 1; height: 1px; background: #1B2030;"></span>
-          <span style="font-size: 10.5px; font-weight: 800; letter-spacing: 0.08em; color: #565D70; white-space: nowrap;">GENERIC AI TOOL &nbsp;VS&nbsp; SNAG AI</span>
-          <span style="flex: 1; height: 1px; background: #1B2030;"></span>
-        </div>
+            <div style="font-size: 12.5px; color: #7A8194; line-height: 1.7; margin-bottom: 14px;">ATLETICA builds smart strength-training machines and runs a companion app, live on iOS and Android. A working proof-of-concept exists — the Bluetooth layer is already built by our hardware team, so this is about turning it into a polished, well-designed app.</div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; align-items: stretch;">
-          <!-- Generic AI -->
-          <div style="border-radius: 13px; background: #10141F; border: 1px solid #1D2230; padding: 16px; opacity: 0.65; display: flex; flex-direction: column; height: 100%; box-sizing: border-box;">
-            <div style="display: flex; align-items: center; gap: 7px; margin-bottom: 12px;">
-              <span style="width: 20px; height: 20px; border-radius: 4px; background: #1D2230; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 9px; color: #565D70;">✕</span>
-              <span style="font-size: 10px; font-weight: 800; letter-spacing: 0.05em; color: #565D70;">GENERIC AI TOOL</span>
+            <div style="font-size: 11px; font-weight: 800; letter-spacing: 0.05em; color: #565D70; margin-bottom: 8px;">WHAT YOU'LL BE DOING</div>
+            <div style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px;">
+              <div style="font-size: 12.5px; color: #9199AB; line-height: 1.6;">• Connect to the device, adjust weight presets, show live values</div>
+              <div style="font-size: 12.5px; color: #9199AB; line-height: 1.6;">• Device setup and pairing</div>
+              <div style="font-size: 12.5px; color: #9199AB; line-height: 1.6;">• User accounts + lightweight backend for login &amp; preferences</div>
+              <div style="font-size: 12.5px; color: #9199AB; line-height: 1.6;">• Basic progress view (think Garmin or Polar)</div>
+              <div style="font-size: 12.5px; color: #9199AB; line-height: 1.6;">• Turn wireframes into a smooth app across iOS &amp; Android</div>
             </div>
-            <div style="font-size: 12.5px; color: #6B7284; line-height: 1.85;">
-              "Hi, I saw your job posting and I am very interested in this opportunity. I have experience in React Native and Node.js and believe I'd be a great fit for your project.
-              <br><br>
-              I have worked on several similar apps in the past and I am confident I can deliver quality work within your timeline.
-              <br><br>
-              I am available to start immediately and look forward to discussing further.
-              <br><br>
-              Best regards."
-            </div>
-            <div style="display: flex; flex-wrap: wrap; gap: 5px; margin-top: 16px;">
-              <span style="font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: #171B26; color: #565D70;">No portfolio</span>
-              <span style="font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: #171B26; color: #565D70;">Generic</span>
+
+            <div style="flex: 1;"></div>
+            <div style="display: flex; gap: 8px; margin-top: 4px; flex-wrap: wrap;">
+              <span style="font-size: 11.5px; font-weight: 700; padding: 5px 11px; border-radius: 999px; background: rgba(94,234,212,0.14); color: #5EEAD4;">95% match</span>
+              <span style="font-size: 11.5px; font-weight: 700; padding: 5px 11px; border-radius: 999px; background: rgba(255,255,255,0.05); color: #9199AB;">$35–50/hr</span>
+              <span style="font-size: 11.5px; font-weight: 700; padding: 5px 11px; border-radius: 999px; background: rgba(255,255,255,0.05); color: #9199AB;">Hourly · Weekly cap</span>
             </div>
           </div>
-
-          <!-- Snag AI -->
-          <div style="border-radius: 13px; background: linear-gradient(160deg, rgba(168,85,247,0.1), rgba(11,14,23,0.4)); border: 1px solid rgba(168,85,247,0.3); padding: 16px; display: flex; flex-direction: column; height: 100%; box-sizing: border-box;">
-            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px;">
-              <div style="display: flex; align-items: center; gap: 7px;">
-                <span style="width: 20px; height: 20px; border-radius: 22%; overflow: hidden; flex-shrink: 0; position: relative;">
-                  <span style="position: absolute; inset: 0; background: #0d0a1a;"></span>
-                  <span style="position: absolute; left: 50%; top: 50%; width: 78%; height: 78%; transform: translate(-50%,-50%); border-radius: 50%; mask-image: radial-gradient(circle, transparent 50%, black 56%, black 82%, transparent 86%); -webkit-mask-image: radial-gradient(circle, transparent 50%, black 56%, black 82%, transparent 86%); background: conic-gradient(from 200deg, #2DD4BF, #3B82F6 25%, #A855F7 55%, #EC4899 80%, #2DD4BF 100%);"></span>
-                  <span style="position: absolute; left: 50%; top: 50%; width: 42%; height: 42%; transform: translate(-50%,-50%); border-radius: 50%; background: #000;"></span>
-                </span>
-                <span style="font-size: 10px; font-weight: 800; letter-spacing: 0.05em; color: #F5F6FA;">SNAG AI</span>
-              </div>
-              <div style="display: flex; flex-wrap: wrap; gap: 5px;">
-                <span style="font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: rgba(168,85,247,0.14); color: #C084FC;">Real portfolio</span>
-                <span style="font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: rgba(168,85,247,0.14); color: #C084FC;">Tailored</span>
-              </div>
+          <div style="border-radius: 14px; background: linear-gradient(160deg, rgba(168,85,247,0.1), rgba(11,14,23,0.4)); border: 1px solid rgba(168,85,247,0.3); padding: 22px; display: flex; flex-direction: column;">
+            <div style="font-size: 11px; font-weight: 800; letter-spacing: 0.06em; color: #C084FC; margin-bottom: 12px;">AI PROPOSAL</div>
+            <div style="display: flex; align-items: center; gap: 9px; margin-bottom: 14px;">
+              <span style="width: 24px; height: 24px; border-radius: 22%; overflow: hidden; flex-shrink: 0; position: relative;">
+                <span style="position: absolute; inset: 0; background: conic-gradient(from 200deg, #2DD4BF, #3B82F6 25%, #A855F7 55%, #EC4899 80%, #2DD4BF 100%);"></span>
+              </span>
+              <span style="font-family: 'Sora', sans-serif; font-size: 14.5px; font-weight: 700; color: #F5F6FA;">Snag AI</span>
             </div>
-            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 12px;">
-              <span style="width: 5px; height: 5px; border-radius: 50%; background: #34D399; flex-shrink: 0;"></span>
-              <span style="font-size: 11px; font-weight: 600; color: #5EEAD4;">Full letter written and ready to send</span>
-            </div>
-            <div style="border-radius: 10px; background: #0E1119; border: 1px solid #1D2230; padding: 16px 18px; flex: 1; display: flex; flex-direction: column; justify-content: center;">
-              <div style="font-size: 13px; color: #C6CBDA; line-height: 1.9;">
-                Hi Nick — I build <strong style="color: #F5F6FA;">React Native apps that talk to real hardware</strong>, exactly what <strong style="color: #F5F6FA;">ATLETICA</strong> needs.
-                <br><br>
-                Stack: <strong style="color: #F5F6FA;">React Native, Node.js, TypeScript</strong>.
-                <br><br>
-                <strong style="color: #F5F6FA;">Shypie</strong> — gig driver app, live device sync: <span style="color: #7DA6E0;">apps.apple.com/us/app/shypie</span>
-                <br>
-                <strong style="color: #F5F6FA;">FansMunch</strong> — Node.js + Stripe platform: <span style="color: #7DA6E0;">fanmunch.com</span>
-                <br><br>
-                $20/hr, 3–5 months. Bluetooth already tested end-to-end, or should I validate it?
-                <br><br>
-                <strong style="color: #F5F6FA;">100% JSS</strong> · <strong style="color: #F5F6FA;">Top Rated</strong> · NY, USA — Petter
-              </div>
+            <div style="font-size: 12px; color: #C6CBDA; line-height: 1.85; flex: 1;">
+              Hi Nick, I've built <strong style="color: #F5F6FA;">React Native apps that connect to real hardware and talk to live devices</strong>. I'd take your proof-of-concept, polish the UI/UX from wireframes, handle device pairing, build the lightweight backend, and ship a clean app across iOS and Android.
+              <br><br>
+              React Native, Node.js, TypeScript — my daily stack. I've shipped multiple apps from design to App Store.
+              <br><br>
+              <strong style="color: #F5F6FA;">RideLoop</strong>, a gig driver app with real-time device communication: <span style="color: #7DA6E0;">apps.apple.com/us/app/rideloop</span>
+              <br><br>
+              $38/hr, estimated 3–5 months based on scope.
+              <br><br>
+              Do you have Bluetooth integration tested end-to-end, or should I validate that during the build?
+              <br><br>
+              I'm free today between 9:00 AM–4:00 PM EST — what suits you for a quick call?
+              <br><br>
+              <span style="color: #9199AB;">100% JSS · Top Rated · NY, USA</span>
+              <br>
+              <span style="color: #C6CBDA; font-weight: 600;">Jordan Ellis</span>
             </div>
           </div>
         </div>
       </div>
-    </div>
-  </section>
-
-  <!-- LOGOS / TRUST -->
-  <section style="position: relative; z-index: 2; max-width: 1000px; margin: 0 auto; padding: 56px 40px 20px; text-align: center;">
-    <div style="font-size: 12.5px; font-weight: 700; letter-spacing: 0.1em; color: #4B5164; margin-bottom: 24px;">TRUSTED BY FREELANCERS AND AGENCIES ON</div>
-    <div style="display: flex; align-items: center; justify-content: center; gap: 48px; flex-wrap: wrap; opacity: 0.55;">
-      <span style="font-family: 'Sora', sans-serif; font-weight: 700; font-size: 20px; color: #8B92A5;">Upwork</span>
-      <span style="font-family: 'Sora', sans-serif; font-weight: 700; font-size: 20px; color: #8B92A5;">Fiverr</span>
-      <span style="font-family: 'Sora', sans-serif; font-weight: 700; font-size: 20px; color: #8B92A5;">Contra</span>
-      <span style="font-family: 'Sora', sans-serif; font-weight: 700; font-size: 20px; color: #8B92A5;">Toptal</span>
     </div>
   </section>
 
   <!-- FEATURES -->
-  <section id="features" style="position: relative; z-index: 2; max-width: 1120px; margin: 0 auto; padding: 96px 40px; box-sizing: border-box;">
-    <div style="text-align: center; max-width: 620px; margin: 0 auto 80px;">
-      <div style="font-size: 12.5px; font-weight: 800; letter-spacing: 0.1em; color: #5EEAD4; margin-bottom: 14px;">WHAT SNAG AI DOES</div>
-      <h2 style="font-family: 'Sora', sans-serif; font-size: 38px; font-weight: 700; letter-spacing: -0.02em; color: #FAFAFC; margin: 0 0 16px;">Four tools, one Upwork tab</h2>
+  <section id="features" data-screen-label="Features" style="position: relative; z-index: 2; max-width: 1120px; margin: 0 auto; padding: 96px 40px; box-sizing: border-box; background: #090B12; overflow: hidden;">
+    <div style="position: absolute; top: 0; left: 0; right: 0; height: 640px; pointer-events: none; z-index: 0; overflow: hidden;">
+      <div style="position: absolute; inset: 0; background-image: radial-gradient(rgba(94,234,212,0.16) 1px, transparent 1px); background-size: 34px 34px;
+        mask-image: radial-gradient(ellipse 900px 480px at 15% 0%, black, transparent 70%);
+        -webkit-mask-image: radial-gradient(ellipse 900px 480px at 15% 0%, black, transparent 70%);"></div>
+      <div style="position: absolute; top: -120px; left: -80px; width: 620px; height: 620px; border-radius: 50%; background: radial-gradient(circle, rgba(94,234,212,0.14), transparent 68%); filter: blur(70px);"></div>
+      <div style="position: absolute; top: 40px; right: -100px; width: 560px; height: 560px; border-radius: 50%; background: radial-gradient(circle, rgba(168,85,247,0.12), transparent 68%); filter: blur(70px);"></div>
+    </div>
+    <div style="position: relative; z-index: 1; text-align: center; max-width: 620px; margin: 0 auto 80px;">
+      <h2 style="font-family: 'Sora', sans-serif; font-size: 42px; font-weight: 700; letter-spacing: -0.02em; color: #FAFAFC; margin: 0 0 16px;">Features</h2>
       <p style="font-size: 15.5px; color: #8B92A5; line-height: 1.6; margin: 0;">Snag AI runs directly inside Upwork for both freelancer and agency profiles — no separate app, no copy-pasting.</p>
     </div>
 
-    <div style="display: flex; flex-direction: column; gap: 120px;">
+    <div style="position: relative; z-index: 1; display: flex; flex-direction: column; gap: 120px;">
 
-      <!-- Feature 1 — Cover Letter Assist -->
-      <div class="fx-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center;">
-        <div style="order: 1;">
-          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 18px;">
-            <span style="width: 38px; height: 38px; border-radius: 11px; background: rgba(168,85,247,0.18); display: flex; align-items: center; justify-content: center; color: #C084FC;">
+      <!-- Feature 1: Cover Letter Assist -->
+      <div style="position: relative;">
+        <div style="position: relative; z-index: 1;">
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+            <span style="width: 38px; height: 38px; border-radius: 11px; background: rgba(168,85,247,0.18); display: flex; align-items: center; justify-content: center; color: #C084FC; flex-shrink: 0;">
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M12 3L13.8 9.2L20 11L13.8 12.8L12 19L10.2 12.8L4 11L10.2 9.2L12 3Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"></path></svg>
             </span>
-            <span style="font-size: 11.5px; font-weight: 800; letter-spacing: 0.08em; color: #C084FC;">COVER LETTER ASSIST</span>
+            <span style="font-size: 12px; font-weight: 800; letter-spacing: 0.08em; color: #C084FC;">COVER LETTER ASSIST</span>
           </div>
-          <h3 style="font-family: 'Sora', sans-serif; font-size: 26px; font-weight: 700; letter-spacing: -0.01em; color: #F5F6FA; margin: 0 0 14px;">Write your cover letter without leaving the page</h3>
-          <p style="font-size: 15px; color: #8B92A5; line-height: 1.7; margin: 0 0 20px;">One click on Upwork's own cover letter field and Snag AI drafts a tailored letter for that exact job — then lets you refine it in place with quick commands.</p>
-          <div style="display: flex; flex-direction: column; gap: 10px;">
-            <div style="display: flex; align-items: flex-start; gap: 10px;">
-              <span style="width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; background: rgba(168,85,247,0.18); color: #C084FC;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
-              <span style="font-size: 14px; color: #9199AB; line-height: 1.6;">Writes directly inside Upwork's cover letter box</span>
-            </div>
-            <div style="display: flex; align-items: flex-start; gap: 10px;">
-              <span style="width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; background: rgba(168,85,247,0.18); color: #C084FC;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
-              <span style="font-size: 14px; color: #9199AB; line-height: 1.6;">References your real portfolio and past projects</span>
-            </div>
-            <div style="display: flex; align-items: flex-start; gap: 10px;">
-              <span style="width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; background: rgba(168,85,247,0.18); color: #C084FC;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
-              <span style="font-size: 14px; color: #9199AB; line-height: 1.6;">Refine with one click: shorter, more confident, add rate</span>
-            </div>
-          </div>
-        </div>
+          <h3 style="font-family: 'Sora', sans-serif; font-size: 40px; font-weight: 700; letter-spacing: -0.02em; color: #F5F6FA; margin: 0 0 44px; max-width: 720px;">Write your cover letter without leaving the page</h3>
 
-        <div style="order: 2; position: relative;">
-          <div style="position: absolute; inset: -1px; border-radius: 18px; background: linear-gradient(120deg, rgba(168,85,247,0.5), rgba(236,72,153,0.35)); opacity: 0.6;"></div>
-          <div style="position: relative; border-radius: 17px; background: #0B0E17; border: 1px solid #171B26; padding: 22px; overflow: hidden; height: 420px; box-sizing: border-box; display: flex; flex-direction: column;">
-            <div style="font-size: 13px; font-weight: 700; color: #C6CBDA; margin-bottom: 12px;">Cover Letter</div>
-            <div style="position: relative; border-radius: 11px; background: #0E1119; border: 1px solid #1D2230; padding: 16px 18px 36px; flex: 1;">
-              <div style="font-size: 12.5px; color: #C6CBDA; line-height: 1.7;">
-                Hi Jordan, I built <strong style="color: #F5F6FA;">Ridewell</strong>, a live rideshare app connecting iOS and Android to real-time GPS, with a <strong style="color: #F5F6FA;">Node.js backend</strong> handling driver accounts and payouts — I'd build your delivery tracker the same way.
-                <br><br>
-                <strong style="color: #F5F6FA;">Ridewell</strong>, cross-platform rideshare app with live GPS tracking:<br>
-                <span style="color: #7DA6E0;">apps.apple.com/us/app/ridewell</span>
-                <br><br>
-                $22/hr, estimated 3–5 weeks based on scope.
-              </div>
-              <div style="position: absolute; bottom: 10px; right: 16px; font-size: 10.5px; color: #4B5164;">2,140 characters left</div>
-            </div>
+          <div class="fx-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: stretch;">
 
-            <div style="position: relative; margin-top: -30px; margin-left: 30%; border-radius: 13px; background: #10141F; border: 1px solid rgba(168,85,247,0.35); padding: 12px 14px; box-shadow: 0 16px 30px -12px rgba(0,0,0,0.5);">
-              <div style="display: flex; align-items: center; gap: 9px; margin-bottom: 9px;">
-                <span style="width: 20px; height: 20px; border-radius: 22%; overflow: hidden; flex-shrink: 0; position: relative;">
-                  <span style="position: absolute; inset: 0; background: #0d0a1a;"></span>
-                  <span style="position: absolute; left: 50%; top: 50%; width: 78%; height: 78%; transform: translate(-50%,-50%); border-radius: 50%; mask-image: radial-gradient(circle, transparent 50%, black 56%, black 82%, transparent 86%); -webkit-mask-image: radial-gradient(circle, transparent 50%, black 56%, black 82%, transparent 86%); background: conic-gradient(from 200deg, #2DD4BF, #3B82F6 25%, #A855F7 55%, #EC4899 80%, #2DD4BF 100%);"></span>
-                  <span style="position: absolute; left: 50%; top: 50%; width: 42%; height: 42%; transform: translate(-50%,-50%); border-radius: 50%; background: #000;"></span>
-                </span>
-                <div>
-                  <div style="font-size: 12px; font-weight: 700; color: #F5F6FA;">Snag AI</div>
-                  <div style="font-size: 10.5px; color: #7A8194;">Cover letter writer</div>
+            <div style="order: 1;">
+              <p style="font-size: 15px; color: #8B92A5; line-height: 1.7; margin: 0 0 20px;">One click on Upwork's own cover letter field and Snag AI drafts a tailored letter for that exact job, in your voice opening hook, relevant project, rate and a clear next step then lets you refine it in place with quick commands.</p>
+              <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div style="display: flex; align-items: flex-start; gap: 10px;">
+                  <span style="width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; background: rgba(168,85,247,0.18); color: #C084FC;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+                  <span style="font-size: 14px; color: #9199AB; line-height: 1.6;">Writes directly inside Upwork's cover letter box</span>
+                </div>
+                <div style="display: flex; align-items: flex-start; gap: 10px;">
+                  <span style="width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; background: rgba(168,85,247,0.18); color: #C084FC;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+                  <span style="font-size: 14px; color: #9199AB; line-height: 1.6;">References your real portfolio and past projects</span>
+                </div>
+                <div style="display: flex; align-items: flex-start; gap: 10px;">
+                  <span style="width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; background: rgba(168,85,247,0.18); color: #C084FC;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+                  <span style="font-size: 14px; color: #9199AB; line-height: 1.6;">Refine with one click: shorter, more confident, add rate</span>
+                </div>
+                <div style="display: flex; align-items: flex-start; gap: 10px;">
+                  <span style="width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; background: rgba(168,85,247,0.18); color: #C084FC;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+                  <span style="font-size: 14px; color: #9199AB; line-height: 1.6;">Matches your tone and length settings automatically</span>
+                </div>
+                <div style="display: flex; align-items: flex-start; gap: 10px;">
+                  <span style="width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; background: rgba(168,85,247,0.18); color: #C084FC;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+                  <span style="font-size: 14px; color: #9199AB; line-height: 1.6;">Works the same for freelancer and agency profiles</span>
                 </div>
               </div>
-              <div style="display: flex; align-items: center; gap: 6px; font-size: 11px; color: #5EEAD4; font-weight: 600; margin-bottom: 10px;">
-                <span style="width: 5px; height: 5px; border-radius: 50%; background: #34D399;"></span>Cover letter ready
-              </div>
-              <div style="display: flex; flex-wrap: wrap; gap: 7px;">
-                <span style="font-size: 11px; font-weight: 600; padding: 6px 12px; border-radius: 999px; background: rgba(168,85,247,0.14); color: #C084FC;">Shorter</span>
-                <span style="font-size: 11px; font-weight: 600; padding: 6px 12px; border-radius: 999px; background: rgba(168,85,247,0.14); color: #C084FC;">More confident</span>
-                <span style="font-size: 11px; font-weight: 600; padding: 6px 12px; border-radius: 999px; background: rgba(168,85,247,0.14); color: #C084FC;">Add my rate</span>
+
+              <div style="margin-top: 22px; border-radius: 13px; background: #0B0E17; border: 1px solid rgba(168,85,247,0.35); overflow: hidden;">
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border-bottom: 1px solid #171B26;">
+                  <div style="display: flex; align-items: center; gap: 9px;">
+                    <span style="width: 24px; height: 24px; border-radius: 22%; overflow: hidden; flex-shrink: 0; position: relative;">
+                      <span style="position: absolute; inset: 0; background: conic-gradient(from 200deg, #2DD4BF, #3B82F6 25%, #A855F7 55%, #EC4899 80%, #2DD4BF 100%);"></span>
+                    </span>
+                    <div>
+                      <div style="font-size: 12px; font-weight: 700; color: #F5F6FA;">Snag AI</div>
+                      <div style="font-size: 10.5px; color: #7A8194;">Cover letter writer</div>
+                    </div>
+                  </div>
+                  <span style="width: 20px; height: 20px; border-radius: 50%; background: #171B26; display: flex; align-items: center; justify-content: center; color: #7A8194; font-size: 10px;">✕</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 6px; padding: 10px 14px; border-bottom: 1px solid #171B26; font-size: 11px; font-weight: 600; color: #34D399;">
+                  <span style="width: 5px; height: 5px; border-radius: 50%; background: #34D399;"></span>Cover letter ready
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" style="margin-left: 1px;"><path d="M4 12.5L9.5 18L20 6" stroke="#34D399" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                </div>
+                <div style="padding: 12px 14px; border-bottom: 1px solid #171B26;">
+                  <div style="display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 7px;">
+                    <span style="font-size: 11px; font-weight: 700; padding: 6px 12px; border-radius: 999px; background: rgba(168,85,247,0.14); color: #C4B5FD;">Shorter</span>
+                    <span style="font-size: 11px; font-weight: 700; padding: 6px 12px; border-radius: 999px; background: rgba(168,85,247,0.14); color: #C4B5FD;">More confident</span>
+                    <span style="font-size: 11px; font-weight: 700; padding: 6px 12px; border-radius: 999px; background: rgba(168,85,247,0.14); color: #C4B5FD;">Add my rate</span>
+                  </div>
+                  <div style="display: flex; flex-wrap: wrap; gap: 7px;">
+                    <span style="font-size: 11px; font-weight: 700; padding: 6px 12px; border-radius: 999px; background: rgba(168,85,247,0.14); color: #C4B5FD;">Better hook</span>
+                    <span style="font-size: 11px; font-weight: 700; padding: 6px 12px; border-radius: 999px; background: rgba(168,85,247,0.14); color: #C4B5FD;">Fill questions</span>
+                  </div>
+                </div>
+                <div style="padding: 12px 14px; display: flex; align-items: center; gap: 10px;">
+                  <div style="flex: 1; font-size: 12px; color: #4B5164;">Shorter, add GitHub, more confident…</div>
+                  <span style="width: 30px; height: 30px; border-radius: 50%; background: #7C6EF5; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M4 20L21 12L4 4L4 10.5L15 12L4 13.5L4 20Z" fill="#fff"></path></svg>
+                  </span>
+                </div>
               </div>
             </div>
+
+            <div style="order: 2; position: relative; display: flex; flex-direction: column;">
+              <div style="position: absolute; inset: -1px; border-radius: 18px; background: linear-gradient(120deg, rgba(168,85,247,0.5), rgba(236,72,153,0.35)); opacity: 0.5;"></div>
+              <div style="position: relative; flex: 1; border-radius: 17px; background: #0B0E17; border: 1px solid #171B26; padding: 22px; overflow: hidden; display: flex; flex-direction: column;">
+                <div style="font-size: 13px; font-weight: 700; color: #C6CBDA; margin-bottom: 12px;">Cover Letter</div>
+                <div style="position: relative; border-radius: 11px; background: #0E1119; border: 1px solid #1D2230; padding: 16px 18px 44px;">
+                  <div style="font-size: 12.5px; color: #C6CBDA; line-height: 1.75;">
+                    Hi Jordan, I've built <strong style="color: rgb(245, 246, 250);">React Native apps that connect to real hardware and talk to live devices</strong>. <br><br>I'd take your proof-of-concept, polish the UI/UX from wireframes, handle device pairing, build the lightweight backend, and ship a clean app across iOS and Android.
+                    <br><br>
+                    React Native, Node.js, TypeScript my daily stack. I've shipped multiple apps from design to App Store.
+                    <br><br>
+                    <strong style="color: rgb(245, 246, 250);">RideLoop</strong>, a gig driver app with real-time device communication:<br>
+                    <span style="color: rgb(125, 166, 224);">apps.apple.com/us/app/rideloop</span>
+                    <br><br>
+                    $38/hr, estimated 3–5 months based on scope.
+                    <br><br>
+                    I'm free today between 9:00 AM–4:00 PM EST — what suits you for a quick call?
+                    <br><br>
+                    <span style="color: rgb(145, 153, 171);">100% JSS · Top Rated · NY, USA</span>
+                    <br>
+                    <span style="color: rgb(198, 203, 218); font-weight: 600;"><br>Jordan Ellis</span>
+                  </div>
+                  <div style="position: absolute; bottom: 12px; right: 16px; font-size: 10.5px; color: #4B5164;">2,140 characters left</div>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
 
-      <!-- Feature 2 — Job Audits -->
-      <div class="fx-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center;">
-        <div style="order: 2;">
-          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 18px;">
-            <span style="width: 38px; height: 38px; border-radius: 11px; background: rgba(245,185,94,0.18); display: flex; align-items: center; justify-content: center; color: #F5B95E;">
+      <!-- Feature 2: Job Audits -->
+      <div style="position: relative;">
+        <div style="position: absolute; top: -60px; left: -60px; width: 480px; height: 480px; border-radius: 50%; background: radial-gradient(circle, rgba(245,185,94,0.22), transparent 68%); filter: blur(60px); pointer-events: none; z-index: 0;"></div>
+        <div style="position: absolute; bottom: -60px; right: -40px; width: 380px; height: 380px; border-radius: 50%; background: radial-gradient(circle, rgba(168,85,247,0.16), transparent 68%); filter: blur(60px); pointer-events: none; z-index: 0;"></div>
+        <div style="position: relative; z-index: 1;">
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+            <span style="width: 38px; height: 38px; border-radius: 11px; background: rgba(245,185,94,0.18); display: flex; align-items: center; justify-content: center; color: #F5B95E; flex-shrink: 0;">
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8.5" stroke="currentColor" stroke-width="1.6"></circle><circle cx="12" cy="12" r="4.5" stroke="currentColor" stroke-width="1.6"></circle><circle cx="12" cy="12" r="1.2" fill="currentColor"></circle></svg>
             </span>
-            <span style="font-size: 11.5px; font-weight: 800; letter-spacing: 0.08em; color: #F5B95E;">JOB AUDITS</span>
+            <span style="font-size: 12px; font-weight: 800; letter-spacing: 0.08em; color: #F5B95E;">JOB AUDITS</span>
           </div>
-          <h3 style="font-family: 'Sora', sans-serif; font-size: 26px; font-weight: 700; letter-spacing: -0.01em; color: #F5F6FA; margin: 0 0 14px;">Know your odds before you spend a connect</h3>
-          <p style="font-size: 15px; color: #8B92A5; line-height: 1.7; margin: 0 0 20px;">Snag AI reads competition, client history and your fit, then tells you plainly whether a job is worth applying to.</p>
-          <div style="display: flex; flex-direction: column; gap: 10px;">
-            <div style="display: flex; align-items: flex-start; gap: 10px;">
-              <span style="width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; background: rgba(245,185,94,0.18); color: #F5B95E;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
-              <span style="font-size: 14px; color: #9199AB; line-height: 1.6;">Competition level vs. your fit, side by side</span>
-            </div>
-            <div style="display: flex; align-items: flex-start; gap: 10px;">
-              <span style="width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; background: rgba(245,185,94,0.18); color: #F5B95E;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
-              <span style="font-size: 14px; color: #9199AB; line-height: 1.6;">Plain-language reasons you will or won't win</span>
-            </div>
-            <div style="display: flex; align-items: flex-start; gap: 10px;">
-              <span style="width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; background: rgba(245,185,94,0.18); color: #F5B95E;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
-              <span style="font-size: 14px; color: #9199AB; line-height: 1.6;">Client hire rate, spend and rating built in</span>
-            </div>
-            <div style="display: flex; align-items: flex-start; gap: 10px;">
-              <span style="width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; background: rgba(245,185,94,0.18); color: #F5B95E;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
-              <span style="font-size: 14px; color: #9199AB; line-height: 1.6;">A clear verdict before you spend a connect</span>
-            </div>
-          </div>
-        </div>
+          <h3 style="font-family: 'Sora', sans-serif; font-size: 40px; font-weight: 700; letter-spacing: -0.02em; color: #F5F6FA; margin: 0 0 44px; max-width: 720px;">Know your odds before you spend a connect</h3>
 
-        <div style="order: 1; position: relative;">
-          <div style="position: absolute; inset: -1px; border-radius: 18px; background: linear-gradient(120deg, rgba(245,185,94,0.4), rgba(168,85,247,0.3)); opacity: 0.6;"></div>
-          <div style="position: relative; border-radius: 17px; background: #0B0E17; border: 1px solid #171B26; padding: 22px; overflow: hidden;">
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
-              <div style="display: flex; align-items: center; gap: 12px;">
-                <span style="width: 30px; height: 30px; border-radius: 22%; overflow: hidden; flex-shrink: 0; position: relative;">
-                  <span style="position: absolute; inset: 0; background: conic-gradient(from 200deg, #2DD4BF, #3B82F6 25%, #A855F7 55%, #EC4899 80%, #2DD4BF 100%);"></span>
-                </span>
-                <div>
-                  <div style="font-size: 13.5px; font-weight: 700; color: #F5F6FA;">Snag AI</div>
-                  <div style="font-size: 11.5px; color: #7A8194;">Job analysis</div>
+          <div class="fx-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: stretch;">
+
+            <div style="order: 2;">
+              <p style="font-size: 15px; color: #8B92A5; line-height: 1.7; margin: 0 0 20px;">Snag AI reads competition, client history and your fit, then tells you plainly whether a job is worth applying to.</p>
+              <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div style="display: flex; align-items: flex-start; gap: 10px;">
+                  <span style="width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; background: rgba(245,185,94,0.18); color: #F5B95E;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+                  <span style="font-size: 14px; color: #9199AB; line-height: 1.6;">Competition level vs. your fit, side by side</span>
                 </div>
-              </div>
-              <span style="width: 24px; height: 24px; border-radius: 50%; background: #171B26; display: flex; align-items: center; justify-content: center; color: #7A8194; font-size: 12px;">✕</span>
-            </div>
-
-            <div style="font-family: 'Sora', sans-serif; font-size: 23px; font-weight: 800; color: #F5B95E; margin-bottom: 12px;">Apply carefully.</div>
-            <div style="font-size: 12.5px; color: #9199AB; line-height: 1.65; margin-bottom: 16px;">50+ proposals and a strong client (4.98★) creates high competition; you undercut by 47% ($20 vs $29.37), signaling underpricing despite excellent portfolio fit.</div>
-            <div style="height: 2px; background: linear-gradient(90deg, #F5B95E, transparent); margin-bottom: 18px;"></div>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px;">
-              <div>
-                <div style="font-size: 10px; font-weight: 800; letter-spacing: 0.06em; color: #565D70; margin-bottom: 8px;">COMPETITION</div>
-                <div style="height: 5px; border-radius: 999px; background: #1B2030; overflow: hidden; margin-bottom: 8px;"><div style="width: 88%; height: 100%; background: #F87171;"></div></div>
-                <div style="font-size: 13px; font-weight: 700; color: #F87171;">Extreme</div>
-              </div>
-              <div>
-                <div style="font-size: 10px; font-weight: 800; letter-spacing: 0.06em; color: #565D70; margin-bottom: 8px;">YOU VS THE JOB</div>
-                <div style="height: 5px; border-radius: 999px; background: #1B2030; overflow: hidden; margin-bottom: 8px;"><div style="width: 90%; height: 100%; background: #34D399;"></div></div>
-                <div style="font-size: 13px; font-weight: 700; color: #34D399;">Excellent</div>
-              </div>
-            </div>
-
-            <div style="font-size: 10.5px; font-weight: 800; letter-spacing: 0.06em; color: #F87171; margin-bottom: 10px;">WHY YOU WON'T WIN</div>
-            <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 18px;">
-              <div style="display: flex; align-items: flex-start; gap: 9px;">
-                <span style="width: 7px; height: 7px; border-radius: 50%; background: #F87171; margin-top: 6px; flex-shrink: 0;"></span>
-                <div>
-                  <div style="font-size: 13px; font-weight: 700; color: #F5F6FA;">50+ proposals, no interviews yet</div>
-                  <div style="font-size: 12px; color: #7A8194; line-height: 1.5; margin-top: 2px;">Job posted 7h ago, already at proposal cap with no client screening started.</div>
+                <div style="display: flex; align-items: flex-start; gap: 10px;">
+                  <span style="width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; background: rgba(245,185,94,0.18); color: #F5B95E;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+                  <span style="font-size: 14px; color: #9199AB; line-height: 1.6;">Plain-language reasons you will or won't win</span>
                 </div>
-              </div>
-              <div style="display: flex; align-items: flex-start; gap: 9px;">
-                <span style="width: 7px; height: 7px; border-radius: 50%; background: #F87171; margin-top: 6px; flex-shrink: 0;"></span>
-                <div>
-                  <div style="font-size: 13px; font-weight: 700; color: #F5F6FA;">You charge $20/hr, client pays $29.37/hr avg</div>
-                  <div style="font-size: 12px; color: #7A8194; line-height: 1.5; margin-top: 2px;">47% undercut signals underpricing, not an advantage, to this client.</div>
+                <div style="display: flex; align-items: flex-start; gap: 10px;">
+                  <span style="width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; background: rgba(245,185,94,0.18); color: #F5B95E;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+                  <span style="font-size: 14px; color: #9199AB; line-height: 1.6;">Client hire rate, spend and rating built in</span>
+                </div>
+                <div style="display: flex; align-items: flex-start; gap: 10px;">
+                  <span style="width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; background: rgba(245,185,94,0.18); color: #F5B95E;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+                  <span style="font-size: 14px; color: #9199AB; line-height: 1.6;">A clear verdict before you spend a connect</span>
+                </div>
+                <div style="display: flex; align-items: flex-start; gap: 10px;">
+                  <span style="width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; background: rgba(245,185,94,0.18); color: #F5B95E;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+                  <span style="font-size: 14px; color: #9199AB; line-height: 1.6;">Flags underpriced or overcrowded jobs early</span>
+                </div>
+                <div style="display: flex; align-items: flex-start; gap: 10px;">
+                  <span style="width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; background: rgba(245,185,94,0.18); color: #F5B95E;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+                  <span style="font-size: 14px; color: #9199AB; line-height: 1.6;">Highlights what's genuinely working in your favor</span>
                 </div>
               </div>
             </div>
 
-            <div style="font-size: 10.5px; font-weight: 800; letter-spacing: 0.06em; color: #34D399; margin-bottom: 10px;">WHAT'S GENUINELY GOOD</div>
-            <div style="display: flex; align-items: flex-start; gap: 9px;">
-              <span style="width: 7px; height: 7px; border-radius: 50%; background: #34D399; margin-top: 6px; flex-shrink: 0;"></span>
-              <div>
-                <div style="font-size: 13px; font-weight: 700; color: #F5F6FA;">Proven full-stack, shipped at scale</div>
-                <div style="font-size: 12px; color: #7A8194; line-height: 1.5; margin-top: 2px;">Portfolio shows apps with 1M+ downloads and real production traffic.</div>
+            <div style="order: 1; position: relative; display: flex; flex-direction: column;">
+              <div style="position: absolute; inset: -1px; border-radius: 18px; background: linear-gradient(120deg, rgba(245,185,94,0.4), rgba(168,85,247,0.3)); opacity: 0.5;"></div>
+              <div style="position: relative; flex: 1; border-radius: 17px; background: #0B0E17; border: 1px solid #171B26; padding: 22px; overflow: hidden; display: flex; flex-direction: column;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+                  <div style="display: flex; align-items: center; gap: 12px;">
+                    <span style="width: 30px; height: 30px; border-radius: 22%; overflow: hidden; flex-shrink: 0; position: relative;">
+                      <span style="position: absolute; inset: 0; background: conic-gradient(from 200deg, #2DD4BF, #3B82F6 25%, #A855F7 55%, #EC4899 80%, #2DD4BF 100%);"></span>
+                    </span>
+                    <div>
+                      <div style="font-size: 13.5px; font-weight: 700; color: #F5F6FA;">Snag AI</div>
+                      <div style="font-size: 11.5px; color: #7A8194;">Job analysis</div>
+                    </div>
+                  </div>
+                  <span style="width: 24px; height: 24px; border-radius: 50%; background: #171B26; display: flex; align-items: center; justify-content: center; color: #7A8194; font-size: 12px;">✕</span>
+                </div>
+
+                <div style="font-family: 'Sora', sans-serif; font-size: 23px; font-weight: 800; color: #F5B95E; margin-bottom: 12px;">Apply carefully.</div>
+                <div style="font-size: 12.5px; color: #9199AB; line-height: 1.65; margin-bottom: 16px;">50+ proposals and a strong client (4.98★) creates high competition; you undercut by 47% ($20 vs $29.37), signaling underpricing despite excellent portfolio fit.</div>
+                <div style="height: 2px; background: linear-gradient(90deg, #F5B95E, transparent); margin-bottom: 18px;"></div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px;">
+                  <div>
+                    <div style="font-size: 10px; font-weight: 800; letter-spacing: 0.06em; color: #565D70; margin-bottom: 8px;">COMPETITION</div>
+                    <div style="height: 5px; border-radius: 999px; background: #1B2030; overflow: hidden; margin-bottom: 8px;"><div style="width: 88%; height: 100%; background: #F87171;"></div></div>
+                    <div style="font-size: 13px; font-weight: 700; color: #F87171;">Extreme</div>
+                  </div>
+                  <div>
+                    <div style="font-size: 10px; font-weight: 800; letter-spacing: 0.06em; color: #565D70; margin-bottom: 8px;">YOU VS THE JOB</div>
+                    <div style="height: 5px; border-radius: 999px; background: #1B2030; overflow: hidden; margin-bottom: 8px;"><div style="width: 90%; height: 100%; background: #34D399;"></div></div>
+                    <div style="font-size: 13px; font-weight: 700; color: #34D399;">Excellent</div>
+                  </div>
+                </div>
+
+                <div style="font-size: 10.5px; font-weight: 800; letter-spacing: 0.06em; color: #F87171; margin-bottom: 10px;">WHY YOU WON'T WIN</div>
+                <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 18px;">
+                  <div style="display: flex; align-items: flex-start; gap: 9px;">
+                    <span style="width: 7px; height: 7px; border-radius: 50%; background: #F87171; margin-top: 6px; flex-shrink: 0;"></span>
+                    <div>
+                      <div style="font-size: 13px; font-weight: 700; color: #F5F6FA;">50+ proposals, no interviews yet</div>
+                      <div style="font-size: 12px; color: #7A8194; line-height: 1.5; margin-top: 2px;">Job posted 7h ago, already at proposal cap with no client screening started.</div>
+                    </div>
+                  </div>
+                  <div style="display: flex; align-items: flex-start; gap: 9px;">
+                    <span style="width: 7px; height: 7px; border-radius: 50%; background: #F87171; margin-top: 6px; flex-shrink: 0;"></span>
+                    <div>
+                      <div style="font-size: 13px; font-weight: 700; color: #F5F6FA;">You charge $20/hr, client pays $29.37/hr avg</div>
+                      <div style="font-size: 12px; color: #7A8194; line-height: 1.5; margin-top: 2px;">47% undercut signals underpricing, not an advantage, to this client.</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="font-size: 10.5px; font-weight: 800; letter-spacing: 0.06em; color: #34D399; margin-bottom: 10px;">WHAT'S GENUINELY GOOD</div>
+                <div style="display: flex; align-items: flex-start; gap: 9px;">
+                  <span style="width: 7px; height: 7px; border-radius: 50%; background: #34D399; margin-top: 6px; flex-shrink: 0;"></span>
+                  <div>
+                    <div style="font-size: 13px; font-weight: 700; color: #F5F6FA;">Proven full-stack, shipped at scale</div>
+                    <div style="font-size: 12px; color: #7A8194; line-height: 1.5; margin-top: 2px;">Portfolio shows apps with 1M+ downloads and real production traffic.</div>
+                  </div>
+                </div>
               </div>
             </div>
+
           </div>
         </div>
       </div>
 
-      <!-- Feature 3 — Profile Audits -->
-      <div class="fx-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center;">
-        <div style="order: 1;">
-          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 18px;">
-            <span style="width: 38px; height: 38px; border-radius: 11px; background: rgba(59,130,246,0.18); display: flex; align-items: center; justify-content: center; color: #93C5FD;">
+      <!-- Feature 3: Profile Audits -->
+      <div style="position: relative;">
+        <div style="position: absolute; top: -60px; right: -60px; width: 480px; height: 480px; border-radius: 50%; background: radial-gradient(circle, rgba(59,130,246,0.22), transparent 68%); filter: blur(60px); pointer-events: none; z-index: 0;"></div>
+        <div style="position: absolute; bottom: -60px; left: -40px; width: 380px; height: 380px; border-radius: 50%; background: radial-gradient(circle, rgba(94,234,212,0.16), transparent 68%); filter: blur(60px); pointer-events: none; z-index: 0;"></div>
+        <div style="position: relative; z-index: 1;">
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+            <span style="width: 38px; height: 38px; border-radius: 11px; background: rgba(59,130,246,0.18); display: flex; align-items: center; justify-content: center; color: #93C5FD; flex-shrink: 0;">
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M12 3.5L19 6.5V11.5C19 16 16 19.5 12 21C8 19.5 5 16 5 11.5V6.5L12 3.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"></path><path d="M8.7 12L10.9 14.2L15.5 9.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
             </span>
-            <span style="font-size: 11.5px; font-weight: 800; letter-spacing: 0.08em; color: #93C5FD;">PROFILE AUDITS</span>
+            <span style="font-size: 12px; font-weight: 800; letter-spacing: 0.08em; color: #93C5FD;">PROFILE AUDITS</span>
           </div>
-          <h3 style="font-family: 'Sora', sans-serif; font-size: 26px; font-weight: 700; letter-spacing: -0.01em; color: #F5F6FA; margin: 0 0 14px;">A scored, section-by-section profile review</h3>
-          <p style="font-size: 15px; color: #8B92A5; line-height: 1.7; margin: 0 0 20px;">Get a real score and specific rewrites for your title, overview and portfolio — exportable as a PDF to act on later.</p>
-          <div style="display: flex; flex-direction: column; gap: 10px;">
-            <div style="display: flex; align-items: flex-start; gap: 10px;">
-              <span style="width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; background: rgba(59,130,246,0.18); color: #93C5FD;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
-              <span style="font-size: 14px; color: #9199AB; line-height: 1.6;">Overall score with a plain-English verdict</span>
-            </div>
-            <div style="display: flex; align-items: flex-start; gap: 10px;">
-              <span style="width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; background: rgba(59,130,246,0.18); color: #93C5FD;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
-              <span style="font-size: 14px; color: #9199AB; line-height: 1.6;">Section-by-section fixes, not generic tips</span>
-            </div>
-            <div style="display: flex; align-items: flex-start; gap: 10px;">
-              <span style="width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; background: rgba(59,130,246,0.18); color: #93C5FD;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
-              <span style="font-size: 14px; color: #9199AB; line-height: 1.6;">One-click PDF export</span>
-            </div>
-            <div style="display: flex; align-items: flex-start; gap: 10px;">
-              <span style="width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; background: rgba(59,130,246,0.18); color: #93C5FD;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
-              <span style="font-size: 14px; color: #9199AB; line-height: 1.6;">Covers title, overview and portfolio copy</span>
-            </div>
-          </div>
-        </div>
+          <h3 style="font-family: 'Sora', sans-serif; font-size: 40px; font-weight: 700; letter-spacing: -0.02em; color: #F5F6FA; margin: 0 0 44px; max-width: 720px;">A scored, section-by-section profile review</h3>
 
-        <div style="order: 2; position: relative;">
-          <div style="position: absolute; inset: -1px; border-radius: 18px; background: linear-gradient(120deg, rgba(59,130,246,0.4), rgba(45,212,191,0.3)); opacity: 0.6;"></div>
-          <div style="position: relative; border-radius: 17px; background: #0B0E17; border: 1px solid #171B26; padding: 22px; overflow: hidden;">
-            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
-              <div style="display: flex; align-items: center; gap: 10px;">
-                <span style="width: 22px; height: 22px; border-radius: 22%; overflow: hidden; flex-shrink: 0; position: relative;">
-                  <span style="position: absolute; inset: 0; background: conic-gradient(from 200deg, #2DD4BF, #3B82F6 25%, #A855F7 55%, #EC4899 80%, #2DD4BF 100%);"></span>
-                </span>
-                <span style="font-size: 12.5px; font-weight: 700; color: #C6CBDA;">Profile Audit</span>
+          <div class="fx-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: stretch;">
+
+            <div style="order: 1;">
+              <p style="font-size: 15px; color: #8B92A5; line-height: 1.7; margin: 0 0 20px;">Get a real score and specific rewrites for your title, overview and portfolio — exportable as a PDF to act on later.</p>
+              <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div style="display: flex; align-items: flex-start; gap: 10px;">
+                  <span style="width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; background: rgba(59,130,246,0.18); color: #93C5FD;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+                  <span style="font-size: 14px; color: #9199AB; line-height: 1.6;">Overall score with a plain-English verdict</span>
+                </div>
+                <div style="display: flex; align-items: flex-start; gap: 10px;">
+                  <span style="width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; background: rgba(59,130,246,0.18); color: #93C5FD;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+                  <span style="font-size: 14px; color: #9199AB; line-height: 1.6;">Section-by-section fixes, not generic tips</span>
+                </div>
+                <div style="display: flex; align-items: flex-start; gap: 10px;">
+                  <span style="width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; background: rgba(59,130,246,0.18); color: #93C5FD;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+                  <span style="font-size: 14px; color: #9199AB; line-height: 1.6;">One-click PDF export</span>
+                </div>
+                <div style="display: flex; align-items: flex-start; gap: 10px;">
+                  <span style="width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; background: rgba(59,130,246,0.18); color: #93C5FD;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+                  <span style="font-size: 14px; color: #9199AB; line-height: 1.6;">Covers title, overview and portfolio copy</span>
+                </div>
+                <div style="display: flex; align-items: flex-start; gap: 10px;">
+                  <span style="width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; background: rgba(59,130,246,0.18); color: #93C5FD;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+                  <span style="font-size: 14px; color: #9199AB; line-height: 1.6;">Flags weak titles and vague overview copy</span>
+                </div>
+                <div style="display: flex; align-items: flex-start; gap: 10px;">
+                  <span style="width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; background: rgba(59,130,246,0.18); color: #93C5FD;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+                  <span style="font-size: 14px; color: #9199AB; line-height: 1.6;">Points to specific rewrites, not generic advice</span>
+                </div>
               </div>
-              <span style="font-size: 10.5px; font-weight: 700; color: #7A8194; padding: 4px 10px; border-radius: 999px; border: 1px solid #232838;">PDF</span>
+
+              <div style="margin-top: 22px; border-radius: 13px; background: #10141F; border: 1px solid rgba(59,130,246,0.3); padding: 18px 20px;">
+                <div style="font-size: 11px; font-weight: 800; letter-spacing: 0.06em; color: #93C5FD; margin-bottom: 10px;">WHY IT MATTERS</div>
+                <p style="font-size: 13.5px; color: #9199AB; line-height: 1.7; margin: 0;">Most profiles lose clients in the first two lines — a vague title or a keyword-stuffed overview that reads like it was written for an algorithm, not a person. Snag AI scores every section the way a hiring client actually reads it, then tells you exactly what to change first.</p>
+              </div>
             </div>
-            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 14px;">
-              <div style="width: 46px; height: 46px; border-radius: 50%; border: 2px solid #3B82F6; display: flex; align-items: center; justify-content: center; font-family: 'Sora', sans-serif; font-size: 15px; font-weight: 700; color: #93C5FD; flex-shrink: 0;">6.2</div>
-              <span style="font-size: 11px; font-weight: 800; letter-spacing: 0.06em; color: #565D70;">GOOD PROFILE</span>
+
+            <div style="order: 2; position: relative; display: flex; flex-direction: column;">
+              <div style="position: absolute; inset: -1px; border-radius: 18px; background: linear-gradient(120deg, rgba(59,130,246,0.4), rgba(45,212,191,0.3)); opacity: 0.5;"></div>
+              <div style="position: relative; flex: 1; border-radius: 17px; background: #0B0E17; border: 1px solid #171B26; padding: 22px; overflow: hidden; display: flex; flex-direction: column;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
+                  <div style="display: flex; align-items: center; gap: 12px;">
+                    <span style="width: 30px; height: 30px; border-radius: 22%; overflow: hidden; flex-shrink: 0; position: relative;">
+                      <span style="position: absolute; inset: 0; background: conic-gradient(from 200deg, #2DD4BF, #3B82F6 25%, #A855F7 55%, #EC4899 80%, #2DD4BF 100%);"></span>
+                    </span>
+                    <div>
+                      <div style="font-size: 13.5px; font-weight: 700; color: #F5F6FA;">Snag AI</div>
+                      <div style="font-size: 11.5px; color: #7A8194;">Profile analysis</div>
+                    </div>
+                  </div>
+                  <span style="font-size: 10.5px; font-weight: 700; color: #7A8194; padding: 4px 10px; border-radius: 999px; border: 1px solid #232838;">PDF</span>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 16px;">
+                  <div style="width: 54px; height: 54px; border-radius: 50%; border: 2px solid #3B82F6; display: flex; align-items: center; justify-content: center; font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 700; color: #93C5FD; flex-shrink: 0;">6.2</div>
+                  <div>
+                    <div style="font-family: 'Sora', sans-serif; font-size: 16px; font-weight: 700; color: #F5F6FA;">Good profile</div>
+                    <div style="font-size: 12px; color: #7A8194;">Room to improve before your next push</div>
+                  </div>
+                </div>
+                <div style="font-size: 13.5px; color: #C6CBDA; font-style: italic; line-height: 1.6; margin-bottom: 18px;">"Impressive outcomes buried under a keyword-stuffing problem that hurts readability."</div>
+                <div style="height: 1px; background: #171B26; margin-bottom: 16px;"></div>
+
+                <div style="font-size: 10.5px; font-weight: 800; letter-spacing: 0.06em; color: #F87171; margin-bottom: 10px;">NEEDS WORK</div>
+                <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 18px;">
+                  <div style="display: flex; align-items: flex-start; gap: 9px;">
+                    <span style="width: 7px; height: 7px; border-radius: 50%; background: #F87171; margin-top: 6px; flex-shrink: 0;"></span>
+                    <div>
+                      <div style="font-size: 13px; font-weight: 700; color: #F5F6FA;">Professional Title</div>
+                      <div style="font-size: 12px; color: #7A8194; line-height: 1.5; margin-top: 2px;">'Full Stack Developer' tells a client nothing about your strongest skills or niche.</div>
+                    </div>
+                  </div>
+                  <div style="display: flex; align-items: flex-start; gap: 9px;">
+                    <span style="width: 7px; height: 7px; border-radius: 50%; background: #F87171; margin-top: 6px; flex-shrink: 0;"></span>
+                    <div>
+                      <div style="font-size: 13px; font-weight: 700; color: #F5F6FA;">Overview reads keyword-stuffed</div>
+                      <div style="font-size: 12px; color: #7A8194; line-height: 1.5; margin-top: 2px;">Dense skill lists up top push your real outcomes below the fold.</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="font-size: 10.5px; font-weight: 800; letter-spacing: 0.06em; color: #34D399; margin-bottom: 10px;">WORKING WELL</div>
+                <div style="display: flex; align-items: flex-start; gap: 9px;">
+                  <span style="width: 7px; height: 7px; border-radius: 50%; background: #34D399; margin-top: 6px; flex-shrink: 0;"></span>
+                  <div>
+                    <div style="font-size: 13px; font-weight: 700; color: #F5F6FA;">Strong, quantified portfolio results</div>
+                    <div style="font-size: 12px; color: #7A8194; line-height: 1.5; margin-top: 2px;">Real numbers (downloads, latency, revenue impact) build trust fast.</div>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div style="font-size: 13.5px; color: #C6CBDA; font-style: italic; line-height: 1.6; margin-bottom: 16px;">"Impressive outcomes buried under a keyword-stuffing problem that hurts readability."</div>
-            <div style="border-top: 1px solid #171B26; padding-top: 12px;">
-              <div style="font-size: 13px; font-weight: 700; color: #F5F6FA; margin-bottom: 5px;">Professional Title</div>
-              <div style="font-size: 12.5px; color: #7A8194; line-height: 1.6;">'Full Stack Developer' tells a client nothing about your strongest skills or niche.</div>
-            </div>
+
           </div>
         </div>
       </div>
 
-      <!-- Feature 4 — Smart Job Alerts -->
-      <div class="fx-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: center;">
-        <div style="order: 2;">
-          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 18px;">
-            <span style="width: 38px; height: 38px; border-radius: 11px; background: rgba(94,234,212,0.18); display: flex; align-items: center; justify-content: center; color: #5EEAD4;">
+      <!-- Feature 4: Smart Job Alerts -->
+      <div style="position: relative;">
+        <div style="position: relative; z-index: 1;">
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+            <span style="width: 38px; height: 38px; border-radius: 11px; background: rgba(94,234,212,0.18); display: flex; align-items: center; justify-content: center; color: #5EEAD4; flex-shrink: 0;">
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M6 10.5C6 7 8.5 4.5 12 4.5C15.5 4.5 18 7 18 10.5V14L20 17H4L6 14V10.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"></path><path d="M9.5 19.5C9.9 20.5 10.9 21 12 21C13.1 21 14.1 20.5 14.5 19.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path></svg>
             </span>
-            <span style="font-size: 11.5px; font-weight: 800; letter-spacing: 0.08em; color: #5EEAD4;">SMART JOB ALERTS</span>
+            <span style="font-size: 12px; font-weight: 800; letter-spacing: 0.08em; color: #5EEAD4;">SMART JOB ALERTS</span>
           </div>
-          <h3 style="font-family: 'Sora', sans-serif; font-size: 26px; font-weight: 700; letter-spacing: -0.01em; color: #F5F6FA; margin: 0 0 14px;">Get pinged only for jobs worth your time</h3>
-          <p style="font-size: 15px; color: #8B92A5; line-height: 1.7; margin: 0 0 20px;">Set your own thresholds for match score, rate and client quality — Snag AI alerts you the moment a job clears the bar.</p>
-          <div style="display: flex; flex-direction: column; gap: 10px;">
-            <div style="display: flex; align-items: flex-start; gap: 10px;">
-              <span style="width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; background: rgba(94,234,212,0.18); color: #5EEAD4;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
-              <span style="font-size: 14px; color: #9199AB; line-height: 1.6;">Custom match score, rate and verification filters</span>
-            </div>
-            <div style="display: flex; align-items: flex-start; gap: 10px;">
-              <span style="width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; background: rgba(94,234,212,0.18); color: #5EEAD4;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
-              <span style="font-size: 14px; color: #9199AB; line-height: 1.6;">Real-time alerts as jobs are posted</span>
-            </div>
-            <div style="display: flex; align-items: flex-start; gap: 10px;">
-              <span style="width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; background: rgba(94,234,212,0.18); color: #5EEAD4;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
-              <span style="font-size: 14px; color: #9199AB; line-height: 1.6;">Fully controlled by you, per profile</span>
-            </div>
-            <div style="display: flex; align-items: flex-start; gap: 10px;">
-              <span style="width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; background: rgba(94,234,212,0.18); color: #5EEAD4;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
-              <span style="font-size: 14px; color: #9199AB; line-height: 1.6;">Runs quietly in the background all day</span>
-            </div>
-          </div>
-        </div>
+          <h3 style="font-family: 'Sora', sans-serif; font-size: 40px; font-weight: 700; letter-spacing: -0.02em; color: #F5F6FA; margin: 0 0 44px; max-width: 720px;">Get pinged only for jobs worth your time</h3>
 
-        <div style="order: 1; position: relative;">
-          <div style="position: absolute; inset: -1px; border-radius: 18px; background: linear-gradient(120deg, rgba(45,212,191,0.45), rgba(59,130,246,0.3)); opacity: 0.6;"></div>
-          <div style="position: relative; border-radius: 17px; background: #0B0E17; border: 1px solid #171B26; padding: 22px; overflow: hidden;">
-            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 18px;">
-              <span style="width: 22px; height: 22px; border-radius: 22%; overflow: hidden; flex-shrink: 0; position: relative;">
-                <span style="position: absolute; inset: 0; background: conic-gradient(from 200deg, #2DD4BF, #3B82F6 25%, #A855F7 55%, #EC4899 80%, #2DD4BF 100%);"></span>
-              </span>
-              <span style="font-size: 12.5px; font-weight: 700; color: #C6CBDA;">Smart Job Alert</span>
-            </div>
-            <div style="border-radius: 11px; background: #10141F; border: 1px solid #1D2230; padding: 16px 18px; margin-bottom: 14px;">
-              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
-                <span style="font-family: 'Sora', sans-serif; font-size: 14.5px; font-weight: 700; color: #F5F6FA;">React Native Mobile App</span>
-                <span style="font-size: 11px; font-weight: 700; padding: 4px 9px; border-radius: 999px; background: rgba(94,234,212,0.14); color: #5EEAD4;">96% match</span>
+          <div class="fx-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: stretch;">
+
+            <div style="order: 2;">
+              <p style="font-size: 15px; color: #8B92A5; line-height: 1.7; margin: 0 0 20px;">Set your own thresholds for match score, rate and client quality — Snag AI alerts you the moment a job clears the bar.</p>
+              <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div style="display: flex; align-items: flex-start; gap: 10px;">
+                  <span style="width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; background: rgba(94,234,212,0.18); color: #5EEAD4;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+                  <span style="font-size: 14px; color: #9199AB; line-height: 1.6;">Custom match score, rate and verification filters</span>
+                </div>
+                <div style="display: flex; align-items: flex-start; gap: 10px;">
+                  <span style="width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; background: rgba(94,234,212,0.18); color: #5EEAD4;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+                  <span style="font-size: 14px; color: #9199AB; line-height: 1.6;">Real-time alerts as jobs are posted</span>
+                </div>
+                <div style="display: flex; align-items: flex-start; gap: 10px;">
+                  <span style="width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; background: rgba(94,234,212,0.18); color: #5EEAD4;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+                  <span style="font-size: 14px; color: #9199AB; line-height: 1.6;">Fully controlled by you, per profile</span>
+                </div>
+                <div style="display: flex; align-items: flex-start; gap: 10px;">
+                  <span style="width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; background: rgba(94,234,212,0.18); color: #5EEAD4;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+                  <span style="font-size: 14px; color: #9199AB; line-height: 1.6;">No noisy digests — only jobs that clear your bar</span>
+                </div>
               </div>
-              <div style="font-size: 12.5px; color: #7A8194;">Posted 2 min ago · $40–60/hr · Payment verified</div>
+
+              <div style="margin-top: 22px; border-radius: 13px; background: #10141F; border: 1px solid rgba(94,234,212,0.3); padding: 18px 20px;">
+                <div style="font-size: 11px; font-weight: 800; letter-spacing: 0.06em; color: #5EEAD4; margin-bottom: 10px;">WHY IT MATTERS</div>
+                <p style="font-size: 13.5px; color: #9199AB; line-height: 1.7; margin: 0;">The best jobs get buried fast under a flood of new postings. Snag AI watches Upwork continuously against the thresholds you set, so you're applying within minutes of a strong match going live — not hours later, after the best window has closed.</p>
+              </div>
             </div>
-            <div style="display: flex; flex-direction: column; gap: 9px;">
-              <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 12.5px; color: #9199AB;">Min match score</span><span style="font-size: 12.5px; font-weight: 700; color: #C084FC;">90%+</span></div>
-              <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 12.5px; color: #9199AB;">Payment verified only</span><span style="font-size: 12.5px; font-weight: 700; color: #5EEAD4;">On</span></div>
+
+            <div style="order: 1; position: relative; display: flex; flex-direction: column;">
+              <div style="position: absolute; inset: -1px; border-radius: 18px; background: linear-gradient(120deg, rgba(45,212,191,0.45), rgba(59,130,246,0.3)); opacity: 0.5;"></div>
+              <div style="position: relative; flex: 1; border-radius: 17px; background: #0B0E17; border: 1px solid #171B26; padding: 22px; overflow: hidden; display: flex; flex-direction: column;">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 18px;">
+                  <span style="width: 22px; height: 22px; border-radius: 22%; overflow: hidden; flex-shrink: 0; position: relative;">
+                    <span style="position: absolute; inset: 0; background: conic-gradient(from 200deg, #2DD4BF, #3B82F6 25%, #A855F7 55%, #EC4899 80%, #2DD4BF 100%);"></span>
+                  </span>
+                  <span style="font-size: 12.5px; font-weight: 700; color: #C6CBDA;">Smart Job Alert</span>
+                </div>
+                <div style="border-radius: 11px; background: #10141F; border: 1px solid #1D2230; padding: 16px 18px; margin-bottom: 16px;">
+                  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+                    <span style="font-family: 'Sora', sans-serif; font-size: 14.5px; font-weight: 700; color: #F5F6FA;">React Native Mobile App</span>
+                    <span style="font-size: 11px; font-weight: 700; padding: 4px 9px; border-radius: 999px; background: rgba(94,234,212,0.14); color: #5EEAD4;">96% match</span>
+                  </div>
+                  <div style="font-size: 12.5px; color: #7A8194;">Posted 2 min ago · $40–60/hr · Payment verified</div>
+                </div>
+
+                <div style="font-size: 10.5px; font-weight: 800; letter-spacing: 0.06em; color: #565D70; margin-bottom: 10px;">RECENT NOTIFICATIONS</div>
+                <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px;">
+                  <div style="display: flex; align-items: center; justify-content: space-between; border-radius: 12px; border: 1px solid rgba(94,234,212,0.35); background: #0E1119; padding: 10px 14px;">
+                    <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
+                      <span style="width: 26px; height: 26px; border-radius: 50%; flex-shrink: 0; position: relative; overflow: hidden;">
+                        <span style="position: absolute; inset: 0; background: conic-gradient(from 200deg, #2DD4BF, #3B82F6 25%, #A855F7 55%, #EC4899 80%, #2DD4BF 100%);"></span>
+                        <span style="position: absolute; inset: 4px; border-radius: 50%; background: #0E1119;"></span>
+                      </span>
+                      <span style="font-size: 13px; font-weight: 700; color: #F5A9C7;">1 mismatch</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+                      <span style="width: 24px; height: 24px; border-radius: 50%; background: #171B26; display: flex; align-items: center; justify-content: center; color: #7A8194; font-size: 10px;">▾</span>
+                      <span style="width: 24px; height: 24px; border-radius: 50%; background: rgba(248,113,113,0.14); display: flex; align-items: center; justify-content: center; color: #F87171; font-size: 10px;">✕</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div style="height: 1px; background: #171B26; margin-bottom: 16px;"></div>
+
+                <div style="font-size: 10.5px; font-weight: 800; letter-spacing: 0.06em; color: #565D70; margin-bottom: 10px;">JOB FILTERS</div>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 18px;">
+                  <div style="border-radius: 10px; padding: 9px 6px; text-align: center; background: #10141F; border: 1px solid #1D2230;">
+                    <div style="font-size: 11.5px; font-weight: 600; color: #7A8194;">Conservative</div>
+                  </div>
+                  <div style="border-radius: 10px; padding: 9px 6px; text-align: center; background: linear-gradient(145deg, rgba(94,234,212,0.14), rgba(45,212,191,0.05)); border: 1px solid rgba(94,234,212,0.4);">
+                    <div style="font-size: 11.5px; font-weight: 700; color: #F5F6FA;">Balanced</div>
+                    <div style="font-size: 9.5px; font-weight: 700; color: #5EEAD4;">Recommended</div>
+                  </div>
+                  <div style="border-radius: 10px; padding: 9px 6px; text-align: center; background: #10141F; border: 1px solid #1D2230;">
+                    <div style="font-size: 11.5px; font-weight: 600; color: #7A8194;">Aggressive</div>
+                  </div>
+                </div>
+
+                <div style="display: flex; flex-direction: column; gap: 9px;">
+                  <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 12.5px; color: #9199AB;">Min match score</span><span style="font-size: 12.5px; font-weight: 700; color: #5EEAD4;">90%+</span></div>
+                  <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 12.5px; color: #9199AB;">Payment verified only</span><span style="font-size: 12.5px; font-weight: 700; color: #5EEAD4;">On</span></div>
+                  <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 12.5px; color: #9199AB;">Min hourly rate</span><span style="font-size: 12.5px; font-weight: 700; color: #5EEAD4;">$30+</span></div>
+                </div>
+              </div>
             </div>
+
           </div>
         </div>
       </div>
@@ -487,50 +653,130 @@
   </section>
 
   <!-- HOW IT WORKS -->
-  <section id="how-it-works" style="position: relative; z-index: 2; max-width: 1000px; margin: 0 auto; padding: 40px 40px 96px; box-sizing: border-box;">
-    <div style="text-align: center; max-width: 560px; margin: 0 auto 56px;">
-      <div style="font-size: 12.5px; font-weight: 800; letter-spacing: 0.1em; color: #C084FC; margin-bottom: 14px;">HOW IT WORKS</div>
-      <h2 style="font-family: 'Sora', sans-serif; font-size: 34px; font-weight: 700; letter-spacing: -0.02em; color: #FAFAFC; margin: 0;">From opening Upwork to sending a proposal</h2>
+  <section id="how-it-works" data-screen-label="How it works" style="position: relative; z-index: 2; max-width: 1120px; margin: 0 auto; padding: 40px 40px 96px; box-sizing: border-box; overflow: hidden;">
+    <div style="position: absolute; inset: 0; pointer-events: none; z-index: -1; overflow: hidden;">
+      <div style="position: absolute; inset: 0; background-image: linear-gradient(120deg, rgba(168,85,247,0.06) 1px, transparent 1px); background-size: 46px 46px;
+        mask-image: radial-gradient(ellipse 700px 520px at 85% 30%, black, transparent 70%);
+        -webkit-mask-image: radial-gradient(ellipse 700px 520px at 85% 30%, black, transparent 70%);"></div>
+      <div style="position: absolute; top: 10%; right: -140px; width: 520px; height: 520px; border-radius: 50%; background: radial-gradient(circle, rgba(236,72,153,0.14), transparent 68%); filter: blur(70px);"></div>
+      <div style="position: absolute; bottom: 5%; left: -120px; width: 460px; height: 460px; border-radius: 50%; background: radial-gradient(circle, rgba(94,234,212,0.1), transparent 68%); filter: blur(70px);"></div>
     </div>
 
-    <div style="display: flex; flex-direction: column; gap: 0;">
-      <div style="display: flex; gap: 28px;">
-        <div style="display: flex; flex-direction: column; align-items: center; flex-shrink: 0;">
-          <div style="width: 44px; height: 44px; border-radius: 50%; background: rgba(94,234,212,0.14); border: 1px solid rgba(94,234,212,0.35); display: flex; align-items: center; justify-content: center; font-family: 'Sora', sans-serif; font-size: 16px; font-weight: 700; color: #5EEAD4;">1</div>
-          <div style="width: 2px; flex: 1; background: linear-gradient(180deg, rgba(168,85,247,0.35), rgba(168,85,247,0.05)); margin: 8px 0;"></div>
+    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+      <span style="width: 38px; height: 38px; border-radius: 11px; background: rgba(168,85,247,0.18); display: flex; align-items: center; justify-content: center; color: #C084FC; flex-shrink: 0;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M5 12L9 16L19 6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+      </span>
+      <span style="font-size: 12px; font-weight: 800; letter-spacing: 0.08em; color: #C084FC;">QUICK START</span>
+    </div>
+    <h2 style="font-family: 'Sora', sans-serif; font-size: 42px; font-weight: 700; letter-spacing: -0.02em; color: #FAFAFC; margin: 0 0 12px;">How It Works</h2>
+    <p style="font-size: 15.5px; color: #8B92A5; margin: 0 0 48px; max-width: 640px;">Up and running in about 5 minutes — verify once, sync your profile, and every job page after that has a Write Proposal button.</p>
+
+    <div style="display: grid; grid-template-columns: 1.1fr 1fr; gap: 56px; align-items: start;">
+      <div style="display: flex; flex-direction: column; gap: 0;">
+        <div style="display: flex; gap: 24px;">
+          <div style="display: flex; flex-direction: column; align-items: center; flex-shrink: 0;">
+            <div style="width: 40px; height: 40px; border-radius: 50%; background: rgba(94,234,212,0.14); border: 1px solid rgba(94,234,212,0.35); display: flex; align-items: center; justify-content: center; font-family: 'Sora', sans-serif; font-size: 15px; font-weight: 700; color: #5EEAD4;">1</div>
+            <div style="width: 2px; flex: 1; background: linear-gradient(180deg, rgba(168,85,247,0.35), rgba(168,85,247,0.05)); margin: 8px 0;"></div>
+          </div>
+          <div style="padding-bottom: 36px;">
+            <h3 style="font-family: 'Sora', sans-serif; font-size: 17.5px; font-weight: 700; color: #F5F6FA; margin: 6px 0 7px;">Add your email and verify it</h3>
+            <p style="font-size: 13.5px; color: #8B92A5; line-height: 1.65; margin: 0; max-width: 440px;">In Settings, enter the same email you use (or plan to use) on Paddle, then verify it with the 6-digit code sent to your inbox — required before any proposal can be generated.</p>
+          </div>
         </div>
-        <div style="padding-bottom: 44px;">
-          <h3 style="font-family: 'Sora', sans-serif; font-size: 19px; font-weight: 700; color: #F5F6FA; margin: 8px 0 8px;">Install and connect your Upwork profile</h3>
-          <p style="font-size: 14.5px; color: #8B92A5; line-height: 1.65; margin: 0; max-width: 480px;">Add Snag AI to Chrome and link your freelancer or agency profile in under a minute — no separate app to manage.</p>
+        <div style="display: flex; gap: 24px;">
+          <div style="display: flex; flex-direction: column; align-items: center; flex-shrink: 0;">
+            <div style="width: 40px; height: 40px; border-radius: 50%; background: rgba(168,85,247,0.14); border: 1px solid rgba(168,85,247,0.4); display: flex; align-items: center; justify-content: center; font-family: 'Sora', sans-serif; font-size: 15px; font-weight: 700; color: #C084FC;">2</div>
+            <div style="width: 2px; flex: 1; background: linear-gradient(180deg, rgba(168,85,247,0.35), rgba(168,85,247,0.05)); margin: 8px 0;"></div>
+          </div>
+          <div style="padding-bottom: 36px;">
+            <h3 style="font-family: 'Sora', sans-serif; font-size: 17.5px; font-weight: 700; color: #F5F6FA; margin: 6px 0 7px;">Add your Upwork profile URL</h3>
+            <p style="font-size: 13.5px; color: #8B92A5; line-height: 1.65; margin: 0; max-width: 440px;">In Subscription, paste your Upwork profile URL — standard or custom URLs both work. Pro supports up to 3 profiles, Agency up to 5.</p>
+          </div>
+        </div>
+        <div style="display: flex; gap: 24px;">
+          <div style="display: flex; flex-direction: column; align-items: center; flex-shrink: 0;">
+            <div style="width: 40px; height: 40px; border-radius: 50%; background: rgba(245,185,94,0.14); border: 1px solid rgba(245,185,94,0.4); display: flex; align-items: center; justify-content: center; font-family: 'Sora', sans-serif; font-size: 15px; font-weight: 700; color: #F5B95E;">3</div>
+            <div style="width: 2px; flex: 1; background: linear-gradient(180deg, rgba(168,85,247,0.35), rgba(168,85,247,0.05)); margin: 8px 0;"></div>
+          </div>
+          <div style="padding-bottom: 36px;">
+            <h3 style="font-family: 'Sora', sans-serif; font-size: 17.5px; font-weight: 700; color: #F5F6FA; margin: 6px 0 7px;">Click "Sync Profile" on your Upwork page</h3>
+            <p style="font-size: 13.5px; color: #8B92A5; line-height: 1.65; margin: 0; max-width: 440px;">A pill button appears bottom-right on your profile page. One click reads your rate, JSS, skills, bio, history and portfolio in a single pass — it turns green when done.</p>
+          </div>
+        </div>
+        <div style="display: flex; gap: 24px;">
+          <div style="display: flex; flex-direction: column; align-items: center; flex-shrink: 0;">
+            <div style="width: 40px; height: 40px; border-radius: 50%; background: rgba(236,72,153,0.14); border: 1px solid rgba(236,72,153,0.4); display: flex; align-items: center; justify-content: center; font-family: 'Sora', sans-serif; font-size: 15px; font-weight: 700; color: #F5A9C7;">4</div>
+          </div>
+          <div style="padding-bottom: 36px;">
+            <h3 style="font-family: 'Sora', sans-serif; font-size: 17.5px; font-weight: 700; color: #F5F6FA; margin: 6px 0 7px;">Add portfolio links, then write your first proposal</h3>
+            <p style="font-size: 13.5px; color: #8B92A5; line-height: 1.65; margin: 0; max-width: 440px;">Give portfolio items live URLs so the AI can reference them by name and link to them. Then open any job and click Write Proposal.</p>
+          </div>
         </div>
       </div>
-      <div style="display: flex; gap: 28px;">
-        <div style="display: flex; flex-direction: column; align-items: center; flex-shrink: 0;">
-          <div style="width: 44px; height: 44px; border-radius: 50%; background: rgba(168,85,247,0.14); border: 1px solid rgba(168,85,247,0.4); display: flex; align-items: center; justify-content: center; font-family: 'Sora', sans-serif; font-size: 16px; font-weight: 700; color: #C084FC;">2</div>
-          <div style="width: 2px; flex: 1; background: linear-gradient(180deg, rgba(168,85,247,0.35), rgba(168,85,247,0.05)); margin: 8px 0;"></div>
-        </div>
-        <div style="padding-bottom: 44px;">
-          <h3 style="font-family: 'Sora', sans-serif; font-size: 19px; font-weight: 700; color: #F5F6FA; margin: 8px 0 8px;">Audit the job and your profile</h3>
-          <p style="font-size: 14.5px; color: #8B92A5; line-height: 1.65; margin: 0; max-width: 480px;">Open any listing to see your odds and red flags, or run a profile audit to fix what's holding your proposals back.</p>
-        </div>
-      </div>
-      <div style="display: flex; gap: 28px;">
-        <div style="display: flex; flex-direction: column; align-items: center; flex-shrink: 0;">
-          <div style="width: 44px; height: 44px; border-radius: 50%; background: rgba(236,72,153,0.14); border: 1px solid rgba(236,72,153,0.4); display: flex; align-items: center; justify-content: center; font-family: 'Sora', sans-serif; font-size: 16px; font-weight: 700; color: #F5A9C7;">3</div>
-        </div>
-        <div style="padding-bottom: 44px;">
-          <h3 style="font-family: 'Sora', sans-serif; font-size: 19px; font-weight: 700; color: #F5F6FA; margin: 8px 0 8px;">Write and send, right on the page</h3>
-          <p style="font-size: 14.5px; color: #8B92A5; line-height: 1.65; margin: 0; max-width: 480px;">Generate a tailored cover letter on Upwork's own proposal page in one click, tweak it, and submit.</p>
+
+      <!-- visual: sync status card -->
+      <div style="position: relative;">
+        <div style="position: absolute; inset: -1px; border-radius: 18px; background: linear-gradient(120deg, rgba(168,85,247,0.5), rgba(94,234,212,0.35)); opacity: 0.5;"></div>
+        <div style="position: relative; border-radius: 17px; background: #0B0E17; border: 1px solid #171B26; padding: 24px; overflow: hidden;">
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 18px;">
+            <span style="width: 24px; height: 24px; border-radius: 22%; overflow: hidden; flex-shrink: 0; position: relative;">
+              <span style="position: absolute; inset: 0; background: conic-gradient(from 200deg, #2DD4BF, #3B82F6 25%, #A855F7 55%, #EC4899 80%, #2DD4BF 100%);"></span>
+            </span>
+            <span style="font-size: 13px; font-weight: 700; color: #C6CBDA;">Setup checklist</span>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 18px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; border-radius: 11px; background: #10141F; border: 1px solid #1D2230; padding: 12px 14px;">
+              <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
+                <span style="width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: rgba(52,211,153,0.16); color: #34D399;">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                </span>
+                <span style="font-size: 13px; font-weight: 600; color: #E7E9F0;">Email verified</span>
+              </div>
+              <span style="font-size: 11px; font-weight: 700; color: #34D399; flex-shrink: 0;">Done</span>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; border-radius: 11px; background: #10141F; border: 1px solid #1D2230; padding: 12px 14px;">
+              <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
+                <span style="width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: rgba(52,211,153,0.16); color: #34D399;">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                </span>
+                <span style="font-size: 13px; font-weight: 600; color: #E7E9F0;">Upwork profile added</span>
+              </div>
+              <span style="font-size: 11px; font-weight: 700; color: #34D399; flex-shrink: 0;">Done</span>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; border-radius: 11px; background: #10141F; border: 1px solid #1D2230; padding: 12px 14px;">
+              <div style="display: flex; align-items: center; gap: 10px; min-width: 0;">
+                <span style="width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: rgba(52,211,153,0.16); color: #34D399;">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                </span>
+                <span style="font-size: 13px; font-weight: 600; color: #E7E9F0;">Profile synced</span>
+              </div>
+              <span style="font-size: 11px; font-weight: 700; color: #34D399; flex-shrink: 0;">Done</span>
+            </div>
+          </div>
+
+          <div style="height: 1px; background: #171B26; margin-bottom: 16px;"></div>
+
+          <div style="font-size: 10.5px; font-weight: 800; letter-spacing: 0.06em; color: #565D70; margin-bottom: 10px;">PORTFOLIO LINK STATUS</div>
+          <div style="display: flex; flex-direction: column; gap: 9px;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <div style="display: flex; align-items: center; gap: 8px; min-width: 0;"><span style="width: 7px; height: 7px; border-radius: 50%; background: #34D399; flex-shrink: 0;"></span><span style="font-size: 12.5px; color: #C6CBDA; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">RideLoop — gig driver app</span></div>
+              <span style="font-size: 11px; font-weight: 700; color: #34D399; flex-shrink: 0;">Linked</span>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <div style="display: flex; align-items: center; gap: 8px; min-width: 0;"><span style="width: 7px; height: 7px; border-radius: 50%; background: #F5B95E; flex-shrink: 0;"></span><span style="font-size: 12.5px; color: #C6CBDA; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">FitTrack — wearable companion</span></div>
+              <span style="font-size: 11px; font-weight: 700; color: #F5B95E; flex-shrink: 0;">No URL</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </section>
 
   <!-- PRICING -->
-  <section id="pricing" style="position: relative; z-index: 2; max-width: 1160px; margin: 0 auto; padding: 40px 40px 100px; box-sizing: border-box;">
+  <section id="pricing" data-screen-label="Pricing" style="position: relative; z-index: 2; max-width: 1160px; margin: 0 auto; padding: 40px 40px 100px; box-sizing: border-box; background: #090B12;">
     <div style="text-align: center; max-width: 560px; margin: 0 auto 48px;">
-      <div style="font-size: 12.5px; font-weight: 800; letter-spacing: 0.1em; color: #6B7284; margin-bottom: 14px;">PRICING</div>
-      <h2 style="font-family: 'Sora', sans-serif; font-size: 34px; font-weight: 700; letter-spacing: -0.02em; color: #FAFAFC; margin: 0 0 14px;">Simple plans that scale with you</h2>
+      <h2 style="font-family: 'Sora', sans-serif; font-size: 42px; font-weight: 700; letter-spacing: -0.02em; color: #FAFAFC; margin: 0 0 14px;">Pricing</h2>
       <p style="font-size: 15px; color: #8B92A5; margin: 0;">Start with Basic. Upgrade when you're winning more work than you can write for.</p>
     </div>
 
@@ -616,17 +862,329 @@
     <div style="text-align: center; font-size: 13px; color: #565D70; margin-top: 26px;">Cancel anytime · Instant activation</div>
   </section>
 
-  <!-- FINAL CTA -->
-  <section style="position: relative; z-index: 2; max-width: 1000px; margin: 0 auto; padding: 20px 40px 110px; box-sizing: border-box;">
-    <div style="position: relative; border-radius: 26px; padding: 1.5px; background: linear-gradient(120deg, rgba(45,212,191,0.55), rgba(168,85,247,0.45), rgba(236,72,153,0.5));">
-      <div style="border-radius: 24.5px; background: #0B0E17; padding: 64px 48px; text-align: center; position: relative; overflow: hidden;">
-        <div style="position: absolute; top: -100px; left: 50%; transform: translateX(-50%); width: 400px; height: 300px; border-radius: 50%; background: radial-gradient(circle, rgba(168,85,247,0.16), transparent 70%); filter: blur(20px); pointer-events: none;"></div>
-        <h2 style="position: relative; font-family: 'Sora', sans-serif; font-size: 36px; font-weight: 700; letter-spacing: -0.02em; color: #FAFAFC; margin: 0 0 16px;">Stop writing proposals from scratch</h2>
-        <p style="position: relative; font-size: 16px; color: #9199AB; margin: 0 0 32px; max-width: 480px; margin-left: auto; margin-right: auto; line-height: 1.6;">Join freelancers who send better proposals in a fraction of the time.</p>
-        <a href="#" style="position: relative; display: inline-block; padding: 15px 32px; border-radius: 999px; background: linear-gradient(90deg, #2DD4BF, #A855F7, #EC4899); color: #fff; font-size: 15.5px; font-weight: 700; text-decoration: none; box-shadow: 0 14px 30px -10px rgba(168,85,247,0.55);">Add to Chrome — it's free</a>
+  <!-- FAQ -->
+  <section id="faq" data-screen-label="FAQ" style="position: relative; z-index: 2; max-width: 1000px; margin: 0 auto; padding: 40px 40px 100px; box-sizing: border-box; overflow: hidden;">
+    <div style="position: absolute; inset: 0; pointer-events: none; z-index: -1; overflow: hidden;">
+      <div style="position: absolute; inset: 0; background-image:
+        linear-gradient(rgba(94,234,212,0.07) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(94,234,212,0.07) 1px, transparent 1px);
+        background-size: 50px 50px;
+        mask-image: radial-gradient(ellipse 800px 460px at 50% 20%, black, transparent 72%);
+        -webkit-mask-image: radial-gradient(ellipse 800px 460px at 50% 20%, black, transparent 72%);"></div>
+      <div style="position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: 760px; height: 460px; border-radius: 50%; background: radial-gradient(circle, rgba(94,234,212,0.14), transparent 68%); filter: blur(65px); animation: pulseGlow 9s ease-in-out infinite;"></div>
+    </div>
+    <div style="text-align: center; max-width: 520px; margin: 0 auto 48px;">
+      <h2 style="font-family: 'Sora', sans-serif; font-size: 42px; font-weight: 700; letter-spacing: -0.02em; color: #FAFAFC; margin: 0 0 14px;">FAQ</h2>
+      <p style="font-size: 15.5px; color: #8B92A5; margin: 0;">Questions, answered.</p>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 12px;" id="faq-list">
+      <div class="faq-item open" style="border-radius: 14px; background: #0B0E17; border: 1px solid #171B26; padding: 20px 24px; cursor: pointer;">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px;">
+          <span style="font-family: 'Sora', sans-serif; font-size: 15.5px; font-weight: 700; color: #F5F6FA;">Does Snag AI work for both freelancer and agency profiles?</span>
+          <span style="flex-shrink: 0; width: 24px; height: 24px; border-radius: 50%; background: rgba(168,85,247,0.14); color: #C084FC; display: flex; align-items: center; justify-content: center;">
+            <svg class="faq-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" style="transition: transform 0.2s ease;"><path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          </span>
+        </div>
+        <div class="faq-answer">Yes. Every feature — cover letter writing, job audits, profile audits and smart alerts — works the same way whether you're applying as a freelancer or through an agency profile.</div>
+      </div>
+      <div class="faq-item" style="border-radius: 14px; background: #0B0E17; border: 1px solid #171B26; padding: 20px 24px; cursor: pointer;">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px;">
+          <span style="font-family: 'Sora', sans-serif; font-size: 15.5px; font-weight: 700; color: #F5F6FA;">Where does Snag AI actually run?</span>
+          <span style="flex-shrink: 0; width: 24px; height: 24px; border-radius: 50%; background: rgba(168,85,247,0.14); color: #C084FC; display: flex; align-items: center; justify-content: center;">
+            <svg class="faq-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" style="transition: transform 0.2s ease;"><path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          </span>
+        </div>
+        <div class="faq-answer">Right inside Upwork. It's a Chrome extension that adds itself to the job post and cover letter pages you already use — there's no separate app or dashboard to switch to.</div>
+      </div>
+      <div class="faq-item" style="border-radius: 14px; background: #0B0E17; border: 1px solid #171B26; padding: 20px 24px; cursor: pointer;">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px;">
+          <span style="font-family: 'Sora', sans-serif; font-size: 15.5px; font-weight: 700; color: #F5F6FA;">Will the cover letters sound like me?</span>
+          <span style="flex-shrink: 0; width: 24px; height: 24px; border-radius: 50%; background: rgba(168,85,247,0.14); color: #C084FC; display: flex; align-items: center; justify-content: center;">
+            <svg class="faq-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" style="transition: transform 0.2s ease;"><path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          </span>
+        </div>
+        <div class="faq-answer">Snag AI drafts using your real portfolio, rate and tone settings, then lets you refine in place with one-click commands like "shorter" or "more confident" before you send anything.</div>
+      </div>
+      <div class="faq-item" style="border-radius: 14px; background: #0B0E17; border: 1px solid #171B26; padding: 20px 24px; cursor: pointer;">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px;">
+          <span style="font-family: 'Sora', sans-serif; font-size: 15.5px; font-weight: 700; color: #F5F6FA;">What does a job audit actually check?</span>
+          <span style="flex-shrink: 0; width: 24px; height: 24px; border-radius: 50%; background: rgba(168,85,247,0.14); color: #C084FC; display: flex; align-items: center; justify-content: center;">
+            <svg class="faq-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" style="transition: transform 0.2s ease;"><path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          </span>
+        </div>
+        <div class="faq-answer">Competition level, client hire rate and spend history, and how your rate and skills stack up — then gives you a plain verdict on whether the job is worth a connect.</div>
+      </div>
+      <div class="faq-item" style="border-radius: 14px; background: #0B0E17; border: 1px solid #171B26; padding: 20px 24px; cursor: pointer;">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px;">
+          <span style="font-family: 'Sora', sans-serif; font-size: 15.5px; font-weight: 700; color: #F5F6FA;">Can I cancel anytime?</span>
+          <span style="flex-shrink: 0; width: 24px; height: 24px; border-radius: 50%; background: rgba(168,85,247,0.14); color: #C084FC; display: flex; align-items: center; justify-content: center;">
+            <svg class="faq-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" style="transition: transform 0.2s ease;"><path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          </span>
+        </div>
+        <div class="faq-answer">Yes, all plans are month-to-month with no contract. Cancel from your billing page whenever you like and you'll keep access until the end of your current cycle.</div>
+      </div>
+      <div class="faq-item" style="border-radius: 14px; background: #0B0E17; border: 1px solid #171B26; padding: 20px 24px; cursor: pointer;">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px;">
+          <span style="font-family: 'Sora', sans-serif; font-size: 15.5px; font-weight: 700; color: #F5F6FA;">Do unused cover letters roll over?</span>
+          <span style="flex-shrink: 0; width: 24px; height: 24px; border-radius: 50%; background: rgba(168,85,247,0.14); color: #C084FC; display: flex; align-items: center; justify-content: center;">
+            <svg class="faq-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" style="transition: transform 0.2s ease;"><path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+          </span>
+        </div>
+        <div class="faq-answer">No, each plan's monthly allowance resets on your billing date. Upgrade anytime if you're consistently running out before the cycle ends.</div>
       </div>
     </div>
   </section>
+
+  <!-- REVIEWS -->
+  <section id="reviews" data-screen-label="Reviews" style="position: relative; z-index: 2; padding: 40px 0 100px; box-sizing: border-box; overflow: hidden; background: #090B12;">
+    <div style="text-align: center; max-width: 560px; margin: 0 auto 48px; padding: 0 40px;">
+      <h2 style="font-family: 'Sora', sans-serif; font-size: 42px; font-weight: 700; letter-spacing: -0.02em; color: #FAFAFC; margin: 0 0 14px;">Reviews</h2>
+      <p style="font-size: 15px; color: #8B92A5; margin: 0;">Trusted by 100+ satisfied freelancers and agencies — here's what they have to say about Snag AI.</p>
+    </div>
+
+    <div style="position: relative; -webkit-mask-image: linear-gradient(90deg, transparent, black 8%, black 92%, transparent); mask-image: linear-gradient(90deg, transparent, black 8%, black 92%, transparent);">
+      <div style="display: flex; gap: 20px; width: max-content; animation: marquee 42s linear infinite;">
+
+        <!-- Review 1 -->
+        <div style="width: 320px; flex-shrink: 0; border-radius: 16px; background: #0B0E17; border: 1px solid #171B26; padding: 22px 24px;">
+          <div style="display: flex; align-items: center; gap: 7px; margin-bottom: 14px;">
+            <div style="display: flex; gap: 3px;">
+              <span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span>
+              <span style="font-size: 13px; color: #F5B95E; opacity: 0.5;">★</span>
+            </div>
+            <span style="font-size: 12.5px; font-weight: 700; color: #C6CBDA;">4.5</span>
+          </div>
+          <div style="font-size: 13.5px; color: #C6CBDA; line-height: 1.65; margin-bottom: 18px; min-height: 84px;">"Cut my proposal time from 20 minutes to a couple. The job audits have saved me from a few bad-fit clients too."</div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #2DD4BF, #3B82F6); display: flex; align-items: center; justify-content: center; font-family: 'Sora', sans-serif; font-size: 12.5px; font-weight: 700; color: #fff; flex-shrink: 0;">MT</div>
+            <div>
+              <div style="font-size: 13.5px; font-weight: 700; color: #F5F6FA;">Marcus T.</div>
+              <div style="font-size: 12px; color: #6B7284;">Full Stack Developer</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Review 2 -->
+        <div style="width: 320px; flex-shrink: 0; border-radius: 16px; background: #0B0E17; border: 1px solid #171B26; padding: 22px 24px;">
+          <div style="display: flex; align-items: center; gap: 7px; margin-bottom: 14px;">
+            <div style="display: flex; gap: 3px;">
+              <span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span>
+            </div>
+            <span style="font-size: 12.5px; font-weight: 700; color: #C6CBDA;">4.0</span>
+          </div>
+          <div style="font-size: 13.5px; color: #C6CBDA; line-height: 1.65; margin-bottom: 18px; min-height: 84px;">"Running both our freelancer and agency profiles through Snag AI keeps our proposals fairly consistent across the team."</div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #A855F7, #EC4899); display: flex; align-items: center; justify-content: center; font-family: 'Sora', sans-serif; font-size: 12.5px; font-weight: 700; color: #fff; flex-shrink: 0;">PS</div>
+            <div>
+              <div style="font-size: 13.5px; font-weight: 700; color: #F5F6FA;">Priya S.</div>
+              <div style="font-size: 12px; color: #6B7284;">Agency Owner</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Review 3 -->
+        <div style="width: 320px; flex-shrink: 0; border-radius: 16px; background: #0B0E17; border: 1px solid #171B26; padding: 22px 24px;">
+          <div style="display: flex; align-items: center; gap: 7px; margin-bottom: 14px;">
+            <div style="display: flex; gap: 3px;">
+              <span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span>
+              <span style="font-size: 13px; color: #F5B95E; opacity: 0.5;">★</span>
+            </div>
+            <span style="font-size: 12.5px; font-weight: 700; color: #C6CBDA;">4.5</span>
+          </div>
+          <div style="font-size: 13.5px; color: #C6CBDA; line-height: 1.65; margin-bottom: 18px; min-height: 84px;">"The profile audit rewrote my title and overview — got an interview in this niche not long after."</div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #F5B95E, #EC4899); display: flex; align-items: center; justify-content: center; font-family: 'Sora', sans-serif; font-size: 12.5px; font-weight: 700; color: #fff; flex-shrink: 0;">DK</div>
+            <div>
+              <div style="font-size: 13.5px; font-weight: 700; color: #F5F6FA;">Daniel K.</div>
+              <div style="font-size: 12px; color: #6B7284;">React Native Developer</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Review 4 -->
+        <div style="width: 320px; flex-shrink: 0; border-radius: 16px; background: #0B0E17; border: 1px solid #171B26; padding: 22px 24px;">
+          <div style="display: flex; align-items: center; gap: 7px; margin-bottom: 14px;">
+            <div style="display: flex; gap: 3px;">
+              <span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span>
+            </div>
+            <span style="font-size: 12.5px; font-weight: 700; color: #C6CBDA;">4.0</span>
+          </div>
+          <div style="font-size: 13.5px; color: #C6CBDA; line-height: 1.65; margin-bottom: 18px; min-height: 84px;">"Smart alerts mean I mostly see jobs that match my rate and skills. Still tweaking my thresholds a bit."</div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #5EEAD4, #A855F7); display: flex; align-items: center; justify-content: center; font-family: 'Sora', sans-serif; font-size: 12.5px; font-weight: 700; color: #fff; flex-shrink: 0;">AR</div>
+            <div>
+              <div style="font-size: 13.5px; font-weight: 700; color: #F5F6FA;">Aisha R.</div>
+              <div style="font-size: 12px; color: #6B7284;">UI/UX Designer</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Review 5 -->
+        <div style="width: 320px; flex-shrink: 0; border-radius: 16px; background: #0B0E17; border: 1px solid #171B26; padding: 22px 24px;">
+          <div style="display: flex; align-items: center; gap: 7px; margin-bottom: 14px;">
+            <div style="display: flex; gap: 3px;">
+              <span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span>
+              <span style="font-size: 13px; color: #F5B95E; opacity: 0.5;">★</span>
+            </div>
+            <span style="font-size: 12.5px; font-weight: 700; color: #C6CBDA;">4.5</span>
+          </div>
+          <div style="font-size: 13.5px; color: #C6CBDA; line-height: 1.65; margin-bottom: 18px; min-height: 84px;">"Pretty straightforward — the job audit told me to skip a job I would've wasted a connect on."</div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #3B82F6, #EC4899); display: flex; align-items: center; justify-content: center; font-family: 'Sora', sans-serif; font-size: 12.5px; font-weight: 700; color: #fff; flex-shrink: 0;">TW</div>
+            <div>
+              <div style="font-size: 13.5px; font-weight: 700; color: #F5F6FA;">Tom W.</div>
+              <div style="font-size: 12px; color: #6B7284;">Backend Engineer</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Review 6 -->
+        <div style="width: 320px; flex-shrink: 0; border-radius: 16px; background: #0B0E17; border: 1px solid #171B26; padding: 22px 24px;">
+          <div style="display: flex; align-items: center; gap: 7px; margin-bottom: 14px;">
+            <div style="display: flex; gap: 3px;">
+              <span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span>
+            </div>
+            <span style="font-size: 12.5px; font-weight: 700; color: #C6CBDA;">4.0</span>
+          </div>
+          <div style="font-size: 13.5px; color: #C6CBDA; line-height: 1.65; margin-bottom: 18px; min-height: 84px;">"Good value monthly. Our proposal close rate went up a bit in the first month of using it."</div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #EC4899, #F5B95E); display: flex; align-items: center; justify-content: center; font-family: 'Sora', sans-serif; font-size: 12.5px; font-weight: 700; color: #fff; flex-shrink: 0;">EV</div>
+            <div>
+              <div style="font-size: 13.5px; font-weight: 700; color: #F5F6FA;">Elena V.</div>
+              <div style="font-size: 12px; color: #6B7284;">Agency Lead</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- doubled set (1-6 again for seamless marquee loop) -->
+        <div style="width: 320px; flex-shrink: 0; border-radius: 16px; background: #0B0E17; border: 1px solid #171B26; padding: 22px 24px;">
+          <div style="display: flex; align-items: center; gap: 7px; margin-bottom: 14px;">
+            <div style="display: flex; gap: 3px;">
+              <span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span>
+              <span style="font-size: 13px; color: #F5B95E; opacity: 0.5;">★</span>
+            </div>
+            <span style="font-size: 12.5px; font-weight: 700; color: #C6CBDA;">4.5</span>
+          </div>
+          <div style="font-size: 13.5px; color: #C6CBDA; line-height: 1.65; margin-bottom: 18px; min-height: 84px;">"Cut my proposal time from 20 minutes to a couple. The job audits have saved me from a few bad-fit clients too."</div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #2DD4BF, #3B82F6); display: flex; align-items: center; justify-content: center; font-family: 'Sora', sans-serif; font-size: 12.5px; font-weight: 700; color: #fff; flex-shrink: 0;">MT</div>
+            <div>
+              <div style="font-size: 13.5px; font-weight: 700; color: #F5F6FA;">Marcus T.</div>
+              <div style="font-size: 12px; color: #6B7284;">Full Stack Developer</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="width: 320px; flex-shrink: 0; border-radius: 16px; background: #0B0E17; border: 1px solid #171B26; padding: 22px 24px;">
+          <div style="display: flex; align-items: center; gap: 7px; margin-bottom: 14px;">
+            <div style="display: flex; gap: 3px;">
+              <span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span>
+            </div>
+            <span style="font-size: 12.5px; font-weight: 700; color: #C6CBDA;">4.0</span>
+          </div>
+          <div style="font-size: 13.5px; color: #C6CBDA; line-height: 1.65; margin-bottom: 18px; min-height: 84px;">"Running both our freelancer and agency profiles through Snag AI keeps our proposals fairly consistent across the team."</div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #A855F7, #EC4899); display: flex; align-items: center; justify-content: center; font-family: 'Sora', sans-serif; font-size: 12.5px; font-weight: 700; color: #fff; flex-shrink: 0;">PS</div>
+            <div>
+              <div style="font-size: 13.5px; font-weight: 700; color: #F5F6FA;">Priya S.</div>
+              <div style="font-size: 12px; color: #6B7284;">Agency Owner</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="width: 320px; flex-shrink: 0; border-radius: 16px; background: #0B0E17; border: 1px solid #171B26; padding: 22px 24px;">
+          <div style="display: flex; align-items: center; gap: 7px; margin-bottom: 14px;">
+            <div style="display: flex; gap: 3px;">
+              <span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span>
+              <span style="font-size: 13px; color: #F5B95E; opacity: 0.5;">★</span>
+            </div>
+            <span style="font-size: 12.5px; font-weight: 700; color: #C6CBDA;">4.5</span>
+          </div>
+          <div style="font-size: 13.5px; color: #C6CBDA; line-height: 1.65; margin-bottom: 18px; min-height: 84px;">"The profile audit rewrote my title and overview — got an interview in this niche not long after."</div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #F5B95E, #EC4899); display: flex; align-items: center; justify-content: center; font-family: 'Sora', sans-serif; font-size: 12.5px; font-weight: 700; color: #fff; flex-shrink: 0;">DK</div>
+            <div>
+              <div style="font-size: 13.5px; font-weight: 700; color: #F5F6FA;">Daniel K.</div>
+              <div style="font-size: 12px; color: #6B7284;">React Native Developer</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="width: 320px; flex-shrink: 0; border-radius: 16px; background: #0B0E17; border: 1px solid #171B26; padding: 22px 24px;">
+          <div style="display: flex; align-items: center; gap: 7px; margin-bottom: 14px;">
+            <div style="display: flex; gap: 3px;">
+              <span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span>
+            </div>
+            <span style="font-size: 12.5px; font-weight: 700; color: #C6CBDA;">4.0</span>
+          </div>
+          <div style="font-size: 13.5px; color: #C6CBDA; line-height: 1.65; margin-bottom: 18px; min-height: 84px;">"Smart alerts mean I mostly see jobs that match my rate and skills. Still tweaking my thresholds a bit."</div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #5EEAD4, #A855F7); display: flex; align-items: center; justify-content: center; font-family: 'Sora', sans-serif; font-size: 12.5px; font-weight: 700; color: #fff; flex-shrink: 0;">AR</div>
+            <div>
+              <div style="font-size: 13.5px; font-weight: 700; color: #F5F6FA;">Aisha R.</div>
+              <div style="font-size: 12px; color: #6B7284;">UI/UX Designer</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="width: 320px; flex-shrink: 0; border-radius: 16px; background: #0B0E17; border: 1px solid #171B26; padding: 22px 24px;">
+          <div style="display: flex; align-items: center; gap: 7px; margin-bottom: 14px;">
+            <div style="display: flex; gap: 3px;">
+              <span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span>
+              <span style="font-size: 13px; color: #F5B95E; opacity: 0.5;">★</span>
+            </div>
+            <span style="font-size: 12.5px; font-weight: 700; color: #C6CBDA;">4.5</span>
+          </div>
+          <div style="font-size: 13.5px; color: #C6CBDA; line-height: 1.65; margin-bottom: 18px; min-height: 84px;">"Pretty straightforward — the job audit told me to skip a job I would've wasted a connect on."</div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #3B82F6, #EC4899); display: flex; align-items: center; justify-content: center; font-family: 'Sora', sans-serif; font-size: 12.5px; font-weight: 700; color: #fff; flex-shrink: 0;">TW</div>
+            <div>
+              <div style="font-size: 13.5px; font-weight: 700; color: #F5F6FA;">Tom W.</div>
+              <div style="font-size: 12px; color: #6B7284;">Backend Engineer</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="width: 320px; flex-shrink: 0; border-radius: 16px; background: #0B0E17; border: 1px solid #171B26; padding: 22px 24px;">
+          <div style="display: flex; align-items: center; gap: 7px; margin-bottom: 14px;">
+            <div style="display: flex; gap: 3px;">
+              <span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span>
+            </div>
+            <span style="font-size: 12.5px; font-weight: 700; color: #C6CBDA;">4.0</span>
+          </div>
+          <div style="font-size: 13.5px; color: #C6CBDA; line-height: 1.65; margin-bottom: 18px; min-height: 84px;">"Good value monthly. Our proposal close rate went up a bit in the first month of using it."</div>
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #EC4899, #F5B95E); display: flex; align-items: center; justify-content: center; font-family: 'Sora', sans-serif; font-size: 12.5px; font-weight: 700; color: #fff; flex-shrink: 0;">EV</div>
+            <div>
+              <div style="font-size: 13.5px; font-weight: 700; color: #F5F6FA;">Elena V.</div>
+              <div style="font-size: 12px; color: #6B7284;">Agency Lead</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div style="max-width: 640px; margin: 56px auto 0; padding: 0 40px; text-align: center;">
+      <div style="border-radius: 16px; background: #0B0E17; border: 1px solid #171B26; padding: 28px 32px;">
+        <h3 style="font-family: 'Sora', sans-serif; font-size: 19px; font-weight: 700; color: #F5F6FA; margin: 0 0 8px;">Using Snag AI? Share your experience</h3>
+        <p style="font-size: 14px; color: #8B92A5; margin: 0 0 20px; line-height: 1.6;">Your feedback helps other freelancers and agencies decide if it's right for them.</p>
+        <a href="mailto:hello@snagai.app?subject=My%20Snag%20AI%20review" style="display: inline-block; padding: 12px 26px; border-radius: 999px; background: linear-gradient(90deg, #2DD4BF, #A855F7); color: #fff; font-size: 14px; font-weight: 700; text-decoration: none;">Write a review</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FLOATING SUPPORT BUTTON -->
+  <a href="mailto:support@snagai.app" aria-label="Support" style="position: fixed; bottom: 28px; right: 28px; z-index: 50; display: flex; align-items: center; justify-content: center; width: 46px; height: 46px; border-radius: 50%; background: linear-gradient(135deg, #A855F7, #EC4899); color: #fff; text-decoration: none; box-shadow: 0 12px 26px -8px rgba(236,72,153,0.6);">
+    <span style="position: absolute; top: 4px; right: 4px; width: 7px; height: 7px; border-radius: 50%; background: #5EEAD4; animation: pulseGlow 1.6s ease-in-out infinite;"></span>
+    <svg width="27" height="27" viewBox="0 0 24 24" fill="none">
+      <path d="M12 2C6.48 2 2 6.02 2 11C2 13.42 3.06 15.62 4.8 17.24C4.69 18.24 4.31 19.66 3.5 20.86C3.42 20.97 3.5 21.13 3.64 21.11C5.31 20.86 6.84 20.14 7.85 19.56C9.11 19.98 10.52 20.22 12 20.22C17.52 20.22 22 16.2 22 11.22C22 6.24 17.52 2 12 2Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"></path>
+      <circle cx="8.2" cy="11" r="1.5" fill="currentColor"></circle>
+      <circle cx="12" cy="11" r="1.5" fill="currentColor"></circle>
+      <circle cx="15.8" cy="11" r="1.5" fill="currentColor"></circle>
+    </svg>
+  </a>
 
   <!-- FOOTER -->
   <footer style="position: relative; z-index: 2; border-top: 1px solid #171B26; padding: 44px 64px; max-width: 1280px; margin: 0 auto; box-sizing: border-box; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px;">
@@ -642,10 +1200,20 @@
       <a href="terms.html" style="font-size: 13.5px; color: #7A8194; text-decoration: none;">Terms</a>
       <a href="privacy.html" style="font-size: 13.5px; color: #7A8194; text-decoration: none;">Privacy</a>
       <a href="refund.html" style="font-size: 13.5px; color: #7A8194; text-decoration: none;">Refunds</a>
-      <a href="mailto:support@snagai.pro" style="font-size: 13.5px; color: #7A8194; text-decoration: none;">Contact</a>
+      <a href="mailto:support@snagai.app" style="font-size: 13.5px; color: #7A8194; text-decoration: none;">Contact</a>
     </div>
   </footer>
 </div>
+
+<script>
+  document.querySelectorAll('.faq-item').forEach(function(item) {
+    item.addEventListener('click', function() {
+      const wasOpen = item.classList.contains('open');
+      document.querySelectorAll('.faq-item').forEach(function(i) { i.classList.remove('open'); });
+      if (!wasOpen) item.classList.add('open');
+    });
+  });
+</script>
 
 </body>
 </html>
