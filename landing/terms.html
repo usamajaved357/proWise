@@ -4,98 +4,309 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Terms of Service — Snag AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap">
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0d1120;color:#f0eeea;line-height:1.7}
-nav{padding:18px 48px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.07);background:rgba(13,17,32,.9);position:sticky;top:0;z-index:10;backdrop-filter:blur(12px)}
-.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none}
-.nav-mark{width:28px;height:28px;background:linear-gradient(135deg,#b8860b,#e8c878);border-radius:7px;display:flex;align-items:center;justify-content:center}
-.nav-name{font-size:15px;font-weight:700;color:#f0eeea}
-.nav-back{font-size:13px;color:rgba(240,238,234,.4);text-decoration:none;transition:color .2s}
-.nav-back:hover{color:#c9a84c}
-.wrap{max-width:720px;margin:0 auto;padding:60px 48px 100px}
-h1{font-size:32px;font-weight:700;margin-bottom:8px;letter-spacing:-.02em}
-.meta{font-size:13px;color:rgba(240,238,234,.35);margin-bottom:48px}
-h2{font-size:17px;font-weight:700;color:#f0eeea;margin:36px 0 12px}
-p{font-size:14px;color:rgba(240,238,234,.65);margin-bottom:14px}
-ul{padding-left:20px;margin-bottom:14px}
-li{font-size:14px;color:rgba(240,238,234,.65);margin-bottom:6px}
-a{color:#c9a84c;text-decoration:none}
-a:hover{color:#e8c878}
-.note{background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);border-radius:10px;padding:16px 18px;font-size:13px;color:rgba(240,238,234,.6);margin:24px 0}
-hr{border:none;border-top:1px solid rgba(255,255,255,.07);margin:36px 0}
-@media(max-width:600px){.wrap{padding:40px 24px 80px}nav{padding:14px 20px}}
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #07090f; }
+  html { scroll-behavior: smooth; }
+  ::selection { background: rgba(168,85,247,0.35); }
+  a { color: #C084FC; }
+  a:hover { color: #E0C3FF; }
+  #sn-nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    width: 100%;
+    z-index: 100;
+    background: #07090f;
+    transition: transform 0.35s ease;
+    transform: translateY(0);
+  }
+  #sn-nav.sn-nav-hidden { transform: translateY(-100%); }
+  .tos-toc a:hover { color: #C084FC !important; background: rgba(168,85,247,0.08); border-left-color: rgba(168,85,247,0.5) !important; }
+  @media (max-width: 860px) {
+    header nav { display: none !important; }
+  }
+  @media (max-width: 900px) {
+    .tos-grid { grid-template-columns: 1fr !important; }
+    .tos-toc { position: static !important; max-height: none !important; flex-direction: row !important; flex-wrap: wrap; gap: 6px !important; margin-bottom: 32px; }
+    .tos-toc a { border-left: none !important; background: #10141F; border: 1px solid #1D2230 !important; }
+  }
 </style>
 </head>
 <body>
-<nav>
-  <a href="index.html" class="nav-logo">
-    <div class="nav-mark"><svg width="16" height="16" viewBox="0 0 32 32" fill="none"><path d="M10 20.5C10 20.5 11.5 22 14 22C16.5 22 18 20.5 18 18.5C18 16.5 16 15.5 14 14.5C12 13.5 10.5 12.5 10.5 10.5C10.5 8.5 12 7 14.5 7C17 7 18 8.5 18 8.5" stroke="white" stroke-width="2" stroke-linecap="round"/><path d="M16 9L22 9C22 9 24 11 22 13C24 13 26 15 24 17C25 17 26 19 24 21C25 21 25 23 23 24L16 24" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-    <span class="nav-name">Snag AI</span>
-  </a>
-  <a href="index.html" class="nav-back">← Back to home</a>
-</nav>
-<div class="wrap">
-  <h1>Terms of Service</h1>
-  <div class="meta">Last updated: May 1, 2026 · Effective immediately</div>
 
-  <div class="note">Our order process is conducted by our online reseller <strong>Paddle.com</strong>. Paddle is the Merchant of Record for all our orders and provides all customer service inquiries and handles returns.</div>
+<div style="background: #07090f; color: #E7E9F0; font-family: 'Manrope', sans-serif; position: relative;">
 
-  <h2>1. Acceptance of Terms</h2>
-  <p>By installing the Snag AI Chrome extension or purchasing a subscription, you agree to these Terms of Service. If you do not agree, do not use the service.</p>
-  <p>Snag AI is operated by Usama Javed ("we", "us", "our"). These terms govern your use of our Chrome extension, website, and related services.</p>
+  <!-- ambient background -->
+  <div style="position: fixed; inset: 0; pointer-events: none; z-index: 0; background:
+    radial-gradient(900px 600px at 10% -5%, rgba(45,212,191,0.09), transparent 60%),
+    radial-gradient(1000px 700px at 100% 10%, rgba(236,72,153,0.08), transparent 60%),
+    radial-gradient(1100px 800px at 50% 60%, rgba(168,85,247,0.06), transparent 60%);"></div>
 
-  <h2>2. Description of Service</h2>
-  <p>Snag AI is an AI-powered Chrome extension that generates customised Upwork proposal drafts based on job descriptions and your profile. The service includes:</p>
-  <ul>
-    <li>Automated proposal generation using artificial intelligence</li>
-    <li>Profile and settings management</li>
-    <li>Usage tracking and subscription management</li>
-  </ul>
-  <p>Proposals are AI-generated drafts intended as a starting point. You are responsible for reviewing, editing, and deciding whether to submit any proposal generated by Snag AI.</p>
+  <!-- top background effect (matches homepage) -->
+  <div style="position: absolute; top: 0; left: 0; right: 0; height: 720px; pointer-events: none; z-index: 0; overflow: hidden;">
+    <div style="position: absolute; inset: 0; background-image: radial-gradient(rgba(94,234,212,0.14) 1px, transparent 1px); background-size: 34px 34px;
+      mask-image: radial-gradient(ellipse 900px 480px at 15% 0%, black, transparent 70%);
+      -webkit-mask-image: radial-gradient(ellipse 900px 480px at 15% 0%, black, transparent 70%);"></div>
+    <div style="position: absolute; top: -120px; left: -80px; width: 620px; height: 620px; border-radius: 50%; background: radial-gradient(circle, rgba(94,234,212,0.12), transparent 68%); filter: blur(70px);"></div>
+    <div style="position: absolute; top: 40px; right: -100px; width: 560px; height: 560px; border-radius: 50%; background: radial-gradient(circle, rgba(168,85,247,0.1), transparent 68%); filter: blur(70px);"></div>
+  </div>
 
-  <h2>3. Account and Email</h2>
-  <p>Snag AI uses your email address as your account identifier. By providing your email and subscribing, you confirm it is accurate and that you will use the same email in the extension to activate your subscription.</p>
+  <!-- NAV -->
+  <header id="sn-nav" data-screen-label="Nav">
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 9px 28px; box-sizing: border-box;">
+      <a href="index.html" style="display: flex; align-items: center; gap: 12px; text-decoration: none;">
+        <div style="position: relative; width: 36px; height: 36px; border-radius: 22%; overflow: hidden; flex-shrink: 0;">
+          <div style="position: absolute; inset: 0; background: #0d0a1a;"></div>
+          <div style="position: absolute; left: 50%; top: 50%; width: 78%; height: 78%; transform: translate(-50%,-50%); border-radius: 50%; mask-image: radial-gradient(circle, transparent 50%, black 56%, black 82%, transparent 86%); -webkit-mask-image: radial-gradient(circle, transparent 50%, black 56%, black 82%, transparent 86%); background: conic-gradient(from 200deg, #2DD4BF, #3B82F6 25%, #A855F7 55%, #EC4899 80%, #2DD4BF 100%);"></div>
+          <div style="position: absolute; left: 50%; top: 50%; width: 42%; height: 42%; transform: translate(-50%,-50%); border-radius: 50%; background: #000;"></div>
+        </div>
+        <span style="font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 700; letter-spacing: -0.01em; color: #F5F6FA;">Snag AI</span>
+      </a>
 
-  <h2>4. Subscriptions and Billing</h2>
-  <p>Snag AI offers monthly subscription plans billed through Paddle. By subscribing you authorise Paddle to charge your payment method on a recurring monthly basis.</p>
-  <ul>
-    <li><strong>Starter:</strong> $19/month — 150 proposals</li>
-    <li><strong>Pro:</strong> $39/month — 400 proposals</li>
-    <li><strong>Agency:</strong> $69/month — 900 proposals</li>
-  </ul>
-  <p>Proposal usage resets on the 1st of each calendar month. Unused proposals do not roll over. Subscriptions renew automatically unless cancelled before the renewal date.</p>
+      <nav style="display: flex; align-items: center; gap: 30px;">
+        <a href="index.html#features" style="font-size: 14px; font-weight: 600; color: #9199AB; text-decoration: none;">Features</a>
+        <a href="index.html#how-it-works" style="font-size: 14px; font-weight: 600; color: #9199AB; text-decoration: none;">How it works</a>
+        <a href="index.html#pricing" style="font-size: 14px; font-weight: 600; color: #9199AB; text-decoration: none;">Pricing</a>
+        <a href="index.html#faq" style="font-size: 14px; font-weight: 600; color: #9199AB; text-decoration: none;">FAQ</a>
+        <a href="index.html#reviews" style="font-size: 14px; font-weight: 600; color: #9199AB; text-decoration: none;">Reviews</a>
+      </nav>
 
-  <h2>5. Free Tier</h2>
-  <p>New users receive 2 free proposals with no payment required. After using both free proposals, a subscription is required to continue generating proposals.</p>
+      <div style="display: flex; align-items: center; gap: 14px;">
+        <a href="index.html" style="font-size: 14px; font-weight: 700; color: #C6CBDA; text-decoration: none;">Log in</a>
+        <a href="index.html" style="padding: 10px 20px; border-radius: 999px; background: linear-gradient(90deg, #2DD4BF, #A855F7); color: #fff; font-size: 13.5px; font-weight: 700; text-decoration: none; box-shadow: 0 8px 20px -8px rgba(168,85,247,0.5);">Add to Chrome</a>
+      </div>
+    </div>
+  </header>
+  <div id="sn-nav-spacer"></div>
 
-  <h2>6. Cancellation</h2>
-  <p>You may cancel your subscription at any time through your Paddle billing portal. Access continues until the end of the current billing period. No further charges will be made after cancellation.</p>
+  <!-- CONTENT -->
+  <section style="position: relative; z-index: 2; max-width: 1160px; margin: 0 auto; padding: 32px 40px 100px; box-sizing: border-box;">
+    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+      <span style="width: 38px; height: 38px; border-radius: 11px; background: rgba(168,85,247,0.18); display: flex; align-items: center; justify-content: center; color: #C084FC; flex-shrink: 0;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M8 3.5H6.5C5.67 3.5 5 4.17 5 5V19C5 19.83 5.67 20.5 6.5 20.5H17.5C18.33 20.5 19 19.83 19 19V8.5L13.5 3.5H8Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"></path><path d="M13 3.5V8.5H19" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"></path><path d="M8.5 12.5H15.5M8.5 15.5H15.5M8.5 9.5H10.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path></svg>
+      </span>
+      <span style="font-size: 12px; font-weight: 800; letter-spacing: 0.08em; color: #C084FC;">LEGAL</span>
+    </div>
+    <h1 style="font-family: 'Sora', sans-serif; font-size: 40px; font-weight: 700; letter-spacing: -0.02em; color: #FAFAFC; margin: 0 0 12px;">Terms of Service</h1>
+    <p style="font-size: 15px; color: #8B92A5; line-height: 1.7; margin: 0 0 40px;">Last updated June 2025 · Snag AI Chrome Extension</p>
 
-  <h2>7. Acceptable Use</h2>
-  <p>You agree not to:</p>
-  <ul>
-    <li>Use Snag AI to generate spam, misleading, or fraudulent proposals</li>
-    <li>Attempt to reverse engineer, decompile, or extract the source code of the extension or server</li>
-    <li>Share, resell, or transfer your subscription to another person</li>
-    <li>Use automated means to circumvent usage limits</li>
-    <li>Violate Upwork's Terms of Service through use of Snag AI</li>
-  </ul>
+    <div class="tos-grid" style="display: grid; grid-template-columns: 240px 1fr; gap: 56px; align-items: start;">
 
-  <h2>8. Intellectual Property</h2>
-  <p>The Snag AI extension, branding, and underlying code are owned by Usama Javed. Proposals generated by Snag AI using your profile data are yours to use as you see fit.</p>
+      <!-- Sidebar table of contents -->
+      <nav class="tos-toc" style="position: sticky; top: 84px; display: flex; flex-direction: column; gap: 2px; max-height: calc(100vh - 110px); overflow-y: auto;">
+        <a href="#acceptance" style="font-size: 13px; color: #9199AB; text-decoration: none; padding: 6px 10px; border-radius: 7px; border-left: 2px solid transparent;">1. Acceptance of Terms</a>
+        <a href="#definitions" style="font-size: 13px; color: #9199AB; text-decoration: none; padding: 6px 10px; border-radius: 7px; border-left: 2px solid transparent;">2. Definitions</a>
+        <a href="#description" style="font-size: 13px; color: #9199AB; text-decoration: none; padding: 6px 10px; border-radius: 7px; border-left: 2px solid transparent;">3. Description of Service</a>
+        <a href="#accounts" style="font-size: 13px; color: #9199AB; text-decoration: none; padding: 6px 10px; border-radius: 7px; border-left: 2px solid transparent;">4. User Accounts &amp; Eligibility</a>
+        <a href="#third-party" style="font-size: 13px; color: #9199AB; text-decoration: none; padding: 6px 10px; border-radius: 7px; border-left: 2px solid transparent;">5. Third-Party Services</a>
+        <a href="#subscriptions" style="font-size: 13px; color: #9199AB; text-decoration: none; padding: 6px 10px; border-radius: 7px; border-left: 2px solid transparent;">6. Subscriptions &amp; Payment</a>
+        <a href="#acceptable-use" style="font-size: 13px; color: #9199AB; text-decoration: none; padding: 6px 10px; border-radius: 7px; border-left: 2px solid transparent;">7. Acceptable Use</a>
+        <a href="#ai-content" style="font-size: 13px; color: #9199AB; text-decoration: none; padding: 6px 10px; border-radius: 7px; border-left: 2px solid transparent;">8. AI-Generated Content</a>
+        <a href="#data-privacy" style="font-size: 13px; color: #9199AB; text-decoration: none; padding: 6px 10px; border-radius: 7px; border-left: 2px solid transparent;">9. Data &amp; Privacy</a>
+        <a href="#ip" style="font-size: 13px; color: #9199AB; text-decoration: none; padding: 6px 10px; border-radius: 7px; border-left: 2px solid transparent;">10. Intellectual Property</a>
+        <a href="#availability" style="font-size: 13px; color: #9199AB; text-decoration: none; padding: 6px 10px; border-radius: 7px; border-left: 2px solid transparent;">11. Service Availability</a>
+        <a href="#termination" style="font-size: 13px; color: #9199AB; text-decoration: none; padding: 6px 10px; border-radius: 7px; border-left: 2px solid transparent;">12. Term &amp; Termination</a>
+        <a href="#warranties" style="font-size: 13px; color: #9199AB; text-decoration: none; padding: 6px 10px; border-radius: 7px; border-left: 2px solid transparent;">13. Disclaimer of Warranties</a>
+        <a href="#liability" style="font-size: 13px; color: #9199AB; text-decoration: none; padding: 6px 10px; border-radius: 7px; border-left: 2px solid transparent;">14. Limitation of Liability</a>
+        <a href="#indemnification" style="font-size: 13px; color: #9199AB; text-decoration: none; padding: 6px 10px; border-radius: 7px; border-left: 2px solid transparent;">15. Indemnification</a>
+        <a href="#export" style="font-size: 13px; color: #9199AB; text-decoration: none; padding: 6px 10px; border-radius: 7px; border-left: 2px solid transparent;">16. Export Control</a>
+        <a href="#force-majeure" style="font-size: 13px; color: #9199AB; text-decoration: none; padding: 6px 10px; border-radius: 7px; border-left: 2px solid transparent;">17. Force Majeure</a>
+        <a href="#governing-law" style="font-size: 13px; color: #9199AB; text-decoration: none; padding: 6px 10px; border-radius: 7px; border-left: 2px solid transparent;">18. Governing Law &amp; Disputes</a>
+        <a href="#general" style="font-size: 13px; color: #9199AB; text-decoration: none; padding: 6px 10px; border-radius: 7px; border-left: 2px solid transparent;">19. General Provisions</a>
+        <a href="#changes" style="font-size: 13px; color: #9199AB; text-decoration: none; padding: 6px 10px; border-radius: 7px; border-left: 2px solid transparent;">20. Changes to These Terms</a>
+        <a href="#contact" style="font-size: 13px; color: #9199AB; text-decoration: none; padding: 6px 10px; border-radius: 7px; border-left: 2px solid transparent;">21. Contact</a>
+      </nav>
 
-  <h2>9. Disclaimer of Warranties</h2>
-  <p>Snag AI is provided "as is" without warranties of any kind. We do not guarantee that proposals generated will result in job wins, responses, or any specific outcome on Upwork or any other platform.</p>
+      <!-- Main content -->
+      <div style="min-width: 0;">
+    <div style="background: rgba(168,85,247,0.08); border: 1px solid rgba(168,85,247,0.22); border-radius: 12px; padding: 16px 20px; font-size: 13.5px; color: #C6CBDA; line-height: 1.7; margin-bottom: 40px;">
+      Our order process is conducted by our online reseller <strong style="color: #F5F6FA;">Paddle.com</strong>. Paddle is the Merchant of Record for all our orders and provides all customer service inquiries and handles returns.
+    </div>
 
-  <h2>10. Limitation of Liability</h2>
-  <p>To the maximum extent permitted by law, Snag AI's total liability for any claims shall not exceed the amount you paid in the 30 days prior to the claim.</p>
+    <h2 id="acceptance" style="font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 700; color: #F5F6FA; margin: 36px 0 12px; scroll-margin-top: 84px;">1. Acceptance of Terms</h2>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;">By installing, accessing, or using the Snag AI Chrome Extension and associated services (collectively, the "Service"), you confirm that you are at least 18 years old, have the legal authority to enter into this agreement, and agree to be bound by these Terms of Service and our Privacy Policy. If you do not agree with any part of these terms, you must not use the Service. These terms apply to all users, including free-tier users and paid subscribers.</p>
 
-  <h2>11. Changes to Terms</h2>
-  <p>We may update these terms at any time. Continued use of the service after changes constitutes acceptance of the new terms.</p>
+    <h2 id="definitions" style="font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 700; color: #F5F6FA; margin: 36px 0 12px; scroll-margin-top: 84px;">2. Definitions</h2>
+    <ul style="padding-left: 20px; margin: 0 0 14px;">
+      <li style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin-bottom: 6px;"><strong style="color: #C6CBDA;">"Service"</strong> means the Snag AI Chrome Extension, its companion server/API, and any related features, updates, or documentation.</li>
+      <li style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin-bottom: 6px;"><strong style="color: #C6CBDA;">"User", "you", "your"</strong> means any individual who installs, accesses, or uses the Service.</li>
+      <li style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin-bottom: 6px;"><strong style="color: #C6CBDA;">"We", "us", "our", "Snag AI"</strong> means the operator of the Snag AI Chrome Extension and associated services.</li>
+      <li style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin-bottom: 6px;"><strong style="color: #C6CBDA;">"Content"</strong> means any cover letter, proposal draft, analysis, score, or other output generated by the Service.</li>
+      <li style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin-bottom: 6px;"><strong style="color: #C6CBDA;">"Third-Party Services"</strong> means any external platform or provider the Service integrates with or relies on, including Upwork, Anthropic, Paddle, and the Google Chrome Web Store.</li>
+    </ul>
 
-  <h2>12. Contact</h2>
-  <p>For questions about these terms, contact us at <a href="mailto:support@snagai.io">support@snagai.io</a></p>
+    <h2 id="description" style="font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 700; color: #F5F6FA; margin: 36px 0 12px; scroll-margin-top: 84px;">3. Description of Service</h2>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;">Snag AI is a browser extension that assists freelancers on the Upwork platform by providing AI-powered tools to improve their job application process. Specifically, the Service enables you to:</p>
+    <ul style="padding-left: 20px; margin: 0 0 14px;">
+      <li style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin-bottom: 6px;">Sync publicly available information from your Upwork profile page (when you explicitly initiate the sync action) including your name, professional title, job success score, hourly rate, tier badge, earnings history, skills, bio, employment history, languages, education, and portfolio items.</li>
+      <li style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin-bottom: 6px;">Read live job listing data from Upwork job pages you visit, including publicly visible statistics such as proposal counts, client hiring rates, client ratings, and job requirements, to calculate a win probability and profile match score.</li>
+      <li style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin-bottom: 6px;">Generate personalised AI cover letters and proposal drafts using the Anthropic Claude API, based on the combination of your synced profile data and the job listing you are viewing.</li>
+      <li style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin-bottom: 6px;">Receive AI-generated writing tips, job signal analysis, and screening question answers displayed within the extension panel.</li>
+    </ul>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;">The Service is a drafting and analysis tool only. It does not submit applications, send messages, interact with Upwork on your behalf, or perform any automated actions. All actions on the Upwork platform are taken solely by you. You are entirely responsible for reviewing, editing, and deciding whether to use any AI-generated content before submitting it.</p>
+
+    <h2 id="accounts" style="font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 700; color: #F5F6FA; margin: 36px 0 12px; scroll-margin-top: 84px;">4. User Accounts &amp; Eligibility</h2>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;">To access paid features, you must provide a valid email address and maintain an active subscription processed through Paddle. You are responsible for maintaining the confidentiality of your account credentials and for all activity that occurs under your account. You must notify us immediately at <a href="mailto:support@snagai.app">support@snagai.app</a> if you suspect any unauthorised use of your account.</p>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;">You represent that your use of Snag AI does not violate any applicable laws or regulations in your jurisdiction, including but not limited to employment laws, data protection laws, and any applicable platform terms. You must have an active Upwork account in good standing. Snag AI is not affiliated with, endorsed by, or officially connected to Upwork in any way.</p>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;">The Service is intended for use by individuals aged 18 or older. By using the Service, you represent and warrant that you meet this age requirement. We do not knowingly collect data from or provide the Service to anyone under 18.</p>
+
+    <h2 id="third-party" style="font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 700; color: #F5F6FA; margin: 36px 0 12px; scroll-margin-top: 84px;">5. Third-Party Services</h2>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;">The Service relies on and integrates with several independent third-party providers, each governed by its own terms and policies. Your use of these providers, whether directly or through the Service, is subject to their respective agreements, and we are not responsible for their acts, omissions, availability, or content:</p>
+    <ul style="padding-left: 20px; margin: 0 0 14px;">
+      <li style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin-bottom: 6px;"><strong style="color: #C6CBDA;">Upwork</strong> — the freelance marketplace the Service reads from and drafts proposals for. You must comply with Upwork's own Terms of Service and Community Guidelines at all times.</li>
+      <li style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin-bottom: 6px;"><strong style="color: #C6CBDA;">Anthropic (Claude API)</strong> — the AI provider used to generate cover letters, proposal drafts, and job/profile analysis. Generated Content is subject to the capabilities and limitations of Anthropic's models.</li>
+      <li style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin-bottom: 6px;"><strong style="color: #C6CBDA;">Paddle.com</strong> — our payment processor and Merchant of Record for all paid subscriptions, billing, invoicing, and refunds.</li>
+      <li style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin-bottom: 6px;"><strong style="color: #C6CBDA;">Google Chrome Web Store</strong> — the distribution channel through which the extension is installed and updated, governed by the Chrome Web Store Developer Program Policies.</li>
+    </ul>
+
+    <h2 id="subscriptions" style="font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 700; color: #F5F6FA; margin: 36px 0 12px; scroll-margin-top: 84px;">6. Subscriptions &amp; Payment</h2>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;">Snag AI offers free and paid subscription plans. All payments for paid plans are processed by Paddle, who acts as the Merchant of Record for all transactions. By subscribing to a paid plan, you authorise Paddle to charge the applicable fees to your chosen payment method on a recurring basis at the start of each billing period.</p>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;">Subscription fees are charged in advance. Your plan's proposal quota resets on your billing anniversary date, not the first of each month. Unused proposals do not roll over to the next billing period. We reserve the right to change pricing with reasonable notice — price changes will be communicated via the extension or email at least 14 days in advance and will apply to your next renewal.</p>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;">Upgrades take effect immediately, with charges prorated for the remainder of the billing period. Downgrades take effect at the next renewal. You may cancel your subscription at any time — your access continues until the end of the current paid period and you will not be charged again unless you resubscribe. Refund requests are handled by Paddle in accordance with our <a href="refund.html">Refund Policy</a>.</p>
+
+    <h2 id="acceptable-use" style="font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 700; color: #F5F6FA; margin: 36px 0 12px; scroll-margin-top: 84px;">7. Acceptable Use &amp; Prohibited Activities</h2>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;">You agree to use the Service only for its intended purpose of assisting with legitimate freelance job applications. You must not use Snag AI to:</p>
+    <ul style="padding-left: 20px; margin: 0 0 14px;">
+      <li style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin-bottom: 6px;">Submit proposals that misrepresent your qualifications, experience, skills, or identity in any material way.</li>
+      <li style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin-bottom: 6px;">Generate or submit content that is fraudulent, defamatory, harassing, discriminatory, or violates any applicable law.</li>
+      <li style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin-bottom: 6px;">Attempt to reverse engineer, decompile, disassemble, or extract the source code of the extension or its backend services.</li>
+      <li style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin-bottom: 6px;">Circumvent, disable, or interfere with subscription limits, security features, or access controls.</li>
+      <li style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin-bottom: 6px;">Share, sell, or transfer your account or subscription to another person.</li>
+      <li style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin-bottom: 6px;">Use automated scripts, bots, or any other means to access or interact with the Service beyond normal human use.</li>
+      <li style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin-bottom: 6px;">Violate the Terms of Service, Community Guidelines, or any other policies of Upwork or any other platform where you use content generated by Snag AI.</li>
+      <li style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin-bottom: 6px;">Upload, transmit, or introduce any virus, malware, or other harmful code to the Service.</li>
+    </ul>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;">We reserve the right to determine, in our sole discretion, what constitutes a violation of this acceptable use policy. Violations may result in immediate suspension or termination of your access without refund.</p>
+
+    <h2 id="ai-content" style="font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 700; color: #F5F6FA; margin: 36px 0 12px; scroll-margin-top: 84px;">8. AI-Generated Content</h2>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;">The cover letters, proposals, and other text generated by Snag AI are produced by a large language model (Anthropic's Claude) and are intended as drafts and starting points only. You acknowledge that AI-generated content may contain inaccuracies, may not reflect your actual experience or skills, and should always be reviewed and edited before use. Snag AI makes no representations about the accuracy, completeness, or suitability of generated content for any particular job application.</p>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;">You retain full ownership of any content you create by editing or building upon AI-generated drafts. Snag AI does not claim ownership of proposal content generated through the Service.</p>
+
+    <h2 id="data-privacy" style="font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 700; color: #F5F6FA; margin: 36px 0 12px; scroll-margin-top: 84px;">9. Data &amp; Privacy</h2>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;">Our collection, use, and storage of your data — including synced Upwork profile data, job page data, and account information — is described in full in our <a href="privacy.html">Privacy Policy</a>, which forms part of these Terms. By using the Service, you consent to the data practices described there.</p>
+
+    <h2 id="ip" style="font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 700; color: #F5F6FA; margin: 36px 0 12px; scroll-margin-top: 84px;">10. Intellectual Property</h2>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;">The Snag AI extension, including its code, design, interface, algorithms, branding, and documentation, is the exclusive property of Snag AI and is protected by copyright, trademark, trade secret, and other intellectual property laws. Nothing in these Terms grants you any right, title, or interest in the Service except for the limited licence to use it as described herein.</p>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;">You are granted a personal, non-exclusive, non-transferable, revocable licence to use the extension solely for your own freelancing activities in accordance with these Terms. This licence terminates immediately upon cancellation or termination of your account.</p>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;">If you submit feedback, suggestions, or feature requests to us, you grant Snag AI a perpetual, irrevocable, royalty-free licence to use, modify, and incorporate that feedback into the Service without any obligation to compensate you.</p>
+
+    <h2 id="availability" style="font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 700; color: #F5F6FA; margin: 36px 0 12px; scroll-margin-top: 84px;">11. Service Availability &amp; Modifications</h2>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;">We strive to keep Snag AI available at all times but do not guarantee uninterrupted access. The Service may be temporarily unavailable due to maintenance, updates, technical issues, or circumstances beyond our control including third-party API outages (e.g., the Anthropic Claude API). We are not liable for any losses caused by Service unavailability.</p>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;">We reserve the right to modify, update, or discontinue features of the Service at any time with or without notice. Material changes that significantly reduce core functionality will be communicated with reasonable notice. Continued use of the Service after modifications constitutes your acceptance of the changes.</p>
+
+    <h2 id="termination" style="font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 700; color: #F5F6FA; margin: 36px 0 12px; scroll-margin-top: 84px;">12. Term &amp; Termination</h2>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;">These Terms remain in effect for as long as you use the Service. You may stop using the Service and uninstall the extension at any time. If you have an active paid subscription, cancellation follows the process described in Section 6.</p>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;">We may suspend or terminate your access to the Service, with or without notice, if we reasonably believe you have violated these Terms, misused the Service, or exposed us or other users to legal liability. Sections of these Terms that by their nature should survive termination — including Intellectual Property, Disclaimer of Warranties, Limitation of Liability, and Indemnification — will continue to apply after your access ends.</p>
+
+    <h2 id="warranties" style="font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 700; color: #F5F6FA; margin: 36px 0 12px; scroll-margin-top: 84px;">13. Disclaimer of Warranties</h2>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;">The Service is provided "as is" and "as available" without any warranties of any kind, express or implied, including but not limited to warranties of merchantability, fitness for a particular purpose, non-infringement, or accuracy. We do not warrant that the Service will be error-free, that defects will be corrected, or that the Service or the servers that make it available are free of viruses or other harmful components. We do not guarantee any specific outcome — including job wins, client responses, or proposal performance — from using the Service. Use of the Service is at your own risk.</p>
+
+    <h2 id="liability" style="font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 700; color: #F5F6FA; margin: 36px 0 12px; scroll-margin-top: 84px;">14. Limitation of Liability</h2>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;">To the fullest extent permitted by applicable law, Snag AI, its owners, employees, and agents shall not be liable for any indirect, incidental, special, consequential, or punitive damages, including but not limited to loss of profits, loss of data, loss of business opportunities, missed job applications, account restrictions imposed by Upwork, or any other losses arising from your use of or inability to use the Service, even if we have been advised of the possibility of such damages.</p>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;">Our total cumulative liability to you for any claims arising under or related to these Terms shall not exceed the total amount you paid to Snag AI in the 90 days immediately preceding the event giving rise to the claim.</p>
+
+    <h2 id="indemnification" style="font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 700; color: #F5F6FA; margin: 36px 0 12px; scroll-margin-top: 84px;">15. Indemnification</h2>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;">You agree to indemnify, defend, and hold harmless Snag AI and its owners, officers, employees, and agents from and against any and all claims, damages, losses, costs, and expenses (including reasonable legal fees) arising from: (a) your use of the Service; (b) your violation of these Terms; (c) your violation of any third-party rights, including Upwork's Terms of Service; or (d) any content you submit, transmit, or make available through the Service.</p>
+
+    <h2 id="export" style="font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 700; color: #F5F6FA; margin: 36px 0 12px; scroll-margin-top: 84px;">16. Export Control &amp; Sanctions Compliance</h2>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;">You may not use the Service if you are located in, or a resident of, a country or region subject to comprehensive trade sanctions, or if you are listed on any government restricted-party list. You represent that you are not subject to such restrictions and agree to comply with all applicable export control and economic sanctions laws.</p>
+
+    <h2 id="force-majeure" style="font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 700; color: #F5F6FA; margin: 36px 0 12px; scroll-margin-top: 84px;">17. Force Majeure</h2>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;">We will not be liable for any failure or delay in performance resulting from causes beyond our reasonable control, including acts of God, natural disaster, war, terrorism, labour disputes, internet or utility failures, or outages of third-party services we depend on (including Upwork, Anthropic, Paddle, or Google Chrome infrastructure).</p>
+
+    <h2 id="governing-law" style="font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 700; color: #F5F6FA; margin: 36px 0 12px; scroll-margin-top: 84px;">18. Governing Law &amp; Dispute Resolution</h2>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;">These Terms are governed by and construed in accordance with applicable law. Any disputes arising from or relating to these Terms or the Service shall first be attempted to be resolved through good-faith negotiation by contacting <a href="mailto:support@snagai.app">support@snagai.app</a>. If a dispute cannot be resolved informally within 30 days, it shall be submitted to binding arbitration or the courts of competent jurisdiction in the territory where Snag AI is registered, and each party will bear its own costs unless otherwise awarded.</p>
+
+    <h2 id="general" style="font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 700; color: #F5F6FA; margin: 36px 0 12px; scroll-margin-top: 84px;">19. General Provisions</h2>
+    <ul style="padding-left: 20px; margin: 0 0 14px;">
+      <li style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin-bottom: 6px;"><strong style="color: #C6CBDA;">Severability</strong> — if any provision of these Terms is found unenforceable, the remaining provisions will continue in full force and effect.</li>
+      <li style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin-bottom: 6px;"><strong style="color: #C6CBDA;">Entire Agreement</strong> — these Terms, together with our Privacy Policy and Refund Policy, constitute the entire agreement between you and Snag AI regarding the Service, superseding any prior agreements.</li>
+      <li style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin-bottom: 6px;"><strong style="color: #C6CBDA;">Assignment</strong> — you may not assign or transfer these Terms without our prior written consent. We may assign these Terms in connection with a merger, acquisition, or sale of assets.</li>
+      <li style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin-bottom: 6px;"><strong style="color: #C6CBDA;">Waiver</strong> — our failure to enforce any right or provision of these Terms will not be considered a waiver of that right or provision.</li>
+      <li style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin-bottom: 6px;"><strong style="color: #C6CBDA;">Notices</strong> — we may provide notices to you via the email address on your account or within the extension interface. Notices to us should be sent to <a href="mailto:support@snagai.app">support@snagai.app</a>.</li>
+    </ul>
+
+    <h2 id="changes" style="font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 700; color: #F5F6FA; margin: 36px 0 12px; scroll-margin-top: 84px;">20. Changes to These Terms</h2>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;">We may revise these Terms from time to time. If we make material changes, we will update the "Last updated" date above and, where appropriate, notify you via the extension or email. Continued use of the Service after changes take effect constitutes your acceptance of the revised Terms.</p>
+
+    <h2 id="contact" style="font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 700; color: #F5F6FA; margin: 36px 0 12px; scroll-margin-top: 84px;">21. Contact</h2>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;">For any questions regarding these Terms of Service, please contact us at <a href="mailto:support@snagai.app">support@snagai.app</a>. We aim to respond to all enquiries within 2 business days.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer style="position: relative; z-index: 2; border-top: 1px solid #171B26; padding: 44px 64px; max-width: 1280px; margin: 0 auto; box-sizing: border-box; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px;">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <div style="position: relative; width: 26px; height: 26px; border-radius: 22%; overflow: hidden; flex-shrink: 0;">
+        <div style="position: absolute; inset: 0; background: #0d0a1a;"></div>
+        <div style="position: absolute; left: 50%; top: 50%; width: 78%; height: 78%; transform: translate(-50%,-50%); border-radius: 50%; mask-image: radial-gradient(circle, transparent 50%, black 56%, black 82%, transparent 86%); -webkit-mask-image: radial-gradient(circle, transparent 50%, black 56%, black 82%, transparent 86%); background: conic-gradient(from 200deg, #2DD4BF, #3B82F6 25%, #A855F7 55%, #EC4899 80%, #2DD4BF 100%);"></div>
+        <div style="position: absolute; left: 50%; top: 50%; width: 42%; height: 42%; transform: translate(-50%,-50%); border-radius: 50%; background: #000;"></div>
+      </div>
+      <span style="font-size: 13.5px; color: #565D70;">© 2026 Snag AI. All rights reserved.</span>
+    </div>
+    <div style="display: flex; gap: 28px;">
+      <a href="terms.html" style="font-size: 13.5px; color: #7A8194; text-decoration: none;">Terms</a>
+      <a href="privacy.html" style="font-size: 13.5px; color: #7A8194; text-decoration: none;">Privacy</a>
+      <a href="refund.html" style="font-size: 13.5px; color: #7A8194; text-decoration: none;">Refunds</a>
+      <a href="mailto:support@snagai.app" style="font-size: 13.5px; color: #7A8194; text-decoration: none;">Contact</a>
+    </div>
+  </footer>
 </div>
+
+<script>
+  // Fixed header on this page stays always visible (no hide-on-scroll) —
+  // the sticky sidebar table of contents is positioned relative to it.
+  (function() {
+    var nav = document.getElementById('sn-nav');
+    var spacer = document.getElementById('sn-nav-spacer');
+    if (!nav || !spacer) return;
+
+    function syncSpacer() {
+      spacer.style.height = nav.getBoundingClientRect().height + 'px';
+    }
+    syncSpacer();
+    if (window.ResizeObserver) new ResizeObserver(syncSpacer).observe(nav);
+    window.addEventListener('resize', syncSpacer);
+    window.addEventListener('load', syncSpacer);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(syncSpacer);
+    setTimeout(syncSpacer, 200);
+    setTimeout(syncSpacer, 600);
+    setTimeout(syncSpacer, 1200);
+  })();
+
+  // Sidebar table of contents: highlight the section currently in view.
+  (function() {
+    var links = Array.prototype.slice.call(document.querySelectorAll('.tos-toc a'));
+    if (!links.length) return;
+    var sections = links.map(function(link) {
+      return document.getElementById(link.getAttribute('href').slice(1));
+    });
+
+    function setActive(id) {
+      links.forEach(function(link) {
+        var isActive = link.getAttribute('href') === '#' + id;
+        link.style.color = isActive ? '#C084FC' : '#9199AB';
+        link.style.background = isActive ? 'rgba(168,85,247,0.1)' : 'transparent';
+        link.style.borderLeftColor = isActive ? '#C084FC' : 'transparent';
+        link.style.fontWeight = isActive ? '700' : '400';
+      });
+    }
+
+    if (window.IntersectionObserver) {
+      var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) setActive(entry.target.id);
+        });
+      }, { rootMargin: '-90px 0px -70% 0px', threshold: 0 });
+      sections.forEach(function(section) { if (section) observer.observe(section); });
+    }
+
+    setActive(sections[0] ? sections[0].id : '');
+  })();
+</script>
+
 </body>
 </html>
