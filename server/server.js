@@ -17,6 +17,7 @@ const profileAuditRoute = require('./routes/profile-audit');
 const agencyAuditRoute   = require('./routes/agency-audit');
 const usageHistoryRoute  = require('./routes/usage-history');
 const reviewsRoute       = require('./routes/reviews');
+const supportRoute       = require('./routes/support');
 
 const app  = express();
 const PORT = process.env.PORT || 3000;
@@ -56,6 +57,7 @@ app.use('/profile-audit',   profileAuditRoute);
 app.use('/agency-audit',    agencyAuditRoute);
 app.use('/usage-history',   usageHistoryRoute);
 app.use('/reviews',         reviewsRoute);
+app.use('/support',         supportRoute);
 app.use(adminRoute); // handles /activate, /admin/grant, /admin/users
 
 app.listen(PORT, () => console.log(`Snag AI v7 on port ${PORT}`));

@@ -13,6 +13,13 @@
   .no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
   .no-scrollbar::-webkit-scrollbar { display: none; }
   .reviews-arrow:hover { transform: translateY(-50%) scale(1.08); box-shadow: 0 14px 30px -8px rgba(168,85,247,0.65); }
+  .msg-bot { position: relative; background: #151922; border: 1px solid #242938; border-radius: 15px 15px 15px 4px; }
+  .msg-bot::after { content: ''; position: absolute; left: -6px; bottom: 0; width: 12px; height: 12px; background: #151922; border-left: 1px solid #242938; border-bottom: 1px solid #242938; clip-path: polygon(100% 0, 100% 100%, 0 100%); }
+  .msg-user { position: relative; background: #6D5AE6; border-radius: 15px 15px 4px 15px; }
+  .msg-user::after { content: ''; position: absolute; right: -6px; bottom: 0; width: 12px; height: 12px; background: #6D5AE6; clip-path: polygon(0 0, 100% 100%, 0 100%); }
+  .support-chip { background: #151922; border: 1px solid #242938; color: #C6CBDA; }
+  .support-chip:hover { border-color: #2DD4BF; color: #5EEAD4; }
+  .support-chip.ghost { background: transparent; border: 1px dashed #2A3040; color: #7A8194; }
   html { scroll-behavior: smooth; }
   ::selection { background: rgba(168,85,247,0.35); }
   a { color: #C084FC; }
@@ -299,6 +306,226 @@
       track.addEventListener('touchend', () => pauseReviewsAutoScroll(2500), { passive: true });
     }
   });
+</script>
+<script>
+  const SUPPORT_TREE = {
+    billing: {
+      label: 'Billing & Subscription',
+      qas: [
+        { q: 'How do I cancel my subscription?', a: "All plans are month-to-month with no contract. Cancel from your billing page whenever you like and you'll keep access until the end of your current cycle." },
+        { q: 'Do unused cover letters roll over?', a: "No, each plan's monthly allowance resets on your billing date. Upgrade anytime if you're consistently running out before the cycle ends." },
+        { q: 'Can I get a refund?', a: "If you subscribed within the last 7 days and generated fewer than 5 proposals, you can request a full refund, no questions asked. See our <a href=\"refund.html\" target=\"_blank\">Refund Policy</a> for the full terms." }
+      ]
+    },
+    account: {
+      label: 'Account & Syncing',
+      qas: [
+        { q: 'How do I verify my account?', a: 'In Settings, enter the same email you use (or plan to use) on Paddle, then verify it by clicking the link sent to your inbox.' },
+        { q: 'How do I sync my profile?', a: 'A circular logo button appears bottom-right on your Upwork profile page. Click Sync and it reads your rate, JSS, skills, bio, history and portfolio in a single pass, it glows green when done.' },
+        { q: 'How many profiles can I add?', a: 'In Subscription, paste your Upwork profile URL, standard or custom URLs both work. Pro supports 1 profile, Agency supports 2, covering both your freelancer and agency profiles.' }
+      ]
+    },
+    proposals: {
+      label: 'Cover Letters & Proposals',
+      qas: [
+        { q: 'Will the cover letters sound like me?', a: 'Snag AI drafts using your real portfolio, rate and tone settings, then lets you refine in place with one-click commands like "shorter" or "more confident" before you send anything.' },
+        { q: 'What quick commands can I use to refine a draft?', a: 'Shorter, more confident, better hook, and add rate, right inside the cover letter box, no need to rewrite from scratch.' },
+        { q: 'How many revisions do I get per proposal?', a: 'Every plan includes 1 free revision per generated cover letter, on top of your monthly proposal allowance.' }
+      ]
+    },
+    audits: {
+      label: 'Job & Profile Audits',
+      qas: [
+        { q: 'What does a job audit actually check?', a: 'Competition level, client hire rate and spend history, and how your rate and skills stack up, then gives you a plain verdict on whether the job is worth a connect.' },
+        { q: 'What does a profile audit check?', a: 'Your profile is scored across 9 sections individually, title, bio, portfolio, credibility and more, with a literal copy-paste fix for anything that needs it. You can also export a real PDF report.' },
+        { q: 'Do audits work for agency profiles too?', a: "Yes. Every feature (cover letter writing, job audits, profile audits and smart alerts) works the same way whether you're applying as a freelancer or through an agency profile." }
+      ]
+    },
+    bug: { label: 'Report a Bug', qas: [] },
+    other: { label: 'Something else', qas: [] }
+  };
+
+  let supportPanelOpen   = false;
+  let supportStarted     = false;
+  let supportInputMode   = null; // null | 'email' | 'message'
+  let supportCollectedEmail = '';
+  let supportLastCategory  = null;
+
+  function toggleSupportWidget(forceOpen) {
+    supportPanelOpen = typeof forceOpen === 'boolean' ? forceOpen : !supportPanelOpen;
+    document.getElementById('support-panel').style.display = supportPanelOpen ? 'flex' : 'none';
+    document.getElementById('support-fab').style.display = supportPanelOpen ? 'none' : 'flex';
+    if (supportPanelOpen && !supportStarted) {
+      supportStarted = true;
+      addBotMessage("👋 Hi! I'm here to help with Snag AI. What do you need?", { chips: categoryChips() });
+    }
+  }
+
+  function categoryChips() {
+    return Object.keys(SUPPORT_TREE).map(key => ({ label: SUPPORT_TREE[key].label, onClick: () => handleCategoryChip(key) }));
+  }
+
+  function talkToHumanChip() {
+    return { label: '💬 Talk to a human', onClick: startAskEmail, variant: 'ghost' };
+  }
+
+  function scrollThreadToBottom() {
+    const thread = document.getElementById('support-thread');
+    thread.scrollTop = thread.scrollHeight;
+  }
+
+  function addUserMessage(text) {
+    const thread = document.getElementById('support-thread');
+    const row = document.createElement('div');
+    row.style.cssText = 'display: flex; justify-content: flex-end; margin-right: 5px;';
+    const bubble = document.createElement('div');
+    bubble.className = 'msg-user';
+    bubble.style.cssText = 'max-width: 78%; padding: 9px 13px; color: #fff; font-size: 12.5px; line-height: 1.5;';
+    bubble.textContent = text;
+    row.appendChild(bubble);
+    thread.appendChild(row);
+    scrollThreadToBottom();
+  }
+
+  function addBotMessage(html, opts) {
+    opts = opts || {};
+    const thread = document.getElementById('support-thread');
+    const typingRow = document.createElement('div');
+    typingRow.style.cssText = 'display: flex; justify-content: flex-start; margin-left: 5px;';
+    typingRow.innerHTML = `<div class="msg-bot" style="padding: 11px 15px; display: flex; gap: 4px; align-items: center;">
+      <span style="width: 6px; height: 6px; border-radius: 50%; background: #7A8194; animation: typingDot 1.2s ease-in-out infinite;"></span>
+      <span style="width: 6px; height: 6px; border-radius: 50%; background: #7A8194; animation: typingDot 1.2s ease-in-out infinite 0.2s;"></span>
+      <span style="width: 6px; height: 6px; border-radius: 50%; background: #7A8194; animation: typingDot 1.2s ease-in-out infinite 0.4s;"></span>
+    </div>`;
+    thread.appendChild(typingRow);
+    scrollThreadToBottom();
+
+    setTimeout(() => {
+      typingRow.remove();
+      const row = document.createElement('div');
+      row.style.cssText = 'display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin-left: 5px;';
+      const bubble = document.createElement('div');
+      bubble.className = 'msg-bot';
+      bubble.style.cssText = 'max-width: 88%; padding: 9px 13px; color: #E7E9F0; font-size: 12.5px; line-height: 1.55;';
+      bubble.innerHTML = html;
+      row.appendChild(bubble);
+
+      if (opts.chips && opts.chips.length) {
+        const chipRow = document.createElement('div');
+        chipRow.style.cssText = 'display: flex; flex-wrap: wrap; gap: 6px;';
+        opts.chips.forEach(chip => {
+          const btn = document.createElement('button');
+          btn.textContent = chip.label;
+          btn.className = 'support-chip' + (chip.variant === 'ghost' ? ' ghost' : '');
+          btn.style.cssText = `padding: 7px 12px; border-radius: 999px; font-size: 11.5px; font-weight: 600; font-family: 'Manrope', sans-serif; cursor: pointer; white-space: nowrap; transition: border-color 0.15s ease, color 0.15s ease;`;
+          btn.onclick = () => {
+            chipRow.querySelectorAll('button').forEach(b => { b.disabled = true; b.style.opacity = '0.5'; b.style.cursor = 'default'; });
+            chip.onClick();
+          };
+          chipRow.appendChild(btn);
+        });
+        row.appendChild(chipRow);
+      }
+
+      thread.appendChild(row);
+      scrollThreadToBottom();
+      if (opts.after) opts.after();
+    }, 550);
+  }
+
+  function handleCategoryChip(key) {
+    supportLastCategory = key;
+    const cat = SUPPORT_TREE[key];
+    addUserMessage(cat.label);
+    if (!cat.qas.length) { startAskEmail(); return; }
+    const chips = cat.qas.map((item, i) => ({ label: item.q, onClick: () => handleQuestionChip(key, i) }));
+    chips.push(talkToHumanChip());
+    addBotMessage('Here are some common questions on this topic:', { chips });
+  }
+
+  function handleQuestionChip(catKey, qIndex) {
+    const item = SUPPORT_TREE[catKey].qas[qIndex];
+    addUserMessage(item.q);
+    addBotMessage(item.a, {
+      after: () => addBotMessage('Did that answer your question?', {
+        chips: [
+          { label: '👍 Yes, thanks', onClick: () => handleFeedbackYes() },
+          { label: '📩 No, I need more help', onClick: startAskEmail }
+        ]
+      })
+    });
+  }
+
+  function handleFeedbackYes() {
+    addUserMessage('👍 Yes, thanks');
+    addBotMessage('Glad I could help! Anything else?', { chips: categoryChips() });
+  }
+
+  function startAskEmail() {
+    supportInputMode = 'email';
+    addBotMessage("Sure, what's your email so we can get back to you?", {
+      after: () => {
+        const bar = document.getElementById('support-input-bar');
+        const field = document.getElementById('support-input-field');
+        bar.style.display = 'flex';
+        field.placeholder = 'you@example.com';
+        field.type = 'email';
+        field.value = '';
+        field.focus();
+      }
+    });
+  }
+
+  function handleSupportInputSubmit() {
+    const field = document.getElementById('support-input-field');
+    const value = field.value.trim();
+    if (!value) return;
+
+    if (supportInputMode === 'email') {
+      if (!value.includes('@')) return;
+      supportCollectedEmail = value;
+      addUserMessage(value);
+      field.value = '';
+      supportInputMode = 'message';
+      addBotMessage("Thanks! Now tell me what's going on.", {
+        after: () => { field.type = 'text'; field.placeholder = 'Describe the issue…'; field.focus(); }
+      });
+      return;
+    }
+
+    if (supportInputMode === 'message') {
+      if (value.length < 5) return;
+      addUserMessage(value);
+      field.value = '';
+      document.getElementById('support-input-bar').style.display = 'none';
+      submitSupportRequest(supportCollectedEmail, value);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const field = document.getElementById('support-input-field');
+    if (field) field.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleSupportInputSubmit(); });
+  });
+
+  async function submitSupportRequest(email, message) {
+    const category = supportLastCategory ? SUPPORT_TREE[supportLastCategory].label : 'General';
+    addBotMessage('Sending this to our team…');
+
+    try {
+      const res  = await fetch(`${SNAG_API_URL}/support/contact`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, category, message })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Something went wrong.');
+      addBotMessage("Thanks! We'll get back to you at " + email + " soon. 📬");
+    } catch(e) {
+      addBotMessage(`${e.message} <span style="display:inline-block;margin-top:4px;"></span>`, {
+        chips: [{ label: 'Try again', onClick: () => { document.getElementById('support-input-bar').style.display = 'flex'; document.getElementById('support-input-field').focus(); } }]
+      });
+    }
+  }
 </script>
 </head>
 <body>
@@ -1266,16 +1493,46 @@
     </div>
   </section>
 
-  <!-- FLOATING SUPPORT BUTTON -->
-  <a href="mailto:support@snagai.pro" aria-label="Support" style="position: fixed; bottom: 28px; right: 28px; z-index: 50; display: flex; align-items: center; justify-content: center; width: 46px; height: 46px; border-radius: 50%; background: linear-gradient(135deg, #A855F7, #EC4899); color: #fff; text-decoration: none; box-shadow: 0 12px 26px -8px rgba(236,72,153,0.6);">
-    <span style="position: absolute; top: 4px; right: 4px; width: 7px; height: 7px; border-radius: 50%; background: #5EEAD4; animation: pulseGlow 1.6s ease-in-out infinite;"></span>
+  <!-- FLOATING SUPPORT WIDGET -->
+  <button id="support-fab" onclick="toggleSupportWidget()" aria-label="Support" style="position: fixed; bottom: 28px; right: 28px; z-index: 51; display: flex; align-items: center; justify-content: center; width: 46px; height: 46px; border-radius: 50%; background: linear-gradient(135deg, #2DD4BF, #A855F7); color: #fff; border: none; cursor: pointer; box-shadow: 0 12px 26px -8px rgba(45,212,191,0.45);">
+    <span style="position: absolute; top: 4px; right: 4px; width: 7px; height: 7px; border-radius: 50%; background: #34D399; animation: pulseGlow 1.6s ease-in-out infinite;"></span>
     <svg width="27" height="27" viewBox="0 0 24 24" fill="none">
       <path d="M12 2C6.48 2 2 6.02 2 11C2 13.42 3.06 15.62 4.8 17.24C4.69 18.24 4.31 19.66 3.5 20.86C3.42 20.97 3.5 21.13 3.64 21.11C5.31 20.86 6.84 20.14 7.85 19.56C9.11 19.98 10.52 20.22 12 20.22C17.52 20.22 22 16.2 22 11.22C22 6.24 17.52 2 12 2Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"></path>
       <circle cx="8.2" cy="11" r="1.5" fill="currentColor"></circle>
       <circle cx="12" cy="11" r="1.5" fill="currentColor"></circle>
       <circle cx="15.8" cy="11" r="1.5" fill="currentColor"></circle>
     </svg>
-  </a>
+  </button>
+
+  <div id="support-panel" style="position: fixed; bottom: 28px; right: 28px; z-index: 51; width: 304px; max-width: calc(100vw - 32px); height: 420px; max-height: calc(100vh - 100px); display: none; flex-direction: column; border-radius: 16px; background: #0B0E17; border: 1px solid #1D2230; box-shadow: 0 24px 60px -14px rgba(0,0,0,0.65); overflow: hidden;">
+    <div style="position: relative; padding: 14px 16px; flex-shrink: 0; background: #0d1120; border-bottom: 1px solid #1D2230; overflow: hidden;">
+      <div style="position: absolute; top: -60px; left: 30%; width: 220px; height: 140px; border-radius: 50%; background: radial-gradient(circle, rgba(45,212,191,0.16), transparent 70%); filter: blur(30px); pointer-events: none;"></div>
+      <div style="position: relative; display: flex; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 9px;">
+          <div style="position: relative; width: 32px; height: 32px; border-radius: 50%; background: #0d0a1a; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1px solid #242938;">
+            <div style="position: relative; width: 22px; height: 22px; border-radius: 22%; overflow: hidden;">
+              <div style="position: absolute; left: 50%; top: 50%; width: 78%; height: 78%; transform: translate(-50%,-50%); border-radius: 50%; mask-image: radial-gradient(circle, transparent 50%, black 56%, black 82%, transparent 86%); -webkit-mask-image: radial-gradient(circle, transparent 50%, black 56%, black 82%, transparent 86%); background: conic-gradient(from 200deg, #2DD4BF, #3B82F6 25%, #A855F7 55%, #EC4899 80%, #2DD4BF 100%);"></div>
+            </div>
+            <span style="position: absolute; bottom: -1px; right: -1px; width: 9px; height: 9px; border-radius: 50%; background: #34D399; border: 2px solid #0d1120;"></span>
+          </div>
+          <div>
+            <div style="font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 700; color: #F5F6FA;">Snag AI Support</div>
+            <div style="font-size: 10.5px; color: #7A8194;">Usually replies in a few hours</div>
+          </div>
+        </div>
+        <button onclick="toggleSupportWidget(false)" aria-label="Close" style="width: 24px; height: 24px; border-radius: 50%; background: rgba(239,68,68,0.12); border: none; color: #F87171; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M6 6L18 18M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"></path></svg>
+        </button>
+      </div>
+    </div>
+    <div id="support-thread" class="no-scrollbar" style="flex: 1; overflow-y: auto; padding: 14px 12px; display: flex; flex-direction: column; gap: 12px;"></div>
+    <div id="support-input-bar" style="display: none; align-items: center; gap: 7px; padding: 10px 12px; border-top: 1px solid #1D2230; flex-shrink: 0;">
+      <input id="support-input-field" type="text" placeholder="Type your message…" style="flex: 1; min-width: 0; background: #10141F; border: 1px solid #1D2230; border-radius: 999px; padding: 9px 13px; color: #E7E9F0; font-family: 'Manrope', sans-serif; font-size: 12.5px;">
+      <button id="support-input-send" onclick="handleSupportInputSubmit()" aria-label="Send" style="width: 32px; height: 32px; border-radius: 50%; border: none; background: linear-gradient(135deg, #2DD4BF, #A855F7); color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M4 20L21 12L4 4L4 10L15 12L4 14L4 20Z" fill="currentColor"></path></svg>
+      </button>
+    </div>
+  </div>
 
   <!-- FOOTER -->
   <footer style="position: relative; z-index: 2; border-top: 1px solid #171B26; padding: 44px 64px; max-width: 1280px; margin: 0 auto; box-sizing: border-box; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px;">

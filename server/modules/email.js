@@ -103,4 +103,36 @@ function sendReviewInviteEmail(to, link) {
   });
 }
 
-module.exports = { sendWelcomeEmail, sendMagicLinkEmail, sendReviewInviteEmail };
+function sendSupportRequestEmail(fromEmail, category, message) {
+  const apiKey = process.env.RESEND_API_KEY;
+  const to = process.env.SUPPORT_INBOX_EMAIL || 'support@snagai.pro';
+  if (!apiKey) { console.log(`[SUPPORT EMAIL SKIP] From:${fromEmail} Category:${category} Message:${message}`); return Promise.resolve(); }
+  const safeMessage = String(message).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+  const body = JSON.stringify({
+    from: 'Snag AI Support Widget <noreply@snagai.pro>',
+    to: [to],
+    reply_to: fromEmail,
+    subject: `Support request: ${category}`,
+    html: `
+<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:520px;margin:0 auto;padding:40px 20px;color:#1a1a1a">
+  <h1 style="font-size:19px;font-weight:700;margin:0 0 4px">New support request</h1>
+  <p style="color:#888;font-size:13px;margin:0 0 20px">via the landing page support widget</p>
+  <table style="width:100%;font-size:14px;margin-bottom:18px">
+    <tr><td style="color:#888;padding:4px 0;width:90px">From</td><td>${fromEmail}</td></tr>
+    <tr><td style="color:#888;padding:4px 0">Category</td><td>${category}</td></tr>
+  </table>
+  <div style="background:#f7f6f2;border-radius:12px;padding:18px 20px;font-size:14px;line-height:1.6">${safeMessage}</div>
+  <p style="font-size:12px;color:#aaa;margin:18px 0 0">Reply directly to this email to respond to ${fromEmail}.</p>
+</div>`
+  });
+  return new Promise(resolve => {
+    const req = https.request({
+      hostname: 'api.resend.com', path: '/emails', method: 'POST',
+      headers: { 'Authorization': `Bearer ${apiKey}`, 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) }
+    }, res => { let d=''; res.on('data',c=>d+=c); res.on('end',()=>{ console.log('Support request email sent:', res.statusCode, res.statusCode >= 300 ? d : ''); resolve(); }); });
+    req.on('error', e => { console.error('Support request email error:', e.message); resolve(); });
+    req.write(body); req.end();
+  });
+}
+
+module.exports = { sendWelcomeEmail, sendMagicLinkEmail, sendReviewInviteEmail, sendSupportRequestEmail };
