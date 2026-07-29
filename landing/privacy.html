@@ -3,108 +3,276 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Privacy Policy — Snag AI</title>
+<title>Privacy Policy | Snag AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap">
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0d1120;color:#f0eeea;line-height:1.7}
-nav{padding:18px 48px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid rgba(255,255,255,.07);background:rgba(13,17,32,.9);position:sticky;top:0;z-index:10;backdrop-filter:blur(12px)}
-.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none}
-.nav-mark{width:28px;height:28px;background:linear-gradient(135deg,#b8860b,#e8c878);border-radius:7px;display:flex;align-items:center;justify-content:center}
-.nav-name{font-size:15px;font-weight:700;color:#f0eeea}
-.nav-back{font-size:13px;color:rgba(240,238,234,.4);text-decoration:none;transition:color .2s}
-.nav-back:hover{color:#c9a84c}
-.wrap{max-width:720px;margin:0 auto;padding:60px 48px 100px}
-h1{font-size:32px;font-weight:700;margin-bottom:8px;letter-spacing:-.02em}
-.meta{font-size:13px;color:rgba(240,238,234,.35);margin-bottom:48px}
-h2{font-size:17px;font-weight:700;color:#f0eeea;margin:36px 0 12px}
-p{font-size:14px;color:rgba(240,238,234,.65);margin-bottom:14px}
-ul{padding-left:20px;margin-bottom:14px}
-li{font-size:14px;color:rgba(240,238,234,.65);margin-bottom:6px}
-a{color:#c9a84c;text-decoration:none}
-a:hover{color:#e8c878}
-.note{background:rgba(201,168,76,.08);border:1px solid rgba(201,168,76,.2);border-radius:10px;padding:16px 18px;font-size:13px;color:rgba(240,238,234,.6);margin:24px 0}
-@media(max-width:600px){.wrap{padding:40px 24px 80px}nav{padding:14px 20px}}
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #07090f; }
+  html { scroll-behavior: smooth; }
+  ::selection { background: rgba(168,85,247,0.35); }
+  a { color: #C084FC; }
+  a:hover { color: #E0C3FF; }
+  #sn-nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    width: 100%;
+    z-index: 100;
+    background: #07090f;
+    transition: transform 0.35s ease;
+    transform: translateY(0);
+  }
+  #sn-nav.sn-nav-hidden { transform: translateY(-100%); }
+  .tos-toc a:hover { color: #C084FC !important; background: rgba(168,85,247,0.08); border-left-color: rgba(168,85,247,0.5) !important; }
+  @media (max-width: 860px) {
+    header nav { display: none !important; }
+  }
+  @media (max-width: 900px) {
+    .tos-grid { grid-template-columns: 1fr !important; }
+    .tos-toc { position: static !important; max-height: none !important; flex-direction: row !important; flex-wrap: wrap; gap: 6px !important; margin-bottom: 32px; }
+    .tos-toc a { border-left: none !important; background: #10141F; border: 1px solid #1D2230 !important; }
+  }
 </style>
 </head>
 <body>
-<nav>
-  <a href="index.html" class="nav-logo">
-    <div class="nav-mark"><svg width="16" height="16" viewBox="0 0 32 32" fill="none"><path d="M10 20.5C10 20.5 11.5 22 14 22C16.5 22 18 20.5 18 18.5C18 16.5 16 15.5 14 14.5C12 13.5 10.5 12.5 10.5 10.5C10.5 8.5 12 7 14.5 7C17 7 18 8.5 18 8.5" stroke="white" stroke-width="2" stroke-linecap="round"/><path d="M16 9L22 9C22 9 24 11 22 13C24 13 26 15 24 17C25 17 26 19 24 21C25 21 25 23 23 24L16 24" stroke="white" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-    <span class="nav-name">Snag AI</span>
-  </a>
-  <a href="index.html" class="nav-back">← Back to home</a>
-</nav>
-<div class="wrap">
-  <h1>Privacy Policy</h1>
-  <div class="meta">Last updated: May 1, 2026</div>
 
-  <p>This Privacy Policy explains how Snag AI ("we", "us", "our") collects, uses, and protects your information when you use our Chrome extension and website.</p>
+<div style="background: #07090f; color: #E7E9F0; font-family: 'Manrope', sans-serif; position: relative;">
 
-  <h2>1. Information We Collect</h2>
-  <p><strong>Information you provide:</strong></p>
-  <ul>
-    <li>Email address (used to identify your account and subscription)</li>
-    <li>Profile data stored locally in your browser: name, title, skills, hourly rate, portfolio links, and extra context</li>
-    <li>Proposal settings: tone, length, always-include text</li>
-  </ul>
-  <p><strong>Information collected automatically:</strong></p>
-  <ul>
-    <li>Anonymous usage count (number of proposals generated) stored against your email or anonymous ID</li>
-    <li>Subscription plan and billing status (managed by Paddle)</li>
-    <li>Job page content from Upwork (title, description, skills, budget) — read only when you click Write Proposal, never stored</li>
-  </ul>
+  <!-- ambient background -->
+  <div style="position: fixed; inset: 0; pointer-events: none; z-index: 0; background:
+    radial-gradient(900px 600px at 10% -5%, rgba(45,212,191,0.09), transparent 60%),
+    radial-gradient(1000px 700px at 100% 10%, rgba(236,72,153,0.08), transparent 60%),
+    radial-gradient(1100px 800px at 50% 60%, rgba(168,85,247,0.06), transparent 60%);"></div>
 
-  <h2>2. How We Use Your Information</h2>
-  <ul>
-    <li>To generate personalised proposals using the job data and your profile</li>
-    <li>To track usage against your subscription limit</li>
-    <li>To verify your subscription status when you open the extension</li>
-    <li>To send transactional emails (subscription confirmation, plan activation) via Resend</li>
-  </ul>
+  <!-- top background effect (matches homepage) -->
+  <div style="position: absolute; top: 0; left: 0; right: 0; height: 720px; pointer-events: none; z-index: 0; overflow: hidden;">
+    <div style="position: absolute; inset: 0; background-image: radial-gradient(rgba(94,234,212,0.14) 1px, transparent 1px); background-size: 34px 34px;
+      mask-image: radial-gradient(ellipse 900px 480px at 15% 0%, black, transparent 70%);
+      -webkit-mask-image: radial-gradient(ellipse 900px 480px at 15% 0%, black, transparent 70%);"></div>
+    <div style="position: absolute; top: -120px; left: -80px; width: 620px; height: 620px; border-radius: 50%; background: radial-gradient(circle, rgba(94,234,212,0.12), transparent 68%); filter: blur(70px);"></div>
+    <div style="position: absolute; top: 40px; right: -100px; width: 560px; height: 560px; border-radius: 50%; background: radial-gradient(circle, rgba(168,85,247,0.1), transparent 68%); filter: blur(70px);"></div>
+  </div>
 
-  <h2>3. What We Do NOT Do</h2>
-  <ul>
-    <li>We do not sell your data to third parties</li>
-    <li>We do not store the content of Upwork job pages you visit</li>
-    <li>We do not store the proposals generated — they exist only in your browser</li>
-    <li>We do not use your data for advertising</li>
-    <li>We do not read your Upwork messages, applications, or account data</li>
-  </ul>
+  <!-- NAV -->
+  <header id="sn-nav" data-screen-label="Nav">
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 9px 28px; box-sizing: border-box;">
+      <a href="index.html" style="display: flex; align-items: center; gap: 12px; text-decoration: none;">
+        <div style="position: relative; width: 36px; height: 36px; border-radius: 22%; overflow: hidden; flex-shrink: 0;">
+          <div style="position: absolute; inset: 0; background: #0d0a1a;"></div>
+          <div style="position: absolute; left: 50%; top: 50%; width: 78%; height: 78%; transform: translate(-50%,-50%); border-radius: 50%; mask-image: radial-gradient(circle, transparent 50%, black 56%, black 82%, transparent 86%); -webkit-mask-image: radial-gradient(circle, transparent 50%, black 56%, black 82%, transparent 86%); background: conic-gradient(from 200deg, #2DD4BF, #3B82F6 25%, #A855F7 55%, #EC4899 80%, #2DD4BF 100%);"></div>
+          <div style="position: absolute; left: 50%; top: 50%; width: 42%; height: 42%; transform: translate(-50%,-50%); border-radius: 50%; background: #000;"></div>
+        </div>
+        <span style="font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 700; letter-spacing: -0.01em; color: #F5F6FA;">Snag AI</span>
+      </a>
 
-  <h2>4. Data Storage</h2>
-  <p>Your profile data (name, skills, settings) is stored locally in Chrome's sync storage — it stays in your browser and syncs across your Chrome devices if you're signed into Chrome.</p>
-  <p>Your email address, subscription plan, and usage count are stored in our secure database hosted on Supabase (PostgreSQL). This data is protected by industry-standard encryption.</p>
+      <nav style="display: flex; align-items: center; gap: 30px;">
+        <a href="index.html#features" style="font-size: 14px; font-weight: 600; color: #9199AB; text-decoration: none;">Features</a>
+        <a href="index.html#how-it-works" style="font-size: 14px; font-weight: 600; color: #9199AB; text-decoration: none;">How it works</a>
+        <a href="index.html#pricing" style="font-size: 14px; font-weight: 600; color: #9199AB; text-decoration: none;">Pricing</a>
+        <a href="index.html#faq" style="font-size: 14px; font-weight: 600; color: #9199AB; text-decoration: none;">FAQ</a>
+        <a href="index.html#reviews" style="font-size: 14px; font-weight: 600; color: #9199AB; text-decoration: none;">Reviews</a>
+      </nav>
 
-  <h2>5. Third-Party Services</h2>
-  <ul>
-    <li><strong>Paddle</strong> — Payment processing and subscription management. Paddle is the Merchant of Record. See <a href="https://www.paddle.com/legal/privacy" target="_blank">Paddle's Privacy Policy</a>.</li>
-    <li><strong>Anthropic Claude API</strong> — AI proposal generation. Job content and your profile are sent to Anthropic's API to generate proposals. See <a href="https://www.anthropic.com/privacy" target="_blank">Anthropic's Privacy Policy</a>.</li>
-    <li><strong>Supabase</strong> — Database hosting. See <a href="https://supabase.com/privacy" target="_blank">Supabase's Privacy Policy</a>.</li>
-    <li><strong>Resend</strong> — Transactional email delivery. See <a href="https://resend.com/privacy" target="_blank">Resend's Privacy Policy</a>.</li>
-  </ul>
+      <div style="display: flex; align-items: center; gap: 14px;">
+        <a href="index.html" style="font-size: 14px; font-weight: 700; color: #C6CBDA; text-decoration: none;">Log in</a>
+        <a href="index.html" style="padding: 7px 18px; border-radius: 999px; background: linear-gradient(90deg, #2DD4BF, #A855F7); color: #fff; font-size: 13.5px; font-weight: 700; text-decoration: none; box-shadow: 0 8px 20px -8px rgba(168,85,247,0.5); display: inline-block; line-height: 1.4;">Add to Chrome</a>
+      </div>
+    </div>
+  </header>
+  <div id="sn-nav-spacer"></div>
 
-  <h2>6. Chrome Extension Permissions</h2>
-  <p>Snag AI requests the following permissions:</p>
-  <ul>
-    <li><strong>activeTab / upwork.com</strong> — To read job descriptions on Upwork pages when you click Write Proposal</li>
-    <li><strong>storage</strong> — To save your profile and settings locally in Chrome</li>
-  </ul>
-  <p>We do not request access to your browsing history, other websites, or any data beyond what is described above.</p>
+  <!-- CONTENT -->
+  <section style="position: relative; z-index: 2; max-width: 1160px; margin: 0 auto; padding: 32px 40px 100px; box-sizing: border-box;">
+    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+      <span style="width: 38px; height: 38px; border-radius: 11px; background: rgba(168,85,247,0.18); display: flex; align-items: center; justify-content: center; color: #C084FC; flex-shrink: 0;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M12 3L19.5 5.8V11C19.5 15.6 16.5 19.7 12 21C7.5 19.7 4.5 15.6 4.5 11V5.8L12 3Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"></path><path d="M9.2 12.2L11 14L15 9.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+      </span>
+      <span style="font-size: 12px; font-weight: 800; letter-spacing: 0.08em; color: #C084FC;">LEGAL</span>
+    </div>
+    <h1 style="font-family: 'Sora', sans-serif; font-size: 40px; font-weight: 700; letter-spacing: -0.02em; color: #FAFAFC; margin: 0 0 12px;">Privacy Policy</h1>
+    <p style="font-size: 15px; color: #8B92A5; line-height: 1.7; margin: 0 0 40px;">Last updated June 2025 · Snag AI Chrome Extension</p>
 
-  <h2>7. Data Retention</h2>
-  <p>We retain your email, plan, and usage data for as long as your account is active. You may request deletion at any time by emailing <a href="mailto:support@snagai.io">support@snagai.io</a>. We will delete your data within 30 days of your request.</p>
+    <div class="tos-grid" style="display: grid; grid-template-columns: 240px 1fr; gap: 56px; align-items: start;">
 
-  <h2>8. Your Rights</h2>
-  <p>You have the right to access, correct, or delete your personal data. To exercise these rights, contact us at <a href="mailto:support@snagai.io">support@snagai.io</a>.</p>
+      <!-- Sidebar table of contents -->
+      <nav class="tos-toc" style="position: sticky; top: 84px; display: flex; flex-direction: column; gap: 2px; max-height: calc(100vh - 110px); overflow-y: auto;">
+        <a href="#introduction" style="font-size: 13px; color: #9199AB; text-decoration: none; padding: 6px 10px; border-radius: 7px; border-left: 2px solid transparent;">1. Introduction</a>
+        <a href="#data-collected" style="font-size: 13px; color: #9199AB; text-decoration: none; padding: 6px 10px; border-radius: 7px; border-left: 2px solid transparent;">2. Data We Collect</a>
+        <a href="#legal-basis" style="font-size: 13px; color: #9199AB; text-decoration: none; padding: 6px 10px; border-radius: 7px; border-left: 2px solid transparent;">3. Legal Basis (GDPR)</a>
+        <a href="#data-use" style="font-size: 13px; color: #9199AB; text-decoration: none; padding: 6px 10px; border-radius: 7px; border-left: 2px solid transparent;">4. How We Use Your Data</a>
+        <a href="#third-party" style="font-size: 13px; color: #9199AB; text-decoration: none; padding: 6px 10px; border-radius: 7px; border-left: 2px solid transparent;">5. Third-Party Services</a>
+        <a href="#storage" style="font-size: 13px; color: #9199AB; text-decoration: none; padding: 6px 10px; border-radius: 7px; border-left: 2px solid transparent;">6. Local Storage &amp; Cookies</a>
+        <a href="#retention" style="font-size: 13px; color: #9199AB; text-decoration: none; padding: 6px 10px; border-radius: 7px; border-left: 2px solid transparent;">7. Data Retention</a>
+        <a href="#transfers" style="font-size: 13px; color: #9199AB; text-decoration: none; padding: 6px 10px; border-radius: 7px; border-left: 2px solid transparent;">8. International Transfers</a>
+        <a href="#rights" style="font-size: 13px; color: #9199AB; text-decoration: none; padding: 6px 10px; border-radius: 7px; border-left: 2px solid transparent;">9. Your Rights</a>
+        <a href="#children" style="font-size: 13px; color: #9199AB; text-decoration: none; padding: 6px 10px; border-radius: 7px; border-left: 2px solid transparent;">10. Children's Privacy</a>
+        <a href="#changes" style="font-size: 13px; color: #9199AB; text-decoration: none; padding: 6px 10px; border-radius: 7px; border-left: 2px solid transparent;">11. Changes to This Policy</a>
+        <a href="#contact" style="font-size: 13px; color: #9199AB; text-decoration: none; padding: 6px 10px; border-radius: 7px; border-left: 2px solid transparent;">12. Contact Us</a>
+      </nav>
 
-  <h2>9. Children's Privacy</h2>
-  <p>Snag AI is not intended for users under 18. We do not knowingly collect data from minors.</p>
+      <!-- Main content -->
+      <div style="min-width: 0;">
+    <div style="background: rgba(168,85,247,0.08); border: 1px solid rgba(168,85,247,0.22); border-radius: 12px; padding: 16px 20px; font-size: 13.5px; color: #C6CBDA; line-height: 1.7; margin-bottom: 40px;">
+      We do not sell your data. We do not use it for advertising. Profile and job data is only sent off your device when you take an action, such as syncing your profile, running an audit, or generating a proposal.
+    </div>
 
-  <h2>10. Changes to This Policy</h2>
-  <p>We may update this policy from time to time. We will notify users of significant changes via email.</p>
+    <h2 id="introduction" style="font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 700; color: #F5F6FA; margin: 36px 0 12px; scroll-margin-top: 84px;">1. Introduction &amp; Data Controller</h2>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;">This Privacy Policy explains how Snag AI ("we", "us", "our") collects, uses, stores, and protects information when you use the Snag AI Chrome Extension and associated backend services. We are committed to protecting your privacy and handling your data with transparency and care.</p>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;">By using Snag AI, you acknowledge that you have read and understood this Privacy Policy. If you have questions or concerns, you may contact us at <a href="mailto:support@snagai.pro">support@snagai.pro</a> at any time.</p>
 
-  <h2>11. Contact</h2>
-  <p>Questions about this privacy policy? Contact us at <a href="mailto:support@snagai.io">support@snagai.io</a></p>
+    <h2 id="data-collected" style="font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 700; color: #F5F6FA; margin: 36px 0 12px; scroll-margin-top: 84px;">2. Data We Collect and How</h2>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;"><strong style="color: #C6CBDA;">Profile data (user-initiated sync)</strong>: When you click "Sync Profile" on your Upwork profile page (for either a freelancer or an agency profile), the extension reads publicly visible information from that page, including your display name, professional title, Job Success Score, hourly rate, Upwork tier badge, total earnings, total jobs completed, total hours worked, skills list, professional bio/overview, employment history, education, spoken languages, profile photo URL, availability status, and portfolio project titles, descriptions, skills, and attached links. For agency profiles, this additionally includes the agency description, services offered, featured clients, team member listings, and work history specific to the agency page. This data is stored exclusively in your browser's local Chrome storage on your device. It is transmitted to our backend server only when you generate a proposal, run a job audit, or run a profile audit, and only as part of that specific request.</p>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;"><strong style="color: #C6CBDA;">Account email address</strong>: When you add your email in Settings, it is stored in Chrome's sync storage (which Chrome may synchronise across your devices if you are signed into Chrome). Your email is sent to our backend to verify your subscription plan status and to track your usage count against your plan limit. It is not used for unsolicited marketing communications.</p>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;"><strong style="color: #C6CBDA;">Job listing data</strong>: When you visit an Upwork job page, the extension automatically reads publicly available job data from the page, including job title, description, budget, posted time, client statistics (hire rate, rating, spend, payment verification status), and current proposal/interview counts. This data is processed locally in your browser and is transmitted to our backend only when you click "Write Proposal" or run a job audit for that specific job.</p>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;"><strong style="color: #C6CBDA;">Job audit data</strong>: When you run a job audit, the extension reads additional competition and client-history signals from the job page (proposal range, interviewing/hire counts, client spend and verification status) and combines them with your synced profile to generate a scored verdict, concerns, and strengths via our backend.</p>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;"><strong style="color: #C6CBDA;">Profile audit data</strong>: When you run a profile audit, the extension sends your full synced profile (including portfolio items, certifications, testimonials, and employment history) to our backend to generate a scored, section-by-section review with specific rewrite suggestions. This is a user-triggered action, subject to your plan's monthly profile audit limit, and works the same way for both freelancer and agency profiles.</p>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;"><strong style="color: #C6CBDA;">Smart job alert filters</strong>: Your custom job-matching thresholds (minimum match score, hourly rate, client verification requirements, proposal/interview caps, and similar filters) are stored locally in your browser and used to evaluate job pages you visit. These filters are not transmitted to our servers.</p>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;"><strong style="color: #C6CBDA;">Usage count</strong>: We record the number of proposals, job audits, and profile audits you generate in each billing period to enforce your plan's monthly limits. This count is stored on our servers associated with your email address. We do not store the content of generated proposals or audit reports on our servers.</p>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;"><strong style="color: #C6CBDA;">Device ID</strong>: A random identifier is generated and stored locally in your browser to prevent abuse of free trial limits on a single device. This ID is not linked to your identity and is not transmitted to our servers.</p>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;"><strong style="color: #C6CBDA;">Technical usage data</strong>: We may log basic server-side request metadata (timestamps, error codes) for the purpose of debugging and maintaining service stability. We do not log the content of proposals or profile data beyond what is necessary to process requests.</p>
+
+    <h2 id="legal-basis" style="font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 700; color: #F5F6FA; margin: 36px 0 12px; scroll-margin-top: 84px;">3. Legal Basis for Processing (GDPR)</h2>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;">For users in the European Economic Area, United Kingdom, or Switzerland, we process your personal data on the following legal bases:</p>
+    <ul style="padding-left: 20px; margin: 0 0 14px;">
+      <li style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin-bottom: 6px;"><strong style="color: #C6CBDA;">Contract performance</strong>: processing your email and usage data is necessary to provide you with the subscription service you have purchased, verify your plan, and enforce usage limits.</li>
+      <li style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin-bottom: 6px;"><strong style="color: #C6CBDA;">Legitimate interests</strong>: we process technical metadata to maintain the security and stability of the Service. We do not override your fundamental rights in doing so.</li>
+      <li style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin-bottom: 6px;"><strong style="color: #C6CBDA;">Consent</strong>: profile, job audit, and profile audit data is processed based on your explicit action of clicking "Sync Profile", "Audit this job", or "Audit this profile". You can withdraw this by clearing the extension's storage at any time.</li>
+    </ul>
+
+    <h2 id="data-use" style="font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 700; color: #F5F6FA; margin: 36px 0 12px; scroll-margin-top: 84px;">4. How We Use Your Data</h2>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;">All data collected is used solely for the following purposes:</p>
+    <ul style="padding-left: 20px; margin: 0 0 14px;">
+      <li style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin-bottom: 6px;"><strong style="color: #C6CBDA;">Proposal generation</strong>: your profile data and the job listing data are combined and sent to the Anthropic Claude API to generate a personalised cover letter draft.</li>
+      <li style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin-bottom: 6px;"><strong style="color: #C6CBDA;">Job audits</strong>: job page signals and your profile data are sent to our backend and the Anthropic Claude API to produce a competition/fit verdict, concerns, and strengths before you spend a connect.</li>
+      <li style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin-bottom: 6px;"><strong style="color: #C6CBDA;">Profile audits</strong>: your full synced profile is sent to our backend and the Anthropic Claude API to produce a scored, section-by-section review with specific rewrite suggestions and a PDF export.</li>
+      <li style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin-bottom: 6px;"><strong style="color: #C6CBDA;">Smart job alerts</strong>: your filter thresholds are evaluated locally in your browser against job page data as you browse; this does not require any data to leave your device.</li>
+      <li style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin-bottom: 6px;"><strong style="color: #C6CBDA;">Plan verification</strong>: your email is used to look up your subscription status via Paddle's billing system to determine which features and usage limits apply to you.</li>
+      <li style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin-bottom: 6px;"><strong style="color: #C6CBDA;">Usage enforcement</strong>: we track how many proposals, job audits, and profile audits you have generated in the current billing period to enforce the limits of your plan.</li>
+    </ul>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;">We do not sell your data to any third party. We do not use your data for advertising purposes. We do not share your Upwork profile data or job data with any party other than Anthropic (for AI generation and analysis) and our hosting infrastructure providers.</p>
+
+    <h2 id="third-party" style="font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 700; color: #F5F6FA; margin: 36px 0 12px; scroll-margin-top: 84px;">5. Third-Party Services &amp; Data Sharing</h2>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;"><strong style="color: #C6CBDA;">Anthropic (Claude API)</strong>: When you generate a proposal or run an audit, your profile data and job description are transmitted to Anthropic's API to produce the AI response. Anthropic processes this data in accordance with their API usage policies. We have configured our API settings to opt out of data use for model training. Anthropic's privacy policy is available at anthropic.com/privacy.</p>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;"><strong style="color: #C6CBDA;">Paddle</strong>: All subscription payments are processed by Paddle, who acts as the Merchant of Record. Paddle collects and processes billing information, payment card details, and transaction records directly. We do not receive or store your payment card information. Paddle's privacy policy governs the handling of payment data and is available at paddle.com/legal/privacy.</p>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;"><strong style="color: #C6CBDA;">Supabase</strong>: User account records (email address, subscription plan, usage count, billing status) are stored in a Supabase PostgreSQL database, with encryption at rest and in transit.</p>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;"><strong style="color: #C6CBDA;">Render.com</strong>: Our backend API server is hosted on Render. Request processing occurs on Render's infrastructure.</p>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;">We do not share your data with any other third parties except as required by law (e.g., in response to a valid court order or legal process).</p>
+
+    <h2 id="storage" style="font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 700; color: #F5F6FA; margin: 36px 0 12px; scroll-margin-top: 84px;">6. Local Storage &amp; Cookies</h2>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;">Snag AI uses Chrome's built-in storage APIs exclusively, specifically <code style="color: #C6CBDA;">chrome.storage.local</code> and <code style="color: #C6CBDA;">chrome.storage.sync</code>. We do not set browser cookies. All profile data, portfolio items, settings, and job filters are stored locally in your browser and are not accessible to websites or other extensions.</p>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;"><code style="color: #C6CBDA;">chrome.storage.local</code> data stays on your device only. <code style="color: #C6CBDA;">chrome.storage.sync</code> data (your email address and basic settings) may be synchronised by Chrome to other devices where you are signed in, subject to Google's policies for Chrome sync data.</p>
+
+    <h2 id="retention" style="font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 700; color: #F5F6FA; margin: 36px 0 12px; scroll-margin-top: 84px;">7. Data Retention</h2>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;"><strong style="color: #C6CBDA;">Local data</strong>: Profile data, portfolio, settings, and filters stored in Chrome's local storage are retained until you clear the extension's storage or uninstall it.</p>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;"><strong style="color: #C6CBDA;">Server-side data</strong>: Account records (email, plan status, usage count) are retained for as long as your account is active and for a reasonable period thereafter for legal and accounting purposes. To delete your data, email <a href="mailto:support@snagai.pro">support@snagai.pro</a> with a deletion request. Our team will manually remove your personal data from our servers within 30 days, except where retention is required by law.</p>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;"><strong style="color: #C6CBDA;">Request logs</strong>: Basic server logs (timestamps, response codes) may be retained for up to 90 days for debugging and security purposes. Proposal and audit content is not stored on our servers.</p>
+
+    <h2 id="transfers" style="font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 700; color: #F5F6FA; margin: 36px 0 12px; scroll-margin-top: 84px;">8. International Data Transfers</h2>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;">Snag AI operates globally. When you use the Service, your data may be processed in countries outside your own, including the United States and EU member states. We ensure that any international data transfers are carried out with appropriate safeguards in place, including where applicable the use of standard contractual clauses or equivalent mechanisms recognised by applicable data protection law.</p>
+
+    <h2 id="rights" style="font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 700; color: #F5F6FA; margin: 36px 0 12px; scroll-margin-top: 84px;">9. Your Rights</h2>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;">Depending on your location, you may have the following rights regarding your personal data:</p>
+    <ul style="padding-left: 20px; margin: 0 0 14px;">
+      <li style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin-bottom: 6px;"><strong style="color: #C6CBDA;">Right of access</strong>: you may request a copy of the personal data we hold about you.</li>
+      <li style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin-bottom: 6px;"><strong style="color: #C6CBDA;">Right to rectification</strong>: you may request correction of inaccurate or incomplete data.</li>
+      <li style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin-bottom: 6px;"><strong style="color: #C6CBDA;">Right to erasure</strong>: you may request deletion of your personal data, subject to certain exceptions.</li>
+      <li style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin-bottom: 6px;"><strong style="color: #C6CBDA;">Right to restrict processing</strong>: you may request that we limit how we use your data in certain circumstances.</li>
+      <li style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin-bottom: 6px;"><strong style="color: #C6CBDA;">Right to data portability</strong>: you may request your data in a structured, machine-readable format.</li>
+      <li style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin-bottom: 6px;"><strong style="color: #C6CBDA;">Right to object</strong>: you may object to processing based on legitimate interests.</li>
+    </ul>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;">To exercise any of these rights, contact us at <a href="mailto:support@snagai.pro">support@snagai.pro</a>. We will respond within 30 days. You also have the right to lodge a complaint with the data protection authority in your jurisdiction if you believe your data has been processed unlawfully.</p>
+
+    <h2 id="children" style="font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 700; color: #F5F6FA; margin: 36px 0 12px; scroll-margin-top: 84px;">10. Children's Privacy</h2>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;">Snag AI is not directed at individuals under the age of 18. We do not knowingly collect personal data from anyone under 18. If we become aware that we have collected data from a person under 18 without appropriate consent, we will take immediate steps to delete that data.</p>
+
+    <h2 id="changes" style="font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 700; color: #F5F6FA; margin: 36px 0 12px; scroll-margin-top: 84px;">11. Changes to This Policy</h2>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;">We may update this Privacy Policy from time to time to reflect changes in our practices, technology, or legal requirements. When we make material changes, we will update the "Last updated" date at the top of this page and, where appropriate, notify you through the extension interface or by email. We encourage you to review this policy periodically.</p>
+
+    <h2 id="contact" style="font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 700; color: #F5F6FA; margin: 36px 0 12px; scroll-margin-top: 84px;">12. Contact Us</h2>
+    <p style="font-size: 14.5px; color: #9199AB; line-height: 1.75; margin: 0 0 14px;">If you have any questions, concerns, or requests regarding this Privacy Policy or how we handle your data, please contact us at <a href="mailto:support@snagai.pro">support@snagai.pro</a>. We take all privacy enquiries seriously and aim to respond within 2 business days.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer style="position: relative; z-index: 2; border-top: 1px solid #171B26; padding: 44px 64px; max-width: 1280px; margin: 0 auto; box-sizing: border-box; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px;">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <div style="position: relative; width: 26px; height: 26px; border-radius: 22%; overflow: hidden; flex-shrink: 0;">
+        <div style="position: absolute; inset: 0; background: #0d0a1a;"></div>
+        <div style="position: absolute; left: 50%; top: 50%; width: 78%; height: 78%; transform: translate(-50%,-50%); border-radius: 50%; mask-image: radial-gradient(circle, transparent 50%, black 56%, black 82%, transparent 86%); -webkit-mask-image: radial-gradient(circle, transparent 50%, black 56%, black 82%, transparent 86%); background: conic-gradient(from 200deg, #2DD4BF, #3B82F6 25%, #A855F7 55%, #EC4899 80%, #2DD4BF 100%);"></div>
+        <div style="position: absolute; left: 50%; top: 50%; width: 42%; height: 42%; transform: translate(-50%,-50%); border-radius: 50%; background: #000;"></div>
+      </div>
+      <span style="font-size: 13.5px; color: #565D70;">© 2026 Snag AI. All rights reserved.</span>
+    </div>
+    <div style="display: flex; gap: 28px;">
+      <a href="terms.html" style="font-size: 13.5px; color: #7A8194; text-decoration: none;">Terms</a>
+      <a href="privacy.html" style="font-size: 13.5px; color: #7A8194; text-decoration: none;">Privacy</a>
+      <a href="refund.html" style="font-size: 13.5px; color: #7A8194; text-decoration: none;">Refunds</a>
+      <a href="mailto:support@snagai.pro" style="font-size: 13.5px; color: #7A8194; text-decoration: none;">Contact</a>
+    </div>
+  </footer>
 </div>
+
+<script>
+  // Fixed header on this page stays always visible (no hide-on-scroll).
+  // The sticky sidebar table of contents is positioned relative to it.
+  (function() {
+    var nav = document.getElementById('sn-nav');
+    var spacer = document.getElementById('sn-nav-spacer');
+    if (!nav || !spacer) return;
+
+    function syncSpacer() {
+      spacer.style.height = nav.getBoundingClientRect().height + 'px';
+    }
+    syncSpacer();
+    if (window.ResizeObserver) new ResizeObserver(syncSpacer).observe(nav);
+    window.addEventListener('resize', syncSpacer);
+    window.addEventListener('load', syncSpacer);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(syncSpacer);
+    setTimeout(syncSpacer, 200);
+    setTimeout(syncSpacer, 600);
+    setTimeout(syncSpacer, 1200);
+  })();
+
+  // Sidebar table of contents: highlight the section currently in view.
+  (function() {
+    var links = Array.prototype.slice.call(document.querySelectorAll('.tos-toc a'));
+    if (!links.length) return;
+    var sections = links.map(function(link) {
+      return document.getElementById(link.getAttribute('href').slice(1));
+    });
+
+    function setActive(id) {
+      links.forEach(function(link) {
+        var isActive = link.getAttribute('href') === '#' + id;
+        link.style.color = isActive ? '#C084FC' : '#9199AB';
+        link.style.background = isActive ? 'rgba(168,85,247,0.1)' : 'transparent';
+        link.style.borderLeftColor = isActive ? '#C084FC' : 'transparent';
+        link.style.fontWeight = isActive ? '700' : '400';
+      });
+    }
+
+    if (window.IntersectionObserver) {
+      var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) setActive(entry.target.id);
+        });
+      }, { rootMargin: '-90px 0px -70% 0px', threshold: 0 });
+      sections.forEach(function(section) { if (section) observer.observe(section); });
+    }
+
+    function checkBottom() {
+      var atBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2;
+      if (atBottom) {
+        var last = sections[sections.length - 1];
+        if (last) setActive(last.id);
+      }
+    }
+    window.addEventListener('scroll', checkBottom, { passive: true });
+
+    setActive(sections[0] ? sections[0].id : '');
+  })();
+</script>
+
 </body>
 </html>
