@@ -51,17 +51,61 @@
 <script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
 <script>
   Paddle.Environment.set('sandbox');
-  Paddle.Initialize({ token: 'test_774f670464415caafd3f6b20160' });
+  Paddle.Initialize({
+    token: 'test_774f670464415caafd3f6b20160',
+    eventCallback: function(data) {
+      if (data.name === 'checkout.closed') closeCheckoutDrawer();
+    }
+  });
   const PRICE_IDS = {
     starter: 'pri_01kqatq4f1st85p5q2xgx792qj',
     pro:     'pri_01kqats15v2v1kcx355gw24s5j',
     agency:  'pri_01kqatwfp1fr3ch8xq32qpmdnt'
   };
+  const PLAN_LABELS = { starter: 'Basic', pro: 'Pro', agency: 'Agency' };
+  const PLAN_BADGE_STYLES = {
+    starter: { color: '#5EEAD4', background: 'rgba(94,234,212,0.14)' },
+    pro:     { color: '#C084FC', background: 'rgba(168,85,247,0.16)' },
+    agency:  { color: '#F5A9C7', background: 'rgba(236,72,153,0.14)' }
+  };
+
   function openPaddleCheckout(plan) {
+    const label = document.getElementById('checkout-plan-label');
+    const badge = PLAN_BADGE_STYLES[plan] || PLAN_BADGE_STYLES.pro;
+    label.textContent = PLAN_LABELS[plan] || '';
+    label.style.color = badge.color;
+    label.style.background = badge.background;
+    openCheckoutDrawer();
     Paddle.Checkout.open({
       items: [{ priceId: PRICE_IDS[plan], quantity: 1 }],
-      settings: { displayMode: 'overlay', theme: 'dark', locale: 'en' }
+      settings: {
+        displayMode: 'inline',
+        frameTarget: 'paddle-checkout-frame',
+        frameInitialHeight: '450',
+        frameStyle: 'width:100%;min-width:286px;background-color:transparent;border:none;',
+        theme: 'dark',
+        locale: 'en'
+      }
     });
+  }
+
+  function openCheckoutDrawer() {
+    document.getElementById('checkout-backdrop').style.opacity = '1';
+    document.getElementById('checkout-backdrop').style.pointerEvents = 'auto';
+    document.getElementById('checkout-drawer').style.transform = 'translateX(0)';
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeCheckoutDrawer() {
+    document.getElementById('checkout-backdrop').style.opacity = '0';
+    document.getElementById('checkout-backdrop').style.pointerEvents = 'none';
+    document.getElementById('checkout-drawer').style.transform = 'translateX(100%)';
+    document.body.style.overflow = '';
+  }
+
+  function closePaddleCheckout() {
+    Paddle.Checkout.close();
+    closeCheckoutDrawer();
   }
 </script>
 </head>
@@ -1230,6 +1274,26 @@
       <a href="mailto:support@snagai.pro" style="font-size: 13.5px; color: #7A8194; text-decoration: none;">Contact</a>
     </div>
   </footer>
+
+  <!-- CHECKOUT SIDEBAR -->
+  <div id="checkout-backdrop" onclick="closePaddleCheckout()" style="position: fixed; inset: 0; background: rgba(5,6,10,0.7); backdrop-filter: blur(2px); z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.3s ease;"></div>
+  <aside id="checkout-drawer" style="position: fixed; top: 0; right: 0; height: 100vh; width: 380px; max-width: 92vw; background: #0d1120; border-left: 1px solid #1D2230; box-shadow: -24px 0 60px rgba(0,0,0,0.55); z-index: 201; transform: translateX(100%); transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1); display: flex; flex-direction: column; overflow-y: auto;">
+    <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid #1D2230; flex-shrink: 0;">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <div style="position: relative; width: 22px; height: 22px; border-radius: 22%; overflow: hidden; flex-shrink: 0;">
+          <div style="position: absolute; inset: 0; background: #0d0a1a;"></div>
+          <div style="position: absolute; left: 50%; top: 50%; width: 78%; height: 78%; transform: translate(-50%,-50%); border-radius: 50%; mask-image: radial-gradient(circle, transparent 50%, black 56%, black 82%, transparent 86%); -webkit-mask-image: radial-gradient(circle, transparent 50%, black 56%, black 82%, transparent 86%); background: conic-gradient(from 200deg, #2DD4BF, #3B82F6 25%, #A855F7 55%, #EC4899 80%, #2DD4BF 100%);"></div>
+          <div style="position: absolute; left: 50%; top: 50%; width: 42%; height: 42%; transform: translate(-50%,-50%); border-radius: 50%; background: #000;"></div>
+        </div>
+        <span style="font-family: 'Sora', sans-serif; font-size: 13.5px; font-weight: 700; color: #F5F6FA;">Snag AI</span>
+        <span id="checkout-plan-label" style="font-size: 11px; font-weight: 700; letter-spacing: 0.02em; border-radius: 999px; padding: 4px 10px; line-height: 1;"></span>
+      </div>
+      <button onclick="closePaddleCheckout()" aria-label="Close checkout" onmouseover="this.style.background='rgba(239,68,68,0.22)'" onmouseout="this.style.background='rgba(239,68,68,0.12)'" style="width: 26px; height: 26px; border-radius: 50%; background: rgba(239,68,68,0.12); border: none; color: #F87171; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.15s ease;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M6 6L18 18M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"></path></svg>
+      </button>
+    </div>
+    <div class="paddle-checkout-frame" style="flex: 1; padding: 4px 8px 16px;"></div>
+  </aside>
 </div>
 
 <script>
