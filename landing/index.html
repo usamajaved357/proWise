@@ -50,6 +50,8 @@
 </style>
 <script src="https://cdn.paddle.com/paddle/v2/paddle.js"></script>
 <script>
+  const SNAG_API_URL = 'http://localhost:3000'; // Local host — set to https://prowise-4e5t.onrender.com in production
+
   Paddle.Environment.set('sandbox');
   Paddle.Initialize({
     token: 'test_774f670464415caafd3f6b20160',
@@ -107,6 +109,130 @@
     Paddle.Checkout.close();
     closeCheckoutDrawer();
   }
+
+  // ── Review flow ──────────────────────────────────────────────────────────
+  function showReviewToast(text, kind) {
+    const toast = document.getElementById('review-toast');
+    const icon  = document.getElementById('review-toast-icon');
+    const label = document.getElementById('review-toast-text');
+    const color = kind === 'error' ? '#F87171' : '#34D399';
+    icon.innerHTML = kind === 'error'
+      ? `<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="${color}" stroke-width="1.6"></circle><path d="M12 8V13" stroke="${color}" stroke-width="1.8" stroke-linecap="round"></path><circle cx="12" cy="16" r="1" fill="${color}"></circle></svg>`
+      : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="${color}" stroke-width="1.6"></circle><path d="M8 12.5L10.5 15L16 9" stroke="${color}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg>`;
+    label.textContent = text;
+    toast.style.opacity = '1';
+    toast.style.transform = 'translateX(-50%) translateY(0)';
+    toast.style.pointerEvents = 'auto';
+    clearTimeout(window.__reviewToastTimer);
+    window.__reviewToastTimer = setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateX(-50%) translateY(20px)';
+      toast.style.pointerEvents = 'none';
+    }, 4500);
+  }
+
+  function showReviewEmailInput() {
+    document.getElementById('review-cta-default').style.display = 'none';
+    document.getElementById('review-cta-form').style.display = 'block';
+    document.getElementById('review-email-input').focus();
+  }
+
+  async function submitReviewEmail() {
+    const input   = document.getElementById('review-email-input');
+    const errEl   = document.getElementById('review-email-error');
+    const submit  = document.getElementById('review-email-submit');
+    const email   = input.value.trim();
+    errEl.style.display = 'none';
+
+    if (!email || !email.includes('@')) {
+      errEl.textContent = 'Enter a valid email.';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    submit.disabled = true;
+    submit.textContent = 'Sending…';
+
+    try {
+      const res  = await fetch(`${SNAG_API_URL}/reviews/invite`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Something went wrong.');
+      showReviewToast('Check your inbox for the review link.', 'success');
+      input.value = '';
+      document.getElementById('review-cta-form').style.display = 'none';
+      document.getElementById('review-cta-default').style.display = 'block';
+    } catch(e) {
+      errEl.textContent = e.message;
+      errEl.style.display = 'block';
+    } finally {
+      submit.disabled = false;
+      submit.textContent = 'Send link';
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const emailInput = document.getElementById('review-email-input');
+    if (emailInput) emailInput.addEventListener('keydown', e => { if (e.key === 'Enter') submitReviewEmail(); });
+  });
+
+  // ── Live reviews ─────────────────────────────────────────────────────────
+  function reviewCardHTML(r) {
+    const stars = [1,2,3,4,5].map(i => `<span style="font-size: 13px; color: #F5B95E; opacity: ${i <= r.rating ? '1' : '0.3'};">★</span>`).join('');
+    const escapeHTML = s => String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    const safeText  = escapeHTML(r.text);
+    const safeName  = escapeHTML(r.name) || 'Verified Customer';
+    const safeTitle = escapeHTML(r.title) || 'Snag AI Customer';
+    const initials  = String(r.name || '?').trim().split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase() || '?';
+    return `
+      <div style="width: 320px; flex-shrink: 0; border-radius: 16px; background: #0B0E17; border: 1px solid #171B26; padding: 22px 24px;">
+        <div style="display: flex; align-items: center; gap: 7px; margin-bottom: 14px;">
+          <div style="display: flex; gap: 3px;">${stars}</div>
+          <span style="font-size: 12.5px; font-weight: 700; color: #C6CBDA;">${r.rating}.0</span>
+        </div>
+        <div style="font-size: 13.5px; color: #C6CBDA; line-height: 1.65; margin-bottom: 18px; min-height: 84px;">"${safeText}"</div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #2DD4BF, #A855F7); display: flex; align-items: center; justify-content: center; font-family: 'Sora', sans-serif; font-size: 12.5px; font-weight: 700; color: #fff; flex-shrink: 0;">${initials}</div>
+          <div>
+            <div style="font-size: 13.5px; font-weight: 700; color: #F5F6FA;">${safeName}</div>
+            <div style="font-size: 12px; color: #6B7284;">${safeTitle}</div>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  async function loadLiveReviews() {
+    const marqueeWrap = document.getElementById('reviews-marquee-wrap');
+    const emptyState  = document.getElementById('reviews-empty');
+    const track       = document.getElementById('reviews-track');
+    if (!track) return;
+
+    try {
+      const res     = await fetch(`${SNAG_API_URL}/reviews/public`);
+      const data    = await res.json();
+      const reviews = data.reviews || [];
+
+      if (!reviews.length) {
+        marqueeWrap.style.display = 'none';
+        emptyState.style.display  = 'block';
+        return;
+      }
+
+      // Double the set so the marquee loop stays seamless
+      const liveHTML = reviews.map(reviewCardHTML).join('');
+      track.innerHTML = liveHTML + liveHTML;
+      marqueeWrap.style.display = 'block';
+      emptyState.style.display  = 'none';
+    } catch(e) {
+      // Network hiccup — show the empty state rather than a broken/empty marquee
+      marqueeWrap.style.display = 'none';
+      emptyState.style.display  = 'block';
+    }
+  }
+  document.addEventListener('DOMContentLoaded', loadLiveReviews);
 </script>
 </head>
 <body>
@@ -1011,238 +1137,56 @@
   <section id="reviews" data-screen-label="Reviews" style="position: relative; z-index: 2; padding: 40px 0 100px; box-sizing: border-box; overflow: hidden; background: #090B12;">
     <div style="text-align: center; max-width: 560px; margin: 0 auto 48px; padding: 0 40px;">
       <h2 style="font-family: 'Sora', sans-serif; font-size: 42px; font-weight: 700; letter-spacing: -0.02em; color: #FAFAFC; margin: 0 0 14px;">Reviews</h2>
-      <p style="font-size: 15px; color: #8B92A5; margin: 0;">Trusted by 100+ satisfied freelancers and agencies, here's what they have to say about Snag AI.</p>
+      <p style="font-size: 15px; color: #8B92A5; margin: 0;">Real feedback from verified Snag AI customers.</p>
     </div>
 
-    <div style="position: relative; -webkit-mask-image: linear-gradient(90deg, transparent, black 8%, black 92%, transparent); mask-image: linear-gradient(90deg, transparent, black 8%, black 92%, transparent);">
-      <div style="display: flex; gap: 20px; width: max-content; animation: marquee 42s linear infinite;">
+    <div id="reviews-marquee-wrap" style="position: relative; -webkit-mask-image: linear-gradient(90deg, transparent, black 8%, black 92%, transparent); mask-image: linear-gradient(90deg, transparent, black 8%, black 92%, transparent); display: none;">
+      <div id="reviews-track" style="display: flex; gap: 20px; width: max-content; animation: marquee 42s linear infinite;"></div>
+    </div>
 
-        <!-- Review 1 -->
-        <div style="width: 320px; flex-shrink: 0; border-radius: 16px; background: #0B0E17; border: 1px solid #171B26; padding: 22px 24px;">
-          <div style="display: flex; align-items: center; gap: 7px; margin-bottom: 14px;">
-            <div style="display: flex; gap: 3px;">
-              <span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span>
-              <span style="font-size: 13px; color: #F5B95E; opacity: 0.5;">★</span>
-            </div>
-            <span style="font-size: 12.5px; font-weight: 700; color: #C6CBDA;">4.5</span>
-          </div>
-          <div style="font-size: 13.5px; color: #C6CBDA; line-height: 1.65; margin-bottom: 18px; min-height: 84px;">"Cut my proposal time from 20 minutes to a couple. The job audits have saved me from a few bad-fit clients too."</div>
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <div style="width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #2DD4BF, #3B82F6); display: flex; align-items: center; justify-content: center; font-family: 'Sora', sans-serif; font-size: 12.5px; font-weight: 700; color: #fff; flex-shrink: 0;">MT</div>
-            <div>
-              <div style="font-size: 13.5px; font-weight: 700; color: #F5F6FA;">Marcus T.</div>
-              <div style="font-size: 12px; color: #6B7284;">Full Stack Developer</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Review 2 -->
-        <div style="width: 320px; flex-shrink: 0; border-radius: 16px; background: #0B0E17; border: 1px solid #171B26; padding: 22px 24px;">
-          <div style="display: flex; align-items: center; gap: 7px; margin-bottom: 14px;">
-            <div style="display: flex; gap: 3px;">
-              <span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span>
-            </div>
-            <span style="font-size: 12.5px; font-weight: 700; color: #C6CBDA;">4.0</span>
-          </div>
-          <div style="font-size: 13.5px; color: #C6CBDA; line-height: 1.65; margin-bottom: 18px; min-height: 84px;">"Running both our freelancer and agency profiles through Snag AI keeps our proposals fairly consistent across the team."</div>
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <div style="width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #A855F7, #EC4899); display: flex; align-items: center; justify-content: center; font-family: 'Sora', sans-serif; font-size: 12.5px; font-weight: 700; color: #fff; flex-shrink: 0;">PS</div>
-            <div>
-              <div style="font-size: 13.5px; font-weight: 700; color: #F5F6FA;">Priya S.</div>
-              <div style="font-size: 12px; color: #6B7284;">Agency Owner</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Review 3 -->
-        <div style="width: 320px; flex-shrink: 0; border-radius: 16px; background: #0B0E17; border: 1px solid #171B26; padding: 22px 24px;">
-          <div style="display: flex; align-items: center; gap: 7px; margin-bottom: 14px;">
-            <div style="display: flex; gap: 3px;">
-              <span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span>
-              <span style="font-size: 13px; color: #F5B95E; opacity: 0.5;">★</span>
-            </div>
-            <span style="font-size: 12.5px; font-weight: 700; color: #C6CBDA;">4.5</span>
-          </div>
-          <div style="font-size: 13.5px; color: #C6CBDA; line-height: 1.65; margin-bottom: 18px; min-height: 84px;">"The profile audit rewrote my title and overview, got an interview in this niche not long after."</div>
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <div style="width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #F5B95E, #EC4899); display: flex; align-items: center; justify-content: center; font-family: 'Sora', sans-serif; font-size: 12.5px; font-weight: 700; color: #fff; flex-shrink: 0;">DK</div>
-            <div>
-              <div style="font-size: 13.5px; font-weight: 700; color: #F5F6FA;">Daniel K.</div>
-              <div style="font-size: 12px; color: #6B7284;">React Native Developer</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Review 4 -->
-        <div style="width: 320px; flex-shrink: 0; border-radius: 16px; background: #0B0E17; border: 1px solid #171B26; padding: 22px 24px;">
-          <div style="display: flex; align-items: center; gap: 7px; margin-bottom: 14px;">
-            <div style="display: flex; gap: 3px;">
-              <span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span>
-            </div>
-            <span style="font-size: 12.5px; font-weight: 700; color: #C6CBDA;">4.0</span>
-          </div>
-          <div style="font-size: 13.5px; color: #C6CBDA; line-height: 1.65; margin-bottom: 18px; min-height: 84px;">"Smart alerts mean I mostly see jobs that match my rate and skills. Still tweaking my thresholds a bit."</div>
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <div style="width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #5EEAD4, #A855F7); display: flex; align-items: center; justify-content: center; font-family: 'Sora', sans-serif; font-size: 12.5px; font-weight: 700; color: #fff; flex-shrink: 0;">AR</div>
-            <div>
-              <div style="font-size: 13.5px; font-weight: 700; color: #F5F6FA;">Aisha R.</div>
-              <div style="font-size: 12px; color: #6B7284;">UI/UX Designer</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Review 5 -->
-        <div style="width: 320px; flex-shrink: 0; border-radius: 16px; background: #0B0E17; border: 1px solid #171B26; padding: 22px 24px;">
-          <div style="display: flex; align-items: center; gap: 7px; margin-bottom: 14px;">
-            <div style="display: flex; gap: 3px;">
-              <span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span>
-              <span style="font-size: 13px; color: #F5B95E; opacity: 0.5;">★</span>
-            </div>
-            <span style="font-size: 12.5px; font-weight: 700; color: #C6CBDA;">4.5</span>
-          </div>
-          <div style="font-size: 13.5px; color: #C6CBDA; line-height: 1.65; margin-bottom: 18px; min-height: 84px;">"Pretty straightforward, the job audit told me to skip a job I would've wasted a connect on."</div>
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <div style="width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #3B82F6, #EC4899); display: flex; align-items: center; justify-content: center; font-family: 'Sora', sans-serif; font-size: 12.5px; font-weight: 700; color: #fff; flex-shrink: 0;">TW</div>
-            <div>
-              <div style="font-size: 13.5px; font-weight: 700; color: #F5F6FA;">Tom W.</div>
-              <div style="font-size: 12px; color: #6B7284;">Backend Engineer</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Review 6 -->
-        <div style="width: 320px; flex-shrink: 0; border-radius: 16px; background: #0B0E17; border: 1px solid #171B26; padding: 22px 24px;">
-          <div style="display: flex; align-items: center; gap: 7px; margin-bottom: 14px;">
-            <div style="display: flex; gap: 3px;">
-              <span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span>
-            </div>
-            <span style="font-size: 12.5px; font-weight: 700; color: #C6CBDA;">4.0</span>
-          </div>
-          <div style="font-size: 13.5px; color: #C6CBDA; line-height: 1.65; margin-bottom: 18px; min-height: 84px;">"Good value monthly. Our proposal close rate went up a bit in the first month of using it."</div>
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <div style="width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #EC4899, #F5B95E); display: flex; align-items: center; justify-content: center; font-family: 'Sora', sans-serif; font-size: 12.5px; font-weight: 700; color: #fff; flex-shrink: 0;">EV</div>
-            <div>
-              <div style="font-size: 13.5px; font-weight: 700; color: #F5F6FA;">Elena V.</div>
-              <div style="font-size: 12px; color: #6B7284;">Agency Lead</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- doubled set (1-6 again for seamless marquee loop) -->
-        <div style="width: 320px; flex-shrink: 0; border-radius: 16px; background: #0B0E17; border: 1px solid #171B26; padding: 22px 24px;">
-          <div style="display: flex; align-items: center; gap: 7px; margin-bottom: 14px;">
-            <div style="display: flex; gap: 3px;">
-              <span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span>
-              <span style="font-size: 13px; color: #F5B95E; opacity: 0.5;">★</span>
-            </div>
-            <span style="font-size: 12.5px; font-weight: 700; color: #C6CBDA;">4.5</span>
-          </div>
-          <div style="font-size: 13.5px; color: #C6CBDA; line-height: 1.65; margin-bottom: 18px; min-height: 84px;">"Cut my proposal time from 20 minutes to a couple. The job audits have saved me from a few bad-fit clients too."</div>
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <div style="width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #2DD4BF, #3B82F6); display: flex; align-items: center; justify-content: center; font-family: 'Sora', sans-serif; font-size: 12.5px; font-weight: 700; color: #fff; flex-shrink: 0;">MT</div>
-            <div>
-              <div style="font-size: 13.5px; font-weight: 700; color: #F5F6FA;">Marcus T.</div>
-              <div style="font-size: 12px; color: #6B7284;">Full Stack Developer</div>
-            </div>
-          </div>
-        </div>
-
-        <div style="width: 320px; flex-shrink: 0; border-radius: 16px; background: #0B0E17; border: 1px solid #171B26; padding: 22px 24px;">
-          <div style="display: flex; align-items: center; gap: 7px; margin-bottom: 14px;">
-            <div style="display: flex; gap: 3px;">
-              <span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span>
-            </div>
-            <span style="font-size: 12.5px; font-weight: 700; color: #C6CBDA;">4.0</span>
-          </div>
-          <div style="font-size: 13.5px; color: #C6CBDA; line-height: 1.65; margin-bottom: 18px; min-height: 84px;">"Running both our freelancer and agency profiles through Snag AI keeps our proposals fairly consistent across the team."</div>
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <div style="width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #A855F7, #EC4899); display: flex; align-items: center; justify-content: center; font-family: 'Sora', sans-serif; font-size: 12.5px; font-weight: 700; color: #fff; flex-shrink: 0;">PS</div>
-            <div>
-              <div style="font-size: 13.5px; font-weight: 700; color: #F5F6FA;">Priya S.</div>
-              <div style="font-size: 12px; color: #6B7284;">Agency Owner</div>
-            </div>
-          </div>
-        </div>
-
-        <div style="width: 320px; flex-shrink: 0; border-radius: 16px; background: #0B0E17; border: 1px solid #171B26; padding: 22px 24px;">
-          <div style="display: flex; align-items: center; gap: 7px; margin-bottom: 14px;">
-            <div style="display: flex; gap: 3px;">
-              <span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span>
-              <span style="font-size: 13px; color: #F5B95E; opacity: 0.5;">★</span>
-            </div>
-            <span style="font-size: 12.5px; font-weight: 700; color: #C6CBDA;">4.5</span>
-          </div>
-          <div style="font-size: 13.5px; color: #C6CBDA; line-height: 1.65; margin-bottom: 18px; min-height: 84px;">"The profile audit rewrote my title and overview, got an interview in this niche not long after."</div>
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <div style="width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #F5B95E, #EC4899); display: flex; align-items: center; justify-content: center; font-family: 'Sora', sans-serif; font-size: 12.5px; font-weight: 700; color: #fff; flex-shrink: 0;">DK</div>
-            <div>
-              <div style="font-size: 13.5px; font-weight: 700; color: #F5F6FA;">Daniel K.</div>
-              <div style="font-size: 12px; color: #6B7284;">React Native Developer</div>
-            </div>
-          </div>
-        </div>
-
-        <div style="width: 320px; flex-shrink: 0; border-radius: 16px; background: #0B0E17; border: 1px solid #171B26; padding: 22px 24px;">
-          <div style="display: flex; align-items: center; gap: 7px; margin-bottom: 14px;">
-            <div style="display: flex; gap: 3px;">
-              <span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span>
-            </div>
-            <span style="font-size: 12.5px; font-weight: 700; color: #C6CBDA;">4.0</span>
-          </div>
-          <div style="font-size: 13.5px; color: #C6CBDA; line-height: 1.65; margin-bottom: 18px; min-height: 84px;">"Smart alerts mean I mostly see jobs that match my rate and skills. Still tweaking my thresholds a bit."</div>
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <div style="width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #5EEAD4, #A855F7); display: flex; align-items: center; justify-content: center; font-family: 'Sora', sans-serif; font-size: 12.5px; font-weight: 700; color: #fff; flex-shrink: 0;">AR</div>
-            <div>
-              <div style="font-size: 13.5px; font-weight: 700; color: #F5F6FA;">Aisha R.</div>
-              <div style="font-size: 12px; color: #6B7284;">UI/UX Designer</div>
-            </div>
-          </div>
-        </div>
-
-        <div style="width: 320px; flex-shrink: 0; border-radius: 16px; background: #0B0E17; border: 1px solid #171B26; padding: 22px 24px;">
-          <div style="display: flex; align-items: center; gap: 7px; margin-bottom: 14px;">
-            <div style="display: flex; gap: 3px;">
-              <span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span>
-              <span style="font-size: 13px; color: #F5B95E; opacity: 0.5;">★</span>
-            </div>
-            <span style="font-size: 12.5px; font-weight: 700; color: #C6CBDA;">4.5</span>
-          </div>
-          <div style="font-size: 13.5px; color: #C6CBDA; line-height: 1.65; margin-bottom: 18px; min-height: 84px;">"Pretty straightforward, the job audit told me to skip a job I would've wasted a connect on."</div>
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <div style="width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #3B82F6, #EC4899); display: flex; align-items: center; justify-content: center; font-family: 'Sora', sans-serif; font-size: 12.5px; font-weight: 700; color: #fff; flex-shrink: 0;">TW</div>
-            <div>
-              <div style="font-size: 13.5px; font-weight: 700; color: #F5F6FA;">Tom W.</div>
-              <div style="font-size: 12px; color: #6B7284;">Backend Engineer</div>
-            </div>
-          </div>
-        </div>
-
-        <div style="width: 320px; flex-shrink: 0; border-radius: 16px; background: #0B0E17; border: 1px solid #171B26; padding: 22px 24px;">
-          <div style="display: flex; align-items: center; gap: 7px; margin-bottom: 14px;">
-            <div style="display: flex; gap: 3px;">
-              <span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span><span style="font-size: 13px; color: #F5B95E;">★</span>
-            </div>
-            <span style="font-size: 12.5px; font-weight: 700; color: #C6CBDA;">4.0</span>
-          </div>
-          <div style="font-size: 13.5px; color: #C6CBDA; line-height: 1.65; margin-bottom: 18px; min-height: 84px;">"Good value monthly. Our proposal close rate went up a bit in the first month of using it."</div>
-          <div style="display: flex; align-items: center; gap: 10px;">
-            <div style="width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #EC4899, #F5B95E); display: flex; align-items: center; justify-content: center; font-family: 'Sora', sans-serif; font-size: 12.5px; font-weight: 700; color: #fff; flex-shrink: 0;">EV</div>
-            <div>
-              <div style="font-size: 13.5px; font-weight: 700; color: #F5F6FA;">Elena V.</div>
-              <div style="font-size: 12px; color: #6B7284;">Agency Lead</div>
-            </div>
-          </div>
-        </div>
-
-      </div>
+    <div id="reviews-empty" style="text-align: center; padding: 0 40px; max-width: 420px; margin: 0 auto;">
+      <p style="font-size: 14px; color: #6B7284; margin: 0;">No reviews yet, be the first to share your experience.</p>
     </div>
 
     <div style="max-width: 640px; margin: 56px auto 0; padding: 0 40px; text-align: center;">
-      <div style="border-radius: 16px; background: #0B0E17; border: 1px solid #171B26; padding: 28px 32px;">
-        <h3 style="font-family: 'Sora', sans-serif; font-size: 19px; font-weight: 700; color: #F5F6FA; margin: 0 0 8px;">Using Snag AI? Share your experience</h3>
-        <p style="font-size: 14px; color: #8B92A5; margin: 0 0 20px; line-height: 1.6;">Your feedback helps other freelancers and agencies decide if it's right for them.</p>
-        <a href="mailto:hello@snagai.pro?subject=My%20Snag%20AI%20review" style="display: inline-block; padding: 12px 26px; border-radius: 999px; background: linear-gradient(90deg, #2DD4BF, #A855F7); color: #fff; font-size: 14px; font-weight: 700; text-decoration: none;">Write a review</a>
+      <div style="position: relative; border-radius: 18px; background: linear-gradient(165deg, rgba(45,212,191,0.07), rgba(11,14,23,0.4)); border: 1px solid rgba(94,234,212,0.22); padding: 34px 32px; overflow: hidden;">
+        <div style="position: absolute; top: -60px; left: 50%; transform: translateX(-50%); width: 240px; height: 160px; border-radius: 50%; background: radial-gradient(circle, rgba(45,212,191,0.14), transparent 70%); filter: blur(30px); pointer-events: none;"></div>
+
+        <div style="position: relative; display: flex; align-items: center; justify-content: center; gap: 3px; margin-bottom: 14px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="#F5B95E"><path d="M12 2.5L14.9 8.6L21.6 9.5L16.8 14.1L18 20.8L12 17.6L6 20.8L7.2 14.1L2.4 9.5L9.1 8.6L12 2.5Z"></path></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="#F5B95E"><path d="M12 2.5L14.9 8.6L21.6 9.5L16.8 14.1L18 20.8L12 17.6L6 20.8L7.2 14.1L2.4 9.5L9.1 8.6L12 2.5Z"></path></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="#F5B95E"><path d="M12 2.5L14.9 8.6L21.6 9.5L16.8 14.1L18 20.8L12 17.6L6 20.8L7.2 14.1L2.4 9.5L9.1 8.6L12 2.5Z"></path></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="#F5B95E"><path d="M12 2.5L14.9 8.6L21.6 9.5L16.8 14.1L18 20.8L12 17.6L6 20.8L7.2 14.1L2.4 9.5L9.1 8.6L12 2.5Z"></path></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="#F5B95E"><path d="M12 2.5L14.9 8.6L21.6 9.5L16.8 14.1L18 20.8L12 17.6L6 20.8L7.2 14.1L2.4 9.5L9.1 8.6L12 2.5Z"></path></svg>
+        </div>
+
+        <h3 style="position: relative; font-family: 'Sora', sans-serif; font-size: 21px; font-weight: 700; color: #F5F6FA; margin: 0 0 8px;">Using Snag AI? Share your experience</h3>
+        <p style="position: relative; font-size: 14px; color: #8B92A5; margin: 0 0 22px; line-height: 1.6; max-width: 460px; margin-left: auto; margin-right: auto;">Your feedback helps other freelancers and agencies decide if it's right for them.</p>
+
+        <div id="review-cta-default" style="position: relative;">
+          <button onclick="showReviewEmailInput()" style="border: none; cursor: pointer; padding: 13px 30px; border-radius: 999px; background: linear-gradient(90deg, #2DD4BF, #A855F7); color: #fff; font-size: 14px; font-weight: 700; font-family: 'Manrope', sans-serif; box-shadow: 0 10px 24px -10px rgba(45,212,191,0.45);">Write a review</button>
+        </div>
+
+        <div id="review-cta-form" style="position: relative; display: none; max-width: 360px; margin: 0 auto;">
+          <p style="font-size: 12.5px; color: #7A8194; margin: 0 0 10px;">Enter the email registered with your Snag AI subscription, we'll send you a link to write your review.</p>
+          <div style="display: flex; gap: 8px;">
+            <input id="review-email-input" type="email" placeholder="Email on your Snag AI plan" style="flex: 1; min-width: 0; background: #10141F; border: 1px solid #1D2230; border-radius: 999px; padding: 12px 16px; color: #E7E9F0; font-family: 'Manrope', sans-serif; font-size: 13.5px;">
+            <button id="review-email-submit" onclick="submitReviewEmail()" style="border: none; cursor: pointer; padding: 0 22px; border-radius: 999px; background: linear-gradient(90deg, #2DD4BF, #A855F7); color: #fff; font-size: 13.5px; font-weight: 700; font-family: 'Manrope', sans-serif; flex-shrink: 0;">Send link</button>
+          </div>
+          <div id="review-email-error" style="font-size: 12px; color: #F87171; margin-top: 8px; display: none;"></div>
+        </div>
+
+        <div style="position: relative; display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 18px;">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M12 2L19 5.5V11C19 15.4 16.1 19.2 12 20.5C7.9 19.2 5 15.4 5 11V5.5L12 2Z" stroke="#565D70" stroke-width="1.6" stroke-linejoin="round"></path></svg>
+          <span style="font-size: 11.5px; color: #565D70;">Reserved for verified Snag AI customers</span>
+        </div>
       </div>
+    </div>
+
+    <!-- REVIEW TOAST -->
+    <div id="review-toast" style="position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(20px); z-index: 300; display: flex; align-items: center; gap: 10px; padding: 13px 20px; border-radius: 12px; background: #10141F; border: 1px solid #1D2230; box-shadow: 0 16px 40px -12px rgba(0,0,0,0.5); opacity: 0; pointer-events: none; transition: opacity 0.25s ease, transform 0.25s ease; max-width: 90vw;">
+      <span id="review-toast-icon"></span>
+      <span id="review-toast-text" style="font-size: 13.5px; color: #E7E9F0;"></span>
     </div>
   </section>
 
