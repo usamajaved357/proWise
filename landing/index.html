@@ -10,6 +10,9 @@
 <style>
   * { box-sizing: border-box; }
   body { margin: 0; background: #07090f; }
+  .no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .reviews-arrow:hover { transform: translateY(-50%) scale(1.08); box-shadow: 0 14px 30px -8px rgba(168,85,247,0.65); }
   html { scroll-behavior: smooth; }
   ::selection { background: rgba(168,85,247,0.35); }
   a { color: #C084FC; }
@@ -30,7 +33,6 @@
   @keyframes pulseGlow { 0%,100% { opacity: 0.55; } 50% { opacity: 1; } }
   @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
   @keyframes scrollFade { 0% { opacity: 0; transform: translateY(0); } 15% { opacity: 1; } 85% { opacity: 1; } 100% { opacity: 0; transform: translateY(-6px); } }
-  @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
   @keyframes typingDot { 0%, 80%, 100% { opacity: 0.35; transform: translateY(0) scale(0.85); } 40% { opacity: 1; transform: translateY(-3px) scale(1); } }
   @keyframes msgDot { 0%, 15%, 100% { transform: translateY(0); opacity: 0.4; } 7% { transform: translateY(-4px); opacity: 1; } }
   @keyframes supportBounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
@@ -180,8 +182,15 @@
   });
 
   // ── Live reviews ─────────────────────────────────────────────────────────
+  function starIconHTML(filled) {
+    const path = 'M12 2.5L14.9 8.6L21.6 9.5L16.8 14.1L18 20.8L12 17.6L6 20.8L7.2 14.1L2.4 9.5L9.1 8.6L12 2.5Z';
+    return filled
+      ? `<svg width="14" height="14" viewBox="0 0 24 24" fill="#F5B95E"><path d="${path}"></path></svg>`
+      : `<svg width="14" height="14" viewBox="0 0 24 24" fill="rgba(245,185,94,0.12)" stroke="#F5B95E" stroke-width="1.4"><path d="${path}"></path></svg>`;
+  }
+
   function reviewCardHTML(r) {
-    const stars = [1,2,3,4,5].map(i => `<span style="font-size: 13px; color: #F5B95E; opacity: ${i <= r.rating ? '1' : '0.3'};">★</span>`).join('');
+    const stars = [1,2,3,4,5].map(i => starIconHTML(i <= r.rating)).join('');
     const escapeHTML = s => String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
     const safeText  = escapeHTML(r.text);
     const safeName  = escapeHTML(r.name) || 'Verified Customer';
@@ -221,18 +230,64 @@
         return;
       }
 
-      // Double the set so the marquee loop stays seamless
+      // Double the set so the auto-scroll loop can wrap seamlessly
       const liveHTML = reviews.map(reviewCardHTML).join('');
       track.innerHTML = liveHTML + liveHTML;
       marqueeWrap.style.display = 'block';
       emptyState.style.display  = 'none';
+      startReviewsAutoScroll();
     } catch(e) {
       // Network hiccup — show the empty state rather than a broken/empty marquee
       marqueeWrap.style.display = 'none';
       emptyState.style.display  = 'block';
     }
   }
-  document.addEventListener('DOMContentLoaded', loadLiveReviews);
+
+  let reviewsAutoScrollPaused  = false;
+  let reviewsAutoScrollStarted = false;
+  let reviewsResumeTimer       = null;
+
+  function pauseReviewsAutoScroll(resumeAfterMs) {
+    reviewsAutoScrollPaused = true;
+    clearTimeout(reviewsResumeTimer);
+    if (resumeAfterMs) {
+      reviewsResumeTimer = setTimeout(() => { reviewsAutoScrollPaused = false; }, resumeAfterMs);
+    }
+  }
+
+  function scrollReviews(direction) {
+    const track = document.getElementById('reviews-track');
+    if (!track) return;
+    pauseReviewsAutoScroll(3500); // let the user's click settle before auto-scroll resumes
+    track.scrollBy({ left: direction * 340, behavior: 'smooth' });
+  }
+
+  function startReviewsAutoScroll() {
+    if (reviewsAutoScrollStarted) return;
+    reviewsAutoScrollStarted = true;
+
+    function step() {
+      const track = document.getElementById('reviews-track');
+      if (track && !reviewsAutoScrollPaused) {
+        const halfWidth = track.scrollWidth / 2;
+        track.scrollLeft += 0.5;
+        if (track.scrollLeft >= halfWidth) track.scrollLeft -= halfWidth;
+      }
+      requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    loadLiveReviews();
+    const track = document.getElementById('reviews-track');
+    if (track) {
+      track.addEventListener('mouseenter', () => { clearTimeout(reviewsResumeTimer); reviewsAutoScrollPaused = true; });
+      track.addEventListener('mouseleave', () => { reviewsAutoScrollPaused = false; });
+      track.addEventListener('touchstart', () => pauseReviewsAutoScroll(), { passive: true });
+      track.addEventListener('touchend', () => pauseReviewsAutoScroll(2500), { passive: true });
+    }
+  });
 </script>
 </head>
 <body>
@@ -1140,8 +1195,14 @@
       <p style="font-size: 15px; color: #8B92A5; margin: 0;">Real feedback from verified Snag AI customers.</p>
     </div>
 
-    <div id="reviews-marquee-wrap" style="position: relative; -webkit-mask-image: linear-gradient(90deg, transparent, black 8%, black 92%, transparent); mask-image: linear-gradient(90deg, transparent, black 8%, black 92%, transparent); display: none;">
-      <div id="reviews-track" style="display: flex; gap: 20px; width: max-content; animation: marquee 42s linear infinite;"></div>
+    <div id="reviews-marquee-wrap" style="position: relative; display: none;">
+      <button id="reviews-prev" onclick="scrollReviews(-1)" aria-label="Previous reviews" class="reviews-arrow" style="position: absolute; top: 50%; left: 10px; transform: translateY(-50%); z-index: 5; width: 46px; height: 46px; border-radius: 50%; border: none; background: linear-gradient(135deg, #2DD4BF, #A855F7); color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 24px -8px rgba(45,212,191,0.5); transition: transform 0.15s ease, box-shadow 0.15s ease;">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M15 6L9 12L15 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+      </button>
+      <button id="reviews-next" onclick="scrollReviews(1)" aria-label="Next reviews" class="reviews-arrow" style="position: absolute; top: 50%; right: 10px; transform: translateY(-50%); z-index: 5; width: 46px; height: 46px; border-radius: 50%; border: none; background: linear-gradient(135deg, #2DD4BF, #A855F7); color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 24px -8px rgba(168,85,247,0.5); transition: transform 0.15s ease, box-shadow 0.15s ease;">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M9 6L15 12L9 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+      </button>
+      <div id="reviews-track" class="no-scrollbar" style="display: flex; gap: 20px; overflow-x: auto; padding: 4px 66px; -webkit-mask-image: linear-gradient(90deg, transparent, black 6%, black 94%, transparent); mask-image: linear-gradient(90deg, transparent, black 6%, black 94%, transparent);"></div>
     </div>
 
     <div id="reviews-empty" style="text-align: center; padding: 0 40px; max-width: 420px; margin: 0 auto;">
