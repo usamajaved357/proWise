@@ -22,11 +22,22 @@
     top: 0; left: 0; right: 0;
     width: 100%;
     z-index: 100;
-    background: #07090f;
-    transition: transform 0.35s ease;
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    border-bottom: 1px solid transparent;
+    transition: transform 0.35s ease, background 0.3s ease, backdrop-filter 0.3s ease;
     transform: translateY(0);
   }
   #sn-nav.sn-nav-hidden { transform: translateY(-100%); }
+  #sn-nav.sn-nav-scrolled {
+    background: rgba(7,9,15,0.72);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  #sn-nav-glow { position: absolute; inset: 0; z-index: -1; overflow: hidden; opacity: 0; transition: opacity 0.3s ease; pointer-events: none; }
+  #sn-nav.sn-nav-scrolled #sn-nav-glow { opacity: 1; }
   @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
   @keyframes floatSlow { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-14px); } }
   @keyframes spinSlow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
@@ -326,6 +337,11 @@
 
   <!-- NAV -->
   <header id="sn-nav" data-screen-label="Nav">
+    <div id="sn-nav-glow">
+      <div style="position: absolute; top: -220px; left: 50%; transform: translateX(-50%); width: 1000px; height: 420px; border-radius: 50%; background: radial-gradient(circle, rgba(168,85,247,0.35), transparent 65%); filter: blur(50px);"></div>
+      <div style="position: absolute; top: -180px; left: 10%; width: 420px; height: 340px; border-radius: 50%; background: radial-gradient(circle, rgba(45,212,191,0.25), transparent 68%); filter: blur(55px);"></div>
+      <div style="position: absolute; top: -180px; right: 10%; width: 420px; height: 340px; border-radius: 50%; background: radial-gradient(circle, rgba(236,72,153,0.22), transparent 68%); filter: blur(55px);"></div>
+    </div>
     <div style="display: flex; align-items: center; justify-content: space-between; padding: 9px 28px; box-sizing: border-box;">
       <a href="#" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;" style="display: flex; align-items: center; gap: 12px; text-decoration: none; cursor: pointer;">
         <div style="position: relative; width: 36px; height: 36px; border-radius: 22%; overflow: hidden; flex-shrink: 0;">
@@ -1338,13 +1354,11 @@
 
     window.addEventListener('scroll', function() {
       var y = window.scrollY;
-      if (y <= nav.offsetHeight) {
-        nav.classList.remove('sn-nav-hidden'); // always visible near the top
-      } else if (y > lastY) {
-        nav.classList.add('sn-nav-hidden'); // scrolling down: hide
-      } else if (y < lastY) {
-        nav.classList.remove('sn-nav-hidden'); // scrolling up: show immediately
-      }
+      var goingDown = y > lastY;
+      var hidden = goingDown && y > 120;
+      var scrolled = y > 8;
+      nav.classList.toggle('sn-nav-hidden', hidden);
+      nav.classList.toggle('sn-nav-scrolled', scrolled);
       lastY = y;
     }, { passive: true });
   })();
