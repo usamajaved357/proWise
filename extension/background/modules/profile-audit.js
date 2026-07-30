@@ -1,7 +1,6 @@
 // ── Profile Audit — background module ──────────────────────────────────────
 
-const SERVER = 'http://localhost:3000'; // Local Host
-// const SERVER = 'https://prowise-4e5t.onrender.com'; // Production
+import { SERVER_URL as SERVER } from '../../options/modules/config.js';
 
 export async function handleProfileAudit(msg) {
   const profile = msg.profile || {};

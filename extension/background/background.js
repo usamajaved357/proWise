@@ -79,14 +79,23 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       world: 'MAIN',
       func: async () => {
         try {
+          // window.__NUXT__.vuex is a one-time SSR snapshot — it's only ever
+          // populated for a route that did a full document load. Upwork is an
+          // SPA; landing on a job page via client-side nav from the feed/search
+          // (the overwhelming common case) never touches it at all, so polling
+          // it just waits on a value that can't change. Same bug already found
+          // and fixed for agency pages (see agency-data.js) by reading the live
+          // reactive store instead — applying that fix here too. Keep the SSR
+          // snapshot as a fallback in case a hard-reload landing has it before
+          // the live store finishes hydrating.
           let jd = null;
           for (let i = 0; i < 15; i++) {
-            jd = window.__NUXT__?.vuex?.jobDetails;
+            jd = window.$nuxt?.$store?.state?.jobDetails || window.__NUXT__?.vuex?.jobDetails;
             if (jd && jd.job) break;
             await new Promise(r => setTimeout(r, 300));
           }
           if (!jd) {
-            console.warn('[SnagAI] GET_JOB_DATA — window.__NUXT__.vuex.jobDetails never hydrated after 4.5s');
+            console.warn('[SnagAI] GET_JOB_DATA — neither window.$nuxt.$store.state.jobDetails nor window.__NUXT__.vuex.jobDetails hydrated after 4.5s');
             return null;
           }
 

@@ -43,9 +43,8 @@
 
 </div>
 
+<script src="config.js"></script>
 <script>
-  const API_URL = 'http://localhost:3000'; // Local host — set to https://prowise-4e5t.onrender.com in production
-
   const params = new URLSearchParams(window.location.search);
   const token  = params.get('token') || '';
   const email  = params.get('email') || '';
@@ -125,7 +124,7 @@
     btn.textContent = 'Submitting…';
 
     try {
-      const res  = await fetch(`${API_URL}/reviews/submit`, {
+      const res  = await fetch(`${SNAG_API_URL}/reviews/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, token, rating: selectedRating, text, name, title })
@@ -147,7 +146,7 @@
       return;
     }
     try {
-      const res  = await fetch(`${API_URL}/reviews/invite/check?token=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}`);
+      const res  = await fetch(`${SNAG_API_URL}/reviews/invite/check?token=${encodeURIComponent(token)}&email=${encodeURIComponent(email)}`);
       const data = await res.json();
       if (data.ok) renderForm();
       else renderError(data.error || 'This link is invalid or has expired.');

@@ -207,7 +207,14 @@ window.SnagAI.getJob = function() {
   if (invM) invitesSent = parseInt(invM[1]);
   const unM = pageText2.match(/Unanswered invites[:\s]+(\d+)/i);
   if (unM) unansweredInvites = parseInt(unM[1]);
-  const hirM = pageText2.match(/Hires?[:\s]+(\d+)/i) || pageText2.match(/(\d+)\s+hires?\b/i);
+  // Scoped to the "Activity on this job" portion only — pageText2 can also
+  // include "About the client", whose "X hires, Y active" line is the
+  // client's account-wide historical hire count, not this job's. Matching
+  // across both sections misreads that figure as "N people already hired
+  // for this job" and wrongly concludes an open job is filled/closed.
+  const clientSectionIdx = pageText2.search(/About the client/i);
+  const activityText = clientSectionIdx > -1 ? pageText2.slice(0, clientSectionIdx) : pageText2;
+  const hirM = activityText.match(/Hires?[:\s]+(\d+)/i) || activityText.match(/(\d+)\s+hires?\b/i);
   if (hirM) hiredCount = parseInt(hirM[1]);
 
   let timePosted = null, timePostedMinutes = null;
