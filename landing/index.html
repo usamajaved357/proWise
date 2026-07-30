@@ -6,7 +6,7 @@
 <title>Snag AI | Win more Upwork jobs with proposals that actually convert</title>
 <meta name="description" content="Snag AI audits jobs, audits your profile, and writes cover letters right on the page you apply from, for freelancer and agency profiles alike.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
 <style>
   * { box-sizing: border-box; }
   body { margin: 0; background: #07090f; }
@@ -25,6 +25,17 @@
   .support-option-row.agent { background: transparent; border: 1px solid #2A3040; color: #9199AB; align-self: center; }
   .support-option-row.agent:hover:not(:disabled) { border-color: #5EEAD4; color: #5EEAD4; }
   .emoji-tag { margin-right: 7px; }
+  @keyframes bubbleIn { from { opacity: 0; transform: translateY(8px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+  @keyframes launcherPop { from { opacity: 0; transform: translateY(16px) scale(0.94); } to { opacity: 1; transform: translateY(0) scale(1); } }
+  @keyframes msgDot { 0%, 15%, 100% { transform: translateY(0); opacity: 0.4; } 7% { transform: translateY(-4px); opacity: 1; } }
+  .msg-bot2 { position: relative; z-index: 0; background: #26262B; color: #E9EAEF; border-radius: 16px; font-family: 'Plus Jakarta Sans', sans-serif; animation: bubbleIn 0.22s ease both; }
+  .msg-bot2::before { content: ''; position: absolute; z-index: -1; bottom: -2px; left: -4px; width: 16px; height: 16px; background: #26262B; border-bottom-right-radius: 12px; }
+  .msg-bot2::after { content: ''; position: absolute; z-index: -1; bottom: -2px; left: -9px; width: 9px; height: 16px; background: #0B0E17; border-bottom-right-radius: 8px; }
+  .msg-user2 { position: relative; z-index: 0; background: #A855F7; color: #fff; border-radius: 16px; font-family: 'Plus Jakarta Sans', sans-serif; animation: bubbleIn 0.22s ease both; }
+  .msg-user2::before { content: ''; position: absolute; z-index: -1; bottom: -2px; right: -4px; width: 16px; height: 16px; background: #A855F7; border-bottom-left-radius: 12px; }
+  .msg-user2::after { content: ''; position: absolute; z-index: -1; bottom: -2px; right: -9px; width: 9px; height: 16px; background: #0B0E17; border-bottom-left-radius: 8px; }
+  .support-topic-row { display: flex; align-items: center; gap: 9px; width: 100%; box-sizing: border-box; text-align: left; padding: 6px 10px; border-radius: 999px; background: #12151F; border: 1px solid #1C2130; color: #EDEFF5; font-size: 12px; font-weight: 500; font-family: 'Plus Jakarta Sans', sans-serif; cursor: pointer; transition: border-color 0.15s ease, background 0.15s ease; }
+  .support-topic-row:hover { border-color: #2DD4BF; background: #151a28; }
   html { scroll-behavior: smooth; }
   ::selection { background: rgba(168,85,247,0.35); }
   a { color: #C084FC; }
@@ -313,6 +324,23 @@
   });
 </script>
 <script>
+  const SUPPORT_ICONS = {
+    billing: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="13" rx="2.5"></rect><circle cx="12" cy="12.5" r="3"></circle><path d="M6 6v-.5A1.5 1.5 0 0 1 7.5 4h9A1.5 1.5 0 0 1 18 5.5V6"></path></svg>',
+    account: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.6"></circle><path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6"></path></svg>',
+    proposals: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17.5V20h2.5L17.8 8.7a1.8 1.8 0 0 0-2.5-2.5L4 17.5z"></path><path d="M13.5 7.5l3 3"></path></svg>',
+    audits: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"></path><path d="M12 3l7 3v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"></path></svg>',
+    bug: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="9" width="8" height="9" rx="4"></rect><path d="M9.5 9a2.5 2.5 0 0 1 5 0M6 12H3.5M20.5 12H18M6.5 16l-2 1.5M17.5 16l2 1.5M6.5 9.5l-1.7-1.8M17.5 9.5l1.7-1.8"></path></svg>',
+    other: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-8.9 8.4 8.6 8.6 0 0 1-3.3-.7L3 20l1-4.8a8.4 8.4 0 0 1-.9-3.7A8.4 8.4 0 0 1 12 3a8.4 8.4 0 0 1 9 8.5z"></path></svg>'
+  };
+  const SUPPORT_ICON_COLORS = {
+    billing:   ['rgba(45,212,191,0.14)',  '#5EEAD4'],
+    account:   ['rgba(168,85,247,0.14)',  '#C084FC'],
+    proposals: ['rgba(236,72,153,0.14)',  '#F5A9C7'],
+    audits:    ['rgba(59,130,246,0.14)',  '#93C5FD'],
+    bug:       ['rgba(248,113,113,0.14)', '#FCA5A5'],
+    other:     ['rgba(139,146,171,0.14)', '#C5CAD9']
+  };
+
   const SUPPORT_TREE = {
     billing: {
       label: 'Billing & Subscription',
@@ -350,255 +378,231 @@
     other: { label: 'Something else', qas: [] }
   };
 
-  let supportPanelOpen   = false;
-  let supportStarted     = false;
-  let supportInputMode   = null; // null | 'email' | 'message'
+  let supportPanelOpen      = false;
+  let supportInputMode      = null; // null | 'email' | 'message'
   let supportCollectedEmail = '';
-  let supportLastCategory  = null;
+  let supportLastCategory   = null;
 
   function toggleSupportWidget(forceOpen) {
     supportPanelOpen = typeof forceOpen === 'boolean' ? forceOpen : !supportPanelOpen;
     document.getElementById('support-panel').style.display = supportPanelOpen ? 'flex' : 'none';
     document.getElementById('support-fab').style.display = supportPanelOpen ? 'none' : 'flex';
-    if (supportPanelOpen && !supportStarted) {
-      supportStarted = true;
-      addBotMessage("👋 Hi! I'm here to help with Snag AI. What do you need?", {
-        after: () => addBotOptionsList(null, categoryOptions())
-      });
+    if (supportPanelOpen) {
+      renderSupportTopicsList();
+      showSupportHome();
     }
   }
+  function closeSupportWidget() { toggleSupportWidget(false); }
 
-  function categoryOptions() {
-    return Object.keys(SUPPORT_TREE).map(key => ({ label: SUPPORT_TREE[key].label, onClick: () => handleCategoryChip(key) }));
+  function showSupportHome() {
+    document.getElementById('support-home-greeting').style.display = 'block';
+    document.getElementById('support-home-body').style.display = 'block';
+    const thread = document.getElementById('support-thread');
+    thread.style.display = 'none';
+    thread.innerHTML = '';
+    document.getElementById('support-search-field').value = '';
   }
 
-  function talkToHumanOption() {
-    return { label: '💬 Connect to agent', onClick: startAskEmail };
+  function showSupportChat() {
+    document.getElementById('support-home-body').style.display = 'none';
+    const thread = document.getElementById('support-thread');
+    thread.style.display = 'flex';
+    thread.innerHTML = '';
+  }
+
+  function renderSupportTopicsList() {
+    const list = document.getElementById('support-topics-list');
+    if (list.dataset.rendered) return;
+    list.dataset.rendered = '1';
+    list.innerHTML = Object.keys(SUPPORT_TREE).map(id => {
+      const [bg, color] = SUPPORT_ICON_COLORS[id];
+      return `<button class="support-topic-row" data-topic="${id}">
+        <span style="width: 24px; height: 24px; border-radius: 50%; background: ${bg}; color: ${color}; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">${SUPPORT_ICONS[id]}</span>
+        <span style="flex: 1;">${SUPPORT_TREE[id].label}</span>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#454C60" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><path d="M9 6l6 6-6 6"></path></svg>
+      </button>`;
+    }).join('');
+    list.querySelectorAll('button').forEach(btn => { btn.onclick = () => selectSupportTopic(btn.dataset.topic); });
   }
 
   function scrollThreadToBottom() {
     const thread = document.getElementById('support-thread');
     thread.scrollTop = thread.scrollHeight;
-    // Fonts/late layout can shift bubble height right after insertion — catch it a beat later too.
     requestAnimationFrame(() => { thread.scrollTop = thread.scrollHeight; });
     setTimeout(() => { thread.scrollTop = thread.scrollHeight; }, 80);
   }
 
-  // Clean, Intercom-style picker: a plain (no-bubble) caption followed by a
-  // vertical list of full-width rows — used for menu-level choices (topics,
-  // questions). Quick yes/no-style replies still use the smaller pill chips
-  // in addBotMessage, since those read as genuine inline replies, not a menu.
   function showTypingIndicator() {
     const thread = document.getElementById('support-thread');
-    const typingRow = document.createElement('div');
-    typingRow.style.cssText = 'display: flex; justify-content: flex-start; margin-left: 5px;';
-    typingRow.innerHTML = `<div class="msg-bot" style="padding: 11px 15px; display: flex; gap: 4px; align-items: center;">
-      <span style="width: 6px; height: 6px; border-radius: 50%; background: #7A8194; animation: typingDot 1.2s ease-in-out infinite;"></span>
-      <span style="width: 6px; height: 6px; border-radius: 50%; background: #7A8194; animation: typingDot 1.2s ease-in-out infinite 0.2s;"></span>
-      <span style="width: 6px; height: 6px; border-radius: 50%; background: #7A8194; animation: typingDot 1.2s ease-in-out infinite 0.4s;"></span>
+    const row = document.createElement('div');
+    row.style.cssText = 'display: flex; justify-content: flex-start;';
+    row.innerHTML = `<div style="background: #26262B; padding: 7px 11px; border-radius: 12px; display: flex; align-items: center; gap: 4px;">
+      <span style="width: 5px; height: 5px; border-radius: 50%; background: #6B7284; animation: msgDot 1.2s ease-in-out infinite;"></span>
+      <span style="width: 5px; height: 5px; border-radius: 50%; background: #6B7284; animation: msgDot 1.2s ease-in-out 0.15s infinite;"></span>
+      <span style="width: 5px; height: 5px; border-radius: 50%; background: #6B7284; animation: msgDot 1.2s ease-in-out 0.3s infinite;"></span>
     </div>`;
-    thread.appendChild(typingRow);
+    thread.appendChild(row);
     scrollThreadToBottom();
-    return typingRow;
-  }
-
-  function splitEmoji(label) {
-    const match = label.match(/^(\p{Emoji_Presentation}|\p{Extended_Pictographic})\s*(.*)$/u);
-    if (!match) return label;
-    return `<span class="emoji-tag">${match[1]}</span>${match[2]}`;
-  }
-
-  function addBotOptionsList(caption, options, primaryOption) {
-    const thread = document.getElementById('support-thread');
-    const typingRow = showTypingIndicator();
-
-    setTimeout(() => {
-      typingRow.remove();
-      const wrap = document.createElement('div');
-      wrap.style.cssText = 'display: flex; flex-direction: column; gap: 9px; margin-left: 5px;';
-
-      if (caption) {
-        const cap = document.createElement('div');
-        cap.style.cssText = 'font-size: 10.5px; color: #7A8194; padding: 0 2px;';
-        cap.textContent = caption;
-        wrap.appendChild(cap);
-      }
-
-      const allButtons = [];
-      const list = document.createElement('div');
-      list.style.cssText = 'display: flex; flex-direction: column; gap: 6px;';
-      options.forEach(opt => {
-        const row = document.createElement('button');
-        row.className = 'support-option-row';
-        row.style.cssText = "width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 9px 15px; border-radius: 999px; font-size: 11px; font-weight: 600; font-family: 'Manrope', sans-serif; cursor: pointer; text-align: left; line-height: 1.4; transition: border-color 0.15s ease, background 0.15s ease;";
-        row.innerHTML = `<span>${splitEmoji(opt.label)}</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" style="flex-shrink: 0; color: #565D70;"><path d="M9 6L15 12L9 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>`;
-        row.onclick = () => { allButtons.forEach(b => { b.disabled = true; b.style.opacity = '0.5'; b.style.cursor = 'default'; }); opt.onClick(); };
-        allButtons.push(row);
-        list.appendChild(row);
-      });
-      wrap.appendChild(list);
-
-      if (primaryOption) {
-        const primaryBtn = document.createElement('button');
-        primaryBtn.className = 'support-option-row agent';
-        primaryBtn.style.cssText = "display: inline-flex; align-items: center; padding: 6px 14px; border-radius: 999px; font-size: 10.5px; font-weight: 600; font-family: 'Manrope', sans-serif; cursor: pointer; margin-top: 4px;";
-        primaryBtn.innerHTML = splitEmoji(primaryOption.label);
-        primaryBtn.onclick = () => { allButtons.forEach(b => { b.disabled = true; b.style.opacity = '0.5'; b.style.cursor = 'default'; }); primaryBtn.disabled = true; primaryBtn.style.opacity = '0.7'; primaryOption.onClick(); };
-        allButtons.push(primaryBtn);
-        wrap.appendChild(primaryBtn);
-      }
-
-      thread.appendChild(wrap);
-      scrollThreadToBottom();
-    }, 550);
+    return row;
   }
 
   function addUserMessage(text) {
     const thread = document.getElementById('support-thread');
     const row = document.createElement('div');
-    row.style.cssText = 'display: flex; justify-content: flex-end; margin-right: 5px;';
+    row.style.cssText = 'display: flex; justify-content: flex-end; margin-right: 12px;';
     const bubble = document.createElement('div');
-    bubble.className = 'msg-user';
-    bubble.style.cssText = 'max-width: 78%; padding: 8px 12px; color: #fff; font-size: 11.5px; line-height: 1.5;';
+    bubble.className = 'msg-user2';
+    bubble.style.cssText = 'max-width: 78%; padding: 6px 10px 7px; font-size: 11.5px; line-height: 1.4; font-weight: 500;';
     bubble.textContent = text;
     row.appendChild(bubble);
     thread.appendChild(row);
     scrollThreadToBottom();
   }
 
-  function addBotMessage(html, opts) {
-    opts = opts || {};
+  function addBotMessage(text, then) {
     const thread = document.getElementById('support-thread');
     const typingRow = showTypingIndicator();
-
     setTimeout(() => {
       typingRow.remove();
       const row = document.createElement('div');
-      row.style.cssText = 'display: flex; flex-direction: column; align-items: flex-start; gap: 8px; margin-left: 5px;';
+      row.style.cssText = 'display: flex; justify-content: flex-start; margin-left: 12px;';
       const bubble = document.createElement('div');
-      bubble.className = 'msg-bot';
-      bubble.style.cssText = 'max-width: 88%; padding: 8px 12px; color: #E7E9F0; font-size: 11.5px; line-height: 1.55;';
-      bubble.innerHTML = html;
+      bubble.className = 'msg-bot2';
+      bubble.style.cssText = 'max-width: 78%; padding: 6px 10px 7px; font-size: 11.5px; line-height: 1.4; font-weight: 400;';
+      bubble.innerHTML = text;
       row.appendChild(bubble);
-
-      if (opts.chips && opts.chips.length) {
-        const chipRow = document.createElement('div');
-        chipRow.style.cssText = 'display: flex; flex-wrap: wrap; gap: 6px;';
-        opts.chips.forEach(chip => {
-          const btn = document.createElement('button');
-          btn.innerHTML = splitEmoji(chip.label);
-          btn.className = 'support-chip' + (chip.variant === 'ghost' ? ' ghost' : '');
-          btn.style.cssText = `padding: 7px 12px; border-radius: 999px; font-size: 11px; font-weight: 600; font-family: 'Manrope', sans-serif; cursor: pointer; white-space: nowrap; transition: border-color 0.15s ease, color 0.15s ease;`;
-          btn.onclick = () => {
-            chipRow.querySelectorAll('button').forEach(b => { b.disabled = true; b.style.opacity = '0.5'; b.style.cursor = 'default'; });
-            chip.onClick();
-          };
-          chipRow.appendChild(btn);
-        });
-        row.appendChild(chipRow);
-      }
-
       thread.appendChild(row);
       scrollThreadToBottom();
-      if (opts.after) opts.after();
+      if (then) then();
     }, 550);
   }
 
-  function handleCategoryChip(key) {
-    supportLastCategory = key;
-    const cat = SUPPORT_TREE[key];
-    addUserMessage(cat.label);
-    if (!cat.qas.length) { startAskEmail(); return; }
-    const options = cat.qas.map((item, i) => ({ label: item.q, onClick: () => handleQuestionChip(key, i) }));
-    addBotOptionsList('Common questions on this topic', options, talkToHumanOption());
-  }
-
-  function handleQuestionChip(catKey, qIndex) {
-    const item = SUPPORT_TREE[catKey].qas[qIndex];
-    addUserMessage(item.q);
-    addBotMessage(item.a, {
-      after: () => addBotMessage('Did that answer your question?', {
-        chips: [
-          { label: '👍 Yes, thanks', onClick: () => handleFeedbackYes() },
-          { label: '📩 No, I need more help', onClick: startAskEmail }
-        ]
-      })
+  function addOptionsList(options) {
+    const thread = document.getElementById('support-thread');
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'display: flex; flex-direction: column; gap: 5px; align-self: stretch; margin: 2px 0;';
+    options.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.style.cssText = "display: flex; align-items: center; justify-content: space-between; gap: 6px; width: 100%; box-sizing: border-box; text-align: left; padding: 6px 11px; border-radius: 999px; background: #10141F; border: 1px solid #1E2330; color: #C5CAD9; font-size: 11px; font-weight: 500; font-family: 'Plus Jakarta Sans', sans-serif; cursor: pointer;";
+      btn.innerHTML = `<span>${opt.label}</span><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#565D70" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><path d="M9 6l6 6-6 6"></path></svg>`;
+      btn.onclick = () => { wrap.querySelectorAll('button').forEach(b => { b.disabled = true; b.style.opacity = '0.5'; b.style.cursor = 'default'; }); opt.onClick(); };
+      wrap.appendChild(btn);
     });
+    thread.appendChild(wrap);
+    scrollThreadToBottom();
   }
 
-  function handleFeedbackYes() {
-    addUserMessage('👍 Yes, thanks');
-    addBotMessage('Glad I could help!', {
-      after: () => addBotOptionsList('Anything else?', categoryOptions())
+  function addPills(options) {
+    const thread = document.getElementById('support-thread');
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; align-self: stretch; margin: 2px 0;';
+    options.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.style.cssText = "display: flex; align-items: center; gap: 5px; padding: 6px 11px; border-radius: 999px; background: #10141F; border: 1px solid #1E2330; color: #C5CAD9; font-size: 10.5px; font-weight: 500; font-family: 'Plus Jakarta Sans', sans-serif; cursor: pointer;";
+      btn.textContent = opt.label;
+      btn.onclick = () => { wrap.querySelectorAll('button').forEach(b => { b.disabled = true; b.style.opacity = '0.5'; b.style.cursor = 'default'; }); opt.onClick(); };
+      wrap.appendChild(btn);
     });
+    thread.appendChild(wrap);
+    scrollThreadToBottom();
   }
 
-  function setSupportInputMode(mode) {
+  function addInlineInput(mode) {
     supportInputMode = mode;
-    const bar = document.getElementById('support-input-bar');
-    const emailField = document.getElementById('support-email-field');
-    const msgField = document.getElementById('support-message-field');
-    bar.style.display = 'flex';
-    emailField.style.display = mode === 'email' ? 'block' : 'none';
-    msgField.style.display = mode === 'message' ? 'block' : 'none';
-    const active = mode === 'email' ? emailField : msgField;
-    active.value = '';
-    if (mode === 'message') autoResizeMessageField();
-    active.focus();
+    const thread = document.getElementById('support-thread');
+    const row = document.createElement('div');
+    row.id = 'support-inline-input-row';
+    row.style.cssText = 'display: flex; align-items: center; gap: 8px; align-self: stretch;';
+    const isEmail = mode === 'email';
+    row.innerHTML = `
+      <input id="support-inline-field" type="${isEmail ? 'email' : 'text'}" placeholder="${isEmail ? 'you@example.com' : "What's going on?"}" style="flex: 1; min-width: 0; padding: 9px 13px; border-radius: 999px; background: #10141F; border: 1px solid #232838; color: #F5F6FA; font-size: 12px; font-family: 'Plus Jakarta Sans', sans-serif; outline: none;">
+      <button id="support-inline-send" aria-label="Send" style="flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; border: none; cursor: pointer; background: linear-gradient(135deg, #2DD4BF, #A855F7); display: flex; align-items: center; justify-content: center;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="#fff"><path d="M3 20l18-8L3 4v6l12 2-12 2v6z"></path></svg>
+      </button>`;
+    thread.appendChild(row);
+    scrollThreadToBottom();
+    const field = row.querySelector('#support-inline-field');
+    const send  = row.querySelector('#support-inline-send');
+    field.focus();
+    send.onclick = () => handleInlineInputSubmit();
+    field.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); handleInlineInputSubmit(); } });
   }
 
-  function autoResizeMessageField() {
-    const field = document.getElementById('support-message-field');
-    field.style.height = 'auto';
-    field.style.height = Math.min(field.scrollHeight, 100) + 'px';
-  }
+  function handleInlineInputSubmit() {
+    const row   = document.getElementById('support-inline-input-row');
+    const field = document.getElementById('support-inline-field');
+    const value = field.value.trim();
+    if (!value) return;
 
-  function startAskEmail() {
-    addBotMessage("Sure, what's your email so we can get back to you?", {
-      after: () => setSupportInputMode('email')
-    });
-  }
-
-  function handleSupportInputSubmit() {
     if (supportInputMode === 'email') {
-      const field = document.getElementById('support-email-field');
-      const value = field.value.trim();
       if (!value.includes('@')) return;
       supportCollectedEmail = value;
+      row.remove();
       addUserMessage(value);
-      document.getElementById('support-input-bar').style.display = 'none';
-      addBotMessage("Thanks! Now tell me what's going on.", {
-        after: () => setSupportInputMode('message')
-      });
+      addBotMessage("Thanks! Now tell me what's going on.", () => addInlineInput('message'));
       return;
     }
 
     if (supportInputMode === 'message') {
-      const field = document.getElementById('support-message-field');
-      const value = field.value.trim();
       if (value.length < 5) return;
+      row.remove();
       addUserMessage(value);
-      document.getElementById('support-input-bar').style.display = 'none';
       submitSupportRequest(supportCollectedEmail, value);
     }
   }
 
   document.addEventListener('DOMContentLoaded', () => {
-    const emailField = document.getElementById('support-email-field');
-    const msgField = document.getElementById('support-message-field');
-    if (emailField) emailField.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); handleSupportInputSubmit(); } });
-    if (msgField) {
-      msgField.addEventListener('input', autoResizeMessageField);
-      msgField.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSupportInputSubmit(); }
-      });
-    }
+    const searchField = document.getElementById('support-search-field');
+    if (searchField) searchField.addEventListener('keydown', (e) => { if (e.key === 'Enter') submitSupportSearch(); });
   });
+
+  function submitSupportSearch() {
+    const query = document.getElementById('support-search-field').value.trim();
+    if (!query) return;
+    document.getElementById('support-search-field').value = '';
+    showSupportChat();
+    addUserMessage(query);
+    addBotMessage("Let's find the right place for that, pick a topic below:", () => {
+      addOptionsList(Object.keys(SUPPORT_TREE).map(id => ({ label: SUPPORT_TREE[id].label, onClick: () => selectSupportTopic(id) })));
+    });
+  }
+
+  function selectSupportTopic(id) {
+    const topic = SUPPORT_TREE[id];
+    supportLastCategory = id;
+    showSupportChat();
+    addUserMessage(topic.label);
+    if (!topic.qas.length) {
+      addBotMessage("Got it, tell us more and we'll route it to a human.", () => addInlineInput('email'));
+      return;
+    }
+    addBotMessage('Common questions on this topic', () => {
+      addOptionsList(topic.qas.map((item, i) => ({ label: item.q, onClick: () => selectSupportQuestion(id, i) })));
+      addPills([{ label: '💬 Connect to agent', onClick: () => addInlineInput('email') }]);
+    });
+  }
+
+  function selectSupportQuestion(topicId, qIndex) {
+    const item = SUPPORT_TREE[topicId].qas[qIndex];
+    addUserMessage(item.q);
+    addBotMessage(item.a, () => {
+      addBotMessage('Did that answer your question?', () => {
+        addPills([
+          { label: '👍 Yes, thanks', onClick: () => onSupportFeedbackYes() },
+          { label: '📩 No, I need more help', onClick: () => addInlineInput('email') }
+        ]);
+      });
+    });
+  }
+
+  function onSupportFeedbackYes() {
+    addUserMessage('👍 Yes, thanks');
+    addBotMessage('Glad that helped!', () => showSupportHome());
+  }
 
   async function submitSupportRequest(email, message) {
     const category = supportLastCategory ? SUPPORT_TREE[supportLastCategory].label : 'General';
     addBotMessage('Sending this to our team…');
-
     try {
       const res  = await fetch(`${SNAG_API_URL}/support/contact`, {
         method: 'POST',
@@ -609,9 +613,7 @@
       if (!res.ok) throw new Error(data.error || 'Something went wrong.');
       addBotMessage("Thanks! We'll get back to you at " + email + " soon. 📬");
     } catch(e) {
-      addBotMessage(e.message, {
-        chips: [{ label: 'Try again', onClick: () => setSupportInputMode('message') }]
-      });
+      addBotMessage(e.message, () => addPills([{ label: 'Try again', onClick: () => addInlineInput('message') }]));
     }
   }
 </script>
@@ -1582,7 +1584,41 @@
   </section>
 
   <!-- FLOATING SUPPORT WIDGET -->
-  <button id="support-fab" onclick="toggleSupportWidget()" aria-label="Support" style="position: fixed; bottom: 28px; right: 28px; z-index: 51; display: flex; align-items: center; justify-content: center; width: 46px; height: 46px; border-radius: 50%; background: linear-gradient(135deg, #A855F7, #EC4899); color: #fff; border: none; cursor: pointer; box-shadow: 0 12px 26px -8px rgba(236,72,153,0.6);">
+  <div id="support-panel" style="position: fixed; bottom: 28px; right: 28px; z-index: 51; width: 304px; max-width: calc(100vw - 32px); height: 420px; max-height: calc(100vh - 100px); display: none; flex-direction: column; border-radius: 16px; background: #0B0E17; border: 1px solid #1B2030; box-shadow: 0 24px 60px -14px rgba(0,0,0,0.65); overflow: hidden; animation: bubbleIn 0.28s ease both;">
+    <div style="position: relative; padding: 14px 16px; flex-shrink: 0; overflow: hidden; background: linear-gradient(160deg, rgba(168,85,247,0.14), rgba(11,14,23,0) 70%);">
+      <div style="position: absolute; top: -60px; left: -20px; width: 200px; height: 130px; border-radius: 50%; background: radial-gradient(circle, rgba(168,85,247,0.26), transparent 70%); filter: blur(28px); pointer-events: none;"></div>
+      <div style="position: relative; display: flex; align-items: center; gap: 9px; margin-bottom: 12px;">
+        <div style="position: relative; width: 26px; height: 26px; border-radius: 22%; overflow: hidden; flex-shrink: 0;">
+          <div style="position: absolute; inset: 0; background: #0d0a1a;"></div>
+          <div style="position: absolute; left: 50%; top: 50%; width: 78%; height: 78%; transform: translate(-50%,-50%); border-radius: 50%; mask-image: radial-gradient(circle, transparent 50%, black 56%, black 82%, transparent 86%); -webkit-mask-image: radial-gradient(circle, transparent 50%, black 56%, black 82%, transparent 86%); background: conic-gradient(from 200deg, #2DD4BF, #3B82F6 25%, #A855F7 55%, #EC4899 80%, #2DD4BF 100%);"></div>
+          <div style="position: absolute; left: 50%; top: 50%; width: 42%; height: 42%; transform: translate(-50%,-50%); border-radius: 50%; background: #000;"></div>
+        </div>
+        <span style="font-size: 12px; font-weight: 600; color: #9BA2B5; font-family: 'Plus Jakarta Sans', sans-serif;">Snag AI Support</span>
+        <span style="width: 6px; height: 6px; border-radius: 50%; background: #34D399; box-shadow: 0 0 6px rgba(52,211,153,0.7); animation: pulseGlow 1.8s ease-in-out infinite; flex-shrink: 0;"></span>
+        <div style="flex: 1;"></div>
+        <button onclick="closeSupportWidget()" aria-label="Close" style="width: 24px; height: 24px; border-radius: 50%; background: rgba(239,68,68,0.12); border: none; color: #F87171; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M6 6L18 18M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"></path></svg>
+        </button>
+      </div>
+      <div id="support-home-greeting" style="position: relative;">
+        <h2 style="font-family: 'Sora', sans-serif; font-size: 17px; font-weight: 700; color: #F5F6FA; margin: 0 0 3px;">Hi there 👋</h2>
+        <p style="font-size: 12px; color: #9BA2B5; margin: 0 0 11px; font-family: 'Plus Jakarta Sans', sans-serif;">How can we help?</p>
+        <div style="display: flex; align-items: center; gap: 7px; background: #10141F; border: 1px solid #232838; border-radius: 999px; padding: 6px 13px;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6B7284" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></svg>
+          <input id="support-search-field" type="text" placeholder="Ask a question..." style="flex: 1; min-width: 0; background: transparent; border: none; color: #F5F6FA; font-size: 12px; font-family: 'Plus Jakarta Sans', sans-serif; outline: none;">
+        </div>
+      </div>
+    </div>
+
+    <div id="support-home-body" class="no-scrollbar" style="flex: 1; overflow-y: auto; padding: 4px 12px 14px; background: #0B0E17;">
+      <div style="font-size: 10px; font-weight: 700; letter-spacing: 0.04em; color: #565D70; text-transform: uppercase; padding: 8px 3px 6px; font-family: 'Plus Jakarta Sans', sans-serif;">Browse topics</div>
+      <div id="support-topics-list" style="display: flex; flex-direction: column; gap: 5px;"></div>
+    </div>
+
+    <div id="support-thread" class="no-scrollbar" style="display: none; flex: 1; overflow-y: auto; padding: 14px 12px; flex-direction: column; gap: 10px; background: #0B0E17;"></div>
+  </div>
+
+  <button id="support-fab" onclick="toggleSupportWidget()" aria-label="Support" style="position: fixed; bottom: 28px; right: 28px; z-index: 51; width: 46px; height: 46px; border-radius: 50%; border: none; cursor: pointer; background: linear-gradient(135deg, #A855F7, #EC4899); color: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 12px 26px -8px rgba(236,72,153,0.6);">
     <span style="position: absolute; top: 4px; right: 4px; width: 7px; height: 7px; border-radius: 50%; background: #5EEAD4; animation: pulseGlow 1.6s ease-in-out infinite;"></span>
     <svg width="27" height="27" viewBox="0 0 24 24" fill="none">
       <path d="M12 2C6.48 2 2 6.02 2 11C2 13.42 3.06 15.62 4.8 17.24C4.69 18.24 4.31 19.66 3.5 20.86C3.42 20.97 3.5 21.13 3.64 21.11C5.31 20.86 6.84 20.14 7.85 19.56C9.11 19.98 10.52 20.22 12 20.22C17.52 20.22 22 16.2 22 11.22C22 6.24 17.52 2 12 2Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"></path>
@@ -1591,39 +1627,6 @@
       <circle cx="15.8" cy="11" r="1.5" fill="currentColor"></circle>
     </svg>
   </button>
-
-  <div id="support-panel" style="position: fixed; bottom: 28px; right: 28px; z-index: 51; width: 304px; max-width: calc(100vw - 32px); height: 420px; max-height: calc(100vh - 100px); display: none; flex-direction: column; border-radius: 16px; background: #0B0E17; border: 1px solid #1D2230; box-shadow: 0 24px 60px -14px rgba(0,0,0,0.65); overflow: hidden;">
-    <div style="position: relative; padding: 14px 16px; flex-shrink: 0; background: #07090f; border-bottom: 1px solid #1D2230; overflow: hidden;">
-      <div style="position: absolute; top: -70px; left: 20%; width: 240px; height: 150px; border-radius: 50%; background: radial-gradient(circle, rgba(45,212,191,0.14), transparent 70%); filter: blur(32px); pointer-events: none;"></div>
-      <div style="position: relative; display: flex; align-items: center; justify-content: space-between;">
-        <div style="display: flex; align-items: center; gap: 10px;">
-          <div style="position: relative; width: 30px; height: 30px; border-radius: 22%; overflow: hidden; flex-shrink: 0;">
-            <div style="position: absolute; inset: 0; background: #0d0a1a;"></div>
-            <div style="position: absolute; left: 50%; top: 50%; width: 78%; height: 78%; transform: translate(-50%,-50%); border-radius: 50%; mask-image: radial-gradient(circle, transparent 50%, black 56%, black 82%, transparent 86%); -webkit-mask-image: radial-gradient(circle, transparent 50%, black 56%, black 82%, transparent 86%); background: conic-gradient(from 200deg, #2DD4BF, #3B82F6 25%, #A855F7 55%, #EC4899 80%, #2DD4BF 100%);"></div>
-            <div style="position: absolute; left: 50%; top: 50%; width: 42%; height: 42%; transform: translate(-50%,-50%); border-radius: 50%; background: #000;"></div>
-          </div>
-          <div>
-            <div style="display: flex; align-items: center; gap: 6px;">
-              <span style="font-family: 'Sora', sans-serif; font-size: 13px; font-weight: 700; color: #F5F6FA;">Snag AI Support</span>
-              <span style="width: 6px; height: 6px; border-radius: 50%; background: #34D399; flex-shrink: 0;"></span>
-            </div>
-            <div style="font-size: 10.5px; color: #7A8194;">Usually replies in a few hours</div>
-          </div>
-        </div>
-        <button onclick="toggleSupportWidget(false)" aria-label="Close" style="width: 24px; height: 24px; border-radius: 50%; background: rgba(239,68,68,0.12); border: none; color: #F87171; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M6 6L18 18M18 6L6 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"></path></svg>
-        </button>
-      </div>
-    </div>
-    <div id="support-thread" class="no-scrollbar" style="flex: 1; overflow-y: auto; padding: 14px 12px; display: flex; flex-direction: column; gap: 12px;"></div>
-    <div id="support-input-bar" style="display: none; align-items: flex-end; gap: 8px; padding: 10px 12px; border-top: 1px solid #1D2230; flex-shrink: 0;">
-      <input id="support-email-field" type="email" placeholder="you@example.com" style="display: none; flex: 1; min-width: 0; background: #10141F; border: 1px solid #1D2230; border-radius: 999px; padding: 8px 14px; color: #E7E9F0; font-family: 'Manrope', sans-serif; font-size: 12px; height: 34px;">
-      <textarea id="support-message-field" rows="1" placeholder="Type your message…" style="display: none; flex: 1; min-width: 0; resize: none; background: #10141F; border: 1px solid #1D2230; border-radius: 18px; padding: 8px 14px; color: #E7E9F0; font-family: 'Manrope', sans-serif; font-size: 12px; line-height: 1.4; max-height: 100px; overflow-y: auto;"></textarea>
-      <button id="support-input-send" onclick="handleSupportInputSubmit()" aria-label="Send" style="width: 32px; height: 32px; border-radius: 50%; border: none; background: linear-gradient(135deg, #2DD4BF, #A855F7); color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><path d="M4 20L21 12L4 4L4 10L15 12L4 14L4 20Z" fill="currentColor"></path></svg>
-      </button>
-    </div>
-  </div>
 
   <!-- FOOTER -->
   <footer style="position: relative; z-index: 2; border-top: 1px solid #171B26; padding: 44px 64px; max-width: 1280px; margin: 0 auto; box-sizing: border-box; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px;">
