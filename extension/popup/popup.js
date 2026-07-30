@@ -1,5 +1,4 @@
-// const SERVER = 'https://prowise-4e5t.onrender.com'; // Production
-const SERVER = 'http://localhost:3000'; // Local Host
+import { SERVER_URL as SERVER } from '../options/modules/config.js';
 
 // Same tier language as extension/options/modules/config.js's PLAN_LABELS —
 // "starter" is always shown to users as "Basic".

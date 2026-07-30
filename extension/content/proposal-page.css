@@ -5,23 +5,25 @@
   position: fixed;
   bottom: 28px;
   right: 28px;
-  width: 56px;
-  height: 56px;
+  width: 46px;
+  height: 46px;
   border-radius: 50%;
-  background: #6366f1;
+  background: transparent;
   border: none;
+  padding: 0;
   cursor: pointer;
   z-index: 2147483647;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 20px rgba(99,102,241,.45), 0 0 0 1px rgba(99,102,241,.3);
-  transition: transform .25s cubic-bezier(.4,0,.2,1), opacity .2s ease, box-shadow .2s;
+  filter: drop-shadow(0 4px 14px rgba(0,0,0,.4));
+  transition: transform .25s cubic-bezier(.4,0,.2,1), opacity .2s ease, filter .2s;
   transform-origin: bottom right;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
-#sn-pp-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(99,102,241,.55), 0 0 0 1px rgba(99,102,241,.4); }
-#sn-pp-btn.sn-pp-hidden {
+#sn-pp-btn:hover { transform: translateY(-2px); filter: drop-shadow(0 6px 18px rgba(0,0,0,.5)); }
+#sn-pp-btn.sn-pp-hidden,
+#sn-pp-btn.sn-pp-locked {
   transform: scale(0) !important;
   opacity: 0;
   pointer-events: none;
@@ -29,17 +31,17 @@
 #sn-pp-btn.sn-pp-loading { animation: sn-pp-pulse 1.2s ease-in-out infinite; cursor: default; }
 @keyframes sn-pp-pulse { 0%,100%{box-shadow:0 4px 20px rgba(99,102,241,.45),0 0 0 1px rgba(99,102,241,.3)} 50%{box-shadow:0 4px 28px rgba(99,102,241,.7),0 0 0 3px rgba(99,102,241,.4)} }
 
-#sn-pp-btn .sn-pp-spinner {
-  display: none;
-  width: 22px; height: 22px;
-  border: 2.5px solid rgba(255,255,255,.25);
-  border-top-color: white;
-  border-radius: 50%;
-  animation: sn-pp-spin .7s linear infinite;
-}
 @keyframes sn-pp-spin { to { transform: rotate(360deg); } }
-#sn-pp-btn.sn-pp-loading .sn-pp-icon { display: none; }
-#sn-pp-btn.sn-pp-loading .sn-pp-spinner { display: block; }
+/* Loading state rotates the logo itself instead of swapping to a plain ring */
+#sn-pp-btn.sn-pp-loading .sn-pp-icon { animation: sn-pp-spin .9s linear infinite; }
+.sn-pp-icon {
+  width: 42px !important; height: 42px !important;
+  border-radius: 50% !important;
+  overflow: hidden !important;
+  object-fit: cover !important;
+  display: block !important;
+  box-sizing: border-box !important;
+}
 
 /* In-field icon — circle, bottom-right inside the textarea */
 #sn-cl-icon {
@@ -49,35 +51,37 @@
   width: 28px;
   height: 28px;
   border-radius: 50%;
-  background: #6366f1;
+  background: transparent;
   border: none;
+  padding: 0;
   cursor: pointer;
   z-index: 100;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 2px 8px rgba(99,102,241,.5);
-  transition: background .2s, transform .15s, box-shadow .15s;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,.4));
+  transition: filter .2s, transform .15s;
 }
-#sn-cl-icon:hover { transform: scale(1.1); box-shadow: 0 3px 12px rgba(99,102,241,.65); }
+#sn-cl-icon:hover { transform: scale(1.1); filter: drop-shadow(0 3px 9px rgba(0,0,0,.5)); }
 
-#sn-cl-icon .sn-cl-svg { flex-shrink: 0; }
-#sn-cl-icon .sn-cl-spin {
-  display: none;
-  width: 13px; height: 13px;
-  border: 1.5px solid rgba(255,255,255,.35);
-  border-top-color: white;
-  border-radius: 50%;
-  animation: sn-pp-spin .7s linear infinite;
+#sn-cl-icon .sn-cl-svg {
+  flex-shrink: 0;
+  width: 22px !important; height: 22px !important;
+  border-radius: 50% !important;
+  overflow: hidden !important;
+  object-fit: cover !important;
+  display: block !important;
+  box-sizing: border-box !important;
 }
 #sn-cl-icon .sn-cl-label { display: none; }
 
+/* Loading state rotates the logo itself instead of swapping to a plain ring */
 #sn-cl-icon.sn-cl-spinning { cursor: default; }
-#sn-cl-icon.sn-cl-spinning .sn-cl-svg { display: none; }
-#sn-cl-icon.sn-cl-spinning .sn-cl-spin { display: block; }
+#sn-cl-icon.sn-cl-spinning .sn-cl-svg { animation: sn-pp-spin .9s linear infinite; }
 
-#sn-cl-icon.sn-cl-done,
-#sn-cl-icon.sn-cl-filled { background: #059669; box-shadow: 0 2px 8px rgba(5,150,105,.45); }
+#sn-cl-icon.sn-cl-done { filter: drop-shadow(0 2px 8px rgba(5,150,105,.6)); }
+/* One-time use — hide once the field has content, instead of just tinting green */
+#sn-cl-icon.sn-cl-filled { transform: scale(0); opacity: 0; pointer-events: none; }
 
 #sn-cl-icon::before {
   content: attr(data-tip);
@@ -122,9 +126,9 @@
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 .sn-needs-email .sn-email-badge { display: flex; }
-#sn-pp-btn.sn-needs-email { background: #7f1d1d; box-shadow: 0 4px 20px rgba(239,68,68,.45), 0 0 0 1px rgba(239,68,68,.35); }
-#sn-pp-btn.sn-needs-email:hover { box-shadow: 0 8px 28px rgba(239,68,68,.55), 0 0 0 1px rgba(239,68,68,.45); }
-#sn-cl-icon.sn-needs-email { background: #7f1d1d; box-shadow: 0 2px 8px rgba(239,68,68,.5); }
+#sn-pp-btn.sn-needs-email { filter: drop-shadow(0 4px 14px rgba(239,68,68,.6)); }
+#sn-pp-btn.sn-needs-email:hover { filter: drop-shadow(0 6px 18px rgba(239,68,68,.7)); }
+#sn-cl-icon.sn-needs-email { filter: drop-shadow(0 2px 8px rgba(239,68,68,.6)); }
 
 /* Toast — shown when clicking either button while email isn't ready */
 .sn-toast {
@@ -209,10 +213,17 @@
 }
 .sn-pp-head-logo {
   width: 28px; height: 28px;
-  background: #6366f1;
-  border-radius: 8px;
+  background: transparent;
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
+}
+.sn-pp-head-logo img {
+  width: 28px !important; height: 28px !important;
+  border-radius: 50% !important;
+  overflow: hidden !important;
+  object-fit: cover !important;
+  display: block !important;
+  box-sizing: border-box !important;
 }
 .sn-pp-head-text { flex: 1; }
 .sn-pp-head-name { font-size: 12px; font-weight: 700; letter-spacing: -.01em; }
@@ -325,4 +336,4 @@
 .sn-pp-send:disabled { opacity: .25; cursor: default; }
 
 /* Success flash on floating button */
-#sn-pp-btn.sn-pp-done { background: #059669; }
+#sn-pp-btn.sn-pp-done { filter: drop-shadow(0 4px 14px rgba(5,150,105,.6)); }

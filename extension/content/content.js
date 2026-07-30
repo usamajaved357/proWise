@@ -6,27 +6,18 @@
   'use strict';
 
   // ── Button state helpers ──────────────────────────────────────────────────
-  const _SVG_BEAT_HTML = `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M13 2L4.5 13.5H11L10 22L20.5 9.5H14L13 2Z" fill="white" stroke="white" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/>
-  </svg>`;
-
-  const _SVG_BEAT = _SVG_BEAT_HTML;
-  const _SVG_SPIN  = `<svg class="sn-btn-spin" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>`;
-  const _SVG_CHECK = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>`;
-
+  // The logo image itself is persistent (see panel.js) — states are just
+  // classes toggled on it/the button, same pattern as the proposal page's
+  // floating button: loading rotates the logo instead of swapping to a
+  // separate spinner icon; done tints it with a colored glow instead of a
+  // solid background fill.
   function _setBtnState(state) {
     const btn = document.getElementById('sn-btn');
+    const img = document.getElementById('sn-btn-logo');
     if (!btn) return;
-    if (state === 'loading') {
-      btn.innerHTML = _SVG_SPIN; btn.disabled = true;
-      btn.style.background = ''; btn.classList.remove('sn-btn-done');
-    } else if (state === 'done') {
-      btn.innerHTML = _SVG_CHECK; btn.disabled = false;
-      btn.style.background = '#059669'; btn.classList.add('sn-btn-done');
-    } else {
-      btn.innerHTML = _SVG_BEAT; btn.disabled = false;
-      btn.style.background = ''; btn.classList.remove('sn-btn-done');
-    }
+    btn.disabled = (state === 'loading');
+    if (img) img.classList.toggle('sn-btn-logo-spin', state === 'loading');
+    btn.classList.toggle('sn-btn-done', state === 'done');
   }
 
   // Restore green button if job was already analysed (on page load)
@@ -128,54 +119,6 @@
       SnagAI.showSidebarError(err.message || 'Analysis failed. Check your profile is set up.');
       SnagAI.openSidebar();
       _setBtnState('idle');
-    }
-  };
-
-  // ── Re-analyse (manual refresh, max 3 times per job) ─────────────────────
-  SnagAI.reAnalyse = async function() {
-    const status = await SnagAI.getReAnalyseStatus();
-    if (status.locked) return;
-
-    // Swap footer to loading state immediately
-    const footer = document.getElementById('sn-sb-footer');
-    if (footer) footer.innerHTML = `<span class="sn-sb-reanalyse-locked" style="opacity:.5">Re-analysing…</span>`;
-
-    SnagAI.showSidebarLoading();
-
-    try {
-      await SnagAI.waitForJobActivitySection();
-      const job = SnagAI.getJob();
-      try {
-        const storeData = await chrome.runtime.sendMessage({ type: 'GET_JOB_DATA' });
-        if (storeData && job.jobStats) {
-          // timePosted/timePostedMinutes skipped — store's computed value has
-          // been unreliable; job-reader.js's DOM value (read from the "Posted
-          // X ago" text) is the reliable source for this field.
-          Object.entries(storeData).forEach(([k, v]) => {
-            if (k === 'timePosted' || k === 'timePostedMinutes') return;
-            if (v !== null && v !== undefined) job.jobStats[k] = v;
-          });
-          console.log('[SnagAI] Job stats enriched from Vuex store:', storeData);
-        } else {
-          console.warn('[SnagAI] GET_JOB_DATA returned nothing — jobStats will rely on DOM-parsed values only:', job.jobStats);
-        }
-      } catch(e) {}
-
-      const localStored = await new Promise(r => chrome.storage.local.get(['registeredProfiles','activeProfileId','primaryProfileId'], r));
-      const regProfiles = localStored.registeredProfiles || [];
-      const primaryId   = localStored.primaryProfileId || localStored.activeProfileId;
-      const primaryMeta = (primaryId && regProfiles.find(p => p?.id === primaryId)) || regProfiles[0];
-      const localKey    = primaryMeta?.id ? 'profileFull_' + primaryMeta.id : null;
-      const localFull   = localKey ? await new Promise(r => chrome.storage.local.get([localKey], r)) : {};
-      const prof        = localFull[localKey] || primaryMeta || {};
-      const filters     = prof.jobFilters || {};
-
-      const analysis = await SnagAI.analyseJob(job, filters, true); // forceRefresh = true
-      SnagAI.renderAnalysis(analysis);
-
-    } catch(err) {
-      console.error('[SnagAI] Re-analyse error:', err.message);
-      SnagAI.showSidebarError(err.message || 'Re-analysis failed.');
     }
   };
 

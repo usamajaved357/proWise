@@ -13,15 +13,7 @@ window.SnagAI.injectSidebar = function() {
   sb.innerHTML = `
     <div class="sn-sb-head">
       <div class="sn-sb-logo">
-        <svg width="18" height="18" viewBox="0 0 100 100" fill="none">
-          <rect x="5" y="5" width="64" height="78" rx="10" stroke="white" stroke-width="5.5" fill="none"/>
-          <line x1="14" y1="23" x2="57" y2="23" stroke="white" stroke-width="5" stroke-linecap="round"/>
-          <line x1="14" y1="35" x2="57" y2="35" stroke="white" stroke-width="5" stroke-linecap="round"/>
-          <line x1="14" y1="47" x2="57" y2="47" stroke="white" stroke-width="5" stroke-linecap="round"/>
-          <line x1="14" y1="59" x2="40" y2="59" stroke="white" stroke-width="5" stroke-linecap="round"/>
-          <circle cx="76" cy="77" r="23" fill="#4338ca"/>
-          <polygon points="80,59 70,78 77,78 73,95 88,74 81,74" fill="white"/>
-        </svg>
+        <img src="${chrome.runtime.getURL('icons/icon128.png')}" width="30" height="30" alt="">
       </div>
       <div class="sn-sb-head-text">
         <div class="sn-sb-title">Snag AI</div>
@@ -174,21 +166,5 @@ window.SnagAI.renderAnalysis = function(analysis) {
     <div class="sn-sb-apply-row">
       <a class="sn-sb-apply-btn" href="${applyUrl}" target="_blank" style="${vm.btnStyle}">${vm.btnLabel}</a>
     </div>
-    <div class="sn-sb-footer-row" id="sn-sb-footer"></div>
   `;
-
-  // Populate footer with re-analyse button after render
-  SnagAI.getReAnalyseStatus().then(status => {
-    const footer = document.getElementById('sn-sb-footer');
-    if (!footer) return;
-    if (status.locked) {
-      footer.innerHTML = `<span class="sn-sb-reanalyse-locked">Re-analyse limit reached (3/3)</span>`;
-    } else {
-      const remaining = status.remaining;
-      footer.innerHTML = `<button class="sn-sb-reanalyse-btn" id="sn-sb-reanalyse">↺ Re-analyse <span class="sn-sb-recount">${remaining} left</span></button>`;
-      document.getElementById('sn-sb-reanalyse')?.addEventListener('click', () => {
-        if (typeof SnagAI.reAnalyse === 'function') SnagAI.reAnalyse();
-      });
-    }
-  });
 };
