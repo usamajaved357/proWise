@@ -3,10 +3,97 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Snag AI | Win more Upwork jobs with proposals that actually convert</title>
-<meta name="description" content="Snag AI audits jobs, audits your profile, and writes cover letters right on the page you apply from, for freelancer and agency profiles alike.">
+<title>Snag AI for Upwork Freelancers &amp; Agencies</title>
+<meta name="description" content="Snag AI is a Chrome extension that writes AI cover letters, audits jobs and profiles, and sends smart job alerts right on Upwork, for freelancers and agencies. Plans from $19/mo.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://snagai.pro/">
+<link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+<link rel="icon" type="image/png" sizes="128x128" href="assets/logo.png">
+<link rel="apple-touch-icon" href="assets/logo.png">
+<meta name="theme-color" content="#07090f">
+
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Snag AI">
+<meta property="og:url" content="https://snagai.pro/">
+<meta property="og:title" content="Snag AI – AI Cover Letters, Job Audits & Profile Audits for Upwork">
+<meta property="og:description" content="Snag AI is a Chrome extension that writes AI cover letters, audits jobs and profiles, and sends smart job alerts right on Upwork, for freelancers and agencies.">
+<meta property="og:image" content="https://snagai.pro/assets/logo.png">
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Snag AI – AI Cover Letters, Job Audits & Profile Audits for Upwork">
+<meta name="twitter:description" content="Snag AI is a Chrome extension that writes AI cover letters, audits jobs and profiles, and sends smart job alerts right on Upwork, for freelancers and agencies.">
+<meta name="twitter:image" content="https://snagai.pro/assets/logo.png">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Snag AI",
+  "url": "https://snagai.pro",
+  "logo": "https://snagai.pro/assets/logo.png",
+  "description": "Snag AI is a Chrome extension that helps Upwork freelancers and agencies write AI cover letters, audit jobs and profiles, and get smart job alerts."
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Snag AI",
+  "applicationCategory": "BrowserApplication",
+  "operatingSystem": "Chrome",
+  "url": "https://snagai.pro",
+  "description": "AI-powered Chrome extension for Upwork freelancers and agencies: writes cover letters, audits jobs and profiles, and sends smart job alerts right on the page you apply from.",
+  "offers": [
+    { "@type": "Offer", "name": "Basic", "price": "19", "priceCurrency": "USD", "url": "https://snagai.pro/#pricing" },
+    { "@type": "Offer", "name": "Pro", "price": "35", "priceCurrency": "USD", "url": "https://snagai.pro/#pricing" },
+    { "@type": "Offer", "name": "Agency", "price": "55", "priceCurrency": "USD", "url": "https://snagai.pro/#pricing" }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Does Snag AI work for both freelancer and agency profiles?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes. Every feature (cover letter writing, job audits, profile audits and smart alerts) works the same way whether you're applying as a freelancer or through an agency profile." }
+    },
+    {
+      "@type": "Question",
+      "name": "Where does Snag AI actually run?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Right inside Upwork. It's a Chrome extension that adds itself to the job post and cover letter pages you already use, with no separate app or dashboard to switch to." }
+    },
+    {
+      "@type": "Question",
+      "name": "Will the cover letters sound like me?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Snag AI drafts using your real portfolio, rate and tone settings, then lets you refine in place with one-click commands like \"shorter\" or \"more confident\" before you send anything." }
+    },
+    {
+      "@type": "Question",
+      "name": "What does a job audit actually check?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Competition level on the job post, publicly listed client stats like hire history and spend, and how your rate and skills line up, then gives you a plain recommendation on whether the job is worth a connect." }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I cancel anytime?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes, all plans are month-to-month with no contract. Cancel from your billing page whenever you like and you'll keep access until the end of your current cycle." }
+    },
+    {
+      "@type": "Question",
+      "name": "Do unused cover letters roll over?",
+      "acceptedAnswer": { "@type": "Answer", "text": "No, each plan's monthly allowance resets on your billing date. Upgrade anytime if you're consistently running out before the cycle ends." }
+    }
+  ]
+}
+</script>
 <style>
   * { box-sizing: border-box; }
   body { margin: 0; background: #07090f; }
@@ -260,6 +347,33 @@
       : 'Real reviews will show up here as soon as verified customers start sharing their experience. Yours could be the first.';
   }
 
+  function injectAggregateRatingSchema(reviews) {
+    // Built from the real reviews just rendered on the page — never a static/guessed
+    // number — so this only ever reflects what a visitor can actually see and count.
+    if (!reviews.length) return;
+    const avg = reviews.reduce((sum, r) => sum + (Number(r.rating) || 0), 0) / reviews.length;
+    const schema = {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Snag AI",
+      "applicationCategory": "BrowserApplication",
+      "operatingSystem": "Chrome",
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": avg.toFixed(1),
+        "reviewCount": reviews.length
+      }
+    };
+    let tag = document.getElementById('aggregate-rating-schema');
+    if (!tag) {
+      tag = document.createElement('script');
+      tag.type = 'application/ld+json';
+      tag.id = 'aggregate-rating-schema';
+      document.head.appendChild(tag);
+    }
+    tag.textContent = JSON.stringify(schema);
+  }
+
   async function loadLiveReviews() {
     const marqueeWrap = document.getElementById('reviews-marquee-wrap');
     const track       = document.getElementById('reviews-track');
@@ -282,6 +396,7 @@
       marqueeWrap.style.display = 'block';
       setReviewsCtaState(true);
       startReviewsAutoScroll();
+      injectAggregateRatingSchema(reviews);
     } catch(e) {
       // Network hiccup — show the empty state rather than a broken/empty marquee
       marqueeWrap.style.display = 'none';
@@ -1865,7 +1980,7 @@
         </button>
       </div>
       <div id="support-home-greeting" style="position: relative;">
-        <h2 style="font-family: 'Sora', sans-serif; font-size: 17px; font-weight: 700; color: #F5F6FA; margin: 0 0 3px;">Hi there 👋</h2>
+        <div style="font-family: 'Sora', sans-serif; font-size: 17px; font-weight: 700; color: #F5F6FA; margin: 0 0 3px;">Hi there 👋</div>
         <p style="font-size: 12px; color: #9BA2B5; margin: 0 0 11px; font-family: 'Plus Jakarta Sans', sans-serif;">How can we help?</p>
         <div style="display: flex; align-items: center; gap: 7px; background: #10141F; border: 1px solid #232838; border-radius: 999px; padding: 6px 13px;">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6B7284" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></svg>

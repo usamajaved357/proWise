@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /checkout.html
+Disallow: /write-review.html
+
+Sitemap: https://snagai.pro/sitemap.xml
