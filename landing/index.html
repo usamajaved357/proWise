@@ -3,10 +3,97 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Snag AI | Win more Upwork jobs with proposals that actually convert</title>
-<meta name="description" content="Snag AI audits jobs, audits your profile, and writes cover letters right on the page you apply from, for freelancer and agency profiles alike.">
+<title>Snag AI for Upwork Freelancers &amp; Agencies</title>
+<meta name="description" content="Snag AI is a Chrome extension that writes AI cover letters, audits jobs and profiles, and sends smart job alerts right on Upwork, for freelancers and agencies. Plans from $19/mo.">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://snagai.pro/">
+<link rel="icon" type="image/png" sizes="16x16" href="assets/favicon-16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+<link rel="icon" type="image/png" sizes="128x128" href="assets/logo.png">
+<link rel="apple-touch-icon" href="assets/logo.png">
+<meta name="theme-color" content="#07090f">
+
+<!-- Open Graph -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Snag AI">
+<meta property="og:url" content="https://snagai.pro/">
+<meta property="og:title" content="Snag AI – AI Cover Letters, Job Audits & Profile Audits for Upwork">
+<meta property="og:description" content="Snag AI is a Chrome extension that writes AI cover letters, audits jobs and profiles, and sends smart job alerts right on Upwork, for freelancers and agencies.">
+<meta property="og:image" content="https://snagai.pro/assets/logo.png">
+
+<!-- Twitter -->
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Snag AI – AI Cover Letters, Job Audits & Profile Audits for Upwork">
+<meta name="twitter:description" content="Snag AI is a Chrome extension that writes AI cover letters, audits jobs and profiles, and sends smart job alerts right on Upwork, for freelancers and agencies.">
+<meta name="twitter:image" content="https://snagai.pro/assets/logo.png">
+
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Sora:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Snag AI",
+  "url": "https://snagai.pro",
+  "logo": "https://snagai.pro/assets/logo.png",
+  "description": "Snag AI is a Chrome extension that helps Upwork freelancers and agencies write AI cover letters, audit jobs and profiles, and get smart job alerts."
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Snag AI",
+  "applicationCategory": "BrowserApplication",
+  "operatingSystem": "Chrome",
+  "url": "https://snagai.pro",
+  "description": "AI-powered Chrome extension for Upwork freelancers and agencies: writes cover letters, audits jobs and profiles, and sends smart job alerts right on the page you apply from.",
+  "offers": [
+    { "@type": "Offer", "name": "Basic", "price": "19", "priceCurrency": "USD", "url": "https://snagai.pro/#pricing" },
+    { "@type": "Offer", "name": "Pro", "price": "35", "priceCurrency": "USD", "url": "https://snagai.pro/#pricing" },
+    { "@type": "Offer", "name": "Agency", "price": "55", "priceCurrency": "USD", "url": "https://snagai.pro/#pricing" }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Does Snag AI work for both freelancer and agency profiles?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes. Every feature (cover letter writing, job audits, profile audits and smart alerts) works the same way whether you're applying as a freelancer or through an agency profile." }
+    },
+    {
+      "@type": "Question",
+      "name": "Where does Snag AI actually run?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Right inside Upwork. It's a Chrome extension that adds itself to the job post and cover letter pages you already use, with no separate app or dashboard to switch to." }
+    },
+    {
+      "@type": "Question",
+      "name": "Will the cover letters sound like me?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Snag AI drafts using your real portfolio, rate and tone settings, then lets you refine in place with one-click commands like \"shorter\" or \"more confident\" before you send anything." }
+    },
+    {
+      "@type": "Question",
+      "name": "What does a job audit actually check?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Competition level on the job post, publicly listed client stats like hire history and spend, and how your rate and skills line up, then gives you a plain recommendation on whether the job is worth a connect." }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I cancel anytime?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes, all plans are month-to-month with no contract. Cancel from your billing page whenever you like and you'll keep access until the end of your current cycle." }
+    },
+    {
+      "@type": "Question",
+      "name": "Do unused cover letters roll over?",
+      "acceptedAnswer": { "@type": "Answer", "text": "No, each plan's monthly allowance resets on your billing date. Upgrade anytime if you're consistently running out before the cycle ends." }
+    }
+  ]
+}
+</script>
 <style>
   * { box-sizing: border-box; }
   body { margin: 0; background: #07090f; }
@@ -34,7 +121,7 @@
   .msg-user2 { position: relative; z-index: 0; background: #A855F7; color: #fff; border-radius: 16px; font-family: 'Plus Jakarta Sans', sans-serif; animation: bubbleIn 0.22s ease both; }
   .msg-user2::before { content: ''; position: absolute; z-index: -1; bottom: -2px; right: -4px; width: 16px; height: 16px; background: #A855F7; border-bottom-left-radius: 12px; }
   .msg-user2::after { content: ''; position: absolute; z-index: -1; bottom: -2px; right: -9px; width: 9px; height: 16px; background: #0B0E17; border-bottom-left-radius: 8px; }
-  .support-topic-row { display: flex; align-items: center; gap: 9px; width: 100%; box-sizing: border-box; text-align: left; padding: 6px 10px; border-radius: 999px; background: #12151F; border: 1px solid #1C2130; color: #EDEFF5; font-size: 12px; font-weight: 500; font-family: 'Plus Jakarta Sans', sans-serif; cursor: pointer; transition: border-color 0.15s ease, background 0.15s ease; }
+  .support-topic-row { display: flex; align-items: center; gap: 9px; width: 100%; box-sizing: border-box; text-align: left; padding: 6px 10px; border-radius: 999px; background: #12151F; border: 1px solid #1C2130; color: #EDEFF5; font-size: 11.5px; font-weight: 400; font-family: 'Plus Jakarta Sans', sans-serif; cursor: pointer; transition: border-color 0.15s ease, background 0.15s ease; }
   .support-topic-row:hover { border-color: #2DD4BF; background: #151a28; }
   html { scroll-behavior: smooth; }
   ::selection { background: rgba(168,85,247,0.35); }
@@ -247,9 +334,48 @@
       </div>`;
   }
 
+  function setReviewsCtaState(hasReviews) {
+    const stars    = document.getElementById('reviews-cta-stars');
+    const heading  = document.getElementById('reviews-cta-heading');
+    const subtext  = document.getElementById('reviews-cta-subtext');
+    if (!stars || !heading || !subtext) return;
+    stars.style.color = hasReviews ? '#F5B95E' : '#3A4054';
+    heading.textContent = hasReviews ? 'Using Snag AI? Share your experience' : 'No reviews yet';
+    subtext.style.fontSize = hasReviews ? '13px' : '14.5px';
+    subtext.textContent = hasReviews
+      ? "Your feedback helps other freelancers and agencies decide if it's right for them."
+      : 'Real reviews will show up here as soon as verified customers start sharing their experience. Yours could be the first.';
+  }
+
+  function injectAggregateRatingSchema(reviews) {
+    // Built from the real reviews just rendered on the page — never a static/guessed
+    // number — so this only ever reflects what a visitor can actually see and count.
+    if (!reviews.length) return;
+    const avg = reviews.reduce((sum, r) => sum + (Number(r.rating) || 0), 0) / reviews.length;
+    const schema = {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Snag AI",
+      "applicationCategory": "BrowserApplication",
+      "operatingSystem": "Chrome",
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": avg.toFixed(1),
+        "reviewCount": reviews.length
+      }
+    };
+    let tag = document.getElementById('aggregate-rating-schema');
+    if (!tag) {
+      tag = document.createElement('script');
+      tag.type = 'application/ld+json';
+      tag.id = 'aggregate-rating-schema';
+      document.head.appendChild(tag);
+    }
+    tag.textContent = JSON.stringify(schema);
+  }
+
   async function loadLiveReviews() {
     const marqueeWrap = document.getElementById('reviews-marquee-wrap');
-    const emptyState  = document.getElementById('reviews-empty');
     const track       = document.getElementById('reviews-track');
     if (!track) return;
 
@@ -260,7 +386,7 @@
 
       if (!reviews.length) {
         marqueeWrap.style.display = 'none';
-        emptyState.style.display  = 'block';
+        setReviewsCtaState(false);
         return;
       }
 
@@ -268,12 +394,13 @@
       const liveHTML = reviews.map(reviewCardHTML).join('');
       track.innerHTML = liveHTML + liveHTML;
       marqueeWrap.style.display = 'block';
-      emptyState.style.display  = 'none';
+      setReviewsCtaState(true);
       startReviewsAutoScroll();
+      injectAggregateRatingSchema(reviews);
     } catch(e) {
       // Network hiccup — show the empty state rather than a broken/empty marquee
       marqueeWrap.style.display = 'none';
-      emptyState.style.display  = 'block';
+      setReviewsCtaState(false);
     }
   }
 
@@ -347,7 +474,9 @@
       qas: [
         { q: 'How do I cancel my subscription?', a: "All plans are month-to-month with no contract. Cancel from your billing page whenever you like and you'll keep access until the end of your current cycle." },
         { q: 'Do unused cover letters roll over?', a: "No, each plan's monthly allowance resets on your billing date. Upgrade anytime if you're consistently running out before the cycle ends." },
-        { q: 'Can I get a refund?', a: "If you subscribed within the last 7 days and generated fewer than 5 proposals, you can request a full refund, no questions asked. See our <a href=\"refund.html\" target=\"_blank\">Refund Policy</a> for the full terms." }
+        { q: 'Can I get a refund?', a: "If you subscribed within the last 7 days and generated fewer than 5 proposals, you can request a full refund, no questions asked. See our <a href=\"refund.html\" target=\"_blank\">Refund Policy</a> for the full terms." },
+        { q: 'What payment methods do you accept?', a: 'All major credit and debit cards, plus Apple Pay and Google Pay where available, processed securely through Paddle at checkout.' },
+        { q: 'Can I switch plans later?', a: "Yes, upgrade or downgrade anytime from your billing page. Upgrades apply immediately, downgrades take effect at your next billing date." }
       ]
     },
     account: {
@@ -355,7 +484,8 @@
       qas: [
         { q: 'How do I verify my account?', a: 'In Settings, enter the same email you use (or plan to use) on Paddle, then verify it by clicking the link sent to your inbox.' },
         { q: 'How do I sync my profile?', a: 'A circular logo button appears bottom-right on your Upwork profile page. Click Sync and it reads your rate, JSS, skills, bio, history and portfolio in a single pass, it glows green when done.' },
-        { q: 'How many profiles can I add?', a: 'In Subscription, paste your Upwork profile URL, standard or custom URLs both work. Pro supports 1 profile, Agency supports 2, covering both your freelancer and agency profiles.' }
+        { q: 'How many profiles can I add?', a: 'In Subscription, paste your Upwork profile URL, standard or custom URLs both work. Pro supports 1 profile, Agency supports 2, covering both your freelancer and agency profiles.' },
+        { q: 'What happens if I switch Upwork accounts?', a: "Just re-sync from the new profile page, Snag AI overwrites the stored profile data so everything stays accurate to whichever account you're currently using." }
       ]
     },
     proposals: {
@@ -363,15 +493,17 @@
       qas: [
         { q: 'Will the cover letters sound like me?', a: 'Snag AI drafts using your real portfolio, rate and tone settings, then lets you refine in place with one-click commands like "shorter" or "more confident" before you send anything.' },
         { q: 'What quick commands can I use to refine a draft?', a: 'Shorter, more confident, better hook, and add rate, right inside the cover letter box, no need to rewrite from scratch.' },
-        { q: 'How many revisions do I get per proposal?', a: 'Every plan includes 1 free revision per generated cover letter, on top of your monthly proposal allowance.' }
+        { q: 'How many revisions do I get per proposal?', a: 'Every plan includes 1 free revision per generated cover letter, on top of your monthly proposal allowance.' },
+        { q: "What if the AI misses something from the job post?", a: "Edit the draft directly in the Upwork text box before sending, or use a refine command to steer it. Nothing ever sends automatically." }
       ]
     },
     audits: {
       label: 'Job & Profile Audits',
       qas: [
-        { q: 'What does a job audit actually check?', a: 'Competition level, client hire rate and spend history, and how your rate and skills stack up, then gives you a plain verdict on whether the job is worth a connect.' },
-        { q: 'What does a profile audit check?', a: 'Your profile is scored across 9 sections individually, title, bio, portfolio, credibility and more, with a literal copy-paste fix for anything that needs it. You can also export a real PDF report.' },
-        { q: 'Do audits work for agency profiles too?', a: "Yes. Every feature (cover letter writing, job audits, profile audits and smart alerts) works the same way whether you're applying as a freelancer or through an agency profile." }
+        { q: 'What does a job audit actually check?', a: 'Competition level on the job post, publicly listed client stats like hire history and spend, and how your rate and skills line up, then gives you a plain recommendation on whether the job is worth a connect.' },
+        { q: 'What does a profile audit check?', a: 'Your profile copy is reviewed across 9 sections individually, title, bio, portfolio, credibility and more, with a literal copy-paste fix for anything that needs it. You can also export a real PDF report.' },
+        { q: 'Do audits work for agency profiles too?', a: "Yes. Every feature (cover letter writing, job audits, profile audits and smart alerts) works the same way whether you're applying as a freelancer or through an agency profile." },
+        { q: 'Can I re-run an audit on the same job or profile?', a: "Yes, re-running uses a fresh credit from your monthly allowance and reflects any changes made since the last run." }
       ]
     },
     bug: { label: 'Report a Bug', qas: [] },
@@ -382,6 +514,20 @@
   let supportInputMode      = null; // null | 'email' | 'message'
   let supportCollectedEmail = '';
   let supportLastCategory   = null;
+  let supportViewedQuestions = new Set();
+  let supportTranscript      = [];
+  let supportPendingAttachments = []; // [{ name, size, type, dataBase64, dataUrl }]
+  const TALK_TO_AGENT_ICON = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13v-1a8 8 0 0 1 16 0v1"></path><path d="M20 13v3a2 2 0 0 1-2 2h-1"></path><rect x="3" y="13" width="4" height="5" rx="1.5"></rect><rect x="17" y="13" width="4" height="5" rx="1.5"></rect><path d="M14 19a2 2 0 0 1-2 2h-1"></path></svg>';
+  const ATTACH_ICON = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a5 5 0 0 1-7.07-7.07l9.19-9.19a3.5 3.5 0 0 1 4.95 4.95l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>';
+  const MAX_ATTACHMENT_BYTES = 5 * 1024 * 1024;
+  const MAX_ATTACHMENT_COUNT = 4;
+  const MAX_ATTACHMENT_TOTAL_BYTES = 15 * 1024 * 1024;
+
+  function formatBytes(n) {
+    if (n < 1024) return n + ' B';
+    if (n < 1024 * 1024) return Math.round(n / 1024) + ' KB';
+    return (n / (1024 * 1024)).toFixed(1) + ' MB';
+  }
 
   function toggleSupportWidget(forceOpen) {
     supportPanelOpen = typeof forceOpen === 'boolean' ? forceOpen : !supportPanelOpen;
@@ -394,13 +540,109 @@
   }
   function closeSupportWidget() { toggleSupportWidget(false); }
 
+  function hideInlineInput() {
+    const row = document.getElementById('support-inline-input-row');
+    row.style.display = 'none';
+    row.innerHTML = '';
+    hideInlineError();
+    clearPendingAttachments();
+    supportInputMode = null;
+  }
+
+  function clearPendingAttachments() {
+    supportPendingAttachments = [];
+    renderAttachmentPreview();
+  }
+
+  function removePendingAttachment(index) {
+    supportPendingAttachments.splice(index, 1);
+    renderAttachmentPreview();
+    scrollThreadToBottom();
+  }
+
+  function renderAttachmentPreview() {
+    const preview = document.getElementById('support-attachment-preview');
+    if (!supportPendingAttachments.length) { preview.style.display = 'none'; preview.innerHTML = ''; return; }
+    preview.style.display = 'flex';
+    preview.style.flexWrap = 'wrap';
+    preview.innerHTML = supportPendingAttachments.map((a, i) => `
+      <div style="display: flex; align-items: center; gap: 8px; background: #10141F; border: 1px solid #232838; border-radius: 12px; padding: 5px 8px; max-width: 100%;">
+        <img src="${a.dataUrl}" alt="" style="width: 30px; height: 30px; border-radius: 7px; object-fit: cover; flex-shrink: 0;">
+        <div style="min-width: 0;">
+          <div style="font-size: 11px; color: #E7E9F0; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px;">${a.name}</div>
+          <div style="font-size: 10px; color: #7A8194;">${formatBytes(a.size)}</div>
+        </div>
+        <button data-remove-index="${i}" aria-label="Remove attachment" style="flex-shrink: 0; width: 20px; height: 20px; border-radius: 50%; border: none; cursor: pointer; background: rgba(239,68,68,0.14); color: #F87171; display: flex; align-items: center; justify-content: center; margin-left: 2px;">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M6 6L18 18M18 6L6 18" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"></path></svg>
+        </button>
+      </div>`).join('');
+    preview.querySelectorAll('[data-remove-index]').forEach(btn => {
+      btn.onclick = () => removePendingAttachment(Number(btn.dataset.removeIndex));
+    });
+  }
+
+  function handleAttachmentFiles(fileList) {
+    const files = Array.from(fileList || []);
+    if (!files.length) return;
+    // FileReader is async, so pushes to supportPendingAttachments land later —
+    // track the count/size synchronously here rather than reading the array
+    // mid-loop, otherwise every file in one batch sees the same stale length.
+    let queuedCount = supportPendingAttachments.length;
+    let runningTotal = supportPendingAttachments.reduce((sum, a) => sum + a.size, 0);
+    for (const file of files) {
+      if (queuedCount >= MAX_ATTACHMENT_COUNT) {
+        showInlineError(`You can attach up to ${MAX_ATTACHMENT_COUNT} images.`);
+        break;
+      }
+      if (!file.type.startsWith('image/')) { showInlineError('Attachments must be an image (PNG, JPG, WEBP or GIF).'); continue; }
+      if (file.size > MAX_ATTACHMENT_BYTES) { showInlineError('Each image must be under 5MB.'); continue; }
+      if (runningTotal + file.size > MAX_ATTACHMENT_TOTAL_BYTES) { showInlineError('That’s too much combined — attachments must total under 15MB.'); continue; }
+      runningTotal += file.size;
+      queuedCount += 1;
+      const reader = new FileReader();
+      reader.onload = () => {
+        supportPendingAttachments.push({
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          dataBase64: reader.result.split(',')[1],
+          dataUrl: reader.result
+        });
+        renderAttachmentPreview();
+        scrollThreadToBottom();
+      };
+      reader.readAsDataURL(file);
+    }
+  }
+
+  function hideInlineError() {
+    const err = document.getElementById('support-inline-error');
+    err.style.display = 'none';
+    err.textContent = '';
+  }
+
+  function showInlineError(text) {
+    const err = document.getElementById('support-inline-error');
+    err.textContent = text;
+    err.style.display = 'block';
+    const field = document.getElementById('support-inline-field');
+    if (field) { field.style.border = '1px solid #F87171'; field.focus(); }
+    scrollThreadToBottom();
+  }
+
+  function isValidEmail(value) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value);
+  }
+
   function showSupportHome() {
     document.getElementById('support-home-greeting').style.display = 'block';
     document.getElementById('support-home-body').style.display = 'block';
     const thread = document.getElementById('support-thread');
     thread.style.display = 'none';
     thread.innerHTML = '';
+    hideInlineInput();
     document.getElementById('support-search-field').value = '';
+    supportTranscript = [];
   }
 
   function showSupportChat() {
@@ -408,6 +650,11 @@
     const thread = document.getElementById('support-thread');
     thread.style.display = 'flex';
     thread.innerHTML = '';
+    hideInlineInput();
+  }
+
+  function logSupportStep(text) {
+    supportTranscript.push(text);
   }
 
   function renderSupportTopicsList() {
@@ -459,6 +706,23 @@
     scrollThreadToBottom();
   }
 
+  function addUserAttachmentThumbnails(attachments) {
+    if (!attachments || !attachments.length) return;
+    const thread = document.getElementById('support-thread');
+    const row = document.createElement('div');
+    row.style.cssText = 'display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 6px; margin-right: 12px;';
+    attachments.forEach(a => {
+      const img = document.createElement('img');
+      img.src = a.dataUrl;
+      img.alt = a.name;
+      img.title = `${a.name} (${formatBytes(a.size)})`;
+      img.style.cssText = 'width: 52px; height: 52px; border-radius: 10px; object-fit: cover; border: 1px solid #232838; flex-shrink: 0;';
+      row.appendChild(img);
+    });
+    thread.appendChild(row);
+    scrollThreadToBottom();
+  }
+
   function addBotMessage(text, then) {
     const thread = document.getElementById('support-thread');
     const typingRow = showTypingIndicator();
@@ -492,14 +756,26 @@
     scrollThreadToBottom();
   }
 
-  function addPills(options) {
+  function addPills(options, variant) {
+    const isConnect = variant === 'connect';
     const thread = document.getElementById('support-thread');
     const wrap = document.createElement('div');
-    wrap.style.cssText = 'display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; align-self: stretch; margin: 2px 0;';
+    wrap.style.cssText = `display: flex; gap: 6px; justify-content: ${isConnect ? 'flex-end' : 'center'}; flex-wrap: wrap; align-self: stretch; margin: 2px 0;`;
     options.forEach(opt => {
       const btn = document.createElement('button');
-      btn.style.cssText = "display: flex; align-items: center; gap: 5px; padding: 6px 11px; border-radius: 999px; background: #10141F; border: 1px solid #1E2330; color: #C5CAD9; font-size: 10.5px; font-weight: 500; font-family: 'Plus Jakarta Sans', sans-serif; cursor: pointer;";
-      btn.textContent = opt.label;
+      btn.style.cssText = isConnect
+        ? "display: flex; align-items: center; gap: 6px; padding: 7px 13px; border-radius: 999px; background: linear-gradient(135deg, #A855F7, #EC4899); border: none; color: #fff; font-size: 10px; font-weight: 600; font-family: 'Plus Jakarta Sans', sans-serif; cursor: pointer; box-shadow: 0 8px 18px -8px rgba(236,72,153,0.5);"
+        : "display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; background: #171B26; border: 1px solid #262C3C; color: #E7E9F0; font-size: 10px; font-weight: 500; font-family: 'Plus Jakarta Sans', sans-serif; cursor: pointer;";
+      if (opt.icon) {
+        btn.innerHTML = `<span style="display:flex; flex-shrink:0;">${opt.icon}</span><span>${opt.label}</span>`;
+      } else {
+        const match = opt.label.match(/^(\S+)\s+(.*)$/);
+        if (match) {
+          btn.innerHTML = `<span style="font-size: ${isConnect ? '11px' : '11.5px'};">${match[1]}</span><span>${match[2]}</span>`;
+        } else {
+          btn.textContent = opt.label;
+        }
+      }
       btn.onclick = () => { wrap.querySelectorAll('button').forEach(b => { b.disabled = true; b.style.opacity = '0.5'; b.style.cursor = 'default'; }); opt.onClick(); };
       wrap.appendChild(btn);
     });
@@ -509,45 +785,76 @@
 
   function addInlineInput(mode) {
     supportInputMode = mode;
-    const thread = document.getElementById('support-thread');
-    const row = document.createElement('div');
-    row.id = 'support-inline-input-row';
-    row.style.cssText = 'display: flex; align-items: center; gap: 8px; align-self: stretch;';
+    const row = document.getElementById('support-inline-input-row');
     const isEmail = mode === 'email';
-    row.innerHTML = `
-      <input id="support-inline-field" type="${isEmail ? 'email' : 'text'}" placeholder="${isEmail ? 'you@example.com' : "What's going on?"}" style="flex: 1; min-width: 0; padding: 9px 13px; border-radius: 999px; background: #10141F; border: 1px solid #232838; color: #F5F6FA; font-size: 12px; font-family: 'Plus Jakarta Sans', sans-serif; outline: none;">
+    row.style.alignItems = 'flex-end';
+    const attachButtonHtml = isEmail ? '' : `
+      <button id="support-attach-btn" type="button" aria-label="Attach an image" style="flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; border: 1px solid #232838; background: #10141F; color: #9BA2B5; cursor: pointer; display: flex; align-items: center; justify-content: center;">${ATTACH_ICON}</button>
+      <input id="support-attach-file" type="file" accept="image/png,image/jpeg,image/webp,image/gif" multiple style="display: none;">`;
+    row.innerHTML = attachButtonHtml + (isEmail
+      ? `<input id="support-inline-field" type="email" placeholder="you@example.com" style="flex: 1; min-width: 0; padding: 9px 13px; border-radius: 999px; background: #10141F; border: 1px solid #232838; color: #F5F6FA; font-size: 12px; font-family: 'Plus Jakarta Sans', sans-serif; outline: none;">`
+      : `<textarea id="support-inline-field" rows="1" placeholder="What's going on?" style="flex: 1; min-width: 0; max-height: 96px; padding: 9px 13px; border-radius: 18px; background: #10141F; border: 1px solid #232838; color: #F5F6FA; font-size: 12px; font-family: 'Plus Jakarta Sans', sans-serif; outline: none; resize: none; overflow-y: hidden; line-height: 1.4;"></textarea>`);
+    row.innerHTML += `
       <button id="support-inline-send" aria-label="Send" style="flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; border: none; cursor: pointer; background: linear-gradient(135deg, #2DD4BF, #A855F7); display: flex; align-items: center; justify-content: center;">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="#fff"><path d="M3 20l18-8L3 4v6l12 2-12 2v6z"></path></svg>
       </button>`;
-    thread.appendChild(row);
+    row.style.display = 'flex';
+    hideInlineError();
     scrollThreadToBottom();
     const field = row.querySelector('#support-inline-field');
     const send  = row.querySelector('#support-inline-send');
     field.focus();
     send.onclick = () => handleInlineInputSubmit();
-    field.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); handleInlineInputSubmit(); } });
+    if (!isEmail) {
+      const attachBtn  = document.getElementById('support-attach-btn');
+      const attachFile = document.getElementById('support-attach-file');
+      attachBtn.onclick = () => attachFile.click();
+      attachFile.onchange = () => { handleAttachmentFiles(attachFile.files); attachFile.value = ''; };
+    }
+    field.addEventListener('input', () => {
+      field.style.border = '1px solid #232838';
+      hideInlineError();
+      if (!isEmail) {
+        field.style.height = 'auto';
+        field.style.height = Math.min(field.scrollHeight, 96) + 'px';
+        scrollThreadToBottom();
+      }
+    });
+    field.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleInlineInputSubmit(); }
+    });
   }
 
   function handleInlineInputSubmit() {
     const row   = document.getElementById('support-inline-input-row');
     const field = document.getElementById('support-inline-field');
     const value = field.value.trim();
-    if (!value) return;
 
     if (supportInputMode === 'email') {
-      if (!value.includes('@')) return;
+      if (!value) return;
+      if (!isValidEmail(value)) {
+        showInlineError("That doesn't look like a valid email — please enter a correct email address.");
+        return;
+      }
       supportCollectedEmail = value;
-      row.remove();
+      row.style.display = 'none';
+      row.innerHTML = '';
       addUserMessage(value);
       addBotMessage("Thanks! Now tell me what's going on.", () => addInlineInput('message'));
       return;
     }
 
     if (supportInputMode === 'message') {
-      if (value.length < 5) return;
-      row.remove();
-      addUserMessage(value);
-      submitSupportRequest(supportCollectedEmail, value);
+      const attachments = supportPendingAttachments.slice();
+      if (!attachments.length && value.length < 5) return;
+      const finalMessage = value || (attachments.length > 1 ? 'See attached images.' : 'See attached image.');
+      row.style.display = 'none';
+      row.innerHTML = '';
+      hideInlineError();
+      addUserAttachmentThumbnails(attachments);
+      if (value) addUserMessage(value);
+      clearPendingAttachments();
+      submitSupportRequest(supportCollectedEmail, finalMessage, attachments);
     }
   }
 
@@ -561,16 +868,26 @@
     if (!query) return;
     document.getElementById('support-search-field').value = '';
     showSupportChat();
+    logSupportStep(`Searched: "${query}"`);
     addUserMessage(query);
     addBotMessage("Let's find the right place for that, pick a topic below:", () => {
       addOptionsList(Object.keys(SUPPORT_TREE).map(id => ({ label: SUPPORT_TREE[id].label, onClick: () => selectSupportTopic(id) })));
     });
   }
 
+  function showTalkToAgentPill() {
+    logSupportStep('Ran out of matching FAQ answers, offered to talk to a human.');
+    addBotMessage("That's everything I've got on this topic, want to talk to a real person?", () => {
+      addPills([{ label: 'Talk to agent', icon: TALK_TO_AGENT_ICON, onClick: () => addInlineInput('email') }], 'connect');
+    });
+  }
+
   function selectSupportTopic(id) {
     const topic = SUPPORT_TREE[id];
     supportLastCategory = id;
+    supportViewedQuestions = new Set();
     showSupportChat();
+    logSupportStep(`Selected topic: "${topic.label}"`);
     addUserMessage(topic.label);
     if (!topic.qas.length) {
       addBotMessage("Got it, tell us more and we'll route it to a human.", () => addInlineInput('email'));
@@ -578,42 +895,63 @@
     }
     addBotMessage('Common questions on this topic', () => {
       addOptionsList(topic.qas.map((item, i) => ({ label: item.q, onClick: () => selectSupportQuestion(id, i) })));
-      addPills([{ label: '💬 Connect to agent', onClick: () => addInlineInput('email') }]);
     });
   }
 
   function selectSupportQuestion(topicId, qIndex) {
-    const item = SUPPORT_TREE[topicId].qas[qIndex];
+    const topic = SUPPORT_TREE[topicId];
+    const item  = topic.qas[qIndex];
+    supportViewedQuestions.add(qIndex);
+    logSupportStep(`Clicked FAQ: "${item.q}"`);
     addUserMessage(item.q);
     addBotMessage(item.a, () => {
       addBotMessage('Did that answer your question?', () => {
         addPills([
           { label: '👍 Yes, thanks', onClick: () => onSupportFeedbackYes() },
-          { label: '📩 No, I need more help', onClick: () => addInlineInput('email') }
+          { label: '📩 No, I need more help', onClick: () => onSupportFeedbackNo(topicId) }
         ]);
       });
     });
   }
 
   function onSupportFeedbackYes() {
+    logSupportStep('Marked the FAQ answer as helpful (resolved without agent).');
     addUserMessage('👍 Yes, thanks');
     addBotMessage('Glad that helped!', () => showSupportHome());
   }
 
-  async function submitSupportRequest(email, message) {
+  function onSupportFeedbackNo(topicId) {
+    logSupportStep('Said the FAQ answer did not help.');
+    addUserMessage('📩 No, I need more help');
+    const topic     = SUPPORT_TREE[topicId];
+    const remaining = topic.qas.map((_, i) => i).filter(i => !supportViewedQuestions.has(i));
+    if (!remaining.length) {
+      showTalkToAgentPill();
+      return;
+    }
+    addBotMessage('No worries, here are a few other things that might help:', () => {
+      addOptionsList(remaining.map(i => ({ label: topic.qas[i].q, onClick: () => selectSupportQuestion(topicId, i) })));
+    });
+  }
+
+  async function submitSupportRequest(email, message, attachments) {
     const category = supportLastCategory ? SUPPORT_TREE[supportLastCategory].label : 'General';
     addBotMessage('Sending this to our team…');
     try {
+      const body = { email, category, message, transcript: supportTranscript };
+      if (attachments && attachments.length) {
+        body.attachments = attachments.map(a => ({ filename: a.name, contentType: a.type, dataBase64: a.dataBase64 }));
+      }
       const res  = await fetch(`${SNAG_API_URL}/support/contact`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, category, message })
+        body: JSON.stringify(body)
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Something went wrong.');
       addBotMessage("Thanks! We'll get back to you at " + email + " soon. 📬");
     } catch(e) {
-      addBotMessage(e.message, () => addPills([{ label: 'Try again', onClick: () => addInlineInput('message') }]));
+      addBotMessage(e.message, () => addPills([{ label: '🔁 Try again', onClick: () => addInlineInput('message') }], 'connect'));
     }
   }
 </script>
@@ -660,11 +998,10 @@
       <div style="position: absolute; top: -180px; right: 10%; width: 420px; height: 340px; border-radius: 50%; background: radial-gradient(circle, rgba(236,72,153,0.22), transparent 68%); filter: blur(55px);"></div>
     </div>
     <div style="display: flex; align-items: center; justify-content: space-between; padding: 9px 28px; box-sizing: border-box;">
-      <a href="#" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;" style="display: flex; align-items: center; gap: 12px; text-decoration: none; cursor: pointer;">
-        <div style="position: relative; width: 36px; height: 36px; border-radius: 22%; overflow: hidden; flex-shrink: 0;">
-          <div style="position: absolute; inset: 0; background: #0d0a1a;"></div>
-          <div style="position: absolute; left: 50%; top: 50%; width: 78%; height: 78%; transform: translate(-50%,-50%); border-radius: 50%; mask-image: radial-gradient(circle, transparent 50%, black 56%, black 82%, transparent 86%); -webkit-mask-image: radial-gradient(circle, transparent 50%, black 56%, black 82%, transparent 86%); background: conic-gradient(from 200deg, #2DD4BF, #3B82F6 25%, #A855F7 55%, #EC4899 80%, #2DD4BF 100%);"></div>
-          <div style="position: absolute; left: 50%; top: 50%; width: 42%; height: 42%; transform: translate(-50%,-50%); border-radius: 50%; background: #000;"></div>
+      <a href="#" onclick="window.scrollTo({top:0,behavior:'smooth'});return false;" style="display: flex; align-items: center; gap: 6px; text-decoration: none; cursor: pointer;">
+        <div style="position: relative; width: 36px; height: 36px; flex-shrink: 0;">
+          <div style="position: absolute; left: 50%; top: 50%; width: 64%; height: 64%; transform: translate(-50%,-50%); border-radius: 50%; background: conic-gradient(from 200deg, #2DD4BF, #3B82F6 25%, #A855F7 55%, #EC4899 80%, #2DD4BF 100%);"></div>
+          <div style="position: absolute; inset: 25%; border-radius: 50%; background: #000;"></div>
         </div>
         <span style="font-family: 'Sora', sans-serif; font-size: 18px; font-weight: 700; letter-spacing: -0.01em; color: #F5F6FA;">Snag AI</span>
       </a>
@@ -678,7 +1015,7 @@
       </nav>
 
       <div style="display: flex; align-items: center; gap: 14px;">
-        <a href="#" style="padding: 7px 18px; border-radius: 999px; background: linear-gradient(90deg, #2DD4BF, #A855F7); color: #fff; font-size: 13.5px; font-weight: 700; text-decoration: none; box-shadow: 0 8px 20px -8px rgba(168,85,247,0.5); display: inline-block; line-height: 1.4;">Add to Chrome</a>
+        <a href="#" style="padding: 6px 15px; border-radius: 999px; background: linear-gradient(90deg, #2DD4BF, #A855F7, #EC4899); color: #fff; font-size: 12.5px; font-weight: 700; text-decoration: none; box-shadow: 0 6px 16px -8px rgba(168,85,247,0.5); display: inline-block; line-height: 1.4;">Add to Chrome</a>
       </div>
     </div>
   </header>
@@ -699,29 +1036,25 @@
       Snag AI audits jobs, audits your profile, and writes cover letters right on the page you apply from, for freelancer and agency profiles alike.
     </p>
 
-    <div style="display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 20px; animation: fadeUp 0.6s ease 0.15s both;">
-      <a href="#features" style="padding: 15px 30px; border-radius: 999px; background: linear-gradient(90deg, #2DD4BF, #A855F7, #EC4899); color: #fff; font-size: 15.5px; font-weight: 700; text-decoration: none; box-shadow: 0 14px 30px -10px rgba(168,85,247,0.55); position: relative; z-index: 1;">See it in action</a>
-      <a href="#how-it-works" style="padding: 15px 26px; border-radius: 999px; border: 1px solid #232838; background: #0B0E17; color: #E7E9F0; font-size: 15px; font-weight: 700; text-decoration: none; position: relative; z-index: 1;">How it works</a>
-    </div>
-    <div style="font-size: 13px; color: #565D70; animation: fadeUp 0.6s ease 0.2s both;">Plans start at $19/mo · Cancel anytime</div>
+    <a href="#pricing" style="display: inline-block; font-size: 13px; font-weight: 400; background: linear-gradient(135deg, #A855F7, #EC4899); -webkit-background-clip: text; background-clip: text; color: transparent; text-decoration: none; cursor: pointer; animation: fadeUp 0.6s ease 0.15s both;">Plans start at <span style="text-decoration: underline; text-decoration-color: #C084FC; text-underline-offset: 3px;">$19/mo</span> · Cancel anytime</a>
 
     <!-- product visual -->
     <div style="position: relative; margin-top: 64px; animation: fadeUp 0.7s ease 0.25s both;">
-      <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 18px;">
-        <span style="width: 6px; height: 6px; border-radius: 50%; background: #5EEAD4;"></span>
-        <span style="font-size: 12px; font-weight: 800; letter-spacing: 0.1em; color: #5EEAD4;">REAL EXAMPLE</span>
-      </div>
-      <div style="position: relative; border-radius: 21px; background: #0B0E17; padding: 28px; text-align: left; overflow: hidden;">
+      <div style="position: relative; border-radius: 21px; background: #0B0E17; padding: 40px; text-align: left; overflow: hidden;">
         <div style="position: absolute; inset: 0; background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 22px 22px;
           mask-image: radial-gradient(ellipse 700px 340px at 20% 0%, black, transparent 70%);
           -webkit-mask-image: radial-gradient(ellipse 700px 340px at 20% 0%, black, transparent 70%); pointer-events: none;"></div>
         <div style="position: absolute; top: -80px; right: -60px; width: 360px; height: 360px; border-radius: 50%; background: radial-gradient(circle, rgba(168,85,247,0.12), transparent 68%); filter: blur(60px); pointer-events: none;"></div>
+        <div style="position: relative; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 22px;">
+          <span style="width: 6px; height: 6px; border-radius: 50%; background: #5EEAD4;"></span>
+          <span style="font-size: 12px; font-weight: 800; letter-spacing: 0.1em; color: #5EEAD4;">REAL EXAMPLE</span>
+        </div>
         <div style="position: relative; display: flex; align-items: center; gap: 10px; margin-bottom: 22px;">
           <span style="display: flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 999px; background: #10141F; border: 1px solid #1D2230; font-size: 11px; font-weight: 600; color: #7A8194;">
             <span style="width: 5px; height: 5px; border-radius: 50%; background: #34D399;"></span>upwork.com/jobs
           </span>
         </div>
-        <div style="position: relative; display: grid; grid-template-columns: 1.1fr 1fr; gap: 22px; align-items: start;">
+        <div style="position: relative; display: grid; grid-template-columns: 1.1fr 1fr; gap: 22px; align-items: stretch;">
           <div style="border-radius: 14px; background: #10141F; border: 1px solid #1D2230; padding: 22px; display: flex; flex-direction: column;">
             <div style="font-size: 11px; font-weight: 800; letter-spacing: 0.06em; color: #565D70; margin-bottom: 12px;">JOB POST</div>
             <div style="font-family: 'Sora', sans-serif; font-size: 16px; font-weight: 700; color: #F5F6FA; margin-bottom: 6px;">Senior React Native Developer: Bluetooth-Connected Fitness Hardware App</div>
@@ -738,6 +1071,18 @@
               <div style="font-size: 12.5px; color: #9199AB; line-height: 1.6;">• Turn wireframes into a smooth app across iOS &amp; Android</div>
             </div>
 
+            <div style="font-size: 11px; font-weight: 800; letter-spacing: 0.05em; color: #565D70; margin-bottom: 8px;">REQUIREMENTS</div>
+            <div style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px;">
+              <div style="font-size: 12.5px; color: #9199AB; line-height: 1.6;">• 3+ years shipping production React Native apps</div>
+              <div style="font-size: 12.5px; color: #9199AB; line-height: 1.6;">• Comfortable with BLE/Bluetooth device integrations</div>
+              <div style="font-size: 12.5px; color: #9199AB; line-height: 1.6;">• Strong UI/UX instincts, portfolio of shipped apps required</div>
+            </div>
+
+            <div style="border-radius: 10px; background: rgba(255,255,255,0.03); border: 1px solid #1D2230; padding: 12px 14px; margin-bottom: 14px;">
+              <div style="font-size: 10.5px; font-weight: 800; letter-spacing: 0.05em; color: #565D70; margin-bottom: 6px;">ABOUT THE CLIENT</div>
+              <div style="font-size: 12px; color: #9199AB; line-height: 1.7;">Payment verified · $52K spent · 4.9★ (86 reviews)<br>United States · Member since 2019</div>
+            </div>
+
             <div style="flex: 1;"></div>
             <div style="display: flex; gap: 8px; margin-top: 4px; flex-wrap: wrap;">
               <span style="font-size: 11.5px; font-weight: 700; padding: 5px 11px; border-radius: 999px; background: rgba(94,234,212,0.14); color: #5EEAD4;">95% match</span>
@@ -748,10 +1093,9 @@
           <div style="border-radius: 14px; background: linear-gradient(160deg, rgba(168,85,247,0.1), rgba(11,14,23,0.4)); border: 1px solid rgba(168,85,247,0.3); padding: 22px; display: flex; flex-direction: column;">
             <div style="font-size: 11px; font-weight: 800; letter-spacing: 0.06em; color: #C084FC; margin-bottom: 12px;">AI PROPOSAL</div>
             <div style="display: flex; align-items: center; gap: 9px; margin-bottom: 14px;">
-              <span style="width: 24px; height: 24px; border-radius: 22%; overflow: hidden; flex-shrink: 0; position: relative;">
-                <span style="position: absolute; inset: 0; background: #0d0a1a;"></span>
-                <span style="position: absolute; left: 50%; top: 50%; width: 78%; height: 78%; transform: translate(-50%,-50%); border-radius: 50%; mask-image: radial-gradient(circle, transparent 50%, black 56%, black 82%, transparent 86%); -webkit-mask-image: radial-gradient(circle, transparent 50%, black 56%, black 82%, transparent 86%); background: conic-gradient(from 200deg, #2DD4BF, #3B82F6 25%, #A855F7 55%, #EC4899 80%, #2DD4BF 100%);"></span>
-                <span style="position: absolute; left: 50%; top: 50%; width: 42%; height: 42%; transform: translate(-50%,-50%); border-radius: 50%; background: #000;"></span>
+              <span style="width: 24px; height: 24px; flex-shrink: 0; position: relative;">
+                <span style="position: absolute; left: 50%; top: 50%; width: 64%; height: 64%; transform: translate(-50%,-50%); border-radius: 50%; background: conic-gradient(from 200deg, #2DD4BF, #3B82F6 25%, #A855F7 55%, #EC4899 80%, #2DD4BF 100%);"></span>
+          <span style="position: absolute; inset: 25%; border-radius: 50%; background: #000;"></span>
               </span>
               <span style="font-family: 'Sora', sans-serif; font-size: 14.5px; font-weight: 700; color: #F5F6FA;">Snag AI</span>
             </div>
@@ -834,10 +1178,9 @@
 
               <div style="margin-top: 22px; width: 320px; max-width: 100%; background: #0d1120; border: 1px solid rgba(99,102,241,0.35); border-radius: 18px; color: #f0eeea; box-shadow: 0 12px 40px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; overflow: hidden;">
                 <div style="display: flex; align-items: center; gap: 9px; padding: 12px 14px 10px; border-bottom: 1px solid rgba(255,255,255,0.06);">
-                  <span style="width: 24px; height: 24px; border-radius: 22%; overflow: hidden; flex-shrink: 0; position: relative;">
-                    <span style="position: absolute; inset: 0; background: #0d0a1a;"></span>
-                    <span style="position: absolute; left: 50%; top: 50%; width: 78%; height: 78%; transform: translate(-50%,-50%); border-radius: 50%; mask-image: radial-gradient(circle, transparent 50%, black 56%, black 82%, transparent 86%); -webkit-mask-image: radial-gradient(circle, transparent 50%, black 56%, black 82%, transparent 86%); background: conic-gradient(from 200deg, #2DD4BF, #3B82F6 25%, #A855F7 55%, #EC4899 80%, #2DD4BF 100%);"></span>
-                    <span style="position: absolute; left: 50%; top: 50%; width: 42%; height: 42%; transform: translate(-50%,-50%); border-radius: 50%; background: #000;"></span>
+                  <span style="width: 24px; height: 24px; flex-shrink: 0; position: relative;">
+                    <span style="position: absolute; left: 50%; top: 50%; width: 64%; height: 64%; transform: translate(-50%,-50%); border-radius: 50%; background: conic-gradient(from 200deg, #2DD4BF, #3B82F6 25%, #A855F7 55%, #EC4899 80%, #2DD4BF 100%);"></span>
+          <span style="position: absolute; inset: 25%; border-radius: 50%; background: #000;"></span>
                   </span>
                   <div style="flex: 1;">
                     <div style="font-size: 12px; font-weight: 700; letter-spacing: -0.01em; color: #f0eeea;">Snag AI</div>
@@ -917,15 +1260,15 @@
           <div class="fx-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: stretch;">
 
             <div style="order: 2;">
-              <p style="font-size: 15px; color: #8B92A5; line-height: 1.7; margin: 0 0 20px;">Snag AI pulls the job's competition signals, the client's hire history and spend, and your own rate and skills, then gives you a plain verdict (Apply, Apply carefully, or Skip) before you spend a connect.</p>
+              <p style="font-size: 15px; color: #8B92A5; line-height: 1.7; margin: 0 0 20px;">Snag AI reads the job post for competition signals, budget clarity and scope red flags, and compares it against your own rate and skills, giving you a clear read (Apply, Apply carefully, or Skip) before you spend a connect.</p>
               <div style="display: flex; flex-direction: column; gap: 10px;">
                 <div style="display: flex; align-items: flex-start; gap: 10px;">
                   <span style="width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; background: rgba(168,85,247,0.14); color: #C084FC;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
-                  <span style="font-size: 14px; color: #9199AB; line-height: 1.6;">A clear verdict (Apply, Apply carefully, or Skip), not just a score</span>
+                  <span style="font-size: 14px; color: #9199AB; line-height: 1.6;">A clear recommendation (Apply, Apply carefully, or Skip), broken down in plain language</span>
                 </div>
                 <div style="display: flex; align-items: flex-start; gap: 10px;">
                   <span style="width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; background: rgba(168,85,247,0.14); color: #C084FC;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
-                  <span style="font-size: 14px; color: #9199AB; line-height: 1.6;">Competition pressure and your profile fit, rated side by side</span>
+                  <span style="font-size: 14px; color: #9199AB; line-height: 1.6;">Competition pressure and how well your profile matches the job, compared side by side</span>
                 </div>
                 <div style="display: flex; align-items: flex-start; gap: 10px;">
                   <span style="width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; background: rgba(168,85,247,0.14); color: #C084FC;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
@@ -933,7 +1276,7 @@
                 </div>
                 <div style="display: flex; align-items: flex-start; gap: 10px;">
                   <span style="width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; background: rgba(168,85,247,0.14); color: #C084FC;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
-                  <span style="font-size: 14px; color: #9199AB; line-height: 1.6;">Client hire rate, total spend and verification status factored in</span>
+                  <span style="font-size: 14px; color: #9199AB; line-height: 1.6;">Publicly listed job-page stats like client spend and hire history, pulled together in one place</span>
                 </div>
                 <div style="display: flex; align-items: flex-start; gap: 10px;">
                   <span style="width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; background: rgba(168,85,247,0.14); color: #C084FC;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
@@ -950,10 +1293,9 @@
               <div style="position: absolute; inset: -1px; border-radius: 18px; background: linear-gradient(120deg, rgba(99,102,241,0.4), rgba(168,85,247,0.3)); opacity: 0.5;"></div>
               <div style="position: relative; flex: 1; display: flex; flex-direction: column; width: 100%; background: #0d1120; border: 1px solid rgba(99,102,241,0.3); border-radius: 17px; color: #f0eeea; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; overflow: hidden;">
                 <div style="display: flex; align-items: center; gap: 10px; padding: 14px 18px; border-bottom: 1px solid rgba(255,255,255,0.06);">
-                  <span style="width: 26px; height: 26px; border-radius: 22%; overflow: hidden; flex-shrink: 0; position: relative;">
-                    <span style="position: absolute; inset: 0; background: #0d0a1a;"></span>
-                    <span style="position: absolute; left: 50%; top: 50%; width: 78%; height: 78%; transform: translate(-50%,-50%); border-radius: 50%; mask-image: radial-gradient(circle, transparent 50%, black 56%, black 82%, transparent 86%); -webkit-mask-image: radial-gradient(circle, transparent 50%, black 56%, black 82%, transparent 86%); background: conic-gradient(from 200deg, #2DD4BF, #3B82F6 25%, #A855F7 55%, #EC4899 80%, #2DD4BF 100%);"></span>
-                    <span style="position: absolute; left: 50%; top: 50%; width: 42%; height: 42%; transform: translate(-50%,-50%); border-radius: 50%; background: #000;"></span>
+                  <span style="width: 26px; height: 26px; flex-shrink: 0; position: relative;">
+                    <span style="position: absolute; left: 50%; top: 50%; width: 64%; height: 64%; transform: translate(-50%,-50%); border-radius: 50%; background: conic-gradient(from 200deg, #2DD4BF, #3B82F6 25%, #A855F7 55%, #EC4899 80%, #2DD4BF 100%);"></span>
+          <span style="position: absolute; inset: 25%; border-radius: 50%; background: #000;"></span>
                   </span>
                   <div style="flex: 1;">
                     <div style="font-size: 13px; font-weight: 700; color: #f0eeea;">Snag AI</div>
@@ -1027,20 +1369,20 @@
             </span>
             <span style="font-size: 12px; font-weight: 800; letter-spacing: 0.08em; color: #C084FC;">PROFILE AUDITS</span>
           </div>
-          <h3 style="font-family: 'Sora', sans-serif; font-size: 40px; font-weight: 700; letter-spacing: -0.02em; color: #F5F6FA; margin: 0 0 44px; max-width: 720px;">A scored, section-by-section profile review</h3>
+          <h3 style="font-family: 'Sora', sans-serif; font-size: 40px; font-weight: 700; letter-spacing: -0.02em; color: #F5F6FA; margin: 0 0 44px; max-width: 720px;">A detailed, section-by-section profile review</h3>
 
           <div class="fx-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: stretch;">
 
             <div style="order: 1;">
-              <p style="font-size: 15px; color: #8B92A5; line-height: 1.7; margin: 0 0 20px;">Snag AI scores your profile across 9 weighted sections (title, bio, skills, portfolio, work history, credibility, certificates, completeness and positioning) then hands you a literal copy-paste fix for each one that needs it.</p>
+              <p style="font-size: 15px; color: #8B92A5; line-height: 1.7; margin: 0 0 20px;">Snag AI reviews your profile copy across 9 sections (title, bio, skills, portfolio, work history, credibility, certificates, completeness and positioning) and hands you a literal copy-paste fix for each one that needs it.</p>
               <div style="display: flex; flex-direction: column; gap: 10px;">
                 <div style="display: flex; align-items: flex-start; gap: 10px;">
                   <span style="width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; background: rgba(168,85,247,0.14); color: #C084FC;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
-                  <span style="font-size: 14px; color: #9199AB; line-height: 1.6;">One overall score out of 10, plus a status from Critical to Elite</span>
+                  <span style="font-size: 14px; color: #9199AB; line-height: 1.6;">One overall rating out of 10 for your profile copy, plus a quick summary of where to focus first</span>
                 </div>
                 <div style="display: flex; align-items: flex-start; gap: 10px;">
                   <span style="width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; background: rgba(168,85,247,0.14); color: #C084FC;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
-                  <span style="font-size: 14px; color: #9199AB; line-height: 1.6;">9 sections scored individually: title, bio, portfolio, credibility and more</span>
+                  <span style="font-size: 14px; color: #9199AB; line-height: 1.6;">9 sections reviewed individually: title, bio, portfolio, credibility and more</span>
                 </div>
                 <div style="display: flex; align-items: flex-start; gap: 10px;">
                   <span style="width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; background: rgba(168,85,247,0.14); color: #C084FC;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
@@ -1062,7 +1404,7 @@
 
               <div style="margin-top: 22px; border-radius: 13px; background: #10141F; border: 1px solid rgba(168,85,247,0.3); padding: 18px 20px;">
                 <div style="font-size: 11px; font-weight: 800; letter-spacing: 0.06em; color: #C084FC; margin-bottom: 10px;">WHY IT MATTERS</div>
-                <p style="font-size: 13.5px; color: #9199AB; line-height: 1.7; margin: 0;">Most profiles lose clients in the first two lines: a vague title or a keyword-stuffed overview that reads like it was written for an algorithm, not a person. Snag AI scores every section the way a hiring client actually reads it, then tells you exactly what to change first.</p>
+                <p style="font-size: 13.5px; color: #9199AB; line-height: 1.7; margin: 0;">Most profiles lose clients in the first two lines: a vague title or a keyword-stuffed overview that reads like it was written for an algorithm, not a person. Snag AI reviews your copy section by section for clarity and readability, then tells you exactly what to change first.</p>
               </div>
             </div>
 
@@ -1071,10 +1413,9 @@
               <div style="position: relative; flex: 1; border-radius: 17px; background: #0B0E17; border: 1px solid #171B26; padding: 22px; overflow: hidden; display: flex; flex-direction: column;">
                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;">
                   <div style="display: flex; align-items: center; gap: 12px;">
-                    <span style="width: 30px; height: 30px; border-radius: 22%; overflow: hidden; flex-shrink: 0; position: relative;">
-                      <span style="position: absolute; inset: 0; background: #0d0a1a;"></span>
-                      <span style="position: absolute; left: 50%; top: 50%; width: 78%; height: 78%; transform: translate(-50%,-50%); border-radius: 50%; mask-image: radial-gradient(circle, transparent 50%, black 56%, black 82%, transparent 86%); -webkit-mask-image: radial-gradient(circle, transparent 50%, black 56%, black 82%, transparent 86%); background: conic-gradient(from 200deg, #2DD4BF, #3B82F6 25%, #A855F7 55%, #EC4899 80%, #2DD4BF 100%);"></span>
-                      <span style="position: absolute; left: 50%; top: 50%; width: 42%; height: 42%; transform: translate(-50%,-50%); border-radius: 50%; background: #000;"></span>
+                    <span style="width: 30px; height: 30px; flex-shrink: 0; position: relative;">
+                      <span style="position: absolute; left: 50%; top: 50%; width: 64%; height: 64%; transform: translate(-50%,-50%); border-radius: 50%; background: conic-gradient(from 200deg, #2DD4BF, #3B82F6 25%, #A855F7 55%, #EC4899 80%, #2DD4BF 100%);"></span>
+          <span style="position: absolute; inset: 25%; border-radius: 50%; background: #000;"></span>
                     </span>
                     <div>
                       <div style="font-size: 13.5px; font-weight: 700; color: #F5F6FA;">Snag AI</div>
@@ -1141,7 +1482,7 @@
           <div class="fx-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: stretch;">
 
             <div style="order: 2;">
-              <p style="font-size: 15px; color: #8B92A5; line-height: 1.7; margin: 0 0 20px;">Snag AI checks every job page you open against filters you control (proposal count, client hire rate and spend, payment verification, rate mismatch, job age and more) then shows an on-page toast telling you whether it clears your bar, and exactly why not if it doesn't.</p>
+              <p style="font-size: 15px; color: #8B92A5; line-height: 1.7; margin: 0 0 20px;">Snag AI checks every job page you open against filters you control (proposal count, publicly listed client hire rate and spend, payment verification, rate mismatch, job age and more) then shows an on-page toast telling you whether it clears your bar, and exactly why not if it doesn't.</p>
               <div style="display: flex; flex-direction: column; gap: 10px;">
                 <div style="display: flex; align-items: flex-start; gap: 10px;">
                   <span style="width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; background: rgba(94,234,212,0.18); color: #5EEAD4;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
@@ -1171,10 +1512,9 @@
               <div style="position: absolute; inset: -1px; border-radius: 18px; background: linear-gradient(120deg, rgba(45,212,191,0.45), rgba(59,130,246,0.3)); opacity: 0.5;"></div>
               <div style="position: relative; flex: 1; border-radius: 17px; background: #0B0E17; border: 1px solid #171B26; padding: 22px; overflow: hidden; display: flex; flex-direction: column;">
                 <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 18px;">
-                  <span style="width: 22px; height: 22px; border-radius: 22%; overflow: hidden; flex-shrink: 0; position: relative;">
-                    <span style="position: absolute; inset: 0; background: #0d0a1a;"></span>
-                    <span style="position: absolute; left: 50%; top: 50%; width: 78%; height: 78%; transform: translate(-50%,-50%); border-radius: 50%; mask-image: radial-gradient(circle, transparent 50%, black 56%, black 82%, transparent 86%); -webkit-mask-image: radial-gradient(circle, transparent 50%, black 56%, black 82%, transparent 86%); background: conic-gradient(from 200deg, #2DD4BF, #3B82F6 25%, #A855F7 55%, #EC4899 80%, #2DD4BF 100%);"></span>
-                    <span style="position: absolute; left: 50%; top: 50%; width: 42%; height: 42%; transform: translate(-50%,-50%); border-radius: 50%; background: #000;"></span>
+                  <span style="width: 22px; height: 22px; flex-shrink: 0; position: relative;">
+                    <span style="position: absolute; left: 50%; top: 50%; width: 64%; height: 64%; transform: translate(-50%,-50%); border-radius: 50%; background: conic-gradient(from 200deg, #2DD4BF, #3B82F6 25%, #A855F7 55%, #EC4899 80%, #2DD4BF 100%);"></span>
+          <span style="position: absolute; inset: 25%; border-radius: 50%; background: #000;"></span>
                   </span>
                   <span style="font-size: 12.5px; font-weight: 700; color: #C6CBDA;">Smart Job Alert</span>
                 </div>
@@ -1197,7 +1537,7 @@
                       <span style="font-size: 13px; font-weight: 700; color: #F5A9C7;">1 mismatch</span>
                     </div>
                     <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
-                      <span style="width: 24px; height: 24px; border-radius: 50%; background: #171B26; display: flex; align-items: center; justify-content: center; color: #7A8194; font-size: 10px;">▾</span>
+                      <span style="width: 24px; height: 24px; border-radius: 50%; background: #171B26; display: flex; align-items: center; justify-content: center; color: #9199AB; font-size: 15px; line-height: 1;">▾</span>
                       <span style="width: 24px; height: 24px; border-radius: 50%; background: rgba(248,113,113,0.14); display: flex; align-items: center; justify-content: center; color: #F87171; font-size: 10px;">✕</span>
                     </div>
                   </div>
@@ -1206,23 +1546,68 @@
                 <div style="height: 1px; background: #171B26; margin-bottom: 16px;"></div>
 
                 <div style="font-size: 10.5px; font-weight: 800; letter-spacing: 0.06em; color: #565D70; margin-bottom: 10px;">JOB FILTERS</div>
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 18px;">
-                  <div style="border-radius: 10px; padding: 9px 6px; text-align: center; background: #10141F; border: 1px solid #1D2230;">
-                    <div style="font-size: 11.5px; font-weight: 600; color: #7A8194;">Conservative</div>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-bottom: 18px;">
+                  <div style="border-radius: 10px; padding: 8px 9px; background: #10141F; border: 1px solid #1D2230;">
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                      <span style="width: 9px; height: 9px; border-radius: 50%; border: 1.4px solid #4B5164; flex-shrink: 0;"></span>
+                      <span style="font-size: 10.5px; font-weight: 600; color: #9199AB;">Conservative</span>
+                    </div>
+                    <div style="font-size: 8.5px; color: #565D70; margin-top: 2px; margin-left: 15px;">Protect Connects</div>
                   </div>
-                  <div style="border-radius: 10px; padding: 9px 6px; text-align: center; background: linear-gradient(145deg, rgba(94,234,212,0.14), rgba(45,212,191,0.05)); border: 1px solid rgba(94,234,212,0.4);">
-                    <div style="font-size: 11.5px; font-weight: 700; color: #F5F6FA;">Balanced</div>
-                    <div style="font-size: 9.5px; font-weight: 700; color: #5EEAD4;">Recommended</div>
+                  <div style="border-radius: 10px; padding: 8px 9px; background: linear-gradient(145deg, rgba(168,85,247,0.16), rgba(11,14,23,0.4)); border: 1px solid rgba(168,85,247,0.6); box-shadow: 0 0 0 1px rgba(168,85,247,0.15);">
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                      <span style="width: 13px; height: 13px; border-radius: 50%; background: #A855F7; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <svg width="8" height="8" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                      </span>
+                      <span style="font-size: 10.5px; font-weight: 700; color: #F5F6FA;">Balanced</span>
+                    </div>
+                    <div style="font-size: 8.5px; font-weight: 700; color: #5EEAD4; margin-top: 2px; margin-left: 19px;">Recommended</div>
                   </div>
-                  <div style="border-radius: 10px; padding: 9px 6px; text-align: center; background: #10141F; border: 1px solid #1D2230;">
-                    <div style="font-size: 11.5px; font-weight: 600; color: #7A8194;">Aggressive</div>
+                  <div style="border-radius: 10px; padding: 8px 9px; background: #10141F; border: 1px solid #1D2230;">
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                      <span style="width: 9px; height: 9px; border-radius: 50%; border: 1.4px solid #4B5164; flex-shrink: 0;"></span>
+                      <span style="font-size: 10.5px; font-weight: 600; color: #9199AB;">Aggressive</span>
+                    </div>
+                    <div style="font-size: 8.5px; color: #565D70; margin-top: 2px; margin-left: 15px;">Apply broadly</div>
+                  </div>
+                  <div style="border-radius: 10px; padding: 8px 9px; background: #10141F; border: 1px solid #1D2230;">
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                      <span style="width: 9px; height: 9px; border-radius: 50%; border: 1.4px solid #4B5164; flex-shrink: 0;"></span>
+                      <span style="font-size: 10.5px; font-weight: 600; color: #9199AB;">Custom</span>
+                    </div>
+                    <div style="font-size: 8.5px; color: #565D70; margin-top: 2px; margin-left: 15px;">Your own mix</div>
                   </div>
                 </div>
 
-                <div style="display: flex; flex-direction: column; gap: 9px;">
-                  <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 12.5px; color: #9199AB;">Min match score</span><span style="font-size: 12.5px; font-weight: 700; color: #5EEAD4;">90%+</span></div>
-                  <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 12.5px; color: #9199AB;">Payment verified only</span><span style="font-size: 12.5px; font-weight: 700; color: #5EEAD4;">On</span></div>
-                  <div style="display: flex; align-items: center; justify-content: space-between;"><span style="font-size: 12.5px; color: #9199AB;">Min hourly rate</span><span style="font-size: 12.5px; font-weight: 700; color: #5EEAD4;">$30+</span></div>
+                <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 10px;">
+                  <span style="width: 16px; height: 16px; border-radius: 4px; background: rgba(94,234,212,0.14); display: flex; align-items: center; justify-content: center; color: #5EEAD4; flex-shrink: 0;">
+                    <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="8" r="3.6"></circle><path d="M5 20c0-3.6 3.1-6 7-6s7 2.4 7 6"></path></svg>
+                  </span>
+                  <span style="font-size: 9.5px; font-weight: 800; letter-spacing: 0.06em; color: #565D70;">CLIENT QUALITY</span>
+                </div>
+                <div style="margin-bottom: 14px;">
+                  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;"><span style="font-size: 12px; color: #9199AB;">Min hire rate</span><span style="font-size: 12px; font-weight: 700; color: #5EEAD4;">30%</span></div>
+                  <div style="position: relative; height: 4px; border-radius: 999px; background: #1D2230;">
+                    <div style="position: absolute; inset: 0; width: 30%; border-radius: 999px; background: linear-gradient(90deg, #2DD4BF, #A855F7);"></div>
+                    <div style="position: absolute; left: 30%; top: 50%; width: 12px; height: 12px; transform: translate(-50%, -50%); border-radius: 50%; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.4);"></div>
+                  </div>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 10px;">
+                  <span style="width: 16px; height: 16px; border-radius: 4px; background: rgba(168,85,247,0.16); display: flex; align-items: center; justify-content: center; color: #C084FC; flex-shrink: 0;">
+                    <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.5L14.9 8.6L21.6 9.5L16.8 14.1L18 20.8L12 17.6L6 20.8L7.2 14.1L2.4 9.5L9.1 8.6L12 2.5Z"></path></svg>
+                  </span>
+                  <span style="font-size: 9.5px; font-weight: 800; letter-spacing: 0.06em; color: #565D70;">ALERT BEHAVIOUR</span>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                  <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <span style="font-size: 12px; color: #9199AB;">Payment verified</span>
+                    <span style="width: 30px; height: 17px; border-radius: 999px; background: linear-gradient(90deg, #2DD4BF, #A855F7); display: flex; align-items: center; padding: 2px; box-sizing: border-box; justify-content: flex-end; flex-shrink: 0;"><span style="width: 13px; height: 13px; border-radius: 50%; background: #fff;"></span></span>
+                  </div>
+                  <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <span style="font-size: 12px; color: #9199AB;">Auto-skip hired</span>
+                    <span style="width: 30px; height: 17px; border-radius: 999px; background: linear-gradient(90deg, #2DD4BF, #A855F7); display: flex; align-items: center; padding: 2px; box-sizing: border-box; justify-content: flex-end; flex-shrink: 0;"><span style="width: 13px; height: 13px; border-radius: 50%; background: #fff;"></span></span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1301,10 +1686,9 @@
         <div style="position: absolute; inset: -1px; border-radius: 18px; background: linear-gradient(120deg, rgba(168,85,247,0.5), rgba(94,234,212,0.35)); opacity: 0.5;"></div>
         <div style="position: relative; border-radius: 17px; background: #0B0E17; border: 1px solid #171B26; padding: 24px; overflow: hidden;">
           <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 18px;">
-            <span style="width: 24px; height: 24px; border-radius: 22%; overflow: hidden; flex-shrink: 0; position: relative;">
-              <span style="position: absolute; inset: 0; background: #0d0a1a;"></span>
-              <span style="position: absolute; left: 50%; top: 50%; width: 78%; height: 78%; transform: translate(-50%,-50%); border-radius: 50%; mask-image: radial-gradient(circle, transparent 50%, black 56%, black 82%, transparent 86%); -webkit-mask-image: radial-gradient(circle, transparent 50%, black 56%, black 82%, transparent 86%); background: conic-gradient(from 200deg, #2DD4BF, #3B82F6 25%, #A855F7 55%, #EC4899 80%, #2DD4BF 100%);"></span>
-              <span style="position: absolute; left: 50%; top: 50%; width: 42%; height: 42%; transform: translate(-50%,-50%); border-radius: 50%; background: #000;"></span>
+            <span style="width: 24px; height: 24px; flex-shrink: 0; position: relative;">
+              <span style="position: absolute; left: 50%; top: 50%; width: 64%; height: 64%; transform: translate(-50%,-50%); border-radius: 50%; background: conic-gradient(from 200deg, #2DD4BF, #3B82F6 25%, #A855F7 55%, #EC4899 80%, #2DD4BF 100%);"></span>
+          <span style="position: absolute; inset: 25%; border-radius: 50%; background: #000;"></span>
             </span>
             <span style="font-size: 13px; font-weight: 700; color: #C6CBDA;">Setup checklist</span>
           </div>
@@ -1497,7 +1881,7 @@
             <svg class="faq-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" style="transition: transform 0.2s ease;"><path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
           </span>
         </div>
-        <div class="faq-answer">Competition level, client hire rate and spend history, and how your rate and skills stack up, then gives you a plain verdict on whether the job is worth a connect.</div>
+        <div class="faq-answer">Competition level on the job post, publicly listed client stats like hire history and spend, and how your rate and skills line up, then gives you a plain recommendation on whether the job is worth a connect.</div>
       </div>
       <div class="faq-item" style="border-radius: 14px; background: #0B0E17; border: 1px solid #171B26; padding: 20px 24px; cursor: pointer;">
         <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px;">
@@ -1528,40 +1912,36 @@
     </div>
 
     <div id="reviews-marquee-wrap" style="position: relative; display: none;">
-      <button id="reviews-prev" onclick="scrollReviews(-1)" aria-label="Previous reviews" class="reviews-arrow" style="position: absolute; top: 50%; left: 10px; transform: translateY(-50%); z-index: 5; width: 46px; height: 46px; border-radius: 50%; border: none; background: linear-gradient(135deg, #2DD4BF, #A855F7); color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 24px -8px rgba(45,212,191,0.5); transition: transform 0.15s ease, box-shadow 0.15s ease;">
+      <button id="reviews-prev" onclick="scrollReviews(-1)" aria-label="Previous reviews" class="reviews-arrow" style="position: absolute; top: 50%; left: 10px; transform: translateY(-50%); z-index: 5; width: 46px; height: 46px; border-radius: 50%; border: none; background: linear-gradient(135deg, #2DD4BF, #A855F7, #EC4899); color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 24px -8px rgba(45,212,191,0.5); transition: transform 0.15s ease, box-shadow 0.15s ease;">
         <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M15 6L9 12L15 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
       </button>
-      <button id="reviews-next" onclick="scrollReviews(1)" aria-label="Next reviews" class="reviews-arrow" style="position: absolute; top: 50%; right: 10px; transform: translateY(-50%); z-index: 5; width: 46px; height: 46px; border-radius: 50%; border: none; background: linear-gradient(135deg, #2DD4BF, #A855F7); color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 24px -8px rgba(168,85,247,0.5); transition: transform 0.15s ease, box-shadow 0.15s ease;">
+      <button id="reviews-next" onclick="scrollReviews(1)" aria-label="Next reviews" class="reviews-arrow" style="position: absolute; top: 50%; right: 10px; transform: translateY(-50%); z-index: 5; width: 46px; height: 46px; border-radius: 50%; border: none; background: linear-gradient(135deg, #2DD4BF, #A855F7, #EC4899); color: #fff; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 24px -8px rgba(168,85,247,0.5); transition: transform 0.15s ease, box-shadow 0.15s ease;">
         <svg width="19" height="19" viewBox="0 0 24 24" fill="none"><path d="M9 6L15 12L9 18" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
       </button>
       <div id="reviews-track" class="no-scrollbar" style="display: flex; gap: 20px; overflow-x: auto; padding: 4px 66px; -webkit-mask-image: linear-gradient(90deg, transparent, black 6%, black 94%, transparent); mask-image: linear-gradient(90deg, transparent, black 6%, black 94%, transparent);"></div>
     </div>
 
-    <div id="reviews-empty" style="text-align: center; padding: 0 40px; max-width: 420px; margin: 0 auto;">
-      <p style="font-size: 14px; color: #6B7284; margin: 0;">No reviews yet, be the first to share your experience.</p>
-    </div>
+    <div id="reviews-cta" style="max-width: 720px; margin: 40px auto 0; padding: 0 40px; text-align: center;">
+      <div style="position: relative; border-radius: 20px; background: linear-gradient(165deg, rgba(45,212,191,0.07), rgba(11,14,23,0.4)); border: 1px solid rgba(94,234,212,0.22); padding: 44px 48px; overflow: hidden;">
+        <div style="position: absolute; top: -60px; left: 50%; transform: translateX(-50%); width: 280px; height: 180px; border-radius: 50%; background: radial-gradient(circle, rgba(45,212,191,0.14), transparent 70%); filter: blur(30px); pointer-events: none;"></div>
 
-    <div style="max-width: 640px; margin: 56px auto 0; padding: 0 40px; text-align: center;">
-      <div style="position: relative; border-radius: 18px; background: linear-gradient(165deg, rgba(45,212,191,0.07), rgba(11,14,23,0.4)); border: 1px solid rgba(94,234,212,0.22); padding: 34px 32px; overflow: hidden;">
-        <div style="position: absolute; top: -60px; left: 50%; transform: translateX(-50%); width: 240px; height: 160px; border-radius: 50%; background: radial-gradient(circle, rgba(45,212,191,0.14), transparent 70%); filter: blur(30px); pointer-events: none;"></div>
-
-        <div style="position: relative; display: flex; align-items: center; justify-content: center; gap: 3px; margin-bottom: 14px;">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="#F5B95E"><path d="M12 2.5L14.9 8.6L21.6 9.5L16.8 14.1L18 20.8L12 17.6L6 20.8L7.2 14.1L2.4 9.5L9.1 8.6L12 2.5Z"></path></svg>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="#F5B95E"><path d="M12 2.5L14.9 8.6L21.6 9.5L16.8 14.1L18 20.8L12 17.6L6 20.8L7.2 14.1L2.4 9.5L9.1 8.6L12 2.5Z"></path></svg>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="#F5B95E"><path d="M12 2.5L14.9 8.6L21.6 9.5L16.8 14.1L18 20.8L12 17.6L6 20.8L7.2 14.1L2.4 9.5L9.1 8.6L12 2.5Z"></path></svg>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="#F5B95E"><path d="M12 2.5L14.9 8.6L21.6 9.5L16.8 14.1L18 20.8L12 17.6L6 20.8L7.2 14.1L2.4 9.5L9.1 8.6L12 2.5Z"></path></svg>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="#F5B95E"><path d="M12 2.5L14.9 8.6L21.6 9.5L16.8 14.1L18 20.8L12 17.6L6 20.8L7.2 14.1L2.4 9.5L9.1 8.6L12 2.5Z"></path></svg>
+        <div id="reviews-cta-stars" style="position: relative; display: flex; align-items: center; justify-content: center; gap: 3px; margin-bottom: 16px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5L14.9 8.6L21.6 9.5L16.8 14.1L18 20.8L12 17.6L6 20.8L7.2 14.1L2.4 9.5L9.1 8.6L12 2.5Z"></path></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5L14.9 8.6L21.6 9.5L16.8 14.1L18 20.8L12 17.6L6 20.8L7.2 14.1L2.4 9.5L9.1 8.6L12 2.5Z"></path></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5L14.9 8.6L21.6 9.5L16.8 14.1L18 20.8L12 17.6L6 20.8L7.2 14.1L2.4 9.5L9.1 8.6L12 2.5Z"></path></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5L14.9 8.6L21.6 9.5L16.8 14.1L18 20.8L12 17.6L6 20.8L7.2 14.1L2.4 9.5L9.1 8.6L12 2.5Z"></path></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5L14.9 8.6L21.6 9.5L16.8 14.1L18 20.8L12 17.6L6 20.8L7.2 14.1L2.4 9.5L9.1 8.6L12 2.5Z"></path></svg>
         </div>
 
-        <h3 style="position: relative; font-family: 'Sora', sans-serif; font-size: 21px; font-weight: 700; color: #F5F6FA; margin: 0 0 8px;">Using Snag AI? Share your experience</h3>
-        <p style="position: relative; font-size: 14px; color: #8B92A5; margin: 0 0 22px; line-height: 1.6; max-width: 460px; margin-left: auto; margin-right: auto;">Your feedback helps other freelancers and agencies decide if it's right for them.</p>
+        <h3 id="reviews-cta-heading" style="position: relative; font-family: 'Sora', sans-serif; font-size: 22px; font-weight: 700; color: #F5F6FA; margin: 0 0 8px;">No reviews yet</h3>
+        <p id="reviews-cta-subtext" style="position: relative; font-size: 14.5px; color: #8B92A5; margin: 0 0 24px; line-height: 1.65; max-width: 480px; margin-left: auto; margin-right: auto;">Real reviews will show up here as soon as verified customers start sharing their experience. Yours could be the first.</p>
 
         <div id="review-cta-default" style="position: relative;">
-          <button onclick="showReviewEmailInput()" style="border: none; cursor: pointer; padding: 13px 30px; border-radius: 999px; background: linear-gradient(90deg, #2DD4BF, #A855F7); color: #fff; font-size: 14px; font-weight: 700; font-family: 'Manrope', sans-serif; box-shadow: 0 10px 24px -10px rgba(45,212,191,0.45);">Write a review</button>
+          <button onclick="showReviewEmailInput()" style="border: none; cursor: pointer; padding: 13px 30px; border-radius: 999px; background: linear-gradient(90deg, #2DD4BF, #A855F7, #EC4899); color: #fff; font-size: 14px; font-weight: 700; font-family: 'Manrope', sans-serif; box-shadow: 0 10px 24px -10px rgba(45,212,191,0.45);">Write a review</button>
         </div>
 
         <div id="review-cta-form" style="position: relative; display: none; max-width: 360px; margin: 0 auto;">
-          <p style="font-size: 12.5px; color: #7A8194; margin: 0 0 10px;">Enter the email registered with your Snag AI subscription, we'll send you a link to write your review.</p>
+          <p style="font-size: 12px; font-weight: 400; background: linear-gradient(135deg, #A855F7, #EC4899); -webkit-background-clip: text; background-clip: text; color: transparent; white-space: nowrap; margin: 0 0 18px;">Enter your Snag AI plan email to get your review link.</p>
           <div style="display: flex; gap: 8px;">
             <input id="review-email-input" type="email" placeholder="Email on your Snag AI plan" style="flex: 1; min-width: 0; background: #10141F; border: 1px solid #1D2230; border-radius: 999px; padding: 12px 16px; color: #E7E9F0; font-family: 'Manrope', sans-serif; font-size: 13.5px;">
             <button id="review-email-submit" onclick="submitReviewEmail()" style="border: none; cursor: pointer; padding: 0 22px; border-radius: 999px; background: linear-gradient(90deg, #2DD4BF, #A855F7); color: #fff; font-size: 13.5px; font-weight: 700; font-family: 'Manrope', sans-serif; flex-shrink: 0;">Send link</button>
@@ -1569,7 +1949,7 @@
           <div id="review-email-error" style="font-size: 12px; color: #F87171; margin-top: 8px; display: none;"></div>
         </div>
 
-        <div style="position: relative; display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 18px;">
+        <div style="position: relative; display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 26px;">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M12 2L19 5.5V11C19 15.4 16.1 19.2 12 20.5C7.9 19.2 5 15.4 5 11V5.5L12 2Z" stroke="#565D70" stroke-width="1.6" stroke-linejoin="round"></path></svg>
           <span style="font-size: 11.5px; color: #565D70;">Reserved for verified Snag AI customers</span>
         </div>
@@ -1584,16 +1964,15 @@
   </section>
 
   <!-- FLOATING SUPPORT WIDGET -->
-  <div id="support-panel" style="position: fixed; bottom: 28px; right: 28px; z-index: 51; width: 304px; max-width: calc(100vw - 32px); height: 420px; max-height: calc(100vh - 100px); display: none; flex-direction: column; border-radius: 16px; background: #0B0E17; border: 1px solid #1B2030; box-shadow: 0 24px 60px -14px rgba(0,0,0,0.65); overflow: hidden; animation: bubbleIn 0.28s ease both;">
+  <div id="support-panel" style="position: fixed; bottom: 68px; right: 28px; z-index: 51; width: 304px; max-width: calc(100vw - 32px); height: 456px; max-height: calc(100vh - 100px); display: none; flex-direction: column; border-radius: 16px; background: #0B0E17; border: 1px solid #1B2030; box-shadow: 0 30px 70px -16px rgba(0,0,0,0.75), 0 10px 30px -10px rgba(168,85,247,0.25); overflow: hidden; animation: bubbleIn 0.28s ease both;">
     <div style="position: relative; padding: 14px 16px; flex-shrink: 0; overflow: hidden; background: linear-gradient(160deg, rgba(168,85,247,0.14), rgba(11,14,23,0) 70%);">
       <div style="position: absolute; top: -60px; left: -20px; width: 200px; height: 130px; border-radius: 50%; background: radial-gradient(circle, rgba(168,85,247,0.26), transparent 70%); filter: blur(28px); pointer-events: none;"></div>
       <div style="position: relative; display: flex; align-items: center; gap: 9px; margin-bottom: 12px;">
-        <div style="position: relative; width: 26px; height: 26px; border-radius: 22%; overflow: hidden; flex-shrink: 0;">
-          <div style="position: absolute; inset: 0; background: #0d0a1a;"></div>
-          <div style="position: absolute; left: 50%; top: 50%; width: 78%; height: 78%; transform: translate(-50%,-50%); border-radius: 50%; mask-image: radial-gradient(circle, transparent 50%, black 56%, black 82%, transparent 86%); -webkit-mask-image: radial-gradient(circle, transparent 50%, black 56%, black 82%, transparent 86%); background: conic-gradient(from 200deg, #2DD4BF, #3B82F6 25%, #A855F7 55%, #EC4899 80%, #2DD4BF 100%);"></div>
-          <div style="position: absolute; left: 50%; top: 50%; width: 42%; height: 42%; transform: translate(-50%,-50%); border-radius: 50%; background: #000;"></div>
+        <div style="position: relative; width: 26px; height: 26px; flex-shrink: 0;">
+          <div style="position: absolute; left: 50%; top: 50%; width: 64%; height: 64%; transform: translate(-50%,-50%); border-radius: 50%; background: conic-gradient(from 200deg, #2DD4BF, #3B82F6 25%, #A855F7 55%, #EC4899 80%, #2DD4BF 100%);"></div>
+          <div style="position: absolute; inset: 25%; border-radius: 50%; background: #000;"></div>
         </div>
-        <span style="font-size: 12px; font-weight: 600; color: #9BA2B5; font-family: 'Plus Jakarta Sans', sans-serif;">Snag AI Support</span>
+        <span style="font-size: 14px; font-weight: 700; color: #E7E9F0; font-family: 'Plus Jakarta Sans', sans-serif;">Snag AI Support</span>
         <span style="width: 6px; height: 6px; border-radius: 50%; background: #34D399; box-shadow: 0 0 6px rgba(52,211,153,0.7); animation: pulseGlow 1.8s ease-in-out infinite; flex-shrink: 0;"></span>
         <div style="flex: 1;"></div>
         <button onclick="closeSupportWidget()" aria-label="Close" style="width: 24px; height: 24px; border-radius: 50%; background: rgba(239,68,68,0.12); border: none; color: #F87171; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
@@ -1601,7 +1980,7 @@
         </button>
       </div>
       <div id="support-home-greeting" style="position: relative;">
-        <h2 style="font-family: 'Sora', sans-serif; font-size: 17px; font-weight: 700; color: #F5F6FA; margin: 0 0 3px;">Hi there 👋</h2>
+        <div style="font-family: 'Sora', sans-serif; font-size: 17px; font-weight: 700; color: #F5F6FA; margin: 0 0 3px;">Hi there 👋</div>
         <p style="font-size: 12px; color: #9BA2B5; margin: 0 0 11px; font-family: 'Plus Jakarta Sans', sans-serif;">How can we help?</p>
         <div style="display: flex; align-items: center; gap: 7px; background: #10141F; border: 1px solid #232838; border-radius: 999px; padding: 6px 13px;">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6B7284" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"></circle><path d="M21 21l-4.3-4.3"></path></svg>
@@ -1616,6 +1995,10 @@
     </div>
 
     <div id="support-thread" class="no-scrollbar" style="display: none; flex: 1; overflow-y: auto; padding: 14px 12px; flex-direction: column; gap: 10px; background: #0B0E17;"></div>
+
+    <div id="support-attachment-preview" style="display: none; align-items: center; gap: 8px; flex-shrink: 0; padding: 8px 12px 0; background: #0B0E17;"></div>
+    <div id="support-inline-input-row" style="display: none; align-items: center; gap: 8px; flex-shrink: 0; padding: 8px 12px 5px; background: #0B0E17; border-top: 1px solid #171B26;"></div>
+    <div id="support-inline-error" style="display: none; padding: 4px 12px 8px; font-size: 11px; color: #F87171; background: #0B0E17; flex-shrink: 0;"></div>
   </div>
 
   <button id="support-fab" onclick="toggleSupportWidget()" aria-label="Support" style="position: fixed; bottom: 28px; right: 28px; z-index: 51; width: 46px; height: 46px; border-radius: 50%; border: none; cursor: pointer; background: linear-gradient(135deg, #A855F7, #EC4899); color: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 12px 26px -8px rgba(236,72,153,0.6);">
@@ -1631,10 +2014,9 @@
   <!-- FOOTER -->
   <footer style="position: relative; z-index: 2; border-top: 1px solid #171B26; padding: 44px 64px; max-width: 1280px; margin: 0 auto; box-sizing: border-box; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 20px;">
     <div style="display: flex; align-items: center; gap: 10px;">
-      <div style="position: relative; width: 26px; height: 26px; border-radius: 22%; overflow: hidden; flex-shrink: 0;">
-        <div style="position: absolute; inset: 0; background: #0d0a1a;"></div>
-        <div style="position: absolute; left: 50%; top: 50%; width: 78%; height: 78%; transform: translate(-50%,-50%); border-radius: 50%; mask-image: radial-gradient(circle, transparent 50%, black 56%, black 82%, transparent 86%); -webkit-mask-image: radial-gradient(circle, transparent 50%, black 56%, black 82%, transparent 86%); background: conic-gradient(from 200deg, #2DD4BF, #3B82F6 25%, #A855F7 55%, #EC4899 80%, #2DD4BF 100%);"></div>
-        <div style="position: absolute; left: 50%; top: 50%; width: 42%; height: 42%; transform: translate(-50%,-50%); border-radius: 50%; background: #000;"></div>
+      <div style="position: relative; width: 26px; height: 26px; flex-shrink: 0;">
+        <div style="position: absolute; left: 50%; top: 50%; width: 64%; height: 64%; transform: translate(-50%,-50%); border-radius: 50%; background: conic-gradient(from 200deg, #2DD4BF, #3B82F6 25%, #A855F7 55%, #EC4899 80%, #2DD4BF 100%);"></div>
+          <div style="position: absolute; inset: 25%; border-radius: 50%; background: #000;"></div>
       </div>
       <span style="font-size: 13.5px; color: #565D70;">© 2026 Snag AI. All rights reserved.</span>
     </div>
@@ -1651,10 +2033,9 @@
   <aside id="checkout-drawer" style="position: fixed; top: 0; right: 0; height: 100vh; width: 380px; max-width: 92vw; background: #0d1120; border-left: 1px solid #1D2230; box-shadow: -24px 0 60px rgba(0,0,0,0.55); z-index: 201; transform: translateX(100%); transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1); display: flex; flex-direction: column; overflow-y: auto;">
     <div style="display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid #1D2230; flex-shrink: 0;">
       <div style="display: flex; align-items: center; gap: 8px;">
-        <div style="position: relative; width: 22px; height: 22px; border-radius: 22%; overflow: hidden; flex-shrink: 0;">
-          <div style="position: absolute; inset: 0; background: #0d0a1a;"></div>
-          <div style="position: absolute; left: 50%; top: 50%; width: 78%; height: 78%; transform: translate(-50%,-50%); border-radius: 50%; mask-image: radial-gradient(circle, transparent 50%, black 56%, black 82%, transparent 86%); -webkit-mask-image: radial-gradient(circle, transparent 50%, black 56%, black 82%, transparent 86%); background: conic-gradient(from 200deg, #2DD4BF, #3B82F6 25%, #A855F7 55%, #EC4899 80%, #2DD4BF 100%);"></div>
-          <div style="position: absolute; left: 50%; top: 50%; width: 42%; height: 42%; transform: translate(-50%,-50%); border-radius: 50%; background: #000;"></div>
+        <div style="position: relative; width: 22px; height: 22px; flex-shrink: 0;">
+          <div style="position: absolute; left: 50%; top: 50%; width: 64%; height: 64%; transform: translate(-50%,-50%); border-radius: 50%; background: conic-gradient(from 200deg, #2DD4BF, #3B82F6 25%, #A855F7 55%, #EC4899 80%, #2DD4BF 100%);"></div>
+          <div style="position: absolute; inset: 25%; border-radius: 50%; background: #000;"></div>
         </div>
         <span style="font-family: 'Sora', sans-serif; font-size: 13.5px; font-weight: 700; color: #F5F6FA;">Snag AI</span>
         <span id="checkout-plan-label" style="font-size: 11px; font-weight: 700; letter-spacing: 0.02em; border-radius: 999px; padding: 4px 10px; line-height: 1;"></span>

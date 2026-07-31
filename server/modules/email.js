@@ -103,12 +103,25 @@ function sendReviewInviteEmail(to, link) {
   });
 }
 
-function sendSupportRequestEmail(fromEmail, category, message) {
+function sendSupportRequestEmail(fromEmail, category, message, transcript, attachments) {
   const apiKey = process.env.RESEND_API_KEY;
   const to = process.env.SUPPORT_INBOX_EMAIL || 'support@snagai.pro';
   if (!apiKey) { console.log(`[SUPPORT EMAIL SKIP] From:${fromEmail} Category:${category} Message:${message}`); return Promise.resolve(); }
-  const safeMessage = String(message).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
-  const body = JSON.stringify({
+  const escapeHtml = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const safeMessage = escapeHtml(message).replace(/\n/g,'<br>');
+  const steps = Array.isArray(transcript) ? transcript.filter(Boolean) : [];
+  const transcriptHtml = steps.length ? `
+  <div style="margin-bottom:18px">
+    <p style="font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#aaa;margin:0 0 8px">Conversation summary (internal, not sent to customer)</p>
+    <ol style="margin:0;padding-left:18px;font-size:13px;line-height:1.7;color:#444">
+      ${steps.map(step => `<li>${escapeHtml(step)}</li>`).join('')}
+    </ol>
+  </div>` : '';
+  const attachmentList = Array.isArray(attachments) ? attachments.filter(Boolean) : [];
+  const attachmentNoteHtml = attachmentList.length
+    ? `<p style="font-size:12px;color:#888;margin:10px 0 0">&#128206; Attached: ${attachmentList.map(a => escapeHtml(a.filename)).join(', ')}</p>`
+    : '';
+  const payload = {
     from: 'Snag AI Support Widget <noreply@snagai.pro>',
     to: [to],
     reply_to: fromEmail,
@@ -121,10 +134,16 @@ function sendSupportRequestEmail(fromEmail, category, message) {
     <tr><td style="color:#888;padding:4px 0;width:90px">From</td><td>${fromEmail}</td></tr>
     <tr><td style="color:#888;padding:4px 0">Category</td><td>${category}</td></tr>
   </table>
+  ${transcriptHtml}
   <div style="background:#f7f6f2;border-radius:12px;padding:18px 20px;font-size:14px;line-height:1.6">${safeMessage}</div>
+  ${attachmentNoteHtml}
   <p style="font-size:12px;color:#aaa;margin:18px 0 0">Reply directly to this email to respond to ${fromEmail}.</p>
 </div>`
-  });
+  };
+  if (attachmentList.length) {
+    payload.attachments = attachmentList.map(a => ({ filename: a.filename, content: a.dataBase64 }));
+  }
+  const body = JSON.stringify(payload);
   return new Promise(resolve => {
     const req = https.request({
       hostname: 'api.resend.com', path: '/emails', method: 'POST',
