@@ -36,6 +36,12 @@ app.use((req, res, next) => {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-admin-secret, x-license-key');
   next();
 });
+// /support gets its own higher-limit parser first — up to 4 base64-encoded image
+// attachments (15MB combined binary) inflate to ~21MB, well past the 150kb
+// default below. Registered before the generic parser so support requests
+// never hit that smaller cap.
+app.use('/support', express.json({ limit: '24mb' }));
+
 // Was 30kb — too small for agency profiles (32 portfolio items + 20 work-history
 // entries + ~28 staff members measures ~41KB on a real, data-rich agency profile,
 // well past the old cap). Raised with margin above that real measurement.

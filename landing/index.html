@@ -401,7 +401,18 @@
   let supportLastCategory   = null;
   let supportViewedQuestions = new Set();
   let supportTranscript      = [];
+  let supportPendingAttachments = []; // [{ name, size, type, dataBase64, dataUrl }]
   const TALK_TO_AGENT_ICON = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13v-1a8 8 0 0 1 16 0v1"></path><path d="M20 13v3a2 2 0 0 1-2 2h-1"></path><rect x="3" y="13" width="4" height="5" rx="1.5"></rect><rect x="17" y="13" width="4" height="5" rx="1.5"></rect><path d="M14 19a2 2 0 0 1-2 2h-1"></path></svg>';
+  const ATTACH_ICON = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a5 5 0 0 1-7.07-7.07l9.19-9.19a3.5 3.5 0 0 1 4.95 4.95l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>';
+  const MAX_ATTACHMENT_BYTES = 5 * 1024 * 1024;
+  const MAX_ATTACHMENT_COUNT = 4;
+  const MAX_ATTACHMENT_TOTAL_BYTES = 15 * 1024 * 1024;
+
+  function formatBytes(n) {
+    if (n < 1024) return n + ' B';
+    if (n < 1024 * 1024) return Math.round(n / 1024) + ' KB';
+    return (n / (1024 * 1024)).toFixed(1) + ' MB';
+  }
 
   function toggleSupportWidget(forceOpen) {
     supportPanelOpen = typeof forceOpen === 'boolean' ? forceOpen : !supportPanelOpen;
@@ -419,7 +430,74 @@
     row.style.display = 'none';
     row.innerHTML = '';
     hideInlineError();
+    clearPendingAttachments();
     supportInputMode = null;
+  }
+
+  function clearPendingAttachments() {
+    supportPendingAttachments = [];
+    renderAttachmentPreview();
+  }
+
+  function removePendingAttachment(index) {
+    supportPendingAttachments.splice(index, 1);
+    renderAttachmentPreview();
+    scrollThreadToBottom();
+  }
+
+  function renderAttachmentPreview() {
+    const preview = document.getElementById('support-attachment-preview');
+    if (!supportPendingAttachments.length) { preview.style.display = 'none'; preview.innerHTML = ''; return; }
+    preview.style.display = 'flex';
+    preview.style.flexWrap = 'wrap';
+    preview.innerHTML = supportPendingAttachments.map((a, i) => `
+      <div style="display: flex; align-items: center; gap: 8px; background: #10141F; border: 1px solid #232838; border-radius: 12px; padding: 5px 8px; max-width: 100%;">
+        <img src="${a.dataUrl}" alt="" style="width: 30px; height: 30px; border-radius: 7px; object-fit: cover; flex-shrink: 0;">
+        <div style="min-width: 0;">
+          <div style="font-size: 11px; color: #E7E9F0; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 130px;">${a.name}</div>
+          <div style="font-size: 10px; color: #7A8194;">${formatBytes(a.size)}</div>
+        </div>
+        <button data-remove-index="${i}" aria-label="Remove attachment" style="flex-shrink: 0; width: 20px; height: 20px; border-radius: 50%; border: none; cursor: pointer; background: rgba(239,68,68,0.14); color: #F87171; display: flex; align-items: center; justify-content: center; margin-left: 2px;">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M6 6L18 18M18 6L6 18" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"></path></svg>
+        </button>
+      </div>`).join('');
+    preview.querySelectorAll('[data-remove-index]').forEach(btn => {
+      btn.onclick = () => removePendingAttachment(Number(btn.dataset.removeIndex));
+    });
+  }
+
+  function handleAttachmentFiles(fileList) {
+    const files = Array.from(fileList || []);
+    if (!files.length) return;
+    // FileReader is async, so pushes to supportPendingAttachments land later —
+    // track the count/size synchronously here rather than reading the array
+    // mid-loop, otherwise every file in one batch sees the same stale length.
+    let queuedCount = supportPendingAttachments.length;
+    let runningTotal = supportPendingAttachments.reduce((sum, a) => sum + a.size, 0);
+    for (const file of files) {
+      if (queuedCount >= MAX_ATTACHMENT_COUNT) {
+        showInlineError(`You can attach up to ${MAX_ATTACHMENT_COUNT} images.`);
+        break;
+      }
+      if (!file.type.startsWith('image/')) { showInlineError('Attachments must be an image (PNG, JPG, WEBP or GIF).'); continue; }
+      if (file.size > MAX_ATTACHMENT_BYTES) { showInlineError('Each image must be under 5MB.'); continue; }
+      if (runningTotal + file.size > MAX_ATTACHMENT_TOTAL_BYTES) { showInlineError('That’s too much combined — attachments must total under 15MB.'); continue; }
+      runningTotal += file.size;
+      queuedCount += 1;
+      const reader = new FileReader();
+      reader.onload = () => {
+        supportPendingAttachments.push({
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          dataBase64: reader.result.split(',')[1],
+          dataUrl: reader.result
+        });
+        renderAttachmentPreview();
+        scrollThreadToBottom();
+      };
+      reader.readAsDataURL(file);
+    }
   }
 
   function hideInlineError() {
@@ -513,6 +591,23 @@
     scrollThreadToBottom();
   }
 
+  function addUserAttachmentThumbnails(attachments) {
+    if (!attachments || !attachments.length) return;
+    const thread = document.getElementById('support-thread');
+    const row = document.createElement('div');
+    row.style.cssText = 'display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 6px; margin-right: 12px;';
+    attachments.forEach(a => {
+      const img = document.createElement('img');
+      img.src = a.dataUrl;
+      img.alt = a.name;
+      img.title = `${a.name} (${formatBytes(a.size)})`;
+      img.style.cssText = 'width: 52px; height: 52px; border-radius: 10px; object-fit: cover; border: 1px solid #232838; flex-shrink: 0;';
+      row.appendChild(img);
+    });
+    thread.appendChild(row);
+    scrollThreadToBottom();
+  }
+
   function addBotMessage(text, then) {
     const thread = document.getElementById('support-thread');
     const typingRow = showTypingIndicator();
@@ -578,9 +673,12 @@
     const row = document.getElementById('support-inline-input-row');
     const isEmail = mode === 'email';
     row.style.alignItems = 'flex-end';
-    row.innerHTML = isEmail
+    const attachButtonHtml = isEmail ? '' : `
+      <button id="support-attach-btn" type="button" aria-label="Attach an image" style="flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; border: 1px solid #232838; background: #10141F; color: #9BA2B5; cursor: pointer; display: flex; align-items: center; justify-content: center;">${ATTACH_ICON}</button>
+      <input id="support-attach-file" type="file" accept="image/png,image/jpeg,image/webp,image/gif" multiple style="display: none;">`;
+    row.innerHTML = attachButtonHtml + (isEmail
       ? `<input id="support-inline-field" type="email" placeholder="you@example.com" style="flex: 1; min-width: 0; padding: 9px 13px; border-radius: 999px; background: #10141F; border: 1px solid #232838; color: #F5F6FA; font-size: 12px; font-family: 'Plus Jakarta Sans', sans-serif; outline: none;">`
-      : `<textarea id="support-inline-field" rows="1" placeholder="What's going on?" style="flex: 1; min-width: 0; max-height: 96px; padding: 9px 13px; border-radius: 18px; background: #10141F; border: 1px solid #232838; color: #F5F6FA; font-size: 12px; font-family: 'Plus Jakarta Sans', sans-serif; outline: none; resize: none; overflow-y: hidden; line-height: 1.4;"></textarea>`;
+      : `<textarea id="support-inline-field" rows="1" placeholder="What's going on?" style="flex: 1; min-width: 0; max-height: 96px; padding: 9px 13px; border-radius: 18px; background: #10141F; border: 1px solid #232838; color: #F5F6FA; font-size: 12px; font-family: 'Plus Jakarta Sans', sans-serif; outline: none; resize: none; overflow-y: hidden; line-height: 1.4;"></textarea>`);
     row.innerHTML += `
       <button id="support-inline-send" aria-label="Send" style="flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; border: none; cursor: pointer; background: linear-gradient(135deg, #2DD4BF, #A855F7); display: flex; align-items: center; justify-content: center;">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="#fff"><path d="M3 20l18-8L3 4v6l12 2-12 2v6z"></path></svg>
@@ -592,6 +690,12 @@
     const send  = row.querySelector('#support-inline-send');
     field.focus();
     send.onclick = () => handleInlineInputSubmit();
+    if (!isEmail) {
+      const attachBtn  = document.getElementById('support-attach-btn');
+      const attachFile = document.getElementById('support-attach-file');
+      attachBtn.onclick = () => attachFile.click();
+      attachFile.onchange = () => { handleAttachmentFiles(attachFile.files); attachFile.value = ''; };
+    }
     field.addEventListener('input', () => {
       field.style.border = '1px solid #232838';
       hideInlineError();
@@ -610,9 +714,9 @@
     const row   = document.getElementById('support-inline-input-row');
     const field = document.getElementById('support-inline-field');
     const value = field.value.trim();
-    if (!value) return;
 
     if (supportInputMode === 'email') {
+      if (!value) return;
       if (!isValidEmail(value)) {
         showInlineError("That doesn't look like a valid email — please enter a correct email address.");
         return;
@@ -626,11 +730,16 @@
     }
 
     if (supportInputMode === 'message') {
-      if (value.length < 5) return;
+      const attachments = supportPendingAttachments.slice();
+      if (!attachments.length && value.length < 5) return;
+      const finalMessage = value || (attachments.length > 1 ? 'See attached images.' : 'See attached image.');
       row.style.display = 'none';
       row.innerHTML = '';
-      addUserMessage(value);
-      submitSupportRequest(supportCollectedEmail, value);
+      hideInlineError();
+      addUserAttachmentThumbnails(attachments);
+      if (value) addUserMessage(value);
+      clearPendingAttachments();
+      submitSupportRequest(supportCollectedEmail, finalMessage, attachments);
     }
   }
 
@@ -710,14 +819,18 @@
     });
   }
 
-  async function submitSupportRequest(email, message) {
+  async function submitSupportRequest(email, message, attachments) {
     const category = supportLastCategory ? SUPPORT_TREE[supportLastCategory].label : 'General';
     addBotMessage('Sending this to our team…');
     try {
+      const body = { email, category, message, transcript: supportTranscript };
+      if (attachments && attachments.length) {
+        body.attachments = attachments.map(a => ({ filename: a.name, contentType: a.type, dataBase64: a.dataBase64 }));
+      }
       const res  = await fetch(`${SNAG_API_URL}/support/contact`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, category, message, transcript: supportTranscript })
+        body: JSON.stringify(body)
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Something went wrong.');
@@ -1723,6 +1836,7 @@
 
     <div id="support-thread" class="no-scrollbar" style="display: none; flex: 1; overflow-y: auto; padding: 14px 12px; flex-direction: column; gap: 10px; background: #0B0E17;"></div>
 
+    <div id="support-attachment-preview" style="display: none; align-items: center; gap: 8px; flex-shrink: 0; padding: 8px 12px 0; background: #0B0E17;"></div>
     <div id="support-inline-input-row" style="display: none; align-items: center; gap: 8px; flex-shrink: 0; padding: 8px 12px 5px; background: #0B0E17; border-top: 1px solid #171B26;"></div>
     <div id="support-inline-error" style="display: none; padding: 4px 12px 8px; font-size: 11px; color: #F87171; background: #0B0E17; flex-shrink: 0;"></div>
   </div>

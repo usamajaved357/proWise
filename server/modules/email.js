@@ -103,7 +103,7 @@ function sendReviewInviteEmail(to, link) {
   });
 }
 
-function sendSupportRequestEmail(fromEmail, category, message, transcript) {
+function sendSupportRequestEmail(fromEmail, category, message, transcript, attachments) {
   const apiKey = process.env.RESEND_API_KEY;
   const to = process.env.SUPPORT_INBOX_EMAIL || 'support@snagai.pro';
   if (!apiKey) { console.log(`[SUPPORT EMAIL SKIP] From:${fromEmail} Category:${category} Message:${message}`); return Promise.resolve(); }
@@ -117,7 +117,11 @@ function sendSupportRequestEmail(fromEmail, category, message, transcript) {
       ${steps.map(step => `<li>${escapeHtml(step)}</li>`).join('')}
     </ol>
   </div>` : '';
-  const body = JSON.stringify({
+  const attachmentList = Array.isArray(attachments) ? attachments.filter(Boolean) : [];
+  const attachmentNoteHtml = attachmentList.length
+    ? `<p style="font-size:12px;color:#888;margin:10px 0 0">&#128206; Attached: ${attachmentList.map(a => escapeHtml(a.filename)).join(', ')}</p>`
+    : '';
+  const payload = {
     from: 'Snag AI Support Widget <noreply@snagai.pro>',
     to: [to],
     reply_to: fromEmail,
@@ -132,9 +136,14 @@ function sendSupportRequestEmail(fromEmail, category, message, transcript) {
   </table>
   ${transcriptHtml}
   <div style="background:#f7f6f2;border-radius:12px;padding:18px 20px;font-size:14px;line-height:1.6">${safeMessage}</div>
+  ${attachmentNoteHtml}
   <p style="font-size:12px;color:#aaa;margin:18px 0 0">Reply directly to this email to respond to ${fromEmail}.</p>
 </div>`
-  });
+  };
+  if (attachmentList.length) {
+    payload.attachments = attachmentList.map(a => ({ filename: a.filename, content: a.dataBase64 }));
+  }
+  const body = JSON.stringify(payload);
   return new Promise(resolve => {
     const req = https.request({
       hostname: 'api.resend.com', path: '/emails', method: 'POST',
