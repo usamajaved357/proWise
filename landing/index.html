@@ -254,6 +254,7 @@
     if (!stars || !heading || !subtext) return;
     stars.style.color = hasReviews ? '#F5B95E' : '#3A4054';
     heading.textContent = hasReviews ? 'Using Snag AI? Share your experience' : 'No reviews yet';
+    subtext.style.fontSize = hasReviews ? '13px' : '14.5px';
     subtext.textContent = hasReviews
       ? "Your feedback helps other freelancers and agencies decide if it's right for them."
       : 'Real reviews will show up here as soon as verified customers start sharing their experience. Yours could be the first.';
