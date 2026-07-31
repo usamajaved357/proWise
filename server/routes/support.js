@@ -13,6 +13,9 @@ router.post('/contact', async (req, res) => {
   const email    = (req.body.email || '').trim().toLowerCase();
   const category = (req.body.category || 'General').trim().slice(0, 80);
   const message  = (req.body.message || '').trim().slice(0, 2000);
+  const transcript = Array.isArray(req.body.transcript)
+    ? req.body.transcript.filter(step => typeof step === 'string').map(step => step.trim().slice(0, 200)).slice(0, 30)
+    : [];
 
   if (!email || !email.includes('@')) return res.status(400).json({ error: 'Valid email required.' });
   if (!message || message.length < 5) return res.status(400).json({ error: 'Add a few words about what you need help with.' });
@@ -22,7 +25,7 @@ router.post('/contact', async (req, res) => {
     return res.status(429).json({ error: 'Already sent. Give us a moment before sending another.' });
   }
 
-  await sendSupportRequestEmail(email, category, message);
+  await sendSupportRequestEmail(email, category, message, transcript);
   lastSentAt.set(email, Date.now());
 
   res.json({ ok: true, message: "Thanks, we'll get back to you soon." });

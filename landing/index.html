@@ -359,7 +359,9 @@
       qas: [
         { q: 'How do I cancel my subscription?', a: "All plans are month-to-month with no contract. Cancel from your billing page whenever you like and you'll keep access until the end of your current cycle." },
         { q: 'Do unused cover letters roll over?', a: "No, each plan's monthly allowance resets on your billing date. Upgrade anytime if you're consistently running out before the cycle ends." },
-        { q: 'Can I get a refund?', a: "If you subscribed within the last 7 days and generated fewer than 5 proposals, you can request a full refund, no questions asked. See our <a href=\"refund.html\" target=\"_blank\">Refund Policy</a> for the full terms." }
+        { q: 'Can I get a refund?', a: "If you subscribed within the last 7 days and generated fewer than 5 proposals, you can request a full refund, no questions asked. See our <a href=\"refund.html\" target=\"_blank\">Refund Policy</a> for the full terms." },
+        { q: 'What payment methods do you accept?', a: 'All major credit and debit cards, plus Apple Pay and Google Pay where available, processed securely through Paddle at checkout.' },
+        { q: 'Can I switch plans later?', a: "Yes, upgrade or downgrade anytime from your billing page. Upgrades apply immediately, downgrades take effect at your next billing date." }
       ]
     },
     account: {
@@ -367,7 +369,8 @@
       qas: [
         { q: 'How do I verify my account?', a: 'In Settings, enter the same email you use (or plan to use) on Paddle, then verify it by clicking the link sent to your inbox.' },
         { q: 'How do I sync my profile?', a: 'A circular logo button appears bottom-right on your Upwork profile page. Click Sync and it reads your rate, JSS, skills, bio, history and portfolio in a single pass, it glows green when done.' },
-        { q: 'How many profiles can I add?', a: 'In Subscription, paste your Upwork profile URL, standard or custom URLs both work. Pro supports 1 profile, Agency supports 2, covering both your freelancer and agency profiles.' }
+        { q: 'How many profiles can I add?', a: 'In Subscription, paste your Upwork profile URL, standard or custom URLs both work. Pro supports 1 profile, Agency supports 2, covering both your freelancer and agency profiles.' },
+        { q: 'What happens if I switch Upwork accounts?', a: "Just re-sync from the new profile page, Snag AI overwrites the stored profile data so everything stays accurate to whichever account you're currently using." }
       ]
     },
     proposals: {
@@ -375,7 +378,8 @@
       qas: [
         { q: 'Will the cover letters sound like me?', a: 'Snag AI drafts using your real portfolio, rate and tone settings, then lets you refine in place with one-click commands like "shorter" or "more confident" before you send anything.' },
         { q: 'What quick commands can I use to refine a draft?', a: 'Shorter, more confident, better hook, and add rate, right inside the cover letter box, no need to rewrite from scratch.' },
-        { q: 'How many revisions do I get per proposal?', a: 'Every plan includes 1 free revision per generated cover letter, on top of your monthly proposal allowance.' }
+        { q: 'How many revisions do I get per proposal?', a: 'Every plan includes 1 free revision per generated cover letter, on top of your monthly proposal allowance.' },
+        { q: "What if the AI misses something from the job post?", a: "Edit the draft directly in the Upwork text box before sending, or use a refine command to steer it. Nothing ever sends automatically." }
       ]
     },
     audits: {
@@ -383,7 +387,8 @@
       qas: [
         { q: 'What does a job audit actually check?', a: 'Competition level on the job post, publicly listed client stats like hire history and spend, and how your rate and skills line up, then gives you a plain recommendation on whether the job is worth a connect.' },
         { q: 'What does a profile audit check?', a: 'Your profile copy is reviewed across 9 sections individually, title, bio, portfolio, credibility and more, with a literal copy-paste fix for anything that needs it. You can also export a real PDF report.' },
-        { q: 'Do audits work for agency profiles too?', a: "Yes. Every feature (cover letter writing, job audits, profile audits and smart alerts) works the same way whether you're applying as a freelancer or through an agency profile." }
+        { q: 'Do audits work for agency profiles too?', a: "Yes. Every feature (cover letter writing, job audits, profile audits and smart alerts) works the same way whether you're applying as a freelancer or through an agency profile." },
+        { q: 'Can I re-run an audit on the same job or profile?', a: "Yes, re-running uses a fresh credit from your monthly allowance and reflects any changes made since the last run." }
       ]
     },
     bug: { label: 'Report a Bug', qas: [] },
@@ -394,6 +399,9 @@
   let supportInputMode      = null; // null | 'email' | 'message'
   let supportCollectedEmail = '';
   let supportLastCategory   = null;
+  let supportViewedQuestions = new Set();
+  let supportTranscript      = [];
+  const TALK_TO_AGENT_ICON = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 13v-1a8 8 0 0 1 16 0v1"></path><path d="M20 13v3a2 2 0 0 1-2 2h-1"></path><rect x="3" y="13" width="4" height="5" rx="1.5"></rect><rect x="17" y="13" width="4" height="5" rx="1.5"></rect><path d="M14 19a2 2 0 0 1-2 2h-1"></path></svg>';
 
   function toggleSupportWidget(forceOpen) {
     supportPanelOpen = typeof forceOpen === 'boolean' ? forceOpen : !supportPanelOpen;
@@ -406,13 +414,42 @@
   }
   function closeSupportWidget() { toggleSupportWidget(false); }
 
+  function hideInlineInput() {
+    const row = document.getElementById('support-inline-input-row');
+    row.style.display = 'none';
+    row.innerHTML = '';
+    hideInlineError();
+    supportInputMode = null;
+  }
+
+  function hideInlineError() {
+    const err = document.getElementById('support-inline-error');
+    err.style.display = 'none';
+    err.textContent = '';
+  }
+
+  function showInlineError(text) {
+    const err = document.getElementById('support-inline-error');
+    err.textContent = text;
+    err.style.display = 'block';
+    const field = document.getElementById('support-inline-field');
+    if (field) { field.style.border = '1px solid #F87171'; field.focus(); }
+    scrollThreadToBottom();
+  }
+
+  function isValidEmail(value) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value);
+  }
+
   function showSupportHome() {
     document.getElementById('support-home-greeting').style.display = 'block';
     document.getElementById('support-home-body').style.display = 'block';
     const thread = document.getElementById('support-thread');
     thread.style.display = 'none';
     thread.innerHTML = '';
+    hideInlineInput();
     document.getElementById('support-search-field').value = '';
+    supportTranscript = [];
   }
 
   function showSupportChat() {
@@ -420,6 +457,11 @@
     const thread = document.getElementById('support-thread');
     thread.style.display = 'flex';
     thread.innerHTML = '';
+    hideInlineInput();
+  }
+
+  function logSupportStep(text) {
+    supportTranscript.push(text);
   }
 
   function renderSupportTopicsList() {
@@ -504,14 +546,26 @@
     scrollThreadToBottom();
   }
 
-  function addPills(options) {
+  function addPills(options, variant) {
+    const isConnect = variant === 'connect';
     const thread = document.getElementById('support-thread');
     const wrap = document.createElement('div');
-    wrap.style.cssText = 'display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; align-self: stretch; margin: 2px 0;';
+    wrap.style.cssText = `display: flex; gap: 6px; justify-content: ${isConnect ? 'flex-end' : 'center'}; flex-wrap: wrap; align-self: stretch; margin: 2px 0;`;
     options.forEach(opt => {
       const btn = document.createElement('button');
-      btn.style.cssText = "display: flex; align-items: center; gap: 5px; padding: 6px 11px; border-radius: 999px; background: #10141F; border: 1px solid #1E2330; color: #C5CAD9; font-size: 10.5px; font-weight: 500; font-family: 'Plus Jakarta Sans', sans-serif; cursor: pointer;";
-      btn.textContent = opt.label;
+      btn.style.cssText = isConnect
+        ? "display: flex; align-items: center; gap: 6px; padding: 7px 13px; border-radius: 999px; background: linear-gradient(135deg, #A855F7, #EC4899); border: none; color: #fff; font-size: 10px; font-weight: 600; font-family: 'Plus Jakarta Sans', sans-serif; cursor: pointer; box-shadow: 0 8px 18px -8px rgba(236,72,153,0.5);"
+        : "display: flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; background: #171B26; border: 1px solid #262C3C; color: #E7E9F0; font-size: 10px; font-weight: 500; font-family: 'Plus Jakarta Sans', sans-serif; cursor: pointer;";
+      if (opt.icon) {
+        btn.innerHTML = `<span style="display:flex; flex-shrink:0;">${opt.icon}</span><span>${opt.label}</span>`;
+      } else {
+        const match = opt.label.match(/^(\S+)\s+(.*)$/);
+        if (match) {
+          btn.innerHTML = `<span style="font-size: ${isConnect ? '11px' : '11.5px'};">${match[1]}</span><span>${match[2]}</span>`;
+        } else {
+          btn.textContent = opt.label;
+        }
+      }
       btn.onclick = () => { wrap.querySelectorAll('button').forEach(b => { b.disabled = true; b.style.opacity = '0.5'; b.style.cursor = 'default'; }); opt.onClick(); };
       wrap.appendChild(btn);
     });
@@ -521,23 +575,35 @@
 
   function addInlineInput(mode) {
     supportInputMode = mode;
-    const thread = document.getElementById('support-thread');
-    const row = document.createElement('div');
-    row.id = 'support-inline-input-row';
-    row.style.cssText = 'display: flex; align-items: center; gap: 8px; align-self: stretch;';
+    const row = document.getElementById('support-inline-input-row');
     const isEmail = mode === 'email';
-    row.innerHTML = `
-      <input id="support-inline-field" type="${isEmail ? 'email' : 'text'}" placeholder="${isEmail ? 'you@example.com' : "What's going on?"}" style="flex: 1; min-width: 0; padding: 9px 13px; border-radius: 999px; background: #10141F; border: 1px solid #232838; color: #F5F6FA; font-size: 12px; font-family: 'Plus Jakarta Sans', sans-serif; outline: none;">
+    row.style.alignItems = 'flex-end';
+    row.innerHTML = isEmail
+      ? `<input id="support-inline-field" type="email" placeholder="you@example.com" style="flex: 1; min-width: 0; padding: 9px 13px; border-radius: 999px; background: #10141F; border: 1px solid #232838; color: #F5F6FA; font-size: 12px; font-family: 'Plus Jakarta Sans', sans-serif; outline: none;">`
+      : `<textarea id="support-inline-field" rows="1" placeholder="What's going on?" style="flex: 1; min-width: 0; max-height: 96px; padding: 9px 13px; border-radius: 18px; background: #10141F; border: 1px solid #232838; color: #F5F6FA; font-size: 12px; font-family: 'Plus Jakarta Sans', sans-serif; outline: none; resize: none; overflow-y: hidden; line-height: 1.4;"></textarea>`;
+    row.innerHTML += `
       <button id="support-inline-send" aria-label="Send" style="flex-shrink: 0; width: 32px; height: 32px; border-radius: 50%; border: none; cursor: pointer; background: linear-gradient(135deg, #2DD4BF, #A855F7); display: flex; align-items: center; justify-content: center;">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="#fff"><path d="M3 20l18-8L3 4v6l12 2-12 2v6z"></path></svg>
       </button>`;
-    thread.appendChild(row);
+    row.style.display = 'flex';
+    hideInlineError();
     scrollThreadToBottom();
     const field = row.querySelector('#support-inline-field');
     const send  = row.querySelector('#support-inline-send');
     field.focus();
     send.onclick = () => handleInlineInputSubmit();
-    field.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); handleInlineInputSubmit(); } });
+    field.addEventListener('input', () => {
+      field.style.border = '1px solid #232838';
+      hideInlineError();
+      if (!isEmail) {
+        field.style.height = 'auto';
+        field.style.height = Math.min(field.scrollHeight, 96) + 'px';
+        scrollThreadToBottom();
+      }
+    });
+    field.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleInlineInputSubmit(); }
+    });
   }
 
   function handleInlineInputSubmit() {
@@ -547,9 +613,13 @@
     if (!value) return;
 
     if (supportInputMode === 'email') {
-      if (!value.includes('@')) return;
+      if (!isValidEmail(value)) {
+        showInlineError("That doesn't look like a valid email — please enter a correct email address.");
+        return;
+      }
       supportCollectedEmail = value;
-      row.remove();
+      row.style.display = 'none';
+      row.innerHTML = '';
       addUserMessage(value);
       addBotMessage("Thanks! Now tell me what's going on.", () => addInlineInput('message'));
       return;
@@ -557,7 +627,8 @@
 
     if (supportInputMode === 'message') {
       if (value.length < 5) return;
-      row.remove();
+      row.style.display = 'none';
+      row.innerHTML = '';
       addUserMessage(value);
       submitSupportRequest(supportCollectedEmail, value);
     }
@@ -573,16 +644,26 @@
     if (!query) return;
     document.getElementById('support-search-field').value = '';
     showSupportChat();
+    logSupportStep(`Searched: "${query}"`);
     addUserMessage(query);
     addBotMessage("Let's find the right place for that, pick a topic below:", () => {
       addOptionsList(Object.keys(SUPPORT_TREE).map(id => ({ label: SUPPORT_TREE[id].label, onClick: () => selectSupportTopic(id) })));
     });
   }
 
+  function showTalkToAgentPill() {
+    logSupportStep('Ran out of matching FAQ answers, offered to talk to a human.');
+    addBotMessage("That's everything I've got on this topic, want to talk to a real person?", () => {
+      addPills([{ label: 'Talk to agent', icon: TALK_TO_AGENT_ICON, onClick: () => addInlineInput('email') }], 'connect');
+    });
+  }
+
   function selectSupportTopic(id) {
     const topic = SUPPORT_TREE[id];
     supportLastCategory = id;
+    supportViewedQuestions = new Set();
     showSupportChat();
+    logSupportStep(`Selected topic: "${topic.label}"`);
     addUserMessage(topic.label);
     if (!topic.qas.length) {
       addBotMessage("Got it, tell us more and we'll route it to a human.", () => addInlineInput('email'));
@@ -590,26 +671,43 @@
     }
     addBotMessage('Common questions on this topic', () => {
       addOptionsList(topic.qas.map((item, i) => ({ label: item.q, onClick: () => selectSupportQuestion(id, i) })));
-      addPills([{ label: '💬 Connect to agent', onClick: () => addInlineInput('email') }]);
     });
   }
 
   function selectSupportQuestion(topicId, qIndex) {
-    const item = SUPPORT_TREE[topicId].qas[qIndex];
+    const topic = SUPPORT_TREE[topicId];
+    const item  = topic.qas[qIndex];
+    supportViewedQuestions.add(qIndex);
+    logSupportStep(`Clicked FAQ: "${item.q}"`);
     addUserMessage(item.q);
     addBotMessage(item.a, () => {
       addBotMessage('Did that answer your question?', () => {
         addPills([
           { label: '👍 Yes, thanks', onClick: () => onSupportFeedbackYes() },
-          { label: '📩 No, I need more help', onClick: () => addInlineInput('email') }
+          { label: '📩 No, I need more help', onClick: () => onSupportFeedbackNo(topicId) }
         ]);
       });
     });
   }
 
   function onSupportFeedbackYes() {
+    logSupportStep('Marked the FAQ answer as helpful (resolved without agent).');
     addUserMessage('👍 Yes, thanks');
     addBotMessage('Glad that helped!', () => showSupportHome());
+  }
+
+  function onSupportFeedbackNo(topicId) {
+    logSupportStep('Said the FAQ answer did not help.');
+    addUserMessage('📩 No, I need more help');
+    const topic     = SUPPORT_TREE[topicId];
+    const remaining = topic.qas.map((_, i) => i).filter(i => !supportViewedQuestions.has(i));
+    if (!remaining.length) {
+      showTalkToAgentPill();
+      return;
+    }
+    addBotMessage('No worries, here are a few other things that might help:', () => {
+      addOptionsList(remaining.map(i => ({ label: topic.qas[i].q, onClick: () => selectSupportQuestion(topicId, i) })));
+    });
   }
 
   async function submitSupportRequest(email, message) {
@@ -619,13 +717,13 @@
       const res  = await fetch(`${SNAG_API_URL}/support/contact`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, category, message })
+        body: JSON.stringify({ email, category, message, transcript: supportTranscript })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Something went wrong.');
       addBotMessage("Thanks! We'll get back to you at " + email + " soon. 📬");
     } catch(e) {
-      addBotMessage(e.message, () => addPills([{ label: 'Try again', onClick: () => addInlineInput('message') }]));
+      addBotMessage(e.message, () => addPills([{ label: '🔁 Try again', onClick: () => addInlineInput('message') }], 'connect'));
     }
   }
 </script>
@@ -1592,7 +1690,7 @@
   </section>
 
   <!-- FLOATING SUPPORT WIDGET -->
-  <div id="support-panel" style="position: fixed; bottom: 68px; right: 28px; z-index: 51; width: 304px; max-width: calc(100vw - 32px); height: 456px; max-height: calc(100vh - 100px); display: none; flex-direction: column; border-radius: 16px; background: #0B0E17; border: 1px solid #1B2030; box-shadow: 0 24px 60px -14px rgba(0,0,0,0.65); overflow: hidden; animation: bubbleIn 0.28s ease both;">
+  <div id="support-panel" style="position: fixed; bottom: 68px; right: 28px; z-index: 51; width: 304px; max-width: calc(100vw - 32px); height: 456px; max-height: calc(100vh - 100px); display: none; flex-direction: column; border-radius: 16px; background: #0B0E17; border: 1px solid #1B2030; box-shadow: 0 30px 70px -16px rgba(0,0,0,0.75), 0 10px 30px -10px rgba(168,85,247,0.25); overflow: hidden; animation: bubbleIn 0.28s ease both;">
     <div style="position: relative; padding: 14px 16px; flex-shrink: 0; overflow: hidden; background: linear-gradient(160deg, rgba(168,85,247,0.14), rgba(11,14,23,0) 70%);">
       <div style="position: absolute; top: -60px; left: -20px; width: 200px; height: 130px; border-radius: 50%; background: radial-gradient(circle, rgba(168,85,247,0.26), transparent 70%); filter: blur(28px); pointer-events: none;"></div>
       <div style="position: relative; display: flex; align-items: center; gap: 9px; margin-bottom: 12px;">
@@ -1601,7 +1699,7 @@
           <div style="position: absolute; left: 50%; top: 50%; width: 78%; height: 78%; transform: translate(-50%,-50%); border-radius: 50%; mask-image: radial-gradient(circle, transparent 50%, black 56%, black 82%, transparent 86%); -webkit-mask-image: radial-gradient(circle, transparent 50%, black 56%, black 82%, transparent 86%); background: conic-gradient(from 200deg, #2DD4BF, #3B82F6 25%, #A855F7 55%, #EC4899 80%, #2DD4BF 100%);"></div>
           <div style="position: absolute; left: 50%; top: 50%; width: 42%; height: 42%; transform: translate(-50%,-50%); border-radius: 50%; background: #000;"></div>
         </div>
-        <span style="font-size: 12px; font-weight: 600; color: #9BA2B5; font-family: 'Plus Jakarta Sans', sans-serif;">Snag AI Support</span>
+        <span style="font-size: 14px; font-weight: 700; color: #E7E9F0; font-family: 'Plus Jakarta Sans', sans-serif;">Snag AI Support</span>
         <span style="width: 6px; height: 6px; border-radius: 50%; background: #34D399; box-shadow: 0 0 6px rgba(52,211,153,0.7); animation: pulseGlow 1.8s ease-in-out infinite; flex-shrink: 0;"></span>
         <div style="flex: 1;"></div>
         <button onclick="closeSupportWidget()" aria-label="Close" style="width: 24px; height: 24px; border-radius: 50%; background: rgba(239,68,68,0.12); border: none; color: #F87171; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
@@ -1624,6 +1722,9 @@
     </div>
 
     <div id="support-thread" class="no-scrollbar" style="display: none; flex: 1; overflow-y: auto; padding: 14px 12px; flex-direction: column; gap: 10px; background: #0B0E17;"></div>
+
+    <div id="support-inline-input-row" style="display: none; align-items: center; gap: 8px; flex-shrink: 0; padding: 8px 12px 5px; background: #0B0E17; border-top: 1px solid #171B26;"></div>
+    <div id="support-inline-error" style="display: none; padding: 4px 12px 8px; font-size: 11px; color: #F87171; background: #0B0E17; flex-shrink: 0;"></div>
   </div>
 
   <button id="support-fab" onclick="toggleSupportWidget()" aria-label="Support" style="position: fixed; bottom: 28px; right: 28px; z-index: 51; width: 46px; height: 46px; border-radius: 50%; border: none; cursor: pointer; background: linear-gradient(135deg, #A855F7, #EC4899); color: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 12px 26px -8px rgba(236,72,153,0.6);">
