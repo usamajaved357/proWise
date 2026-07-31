@@ -247,9 +247,20 @@
       </div>`;
   }
 
+  function setReviewsCtaState(hasReviews) {
+    const stars    = document.getElementById('reviews-cta-stars');
+    const heading  = document.getElementById('reviews-cta-heading');
+    const subtext  = document.getElementById('reviews-cta-subtext');
+    if (!stars || !heading || !subtext) return;
+    stars.style.color = hasReviews ? '#F5B95E' : '#3A4054';
+    heading.textContent = hasReviews ? 'Using Snag AI? Share your experience' : 'No reviews yet';
+    subtext.textContent = hasReviews
+      ? "Your feedback helps other freelancers and agencies decide if it's right for them."
+      : 'Real reviews will show up here as soon as verified customers start sharing their experience. Yours could be the first.';
+  }
+
   async function loadLiveReviews() {
     const marqueeWrap = document.getElementById('reviews-marquee-wrap');
-    const emptyState  = document.getElementById('reviews-empty');
     const track       = document.getElementById('reviews-track');
     if (!track) return;
 
@@ -260,7 +271,7 @@
 
       if (!reviews.length) {
         marqueeWrap.style.display = 'none';
-        emptyState.style.display  = 'block';
+        setReviewsCtaState(false);
         return;
       }
 
@@ -268,12 +279,12 @@
       const liveHTML = reviews.map(reviewCardHTML).join('');
       track.innerHTML = liveHTML + liveHTML;
       marqueeWrap.style.display = 'block';
-      emptyState.style.display  = 'none';
+      setReviewsCtaState(true);
       startReviewsAutoScroll();
     } catch(e) {
       // Network hiccup — show the empty state rather than a broken/empty marquee
       marqueeWrap.style.display = 'none';
-      emptyState.style.display  = 'block';
+      setReviewsCtaState(false);
     }
   }
 
@@ -369,8 +380,8 @@
     audits: {
       label: 'Job & Profile Audits',
       qas: [
-        { q: 'What does a job audit actually check?', a: 'Competition level, client hire rate and spend history, and how your rate and skills stack up, then gives you a plain verdict on whether the job is worth a connect.' },
-        { q: 'What does a profile audit check?', a: 'Your profile is scored across 9 sections individually, title, bio, portfolio, credibility and more, with a literal copy-paste fix for anything that needs it. You can also export a real PDF report.' },
+        { q: 'What does a job audit actually check?', a: 'Competition level on the job post, publicly listed client stats like hire history and spend, and how your rate and skills line up, then gives you a plain recommendation on whether the job is worth a connect.' },
+        { q: 'What does a profile audit check?', a: 'Your profile copy is reviewed across 9 sections individually, title, bio, portfolio, credibility and more, with a literal copy-paste fix for anything that needs it. You can also export a real PDF report.' },
         { q: 'Do audits work for agency profiles too?', a: "Yes. Every feature (cover letter writing, job audits, profile audits and smart alerts) works the same way whether you're applying as a freelancer or through an agency profile." }
       ]
     },
@@ -917,15 +928,15 @@
           <div class="fx-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: stretch;">
 
             <div style="order: 2;">
-              <p style="font-size: 15px; color: #8B92A5; line-height: 1.7; margin: 0 0 20px;">Snag AI pulls the job's competition signals, the client's hire history and spend, and your own rate and skills, then gives you a plain verdict (Apply, Apply carefully, or Skip) before you spend a connect.</p>
+              <p style="font-size: 15px; color: #8B92A5; line-height: 1.7; margin: 0 0 20px;">Snag AI reads the job post for competition signals, budget clarity and scope red flags, and compares it against your own rate and skills, giving you a clear read (Apply, Apply carefully, or Skip) before you spend a connect.</p>
               <div style="display: flex; flex-direction: column; gap: 10px;">
                 <div style="display: flex; align-items: flex-start; gap: 10px;">
                   <span style="width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; background: rgba(168,85,247,0.14); color: #C084FC;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
-                  <span style="font-size: 14px; color: #9199AB; line-height: 1.6;">A clear verdict (Apply, Apply carefully, or Skip), not just a score</span>
+                  <span style="font-size: 14px; color: #9199AB; line-height: 1.6;">A clear recommendation (Apply, Apply carefully, or Skip), broken down in plain language</span>
                 </div>
                 <div style="display: flex; align-items: flex-start; gap: 10px;">
                   <span style="width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; background: rgba(168,85,247,0.14); color: #C084FC;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
-                  <span style="font-size: 14px; color: #9199AB; line-height: 1.6;">Competition pressure and your profile fit, rated side by side</span>
+                  <span style="font-size: 14px; color: #9199AB; line-height: 1.6;">Competition pressure and how well your profile matches the job, compared side by side</span>
                 </div>
                 <div style="display: flex; align-items: flex-start; gap: 10px;">
                   <span style="width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; background: rgba(168,85,247,0.14); color: #C084FC;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
@@ -933,7 +944,7 @@
                 </div>
                 <div style="display: flex; align-items: flex-start; gap: 10px;">
                   <span style="width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; background: rgba(168,85,247,0.14); color: #C084FC;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
-                  <span style="font-size: 14px; color: #9199AB; line-height: 1.6;">Client hire rate, total spend and verification status factored in</span>
+                  <span style="font-size: 14px; color: #9199AB; line-height: 1.6;">Publicly listed job-page stats like client spend and hire history, pulled together in one place</span>
                 </div>
                 <div style="display: flex; align-items: flex-start; gap: 10px;">
                   <span style="width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; background: rgba(168,85,247,0.14); color: #C084FC;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
@@ -1027,20 +1038,20 @@
             </span>
             <span style="font-size: 12px; font-weight: 800; letter-spacing: 0.08em; color: #C084FC;">PROFILE AUDITS</span>
           </div>
-          <h3 style="font-family: 'Sora', sans-serif; font-size: 40px; font-weight: 700; letter-spacing: -0.02em; color: #F5F6FA; margin: 0 0 44px; max-width: 720px;">A scored, section-by-section profile review</h3>
+          <h3 style="font-family: 'Sora', sans-serif; font-size: 40px; font-weight: 700; letter-spacing: -0.02em; color: #F5F6FA; margin: 0 0 44px; max-width: 720px;">A detailed, section-by-section profile review</h3>
 
           <div class="fx-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: stretch;">
 
             <div style="order: 1;">
-              <p style="font-size: 15px; color: #8B92A5; line-height: 1.7; margin: 0 0 20px;">Snag AI scores your profile across 9 weighted sections (title, bio, skills, portfolio, work history, credibility, certificates, completeness and positioning) then hands you a literal copy-paste fix for each one that needs it.</p>
+              <p style="font-size: 15px; color: #8B92A5; line-height: 1.7; margin: 0 0 20px;">Snag AI reviews your profile copy across 9 sections (title, bio, skills, portfolio, work history, credibility, certificates, completeness and positioning) and hands you a literal copy-paste fix for each one that needs it.</p>
               <div style="display: flex; flex-direction: column; gap: 10px;">
                 <div style="display: flex; align-items: flex-start; gap: 10px;">
                   <span style="width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; background: rgba(168,85,247,0.14); color: #C084FC;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
-                  <span style="font-size: 14px; color: #9199AB; line-height: 1.6;">One overall score out of 10, plus a status from Critical to Elite</span>
+                  <span style="font-size: 14px; color: #9199AB; line-height: 1.6;">One overall rating out of 10 for your profile copy, plus a quick summary of where to focus first</span>
                 </div>
                 <div style="display: flex; align-items: flex-start; gap: 10px;">
                   <span style="width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; background: rgba(168,85,247,0.14); color: #C084FC;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
-                  <span style="font-size: 14px; color: #9199AB; line-height: 1.6;">9 sections scored individually: title, bio, portfolio, credibility and more</span>
+                  <span style="font-size: 14px; color: #9199AB; line-height: 1.6;">9 sections reviewed individually: title, bio, portfolio, credibility and more</span>
                 </div>
                 <div style="display: flex; align-items: flex-start; gap: 10px;">
                   <span style="width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; background: rgba(168,85,247,0.14); color: #C084FC;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
@@ -1062,7 +1073,7 @@
 
               <div style="margin-top: 22px; border-radius: 13px; background: #10141F; border: 1px solid rgba(168,85,247,0.3); padding: 18px 20px;">
                 <div style="font-size: 11px; font-weight: 800; letter-spacing: 0.06em; color: #C084FC; margin-bottom: 10px;">WHY IT MATTERS</div>
-                <p style="font-size: 13.5px; color: #9199AB; line-height: 1.7; margin: 0;">Most profiles lose clients in the first two lines: a vague title or a keyword-stuffed overview that reads like it was written for an algorithm, not a person. Snag AI scores every section the way a hiring client actually reads it, then tells you exactly what to change first.</p>
+                <p style="font-size: 13.5px; color: #9199AB; line-height: 1.7; margin: 0;">Most profiles lose clients in the first two lines: a vague title or a keyword-stuffed overview that reads like it was written for an algorithm, not a person. Snag AI reviews your copy section by section for clarity and readability, then tells you exactly what to change first.</p>
               </div>
             </div>
 
@@ -1141,7 +1152,7 @@
           <div class="fx-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 56px; align-items: stretch;">
 
             <div style="order: 2;">
-              <p style="font-size: 15px; color: #8B92A5; line-height: 1.7; margin: 0 0 20px;">Snag AI checks every job page you open against filters you control (proposal count, client hire rate and spend, payment verification, rate mismatch, job age and more) then shows an on-page toast telling you whether it clears your bar, and exactly why not if it doesn't.</p>
+              <p style="font-size: 15px; color: #8B92A5; line-height: 1.7; margin: 0 0 20px;">Snag AI checks every job page you open against filters you control (proposal count, publicly listed client hire rate and spend, payment verification, rate mismatch, job age and more) then shows an on-page toast telling you whether it clears your bar, and exactly why not if it doesn't.</p>
               <div style="display: flex; flex-direction: column; gap: 10px;">
                 <div style="display: flex; align-items: flex-start; gap: 10px;">
                   <span style="width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; background: rgba(94,234,212,0.18); color: #5EEAD4;"><svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M4 12.5L9.5 18L20 6" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
@@ -1497,7 +1508,7 @@
             <svg class="faq-chevron" width="12" height="12" viewBox="0 0 24 24" fill="none" style="transition: transform 0.2s ease;"><path d="M6 9L12 15L18 9" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
           </span>
         </div>
-        <div class="faq-answer">Competition level, client hire rate and spend history, and how your rate and skills stack up, then gives you a plain verdict on whether the job is worth a connect.</div>
+        <div class="faq-answer">Competition level on the job post, publicly listed client stats like hire history and spend, and how your rate and skills line up, then gives you a plain recommendation on whether the job is worth a connect.</div>
       </div>
       <div class="faq-item" style="border-radius: 14px; background: #0B0E17; border: 1px solid #171B26; padding: 20px 24px; cursor: pointer;">
         <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px;">
@@ -1537,31 +1548,27 @@
       <div id="reviews-track" class="no-scrollbar" style="display: flex; gap: 20px; overflow-x: auto; padding: 4px 66px; -webkit-mask-image: linear-gradient(90deg, transparent, black 6%, black 94%, transparent); mask-image: linear-gradient(90deg, transparent, black 6%, black 94%, transparent);"></div>
     </div>
 
-    <div id="reviews-empty" style="text-align: center; padding: 0 40px; max-width: 420px; margin: 0 auto;">
-      <p style="font-size: 14px; color: #6B7284; margin: 0;">No reviews yet, be the first to share your experience.</p>
-    </div>
+    <div id="reviews-cta" style="max-width: 720px; margin: 40px auto 0; padding: 0 40px; text-align: center;">
+      <div style="position: relative; border-radius: 20px; background: linear-gradient(165deg, rgba(45,212,191,0.07), rgba(11,14,23,0.4)); border: 1px solid rgba(94,234,212,0.22); padding: 44px 48px; overflow: hidden;">
+        <div style="position: absolute; top: -60px; left: 50%; transform: translateX(-50%); width: 280px; height: 180px; border-radius: 50%; background: radial-gradient(circle, rgba(45,212,191,0.14), transparent 70%); filter: blur(30px); pointer-events: none;"></div>
 
-    <div style="max-width: 640px; margin: 56px auto 0; padding: 0 40px; text-align: center;">
-      <div style="position: relative; border-radius: 18px; background: linear-gradient(165deg, rgba(45,212,191,0.07), rgba(11,14,23,0.4)); border: 1px solid rgba(94,234,212,0.22); padding: 34px 32px; overflow: hidden;">
-        <div style="position: absolute; top: -60px; left: 50%; transform: translateX(-50%); width: 240px; height: 160px; border-radius: 50%; background: radial-gradient(circle, rgba(45,212,191,0.14), transparent 70%); filter: blur(30px); pointer-events: none;"></div>
-
-        <div style="position: relative; display: flex; align-items: center; justify-content: center; gap: 3px; margin-bottom: 14px;">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="#F5B95E"><path d="M12 2.5L14.9 8.6L21.6 9.5L16.8 14.1L18 20.8L12 17.6L6 20.8L7.2 14.1L2.4 9.5L9.1 8.6L12 2.5Z"></path></svg>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="#F5B95E"><path d="M12 2.5L14.9 8.6L21.6 9.5L16.8 14.1L18 20.8L12 17.6L6 20.8L7.2 14.1L2.4 9.5L9.1 8.6L12 2.5Z"></path></svg>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="#F5B95E"><path d="M12 2.5L14.9 8.6L21.6 9.5L16.8 14.1L18 20.8L12 17.6L6 20.8L7.2 14.1L2.4 9.5L9.1 8.6L12 2.5Z"></path></svg>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="#F5B95E"><path d="M12 2.5L14.9 8.6L21.6 9.5L16.8 14.1L18 20.8L12 17.6L6 20.8L7.2 14.1L2.4 9.5L9.1 8.6L12 2.5Z"></path></svg>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="#F5B95E"><path d="M12 2.5L14.9 8.6L21.6 9.5L16.8 14.1L18 20.8L12 17.6L6 20.8L7.2 14.1L2.4 9.5L9.1 8.6L12 2.5Z"></path></svg>
+        <div id="reviews-cta-stars" style="position: relative; display: flex; align-items: center; justify-content: center; gap: 3px; margin-bottom: 16px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5L14.9 8.6L21.6 9.5L16.8 14.1L18 20.8L12 17.6L6 20.8L7.2 14.1L2.4 9.5L9.1 8.6L12 2.5Z"></path></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5L14.9 8.6L21.6 9.5L16.8 14.1L18 20.8L12 17.6L6 20.8L7.2 14.1L2.4 9.5L9.1 8.6L12 2.5Z"></path></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5L14.9 8.6L21.6 9.5L16.8 14.1L18 20.8L12 17.6L6 20.8L7.2 14.1L2.4 9.5L9.1 8.6L12 2.5Z"></path></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5L14.9 8.6L21.6 9.5L16.8 14.1L18 20.8L12 17.6L6 20.8L7.2 14.1L2.4 9.5L9.1 8.6L12 2.5Z"></path></svg>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.5L14.9 8.6L21.6 9.5L16.8 14.1L18 20.8L12 17.6L6 20.8L7.2 14.1L2.4 9.5L9.1 8.6L12 2.5Z"></path></svg>
         </div>
 
-        <h3 style="position: relative; font-family: 'Sora', sans-serif; font-size: 21px; font-weight: 700; color: #F5F6FA; margin: 0 0 8px;">Using Snag AI? Share your experience</h3>
-        <p style="position: relative; font-size: 14px; color: #8B92A5; margin: 0 0 22px; line-height: 1.6; max-width: 460px; margin-left: auto; margin-right: auto;">Your feedback helps other freelancers and agencies decide if it's right for them.</p>
+        <h3 id="reviews-cta-heading" style="position: relative; font-family: 'Sora', sans-serif; font-size: 22px; font-weight: 700; color: #F5F6FA; margin: 0 0 8px;">No reviews yet</h3>
+        <p id="reviews-cta-subtext" style="position: relative; font-size: 14.5px; color: #8B92A5; margin: 0 0 24px; line-height: 1.65; max-width: 480px; margin-left: auto; margin-right: auto;">Real reviews will show up here as soon as verified customers start sharing their experience. Yours could be the first.</p>
 
         <div id="review-cta-default" style="position: relative;">
           <button onclick="showReviewEmailInput()" style="border: none; cursor: pointer; padding: 13px 30px; border-radius: 999px; background: linear-gradient(90deg, #2DD4BF, #A855F7); color: #fff; font-size: 14px; font-weight: 700; font-family: 'Manrope', sans-serif; box-shadow: 0 10px 24px -10px rgba(45,212,191,0.45);">Write a review</button>
         </div>
 
         <div id="review-cta-form" style="position: relative; display: none; max-width: 360px; margin: 0 auto;">
-          <p style="font-size: 12.5px; color: #7A8194; margin: 0 0 10px;">Enter the email registered with your Snag AI subscription, we'll send you a link to write your review.</p>
+          <p style="font-size: 12px; font-weight: 400; background: linear-gradient(135deg, #A855F7, #EC4899); -webkit-background-clip: text; background-clip: text; color: transparent; white-space: nowrap; margin: 0 0 18px;">Enter your Snag AI plan email to get your review link.</p>
           <div style="display: flex; gap: 8px;">
             <input id="review-email-input" type="email" placeholder="Email on your Snag AI plan" style="flex: 1; min-width: 0; background: #10141F; border: 1px solid #1D2230; border-radius: 999px; padding: 12px 16px; color: #E7E9F0; font-family: 'Manrope', sans-serif; font-size: 13.5px;">
             <button id="review-email-submit" onclick="submitReviewEmail()" style="border: none; cursor: pointer; padding: 0 22px; border-radius: 999px; background: linear-gradient(90deg, #2DD4BF, #A855F7); color: #fff; font-size: 13.5px; font-weight: 700; font-family: 'Manrope', sans-serif; flex-shrink: 0;">Send link</button>
@@ -1569,7 +1576,7 @@
           <div id="review-email-error" style="font-size: 12px; color: #F87171; margin-top: 8px; display: none;"></div>
         </div>
 
-        <div style="position: relative; display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 18px;">
+        <div style="position: relative; display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 26px;">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M12 2L19 5.5V11C19 15.4 16.1 19.2 12 20.5C7.9 19.2 5 15.4 5 11V5.5L12 2Z" stroke="#565D70" stroke-width="1.6" stroke-linejoin="round"></path></svg>
           <span style="font-size: 11.5px; color: #565D70;">Reserved for verified Snag AI customers</span>
         </div>
