@@ -36,9 +36,9 @@ p{font-size:14px;color:rgba(240,238,234,.5);margin-bottom:28px}
 
 <script>
 const PLANS = {
-  starter: { priceId: 'pri_01kqatq4f1st85p5q2xgx792qj', label: 'Starter: $19/mo' },
-  pro:     { priceId: 'pri_01kqats15v2v1kcx355gw24s5j', label: 'Pro: $39/mo' },
-  agency:  { priceId: 'pri_01kqatwfp1fr3ch8xq32qpmdnt', label: 'Agency: $69/mo' },
+  starter: { priceId: '__PADDLE_PRICE_STARTER__', label: 'Starter: $19/mo' },
+  pro:     { priceId: '__PADDLE_PRICE_PRO__', label: 'Pro: $35/mo' },
+  agency:  { priceId: '__PADDLE_PRICE_AGENCY__', label: 'Agency: $55/mo' },
 };
 
 const params = new URLSearchParams(window.location.search);
@@ -47,9 +47,9 @@ const config = PLANS[plan] || PLANS.pro;
 
 document.getElementById('plan-label').textContent = config.label;
 
-Paddle.Environment.set('sandbox');
+Paddle.Environment.set('__PADDLE_ENVIRONMENT__');
 Paddle.Initialize({
-  token: 'test_774f670464415caafd3f6b20160',
+  token: '__PADDLE_CLIENT_TOKEN__',
   eventCallback: function(data) {
     if (data.name === 'checkout.completed') {
       // Redirect back to home after successful payment
