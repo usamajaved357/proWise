@@ -233,6 +233,16 @@
     closeCheckoutDrawer();
   }
 
+  // Opens the inline checkout automatically when arriving with ?checkout=<plan>,
+  // e.g. from the extension's "Upgrade" buttons — reuses this exact drawer
+  // instead of maintaining a separate checkout page.
+  (function autoOpenCheckoutFromQuery() {
+    const plan = new URLSearchParams(window.location.search).get('checkout');
+    if (plan && PRICE_IDS[plan]) {
+      document.addEventListener('DOMContentLoaded', () => openPaddleCheckout(plan));
+    }
+  })();
+
   // ── Review flow ──────────────────────────────────────────────────────────
   function showReviewToast(text, kind) {
     const toast = document.getElementById('review-toast');

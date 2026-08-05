@@ -1,5 +1,5 @@
 // ── Subscription: status, plan UI, billing card, upgrade ─────────────────────
-import { SERVER_URL, PLAN_LABELS, PLAN_QUOTAS } from './config.js';
+import { SERVER_URL, SITE_URL, PLAN_LABELS, PLAN_QUOTAS } from './config.js';
 import { state } from './state.js';
 import { fmtDate, daysUntil, showSaved } from './helpers.js';
 
@@ -12,14 +12,58 @@ const MANAGE_BILLING_ICON = `<svg class="bc-manage-icon" width="16" height="12" 
 </svg>`;
 const MANAGE_BILLING_LABEL = `${MANAGE_BILLING_ICON} Manage billing`;
 
+const CHECKOUT_BADGE_STYLES = {
+  starter: { color: '#5EEAD4', background: 'rgba(94,234,212,0.14)' },
+  pro:     { color: '#C084FC', background: 'rgba(168,85,247,0.16)' },
+  agency:  { color: '#F5A9C7', background: 'rgba(236,72,153,0.14)' }
+};
+
 export async function openCheckout(plan) {
   const { userEmail, emailVerified } = await chrome.storage.sync.get(['userEmail', 'emailVerified']);
   if (!userEmail || !emailVerified) {
     alert('Please verify your email in Settings → Account before purchasing. This keeps your account secure.');
     return;
   }
-  chrome.tabs.create({ url: `https://snagai.netlify.app/checkout.html?plan=${plan}` });
+
+  const backdrop = document.getElementById('checkout-modal-backdrop');
+  const frame    = document.getElementById('checkout-modal-frame');
+  const label    = document.getElementById('checkout-modal-plan-label');
+  if (!backdrop || !frame) return;
+
+  const badge = CHECKOUT_BADGE_STYLES[plan] || CHECKOUT_BADGE_STYLES.pro;
+  if (label) {
+    label.textContent = PLAN_LABELS[plan] || '';
+    label.style.color = badge.color;
+    label.style.background = badge.background;
+  }
+
+  frame.src = `${SITE_URL}/checkout-embed.html?plan=${encodeURIComponent(plan)}&email=${encodeURIComponent(userEmail)}`;
+  backdrop.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
 }
+
+function closeCheckoutModal() {
+  const backdrop = document.getElementById('checkout-modal-backdrop');
+  const frame    = document.getElementById('checkout-modal-frame');
+  if (backdrop) backdrop.style.display = 'none';
+  if (frame) frame.src = 'about:blank';
+  document.body.style.overflow = '';
+}
+
+document.getElementById('checkout-modal-close')?.addEventListener('click', closeCheckoutModal);
+document.getElementById('checkout-modal-backdrop')?.addEventListener('click', e => {
+  if (e.target.id === 'checkout-modal-backdrop') closeCheckoutModal();
+});
+
+window.addEventListener('message', e => {
+  if (!e.data || e.data.source !== 'snagai-checkout') return;
+  if (e.data.event === 'checkout.completed') {
+    closeCheckoutModal();
+    loadStatus();
+  } else if (e.data.event === 'checkout.closed') {
+    closeCheckoutModal();
+  }
+});
 
 export async function upgradePlan(newPlan) {
   const { userEmail } = await chrome.storage.sync.get(['userEmail']);

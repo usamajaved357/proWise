@@ -1,4 +1,5 @@
 // ── Snag AI Background — message router ───────────────────────────────────────
+import { SITE_URL } from '../options/modules/config.js';
 import { handleGenerate, handleCoverLetter } from './modules/generate.js';
 import { getStatus }    from './modules/status.js';
 import { handleAnalyse } from './modules/analyse.js';
@@ -48,11 +49,11 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     sendResponse({ ok: true }); return true;
   }
   if (msg.type === 'OPEN_PRICING') {
-    chrome.tabs.create({ url: 'https://snagai.netlify.app/#pricing' });
+    chrome.tabs.create({ url: SITE_URL + '/#pricing' });
     sendResponse({ ok: true }); return true;
   }
   if (msg.type === 'OPEN_CHECKOUT') {
-    chrome.tabs.create({ url: 'https://snagai.netlify.app/checkout.html?plan=' + (msg.plan || 'pro') });
+    chrome.tabs.create({ url: SITE_URL + '/?checkout=' + (msg.plan || 'pro') + '#pricing' });
     sendResponse({ ok: true }); return true;
   }
   if (msg.type === 'SET_PRIMARY_PROFILE') {
