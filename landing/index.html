@@ -175,17 +175,17 @@
 <script src="config.js"></script>
 <script>
 
-  Paddle.Environment.set('sandbox');
+  Paddle.Environment.set('__PADDLE_ENVIRONMENT__');
   Paddle.Initialize({
-    token: 'test_774f670464415caafd3f6b20160',
+    token: '__PADDLE_CLIENT_TOKEN__',
     eventCallback: function(data) {
       if (data.name === 'checkout.closed') closeCheckoutDrawer();
     }
   });
   const PRICE_IDS = {
-    starter: 'pri_01kqatq4f1st85p5q2xgx792qj',
-    pro:     'pri_01kqats15v2v1kcx355gw24s5j',
-    agency:  'pri_01kqatwfp1fr3ch8xq32qpmdnt'
+    starter: '__PADDLE_PRICE_STARTER__',
+    pro:     '__PADDLE_PRICE_PRO__',
+    agency:  '__PADDLE_PRICE_AGENCY__'
   };
   const PLAN_LABELS = { starter: 'Basic', pro: 'Pro', agency: 'Agency' };
   const PLAN_BADGE_STYLES = {
@@ -1039,7 +1039,7 @@
     <a href="#pricing" style="display: inline-block; font-size: 13px; font-weight: 400; background: linear-gradient(135deg, #A855F7, #EC4899); -webkit-background-clip: text; background-clip: text; color: transparent; text-decoration: none; cursor: pointer; animation: fadeUp 0.6s ease 0.15s both;">Plans start at <span style="text-decoration: underline; text-decoration-color: #C084FC; text-underline-offset: 3px;">$19/mo</span> · Cancel anytime</a>
 
     <!-- product visual -->
-    <div style="position: relative; margin-top: 64px; animation: fadeUp 0.7s ease 0.25s both;">
+    <div style="position: relative; margin: 64px -40px 0; animation: fadeUp 0.7s ease 0.25s both;">
       <div style="position: relative; border-radius: 21px; background: #0B0E17; padding: 40px; text-align: left; overflow: hidden;">
         <div style="position: absolute; inset: 0; background-image: radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px); background-size: 22px 22px;
           mask-image: radial-gradient(ellipse 700px 340px at 20% 0%, black, transparent 70%);

@@ -8,6 +8,9 @@
 node_modules/
 server/node_modules/
 
+# Build output
+landing/publish/
+
 # OS files
 .DS_Store
 Thumbs.db
