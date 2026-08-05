@@ -5,8 +5,7 @@
 // resolvePrimaryEntity() — this function just takes the already-resolved
 // agencyFull data and does the actual request.
 import { syncUsageToStorage } from './sync-usage.js';
-
-const SERVER = 'http://localhost:3000'; // Local Host
+import { SERVER_URL as SERVER } from '../../options/modules/config.js';
 
 export async function handleAgencyAnalyse(payload, agencyFull) {
   const { userEmail, anonId } = await chrome.storage.sync.get(['userEmail', 'anonId']);
