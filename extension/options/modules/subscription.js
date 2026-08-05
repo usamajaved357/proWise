@@ -26,9 +26,10 @@ export async function openCheckout(plan) {
   }
 
   const backdrop = document.getElementById('checkout-modal-backdrop');
+  const panel    = document.getElementById('checkout-modal-panel');
   const frame    = document.getElementById('checkout-modal-frame');
   const label    = document.getElementById('checkout-modal-plan-label');
-  if (!backdrop || !frame) return;
+  if (!backdrop || !panel || !frame) return;
 
   const badge = CHECKOUT_BADGE_STYLES[plan] || CHECKOUT_BADGE_STYLES.pro;
   if (label) {
@@ -38,16 +39,22 @@ export async function openCheckout(plan) {
   }
 
   frame.src = `${SITE_URL}/checkout-embed.html?plan=${encodeURIComponent(plan)}&email=${encodeURIComponent(userEmail)}`;
-  backdrop.style.display = 'flex';
+  backdrop.style.display = 'block';
+  void panel.offsetWidth; // force reflow so the slide-in transition runs
+  panel.style.transform = 'translateX(0)';
   document.body.style.overflow = 'hidden';
 }
 
 function closeCheckoutModal() {
   const backdrop = document.getElementById('checkout-modal-backdrop');
+  const panel    = document.getElementById('checkout-modal-panel');
   const frame    = document.getElementById('checkout-modal-frame');
-  if (backdrop) backdrop.style.display = 'none';
-  if (frame) frame.src = 'about:blank';
+  if (panel) panel.style.transform = 'translateX(100%)';
   document.body.style.overflow = '';
+  setTimeout(() => {
+    if (backdrop) backdrop.style.display = 'none';
+    if (frame) frame.src = 'about:blank';
+  }, 300);
 }
 
 document.getElementById('checkout-modal-close')?.addEventListener('click', closeCheckoutModal);
