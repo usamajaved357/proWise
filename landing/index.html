@@ -175,17 +175,17 @@
 <script src="config.js"></script>
 <script>
 
-  Paddle.Environment.set('sandbox');
+  Paddle.Environment.set('__PADDLE_ENVIRONMENT__');
   Paddle.Initialize({
-    token: 'test_774f670464415caafd3f6b20160',
+    token: '__PADDLE_CLIENT_TOKEN__',
     eventCallback: function(data) {
       if (data.name === 'checkout.closed') closeCheckoutDrawer();
     }
   });
   const PRICE_IDS = {
-    starter: 'pri_01kqatq4f1st85p5q2xgx792qj',
-    pro:     'pri_01kqats15v2v1kcx355gw24s5j',
-    agency:  'pri_01kqatwfp1fr3ch8xq32qpmdnt'
+    starter: '__PADDLE_PRICE_STARTER__',
+    pro:     '__PADDLE_PRICE_PRO__',
+    agency:  '__PADDLE_PRICE_AGENCY__'
   };
   const PLAN_LABELS = { starter: 'Basic', pro: 'Pro', agency: 'Agency' };
   const PLAN_BADGE_STYLES = {
