@@ -4,6 +4,12 @@
 // here — nothing else needs editing.
 const SNAG_IS_LIVE = true;
 export const SERVER_URL = SNAG_IS_LIVE ? 'https://api.snagai.pro' : 'http://localhost:3000';
+// Landing/checkout pages the extension opens or iframes (Subscription page
+// checkout modal, "Add to Chrome" links, paywall upgrade tab). Local mode
+// expects `cd landing && node build.js && cd publish && python3 -m http.server 8090`.
+// Uses snagailocal.test (mapped to 127.0.0.1 in /etc/hosts) instead of
+// localhost — Paddle's sandbox approved-domains list rejects bare "localhost".
+export const SITE_URL = SNAG_IS_LIVE ? 'https://snagai.pro' : 'http://snagailocal.test:8090';
 // NOTE: internal keys (free/starter/pro/agency) are unchanged from the old
 // 4-tier design and stay that way — they're wired to real Paddle price IDs
 // (PADDLE_PRICE_STARTER etc. in server/routes/webhook.js). Renaming them

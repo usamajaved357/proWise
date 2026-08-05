@@ -1,5 +1,5 @@
 // Build step for the landing site — copies landing/ into landing/publish/,
-// substituting the __PADDLE_*__ placeholders in index.html and checkout.html with real values
+// substituting the __PADDLE_*__ placeholders in index.html and checkout-embed.html with real values
 // read from environment variables. Netlify runs this at deploy time with its
 // own env vars (live values); locally it's run with sandbox values from a
 // local .env file so the two never depend on each other.
@@ -47,7 +47,7 @@ function copyRecursive(srcDir, distDir) {
 
     if (entry.isDirectory()) {
       copyRecursive(srcPath, distPath);
-    } else if (entry.name === 'index.html' || entry.name === 'checkout.html') {
+    } else if (entry.name === 'index.html' || entry.name === 'checkout-embed.html') {
       let html = fs.readFileSync(srcPath, 'utf8');
       for (const [placeholder, value] of Object.entries(REPLACEMENTS)) {
         html = html.split(placeholder).join(value);

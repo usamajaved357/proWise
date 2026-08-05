@@ -1,7 +1,8 @@
 // ── Subscription: status, plan UI, billing card, upgrade ─────────────────────
-import { SERVER_URL, PLAN_LABELS, PLAN_QUOTAS } from './config.js';
+import { SERVER_URL, SITE_URL, PLAN_LABELS, PLAN_QUOTAS } from './config.js';
 import { state } from './state.js';
 import { fmtDate, daysUntil, showSaved } from './helpers.js';
+import { showConfirm } from './confirm-modal.js';
 
 const MANAGE_BILLING_ICON = `<svg class="bc-manage-icon" width="16" height="12" viewBox="0 0 24 18" fill="none">
   <defs><linearGradient id="bc-manage-grad" x1="0" y1="0" x2="24" y2="18" gradientUnits="userSpaceOnUse">
@@ -12,14 +13,65 @@ const MANAGE_BILLING_ICON = `<svg class="bc-manage-icon" width="16" height="12" 
 </svg>`;
 const MANAGE_BILLING_LABEL = `${MANAGE_BILLING_ICON} Manage billing`;
 
+const CHECKOUT_BADGE_STYLES = {
+  starter: { color: '#5EEAD4', background: 'rgba(94,234,212,0.14)' },
+  pro:     { color: '#C084FC', background: 'rgba(168,85,247,0.16)' },
+  agency:  { color: '#F5A9C7', background: 'rgba(236,72,153,0.14)' }
+};
+
 export async function openCheckout(plan) {
   const { userEmail, emailVerified } = await chrome.storage.sync.get(['userEmail', 'emailVerified']);
   if (!userEmail || !emailVerified) {
     alert('Please verify your email in Settings → Account before purchasing. This keeps your account secure.');
     return;
   }
-  chrome.tabs.create({ url: `https://snagai.netlify.app/checkout.html?plan=${plan}` });
+
+  const backdrop = document.getElementById('checkout-modal-backdrop');
+  const panel    = document.getElementById('checkout-modal-panel');
+  const frame    = document.getElementById('checkout-modal-frame');
+  const label    = document.getElementById('checkout-modal-plan-label');
+  if (!backdrop || !panel || !frame) return;
+
+  const badge = CHECKOUT_BADGE_STYLES[plan] || CHECKOUT_BADGE_STYLES.pro;
+  if (label) {
+    label.textContent = PLAN_LABELS[plan] || '';
+    label.style.color = badge.color;
+    label.style.background = badge.background;
+  }
+
+  frame.src = `${SITE_URL}/checkout-embed.html?plan=${encodeURIComponent(plan)}&email=${encodeURIComponent(userEmail)}`;
+  backdrop.style.display = 'block';
+  void panel.offsetWidth; // force reflow so the slide-in transition runs
+  panel.style.transform = 'translateX(0)';
+  document.body.style.overflow = 'hidden';
 }
+
+function closeCheckoutModal() {
+  const backdrop = document.getElementById('checkout-modal-backdrop');
+  const panel    = document.getElementById('checkout-modal-panel');
+  const frame    = document.getElementById('checkout-modal-frame');
+  if (panel) panel.style.transform = 'translateX(100%)';
+  document.body.style.overflow = '';
+  setTimeout(() => {
+    if (backdrop) backdrop.style.display = 'none';
+    if (frame) frame.src = 'about:blank';
+  }, 300);
+}
+
+document.getElementById('checkout-modal-close')?.addEventListener('click', closeCheckoutModal);
+document.getElementById('checkout-modal-backdrop')?.addEventListener('click', e => {
+  if (e.target.id === 'checkout-modal-backdrop') closeCheckoutModal();
+});
+
+window.addEventListener('message', e => {
+  if (!e.data || e.data.source !== 'snagai-checkout') return;
+  if (e.data.event === 'checkout.completed') {
+    closeCheckoutModal();
+    loadStatus();
+  } else if (e.data.event === 'checkout.closed') {
+    closeCheckoutModal();
+  }
+});
 
 export async function upgradePlan(newPlan) {
   const { userEmail } = await chrome.storage.sync.get(['userEmail']);
@@ -34,10 +86,12 @@ export async function upgradePlan(newPlan) {
   const direction  = ['starter','pro','agency'].indexOf(newPlan) > ['starter','pro','agency'].indexOf(state.activePlan)
     ? 'Upgrade' : 'Downgrade';
 
-  const confirmed = confirm(
-    `${direction} from ${fromLabel} to ${planLabel} (${planPrices[newPlan] || ''}/mo)?\n\n` +
-    `Your new plan takes effect immediately and will be charged on a prorated basis.`
-  );
+  const confirmed = await showConfirm({
+    title: `${direction} to ${planLabel}?`,
+    message: `You'll move from ${fromLabel} to ${planLabel} at <strong style="color:var(--white)">${planPrices[newPlan] || ''}/mo</strong>. ` +
+      `Your new plan takes effect immediately and will be charged on a prorated basis.`,
+    confirmLabel: direction
+  });
   if (!confirmed) return;
 
   document.querySelectorAll('.pcv2-btn[data-plan]').forEach(b => { b.disabled = true; });
@@ -95,11 +149,12 @@ export function updatePlanUI(plan, used, quota, billing = {}, auditInfo = {}, jo
       const resetIso = billing.cancelsAt || billing.nextBilledAt || null;
       resetAuditsEl.textContent = resetIso ? fmtDate(resetIso) : 'monthly';
     }
-    // Non-destructive toggle — never overwrite .us-footnote's innerHTML, or
-    // the used/limit/reset spans it holds would be gone for good and this
-    // card would stay stuck on "not included" even after an upgrade.
+    // Toggle between the two .us-big-num elements — same pattern as Job Audits —
+    // instead of overwriting .us-footnote's innerHTML, which would permanently
+    // destroy the used/limit/reset spans it holds.
+    const usedNumEl = document.getElementById('ud-audits-usednum');
+    if (usedNumEl) usedNumEl.style.display = auditLimit === 0 ? 'none' : '';
     const bignumEl = document.getElementById('ud-audits-bignum');
-    if (bignumEl) bignumEl.textContent = auditLimit === 0 ? 'Not on your plan' : '';
     if (bignumEl) bignumEl.style.display = auditLimit === 0 ? '' : 'none';
     const footEl  = document.getElementById('ud-audits-footnote');
     const hintEl  = document.getElementById('ud-audits-upgrade-hint');
