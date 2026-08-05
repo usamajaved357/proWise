@@ -2,6 +2,7 @@
 import { SERVER_URL, SITE_URL, PLAN_LABELS, PLAN_QUOTAS } from './config.js';
 import { state } from './state.js';
 import { fmtDate, daysUntil, showSaved } from './helpers.js';
+import { showConfirm } from './confirm-modal.js';
 
 const MANAGE_BILLING_ICON = `<svg class="bc-manage-icon" width="16" height="12" viewBox="0 0 24 18" fill="none">
   <defs><linearGradient id="bc-manage-grad" x1="0" y1="0" x2="24" y2="18" gradientUnits="userSpaceOnUse">
@@ -85,10 +86,12 @@ export async function upgradePlan(newPlan) {
   const direction  = ['starter','pro','agency'].indexOf(newPlan) > ['starter','pro','agency'].indexOf(state.activePlan)
     ? 'Upgrade' : 'Downgrade';
 
-  const confirmed = confirm(
-    `${direction} from ${fromLabel} to ${planLabel} (${planPrices[newPlan] || ''}/mo)?\n\n` +
-    `Your new plan takes effect immediately and will be charged on a prorated basis.`
-  );
+  const confirmed = await showConfirm({
+    title: `${direction} to ${planLabel}?`,
+    message: `You'll move from ${fromLabel} to ${planLabel} at <strong style="color:var(--white)">${planPrices[newPlan] || ''}/mo</strong>. ` +
+      `Your new plan takes effect immediately and will be charged on a prorated basis.`,
+    confirmLabel: direction
+  });
   if (!confirmed) return;
 
   document.querySelectorAll('.pcv2-btn[data-plan]').forEach(b => { b.disabled = true; });
