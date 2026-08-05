@@ -1,4 +1,4 @@
 [build]
   base = "landing"
   command = "node build.js"
-  publish = "landing/publish"
+  publish = "publish"
