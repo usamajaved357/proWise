@@ -2,6 +2,7 @@
 import { PLAN_PROFILE_LIMITS, SKILLS_SHOW } from './config.js';
 import { state } from './state.js';
 import { showSaved, getSkillsArr, _esc } from './helpers.js';
+import { showConfirm } from './confirm-modal.js';
 
 // ── Agency data normalizer ────────────────────────────────────────────────
 // Maps agencyFull_<slug>'s field names onto the same shape freelancer cards
@@ -992,7 +993,8 @@ export function renderProfileCard(container, profile, idx, allProfiles, primaryP
       chrome.runtime.sendMessage({ type: 'SET_PRIMARY_PROFILE', profileId: profile.id }, () => renderProfilesPage());
     });
     card.querySelector('.btn-icon-del')?.addEventListener('click', async () => {
-      if (!confirm('Remove this profile?')) return;
+      const confirmed = await showConfirm({ title: 'Remove this profile?', confirmLabel: 'Remove' });
+      if (!confirmed) return;
       await deleteProfileEntry(profile);
       renderProfilesPage();
     });
@@ -1056,7 +1058,8 @@ export function renderProfileCard(container, profile, idx, allProfiles, primaryP
     chrome.runtime.sendMessage({ type: 'SET_PRIMARY_PROFILE', profileId: profile.id }, () => renderProfilesPage());
   });
   card.querySelector('.btn-icon-del')?.addEventListener('click', async () => {
-    if (!confirm('Remove this profile?')) return;
+    const confirmed = await showConfirm({ title: 'Remove this profile?', confirmLabel: 'Remove' });
+    if (!confirmed) return;
     await deleteProfileEntry(profile);
     renderProfilesPage();
   });

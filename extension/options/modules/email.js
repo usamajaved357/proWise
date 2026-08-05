@@ -6,6 +6,7 @@
 // predates the magic-link flow) or the "set but unverified" resting state,
 // so those two are new, styled to match the same visual language.
 import { SERVER_URL } from './config.js';
+import { showConfirm } from './confirm-modal.js';
 
 let pollTimer = null;
 let pollDeadline = 0;
@@ -97,7 +98,12 @@ export function initEmail() {
   toggle.addEventListener('click', () => openEdit());
   cancel?.addEventListener('click', () => closeEdit());
   del?.addEventListener('click', async () => {
-    if (!confirm('Remove your account email? You will need to re-add and verify it to use Snag AI.')) return;
+    const confirmed = await showConfirm({
+      title: 'Remove account email?',
+      message: 'You will need to re-add and verify it to use Snag AI.',
+      confirmLabel: 'Remove'
+    });
+    if (!confirmed) return;
     await chrome.storage.sync.remove(['userEmail', 'emailVerified']);
     renderEmailUI(null, false);
     closeEdit();

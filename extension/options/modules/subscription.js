@@ -149,11 +149,12 @@ export function updatePlanUI(plan, used, quota, billing = {}, auditInfo = {}, jo
       const resetIso = billing.cancelsAt || billing.nextBilledAt || null;
       resetAuditsEl.textContent = resetIso ? fmtDate(resetIso) : 'monthly';
     }
-    // Non-destructive toggle — never overwrite .us-footnote's innerHTML, or
-    // the used/limit/reset spans it holds would be gone for good and this
-    // card would stay stuck on "not included" even after an upgrade.
+    // Toggle between the two .us-big-num elements — same pattern as Job Audits —
+    // instead of overwriting .us-footnote's innerHTML, which would permanently
+    // destroy the used/limit/reset spans it holds.
+    const usedNumEl = document.getElementById('ud-audits-usednum');
+    if (usedNumEl) usedNumEl.style.display = auditLimit === 0 ? 'none' : '';
     const bignumEl = document.getElementById('ud-audits-bignum');
-    if (bignumEl) bignumEl.textContent = auditLimit === 0 ? 'Not on your plan' : '';
     if (bignumEl) bignumEl.style.display = auditLimit === 0 ? '' : 'none';
     const footEl  = document.getElementById('ud-audits-footnote');
     const hintEl  = document.getElementById('ud-audits-upgrade-hint');
