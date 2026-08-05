@@ -1,6 +1,7 @@
 'use strict';
 
 const express = require('express');
+const crypto  = require('crypto');
 const router  = express.Router();
 const { getUser, upsertUser, updateUser } = require('../modules/db');
 const { sendWelcomeEmail } = require('../modules/email');
@@ -13,7 +14,40 @@ const PRICE_MAP = {
   [process.env.PADDLE_PRICE_AGENCY]:  'agency',
 };
 
+// Paddle signs each webhook with `Paddle-Signature: ts=<unix>;h1=<hex hmac>`,
+// computed over `${ts}:${rawBody}` using the secret from Developer Tools →
+// Notifications → this endpoint. Without this check, anyone who finds the
+// webhook URL could POST a fake subscription.created event and grant
+// themselves any plan for free — this must fail closed (reject) on any
+// missing/malformed/mismatched signature, not just log a warning.
+function isValidPaddleSignature(req) {
+  const secret = process.env.PADDLE_WEBHOOK_SECRET;
+  if (!secret) { console.error('PADDLE_WEBHOOK_SECRET not set — rejecting webhook'); return false; }
+
+  const header = req.headers['paddle-signature'];
+  if (!header || !req.rawBody) return false;
+
+  const parts = Object.fromEntries(header.split(';').map(p => p.split('=')));
+  const ts = parts.ts;
+  const h1 = parts.h1;
+  if (!ts || !h1) return false;
+
+  const expected = crypto.createHmac('sha256', secret)
+    .update(`${ts}:${req.rawBody}`)
+    .digest('hex');
+
+  const a = Buffer.from(expected, 'hex');
+  const b = Buffer.from(h1, 'hex');
+  if (a.length !== b.length) return false;
+  return crypto.timingSafeEqual(a, b);
+}
+
 router.post('/', async (req, res) => {
+  if (!isValidPaddleSignature(req)) {
+    console.error('Rejected webhook: invalid or missing Paddle-Signature');
+    return res.status(401).send('Invalid signature');
+  }
+
   const event = req.body;
   if (!event || typeof event !== 'object') {
     return res.status(400).send('Bad JSON');

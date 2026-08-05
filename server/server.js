@@ -45,7 +45,13 @@ app.use('/support', express.json({ limit: '24mb' }));
 // Was 30kb — too small for agency profiles (32 portfolio items + 20 work-history
 // entries + ~28 staff members measures ~41KB on a real, data-rich agency profile,
 // well past the old cap). Raised with margin above that real measurement.
-app.use(express.json({ limit: '150kb' }));
+// `verify` stashes the exact raw bytes on req.rawBody — the Paddle webhook
+// signature is computed over the untouched request body, and re-serializing
+// the parsed JSON would not reliably reproduce the same bytes Paddle signed.
+app.use(express.json({
+  limit: '150kb',
+  verify: (req, res, buf) => { req.rawBody = buf; }
+}));
 
 // ── Routes ────────────────────────────────────────────────────────────────────
 app.get('/', (req, res) => res.json({ status: 'ok', service: 'Snag AI API v7' }));
