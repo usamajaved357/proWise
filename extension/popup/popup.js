@@ -33,8 +33,6 @@ document.getElementById('audit-link').addEventListener('click', (e) => {
 });
 
 async function loadStatus() {
-  const logoEl = document.getElementById('hdr-logo');
-  logoEl?.classList.add('is-loading');
   try {
     const { userEmail, anonId } = await chrome.storage.sync.get(['userEmail', 'anonId']);
     const res = await fetch(SERVER + '/status', {
@@ -46,8 +44,6 @@ async function loadStatus() {
     updateStatusUI(data);
   } catch(e) {
     console.log('Status error:', e);
-  } finally {
-    logoEl?.classList.remove('is-loading');
   }
 }
 
