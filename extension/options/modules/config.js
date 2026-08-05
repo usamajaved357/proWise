@@ -2,7 +2,7 @@
 // Flip this ONE flag to switch the entire extension between local dev and
 // production. Every background module and the popup import SERVER_URL from
 // here — nothing else needs editing.
-const SNAG_IS_LIVE = false;
+const SNAG_IS_LIVE = true;
 export const SERVER_URL = SNAG_IS_LIVE ? 'https://api.snagai.pro' : 'http://localhost:3000';
 // Landing/checkout pages the extension opens or iframes (Subscription page
 // checkout modal, "Add to Chrome" links, paywall upgrade tab). Local mode
